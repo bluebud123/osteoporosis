@@ -33,4 +33,17 @@ The first-run column is the honest one. After the first run the finder was fixed
 
 ## AI reader
 
-Not yet measured. It needs the in-page benchmark ("Run AI benchmark" on the claude.ai page) or `ANTHROPIC_API_KEY=... npm run bench:finder-ai`, and a blind set written by clinicians who have not seen the rules.
+One run in the claude.ai page on 2026-11-07, Claude via the page's `sample` capability, same synthetic sets, same draft labels, never tuned against them. Single run, not repeated, model version not recorded. Not blind.
+
+| Set | Keyword rules (tuned) | AI reader |
+| --- | --- | --- |
+| Development, 100 reports | 98% exact, 47/48 act caught, 0 silently dismissed | 94% exact, 43/48 act caught, 0 silently dismissed, 1 unverified |
+| Stress, 15 reports | 87% exact, 11/12 act caught, 0 silently dismissed | 67% exact, 8/12 act caught, 0 silently dismissed, 1 unverified |
+
+Reading it honestly:
+- The AI reader never silently dismissed a fracture. Its errors went the safe way: 5 dev and 4 stress "act" reports were downgraded to "review", so a clinician still sees them.
+- On the stress set the keyword rules first scored 33% exact, 3/12 act caught, 6 silently dismissed; the AI reader, untuned, scored 67%, 8/12, 0. The 87% keyword figure is after fixing against those reports.
+- Several disagreements are label disputes for a clinician, not AI errors: R035 (healed humerus fracture), S13 (Scheuermann wedging, AI said "not a fracture", label said review), R084 and R095 (pelvic and humeral fractures treated as borderline).
+- Two AI misses look like over-caution on clear text: R009 (definite T9 fracture described as "likely osteoporotic") and S03.
+- Design consequence: the keyword rules stay as a floor and the AI can add or flag, never lower a finding. That is how the page already works.
+- Not shown: any real report, any blind set, any UAE-hostable model. Unverified counts (1 and 1) mean the AI's quoted evidence was not verbatim and the verifier sent it to review.

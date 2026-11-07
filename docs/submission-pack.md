@@ -83,7 +83,7 @@ All figures are copied from the repo's [README](../README.md) and [bench README]
 | Patient check-in flags | 27/27 answer sets | Synthetic answer sets only |
 | Case finder, keyword baseline, development set | 99% exact; 48/48 fractures caught; 0 silently dismissed (100 reports) | Written alongside the baseline, so tuned to it. Not blind |
 | Case finder, keyword baseline, stress set | 33% exact; 3/12 fractures caught; **6 silently dismissed**; 6/12 surfaced to a human (15 reports) | Written afterwards with unfamiliar wording. This is the baseline, not the AI reader |
-| Case finder, AI reader | **[PLACEHOLDER: not yet measured in the bench. Run "Run AI benchmark" or `npm run bench:finder-ai`, then record here]** | |
+| Case finder, AI reader (Claude, one run, synthetic, not blind) | Dev 94% exact, 43/48 act caught; stress 67%, 8/12 caught; 0 silently dismissed on both; errors went to review | See docs/numbers.md |
 | Loop guarantees (headless tests on the real app) | 26/26 scenarios | Tests the app's own rules, not clinical outcomes |
 
 **What these numbers show.** The baseline's six silent dismissals on clinical shorthand are the reason for the AI reader and the verifier. They are the failure the AI reader is meant to remove. The keyword numbers do not show that the AI reader works.
@@ -162,7 +162,7 @@ Structured with reference to the DECIDE-AI reporting guideline for early-stage c
 
 - **Synthetic data only.** All reports and patients are fictional and hand-written. The results show that the rules and the verifier behave as specified. They are not clinical validation.
 - **Non-blind benchmark.** The development reports were written alongside the keyword baseline, so its 99% is tuned to them. The stress set was written afterwards but is still written by the team. A blind set by clinicians who have not seen the rules is needed.
-- **No AI reader numbers yet.** The AI reader's accuracy, false-positive rate and miss rate are **[PLACEHOLDER: not yet measured]**.
+- **AI reader numbers are one unblinded run on synthetic reports** (docs/numbers.md). No real reports, no repeat runs, no UAE-hostable model yet.
 - **False-positive rate on real reports is unknown.** Real radiology reports are not in the benchmark.
 - **Prototype state.** State is in memory only. A page reload resets the demo. There is no database, authentication or audit trail yet.
 - **Unsigned clinical rules.** Rules marked `LOCAL` and the expected answers have not been signed off. Stage clocks and the 2-year repeat-DXA interval are local choices, not guideline values.
