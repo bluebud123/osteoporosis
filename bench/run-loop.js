@@ -105,6 +105,49 @@ const tests = [
     const disabledNoName = a.q('[data-a="sign"]').disabled;
     a.set('#sg', 'Dr Tan', 'input');
     return disabledNoName && !a.q('[data-a="sign"]').disabled;
+  }],
+  ['L13', 'New patient screened at intake opens a loop with the right category and owner', 'Req 1, 2', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Zainab T.', 'input'); a.set('#in-age', '72', 'input');
+    a.set('#in-site', 'hip'); a.set('#in-fxm', '5', 'input');
+    const live = /Very high risk/.test(a.text()) && /fast-track DXA within 6 weeks/.test(a.text());
+    a.click('[data-a="intake-issue"]'); a.click('[data-tab="board"]');
+    const onBoard = /Zainab T\./.test(a.text());
+    a.click('[data-open="C-2001"]');
+    return live && onBoard && /Very high risk/.test(a.text()) && /Notify and acknowledge/.test(a.text()) && /owner Dr Tan/.test(a.text());
+  }],
+  ['L14', 'Below-threshold patient gets no loop and no false alarm', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Rina P.', 'input'); a.set('#in-age', '56', 'input'); a.set('#in-mof', '6', 'input'); a.set('#in-hip', '0.8', 'input');
+    return /Below thresholds: no loop opened/.test(a.text()) && !a.q('[data-a="intake-issue"]');
+  }],
+  ['L15', 'High FRAX without DXA opens a loop as "DXA needed", never as low', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Siti N.', 'input'); a.set('#in-age', '63', 'input'); a.set('#in-mof', '14', 'input');
+    return /Not classified/.test(a.text()) && /DXA indicated/.test(a.text()) && !/Below thresholds/.test(a.text()) && !!a.q('[data-a="intake-issue"]');
+  }],
+  ['L16', 'Entered DXA result re-runs the category; a missing T-score is refused', 'Req 5', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Siti N.', 'input'); a.set('#in-age', '63', 'input'); a.set('#in-mof', '14', 'input');
+    a.click('[data-a="intake-issue"]'); a.click('[data-open="C-2001"]');
+    a.click('[data-a="topatient"]'); a.click('[data-tb="0"]'); a.click('[data-a="ack"]'); a.click('[data-tab="case"]');
+    a.click('[data-a="order"]'); a.click('[data-a="results"]');
+    const refused = /Enter the lowest T-score/.test(a.text());
+    a.set('#r-t', '-2.8', 'input'); a.set('#r-vd', '60', 'input'); a.set('#r-egfr', '25', 'input'); a.set('#r-ca', '2.3', 'input');
+    a.click('[data-a="results"]');
+    const t = a.text();
+    return refused && /High risk/.test(t) && /eGFR below 30/.test(t) && /Category now High/.test(t);
+  }],
+  ['L17', 'Patient outside the CPG population is flagged at intake', 'Req 5', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-sex', 'M'); a.set('#in-name', 'Omar F.', 'input'); a.set('#in-age', '70', 'input'); a.set('#in-site', 'vert');
+    return /Outside the Malaysian CPG population/.test(a.text());
+  }],
+  ['L18', 'Reset restores the seeded demo', 'Demo', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Zainab T.', 'input'); a.set('#in-age', '72', 'input'); a.set('#in-site', 'hip'); a.set('#in-fxm', '5', 'input');
+    a.click('[data-a="intake-issue"]'); a.click('#adv'); a.click('#reset');
+    return !/Zainab/.test(a.text()) && /Day 0/.test(a.q('#day').textContent) && a.q('#view').querySelectorAll('.case-row').length === 8;
   }]
 ];
 

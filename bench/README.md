@@ -5,7 +5,7 @@ Two suites, both run with `npm run bench` (needs Node 18+ and `npm install` once
 | Suite | What it tests | Latest result |
 | --- | --- | --- |
 | `run-rules.js` | 57 synthetic vignettes against the clinical rules in `src/rules.js` | 57/57 cases, 102/102 checks |
-| `run-loop.js` | 12 scenarios that drive the real app headless and check the loop's guarantees | 12/12 |
+| `run-loop.js` | 18 scenarios that drive the real app headless and check the loop's guarantees, including new-patient intake | 18/18 |
 
 Full results are in `results/rules.md` and `results/loop.md`.
 

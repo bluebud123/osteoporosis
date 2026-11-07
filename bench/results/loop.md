@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **12/12**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **18/18**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -16,3 +16,9 @@ Passed **12/12**. Each test drives the real app (index.html) headless and checks
 | L10 | Every open case has an owner or is pinned as unassigned | Req 2 | PASS |
 | L11 | Very-high-risk case shows the 6-week fast-track | Req 5 | PASS |
 | L12 | Treatment cannot be signed without a named prescriber | Req 5 | PASS |
+| L13 | New patient screened at intake opens a loop with the right category and owner | Req 1, 2 | PASS |
+| L14 | Below-threshold patient gets no loop and no false alarm | Req 1 | PASS |
+| L15 | High FRAX without DXA opens a loop as "DXA needed", never as low | Req 1, 5 | PASS |
+| L16 | Entered DXA result re-runs the category; a missing T-score is refused | Req 5 | PASS |
+| L17 | Patient outside the CPG population is flagged at intake | Req 5 | PASS |
+| L18 | Reset restores the seeded demo | Demo | PASS |

@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>SpineLoop</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap">
@@ -124,6 +125,15 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
 .bar .fill{height:100%;background:var(--accent);border-radius:4px}
 .bar .num{font-family:var(--f-mono);text-align:right}
 .empty{font-size:13.5px;color:var(--muted)}
+/* intake */
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
+.fgrid .full{grid-column:1/-1}
+.field{display:grid;gap:3px;min-width:0}
+.field input,.field select{width:100%}
+.checks{display:grid;gap:6px}
+.fired{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13.5px}
+.fired li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
+.rid{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-right:4px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -131,7 +141,7 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
   <header class="top">
     <div class="hrow">
       <div><h1>SpineLoop</h1><div class="small muted">Bone-health screening to treatment, closed loop</div></div>
-      <div class="clock"><span class="day" id="day">Day 0</span><button class="act" id="adv">+7 days</button></div>
+      <div class="clock"><span class="day" id="day">Day 0</span><button class="act" id="adv">+7 days</button><button class="act" id="reset" title="Restore the seeded demo cases">Reset</button></div>
     </div>
     <div class="notice">Prototype · fictional patients · synthetic data · draft rules for clinician sign-off</div>
   </header>
@@ -163,6 +173,8 @@ const REJECTS = ['Out of insurance network','Wrong service','Incomplete referral
 const R = window.SpineRules;
 const CATNAME = {vhigh:'Very high', high:'High', low:'Low', incomplete:'Not classified'};
 function toPatient(c){
+  const r0=c.res||{};
+  if(c.pt) return Object.assign({}, c.pt, {t:r0.t??null, egfr:r0.egfr??null, ca:r0.ca??null, vd:r0.vd??null});
   const k=c.clin, fx=[];
   if(k.fxMonths!==null) fx.push({site:k.hipVert?'hip':'wrist', months:k.fxMonths, onGc:k.fxOnGc});
   else if(k.hipVert) fx.push({site:'vert', months:60, onGc:k.fxOnGc});
@@ -181,7 +193,7 @@ function mk(o){
   (o.hist||[]).forEach(([i,s,e])=>{ st[i].start=s; st[i].end=e; });
   return Object.assign({stages:st, ack:null, tbFirst:null, lang:'en', referral:{status:'none', clinic:null, reason:null, history:[]}, thread:[], rx:null, closed:null, log:[], res:null, ordered:false, follow:{adh:false, btm:false}}, o);
 }
-let CASES = [
+function seedCases(){ const A = [
   mk({id:'C-1042', name:'Mariam A.', age:64, owner:ME, lang:'ar', urgent:true,
       clin:{fxMonths:8, multiFx:false, fxOnGc:false, hipVert:false, mof:18, hip:4.1, cvEvent:false, note:'Wrist fracture 8 months ago; parent had a hip fracture'},
       hist:[[0,0,0],[1,0,null]], cur:1, demo:{t:-2.7, vd:42, egfr:68, ca:2.31}}),
@@ -215,10 +227,15 @@ let CASES = [
       hist:[[0,-40,-40],[1,-40,-38],[2,-38,-20],[3,-20,-12],[4,-12,null]], cur:4, ack:true, tbFirst:{lang:'en',pass:true}, urgent:true,
       res:{t:-3.1, vd:95, egfr:60, ca:2.4}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-8, dispensed:null}})
 ];
-CASES.forEach(c=>{ c.log.push({d:c.stages[0].start, text:'Screened; actionable result issued.'}); });
-CASES[3].thread=[{who:ME, d:-9, text:'71F, two vertebral fractures on prednisolone, T −3.2. Very high risk; asking for anabolic initiation.'},{who:'Al Noor FLS', d:-2, text:'Rejected: patient\'s plan is outside our network.'}];
+A.forEach(c=>{ c.log.push({d:c.stages[0].start, text:'Screened; actionable result issued.'}); });
+A[3].thread=[{who:ME, d:-9, text:'71F, two vertebral fractures on prednisolone, T −3.2. Very high risk; asking for anabolic initiation.'},{who:'Al Noor FLS', d:-2, text:'Rejected: patient\'s plan is outside our network.'}];
+return A; }
+let CASES = seedCases();
 
-let DAY=0, tab='board', sel='C-1042', lang='en', tb=null, msg=null, dropFor=null, rxPick={}, signer={};
+let DAY=0, tab='board', sel='C-1042', lang='en', tb=null, msg=null, dropFor=null, rxPick={}, signer={}, resDraft={}, nextId=2001;
+const BLANK_IN = {name:'', age:'', sex:'F', meno:'post', lang:'en', site:'none', fxm:'', multi:false, onTx:false, onGc:false, gc:false, falls:false, frail:false, cv:false, mof:'', hip:'', note:''};
+let IN = Object.assign({}, BLANK_IN), inDone=null;
+const num = v => (v===null||v===undefined||String(v).trim()===''||Number.isNaN(+v)) ? null : +v;
 
 /* ---------- engine ---------- */
 function clockFor(c,i){ return (i===2 && c.urgent) ? 42 : STAGES[i].clock; }
@@ -268,19 +285,19 @@ function counts(){
 function renderTabs(){
   const k=counts();
   const T=[['board','Board',k.needs],['case','Case',0],['patient','Patient',0],['specialist','Specialist',k.inbox],['health','Loop health',0]];
-  $('tabs').innerHTML=T.map(([id,l,n])=>`<button data-tab="${id}" aria-current="${tab===id?'page':'false'}">${l}${n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
+  $('tabs').innerHTML=T.map(([id,l,n])=>`<button data-tab="${id}" aria-current="${tab===id||(tab==='intake'&&id==='board')?'page':'false'}">${l}${n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
 }
 function stagebar(c){ return `<span class="stagebar">${[1,2,3,4,5,6].map(i=>{const s=stageState(c,i);return `<i data-s="${s==='done'?'done':s==='late'?'late':s==='cur'?'cur':''}"></i>`}).join('')}</span>`; }
 function row(c){
   const cat=category(c);
   return `<button class="case-row" data-open="${c.id}" data-sev="${sev(c)==='acc'?'':sev(c)}"><span class="stripe"></span>
-    <span style="min-width:0"><span class="nm">${esc(c.name)}</span> <span class="small muted">${c.age}F · ${c.id}</span><span class="meta" style="display:block">${esc(statusText(c))} · ${esc(c.owner||'no owner')}</span></span>
+    <span style="min-width:0"><span class="nm">${esc(c.name)}</span> <span class="small muted">${c.age}${c.sex||'F'} · ${c.id}</span><span class="meta" style="display:block">${esc(statusText(c))} · ${esc(c.owner||'no owner')}</span></span>
     <span class="right"><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name}</span>${stagebar(c)}</span></button>`;
 }
 function vBoard(){
   const open=CASES.filter(c=>!c.closed), closed=CASES.filter(c=>c.closed);
   const pin=open.filter(c=>sev(c)==='crit'||sev(c)==='warn'), rest=open.filter(c=>!pin.includes(c));
-  return `<div class="card" style="gap:4px"><h2>Case board</h2><span class="small muted">Unassigned, overdue and rejected cases are pinned and cannot be hidden.</span></div>
+  return `<div class="card" style="gap:4px"><h2>Case board</h2><span class="small muted">Unassigned, overdue and rejected cases are pinned and cannot be hidden.</span><div class="actions"><button class="act primary" data-a="intake" data-c="*">Screen a new patient</button></div></div>
   <div class="sec-label">Needs action (${pin.length})</div>${pin.map(row).join('')||'<div class="empty">Nothing stalled.</div>'}
   <div class="sec-label">On track (${rest.length})</div>${rest.map(row).join('')||'<div class="empty">No open cases on track.</div>'}
   <div class="sec-label">Closed (${closed.length})</div>${closed.map(row).join('')}`;
@@ -296,7 +313,7 @@ function stageBody(c,i){
   }
   if(i===2){
     const fast = c.urgent ? callout('flag','Very high risk: fast-track DXA within 6 weeks. If it will be delayed, start an antiresorptive rather than wait.','NICE NG259') : '';
-    return fast + (c.ordered ? `<span class="small muted">DXA and labs ordered.</span><div class="actions"><button class="act primary" data-a="results">Results returned (simulated)</button>${dropBtn}</div>`
+    return fast + (c.ordered ? resultsForm(c)+`<div class="actions"><button class="act primary" data-a="results">Record results</button>${dropBtn}</div>`
       : `<div class="actions"><button class="act primary" data-a="order">Order DXA and labs</button>${dropBtn}</div>`);
   }
   if(i===3){
@@ -325,6 +342,86 @@ function stageBody(c,i){
   }
   return '';
 }
+function resultsForm(c){
+  const d = resDraft[c.id] || (resDraft[c.id] = c.demo ? {t:String(c.demo.t), vd:String(c.demo.vd), egfr:String(c.demo.egfr), ca:String(c.demo.ca)} : {t:'', vd:'', egfr:'', ca:''});
+  const f=(k,l,u,im)=>`<div class="field"><label class="small muted" for="r-${k}">${l}</label><input type="text" id="r-${k}" data-r="${k}" ${im?`inputmode="${im}"`:''} value="${esc(d[k])}" placeholder="${u}"></div>`;
+  return `<span class="small muted">DXA and labs ordered${c.demo?' (demo values pre-filled)':''}. Enter results as they return.</span>
+    <div class="fgrid">${f('t','Lowest T-score','e.g. −2.7','')}${f('vd','25-OH vitamin D','nmol/L','decimal')}${f('egfr','eGFR','mL/min/1.73m²','decimal')}${f('ca','Adjusted calcium','mmol/L','decimal')}</div>
+    ${msg&&msg.id===c.id?callout('block',esc(msg.text)):''}`;
+}
+
+/* ---------- Stage 0 intake: the same rules engine runs live as the clinician types ---------- */
+function buildPt(x){
+  const fx=[];
+  if(x.site!=='none'){ fx.push({site:x.site, months:num(x.fxm), onTx:x.onTx, onGc:x.onGc}); if(x.multi) fx.push({site:'other', months:num(x.fxm), onTx:x.onTx, onGc:x.onGc}); }
+  return {age:num(x.age), sex:x.sex, menopause:x.sex==='M'?'na':x.meno, fractures:fx, gc:x.gc, falls:x.falls, frail:x.frail, cvEvent:x.cv, t:null, mof:num(x.mof), hip:num(x.hip)};
+}
+const SITE={wrist:'Wrist', humerus:'Upper arm', hip:'Hip', vert:'Vertebral', pelvis:'Pelvic', other:'Other'};
+function noteFor(x){
+  const n=[];
+  if(x.site!=='none') n.push(`${SITE[x.site]} fracture${num(x.fxm)!==null?` ${num(x.fxm)} months ago`:', date unknown'}${x.multi?', plus another fracture':''}`);
+  if(x.gc) n.push('long-term glucocorticoids'); if(x.falls) n.push('falls'); if(x.frail) n.push('frail');
+  if(x.note.trim()) n.push(x.note.trim());
+  return n.join('; ') || 'No fracture or clinical risk factor recorded';
+}
+function intakeVerdict(){
+  const pt=buildPt(IN), cat=R.category(pt), dxa=R.dxaIndication(pt);
+  const missing=[]; if(!IN.name.trim()) missing.push('name'); if(num(IN.age)===null) missing.push('age');
+  const needFrax = cat.key==='incomplete' && !dxa.indicated && pt.mof===null && pt.hip===null;
+  const opens = cat.key!=='low' && !needFrax;
+  return {pt, cat, dxa, fast:R.fastTrack(pt), scope:R.scopeWarning(pt), missing, needFrax, opens};
+}
+function intakeResult(){
+  const v=intakeVerdict(), k=v.cat.key;
+  const chip=`<span class="chip ${k==='vhigh'?'c-crit':k==='low'?'c-ok':'c-warn'}">${CATNAME[k]}${k==='incomplete'?'':' risk'}</span>`;
+  let h=`<div class="hrow"><div class="sec-label">Result, live</div>${chip}</div>
+    <ul class="fired">${v.cat.fired.map(f=>`<li><span><span class="rid">${f[0]}</span>${esc(f[1])}</span><span class="src">${f[2]==='MYCPG'?'MY CPG 2022':f[2]==='NICE'?'NICE NG259':'LOCAL'}</span></li>`).join('')}</ul>`;
+  if(v.dxa.indicated) h+=`<div class="small"><b>DXA indicated:</b> ${esc(v.dxa.reasons.map(r=>r[1]).join('; '))} <span class="src">NICE NG259</span></div>`;
+  if(v.fast) h+=callout('flag','Very high risk: fast-track DXA within 6 weeks.','NICE NG259');
+  if(v.scope) h+=callout('flag',esc(v.scope),'MY CPG 2022');
+  if(v.needFrax) h+=callout('flag','Run FRAX (Singapore or Hong Kong model) and enter the result before a category can be set.','MY CPG 2022');
+  if(k==='low') h+=callout('ok','Below thresholds: no loop opened. Lifestyle, calcium and vitamin D advice; reassess at the next screening.','MY CPG 2022');
+  if(v.missing.length) h+=`<span class="small muted">Enter ${v.missing.join(' and ')} to continue.</span>`;
+  h+=`<div class="actions">${v.opens?`<button class="act primary" data-a="intake-issue" data-c="*" ${v.missing.length?'disabled':''}>Issue result and open loop</button>`:''}<button class="act" data-a="intake-clear" data-c="*">Clear form</button></div>`;
+  return h;
+}
+function vIntake(){
+  const x=IN, chk=(k,l)=>`<label class="checkline"><input type="checkbox" data-in="${k}" ${x[k]?'checked':''}> ${l}</label>`;
+  const sel=(k,opts)=>`<select id="in-${k}" data-in="${k}">${opts.map(([v,l])=>`<option value="${v}" ${x[k]===v?'selected':''}>${l}</option>`).join('')}</select>`;
+  const txt=(k,ph,im)=>`<input type="text" id="in-${k}" data-in="${k}" value="${esc(x[k])}" placeholder="${ph}" ${im?`inputmode="${im}"`:''}>`;
+  const fld=(k,l,ctl,full)=>`<div class="field${full?' full':''}"><label class="small muted" for="in-${k}">${l}</label>${ctl}</div>`;
+  const done = inDone ? callout('ok',`<b>${esc(inDone.name)}</b> screened. Loop opened as ${inDone.id}, owner ${esc(ME)}.`)+`<div class="actions"><button class="act" data-open="${inDone.id}">Open case</button></div>` : '';
+  return `<div class="card" style="gap:4px"><h2>Screen a new patient</h2><span class="small muted">Stage 0. The deterministic rules run as you type; no AI is involved in the category. Use fictional patients only.</span></div>
+  ${done}
+  <div class="card"><div class="sec-label">Patient</div><div class="fgrid">
+    ${fld('name','Name (fictional)',txt('name','e.g. Zainab T.'),true)}
+    ${fld('age','Age',txt('age','years','numeric'))}
+    ${fld('sex','Sex',sel('sex',[['F','Female'],['M','Male']]))}
+    ${x.sex==='F'?fld('meno','Menopause',sel('meno',[['post','Postmenopausal'],['pre','Premenopausal']])):''}
+    ${fld('lang','Message language',sel('lang',[['en','English'],['ar','Arabic']]))}
+  </div></div>
+  <div class="card"><div class="sec-label">Fragility fracture</div><div class="fgrid">
+    ${fld('site','Most recent fracture',sel('site',[['none','None'],['wrist','Wrist'],['humerus','Upper arm'],['hip','Hip'],['vert','Vertebral'],['pelvis','Pelvis'],['other','Other']]))}
+    ${x.site!=='none'?fld('fxm','Months ago',txt('fxm','blank if unknown','numeric')):''}
+  </div>${x.site!=='none'?`<div class="checks">${chk('multi','Another fragility fracture as well')}${chk('onTx','Happened while on osteoporosis treatment')}${chk('onGc','Happened while on glucocorticoids')}</div>`:''}</div>
+  <div class="card"><div class="sec-label">Risk factors</div><div class="checks">
+    ${chk('gc','Glucocorticoids for 3 months or more')}${chk('falls','Two or more falls in a year, or injurious fall')}${chk('frail','Frail (clinician judgement)')}${chk('cv','Heart attack or stroke in the last 12 months')}
+  </div><div class="fgrid">
+    ${fld('mof','FRAX major osteoporotic (%)',txt('mof','blank if not run','decimal'))}
+    ${fld('hip','FRAX hip (%)',txt('hip','blank if not run','decimal'))}
+    ${fld('note','Other history (optional)',txt('note','e.g. parent had hip fracture'),true)}
+  </div><span class="small muted">FRAX is entered from the official calculator, not computed here.</span></div>
+  <div class="card" id="inres">${intakeResult()}</div>`;
+}
+function issueIntake(){
+  const v=intakeVerdict(); if(!v.opens||v.missing.length) return;
+  const id='C-'+(nextId++), x=IN;
+  const c=mk({id, name:x.name.trim(), age:v.pt.age, sex:x.sex, owner:ME, lang:x.lang, urgent:v.fast, pt:v.pt, demo:null,
+    clin:{mof:v.pt.mof, hip:v.pt.hip, cvEvent:x.cv, note:noteFor(x)}, hist:[[0,DAY,DAY],[1,DAY,null]]});
+  c.log.push({d:DAY, text:`Screened: ${CATNAME[v.cat.key]}${v.cat.key==='incomplete'?' (DXA needed)':' risk'} (${v.cat.fired.map(f=>f[0]).join(', ')}). Actionable result issued; owner ${ME}.`});
+  CASES.unshift(c); inDone={id, name:c.name}; IN=Object.assign({}, BLANK_IN);
+}
+
 function vCase(){
   const c=CASES.find(x=>x.id===sel); if(!c) return '<div class="empty">Pick a case on the board.</div>';
   const cat=category(c), ci=curIdx(c);
@@ -339,8 +436,8 @@ function vCase(){
   const res = c.res ? `<dt>Lowest T-score</dt><dd class="mono">${c.res.t} <span class="badge b-rec">Recorded</span></dd><dt>Vitamin D</dt><dd class="mono">${c.res.vd} nmol/L</dd><dt>eGFR</dt><dd class="mono">${c.res.egfr}</dd>` : `<dt>DXA</dt><dd><span class="chip c-warn">Not done · indicated</span></dd>`;
   const thread = c.thread.length ? `<div class="card"><div class="sec-label">E-consult thread</div><div class="thread">${c.thread.map(m=>`<div class="msg-b"><div class="who">${esc(m.who)} · Day ${m.d}</div>${esc(m.text)}</div>`).join('')}</div></div>` : '';
   const closed = c.closed ? callout(c.closed.kind==='treated'?'ok':'flag',`<b>Closed day ${c.closed.day}</b> by ${esc(c.closed.by)}: ${esc(c.closed.text)}`) : '';
-  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}F · ${c.id} · ${c.lang==='ar'?'Arabic':'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
-    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">major ${c.clin.mof}% · hip ${c.clin.hip}% <span class="badge b-rec">Recorded</span></dd>${res}</dl>${closed}</div>
+  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}${c.sex||'F'} · ${c.id} · ${c.lang==='ar'?'Arabic':'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
+    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),'MY CPG 2022'):''}${closed}</div>
     ${assign}
     <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
     ${thread}
@@ -399,7 +496,7 @@ function vHealth(){
 function render(){
   $('day').textContent='Day '+DAY;
   renderTabs();
-  $('view').innerHTML = tab==='board'?vBoard():tab==='case'?vCase():tab==='patient'?vPatient():tab==='specialist'?vSpecialist():vHealth();
+  $('view').innerHTML = tab==='intake'?vIntake():tab==='board'?vBoard():tab==='case'?vCase():tab==='patient'?vPatient():tab==='specialist'?vSpecialist():vHealth();
 }
 
 /* ---------- actions ---------- */
@@ -410,7 +507,11 @@ document.addEventListener('click', e=>{
   if(b.dataset.open){ sel=b.dataset.open; tab='case'; tb=null; msg=null; dropFor=null; render(); window.scrollTo(0,0); return; }
   if(b.dataset.lang){ const c=CASES.find(x=>x.id===sel); if(c) c.lang=b.dataset.lang; render(); return; }
   if(b.dataset.tb!==undefined){ tb=+b.dataset.tb; render(); return; }
+  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
   const a=b.dataset.a; if(!a) return;
+  if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
+  if(a==='intake-clear'){ IN=Object.assign({}, BLANK_IN); inDone=null; render(); return; }
+  if(a==='intake-issue'){ issueIntake(); render(); window.scrollTo(0,0); return; }
   const c=CASES.find(x=>x.id===(b.dataset.c||sel)); if(!c) return;
   const i=curIdx(c);
   switch(a){
@@ -425,7 +526,13 @@ document.addEventListener('click', e=>{
       tb=null; break;
     case 'nurse': c.ack=true; complete(c,1,'Nurse call completed; patient understands next step.'); break;
     case 'order': c.ordered=true; log(c,'DXA and labs ordered'+(c.urgent?' (fast-track).':'.')); break;
-    case 'results': c.res=Object.assign({}, c.demo); complete(c,2,`DXA and labs returned: lowest T ${c.res.t}, vitamin D ${c.res.vd}, eGFR ${c.res.egfr}.`); break;
+    case 'results': {
+      const d=resDraft[c.id]||{}, r={t:num(String(d.t||'').replace('−','-')), vd:num(d.vd), egfr:num(d.egfr), ca:num(d.ca)};
+      if(r.t===null){ msg={id:c.id, text:'Enter the lowest T-score to record the DXA result.'}; break; }
+      msg=null; c.res=r; const miss=['vd','egfr','ca'].filter(k=>r[k]===null);
+      complete(c,2,`DXA and labs returned: lowest T ${r.t}, vitamin D ${r.vd??'pending'}, eGFR ${r.egfr??'pending'}, calcium ${r.ca??'pending'}. Category now ${category(c).name}.`);
+      if(miss.length) log(c,'Labs still missing: '+miss.join(', ')+'. Treatment blocks cannot be checked until they return.','alert');
+      break; }
     case 'decide': complete(c,3,'Treatment decided in primary care per CPG.'); break;
     case 'econsult': c.referral={status:'sent', clinic:'Al Noor fracture-liaison clinic', reason:null, history:[['sent',DAY]]}; c.thread.push({who:c.owner, d:DAY, text:`${c.age}F, ${category(c).why.join('; ')}. Asking for a treatment plan.`}); log(c,'E-consult sent to Al Noor fracture-liaison clinic.'); break;
     case 'reroute': c.referral.status='rerouted'; c.referral.clinic='Corniche fracture-liaison clinic (in network)'; c.referral.history.push(['rerouted',DAY]); c.thread.push({who:c.owner, d:DAY, text:'Rerouted to an in-network clinic. Same request.'}); log(c,'Referral rerouted to Corniche fracture-liaison clinic (in network).'); break;
@@ -444,12 +551,16 @@ document.addEventListener('click', e=>{
   }
   render();
 });
+function inVal(t){ return t.type==='checkbox'?t.checked:t.value; }
 document.addEventListener('change', e=>{
+  if(e.target.dataset.in){ IN[e.target.dataset.in]=inVal(e.target); if(e.target.tagName==='SELECT'||e.target.type==='checkbox'){ render(); } return; }
   const c=CASES.find(x=>x.id===sel); if(!c) return;
   if(e.target.name && e.target.name.startsWith('rx-')){ rxPick[c.id]=e.target.value; render(); }
   if(e.target.dataset.f){ c.follow[e.target.dataset.f]=e.target.checked; render(); }
 });
 document.addEventListener('input', e=>{
+  if(e.target.dataset.in && e.target.type==='text'){ IN[e.target.dataset.in]=e.target.value; const r=$('inres'); if(r) r.innerHTML=intakeResult(); return; }
+  if(e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
   if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2); }
 });
 
