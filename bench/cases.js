@@ -12,6 +12,13 @@
  *   labs:     lab flag ids that must fire (exact set)
  *   missing:  lab fields reported missing (exact set)
  *   scope:    true if the out-of-population warning must show
+ *   needs:    {drugId: [need codes]} exact set per drug (treatments()[].needs)
+ *   sign:     {drugId: true|false} signBlock(p, drugId).blocked must equal this
+ *   signHas:  {drugId: 'text'} signBlock(p, drugId).reasons must include text
+ *   spep:     {block: true|false} secondaryScreen(p).block must equal this
+ *   catNeeds: exact set of category needs codes (e.g. 'fracture-date')
+ *   fires:    rule ids that must appear in category(p).fired
+ *   notFires: rule ids that must NOT appear in category(p).fired
  */
 const base = { age: 65, sex: 'F', menopause: 'post', fractures: [], t: null, mof: null, hip: null, egfr: 80, ca: 2.35, vd: 80 };
 const P = (o) => Object.assign({}, base, o);
@@ -88,5 +95,48 @@ module.exports = [
   { id: 'G07', group: 'robustness', desc: 'Age 25 with old vertebral fracture', p: P({ age: 25, menopause: 'pre', fractures: [{ site: 'vert', months: 60 }] }), expect: { cat: 'high', dxa: false, scope: true } },
   { id: 'G08', group: 'robustness', desc: 'T -3.0 with FRAX hip 4.6%', p: P({ t: -3.0, hip: 4.6 }), expect: { cat: 'vhigh' } },
   { id: 'G09', group: 'robustness', desc: 'Falls, eGFR 25 and recent MI together', p: P({ falls: true, egfr: 25, cvEvent: true }), expect: { cat: 'vhigh', blocked: ['romo', 'zol'], first: ['teri'] } },
-  { id: 'G10', group: 'robustness', desc: 'Negative FRAX value (data-entry error)', p: P({ mof: -5, hip: 1 }), expect: { cat: 'low' } }
+  { id: 'G10', group: 'robustness', desc: 'Negative FRAX value (data-entry error)', p: P({ mof: -5, hip: 1 }), expect: { cat: 'low' } },
+  // ── H. Lab block flags reach the drugs they affect (B1) ─────────────────
+  { id: 'H01', group: 'lab-blocks', desc: 'High risk, calcium 2.10: all antiresorptives blocked until corrected', p: P(Object.assign({}, HIGH, { ca: 2.10 })), expect: { cat: 'high', labs: ['L-CA-LO'], blocked: ['obp', 'deno', 'zol'], first: [], sign: { obp: true, deno: true, zol: true }, signHas: { deno: 'Calcium low' } } },
+  { id: 'H02', group: 'lab-blocks', desc: 'Very high, calcium 2.10: antiresorptives blocked, anabolics not', p: P(Object.assign({}, VHIGH, { ca: 2.10 })), expect: { cat: 'vhigh', labs: ['L-CA-LO'], blocked: ['deno', 'zol'], first: ['teri', 'romo'], sign: { teri: false, romo: false, deno: true, zol: true }, signHas: { zol: 'Calcium low' } } },
+  { id: 'H03', group: 'lab-blocks', desc: 'High risk, calcium exactly 2.15: not blocked', p: P(Object.assign({}, HIGH, { ca: 2.15 })), expect: { cat: 'high', labs: [], blocked: [], sign: { obp: false, deno: false, zol: false } } },
+  { id: 'H04', group: 'lab-blocks', desc: 'Very high, calcium 2.80: teriparatide blocked (hypercalcaemia), romosozumab not', p: P(Object.assign({}, VHIGH, { ca: 2.80 })), expect: { cat: 'vhigh', labs: ['L-CA-HI'], blocked: ['teri'], first: ['romo'], sign: { teri: true, romo: false, deno: false }, signHas: { teri: 'Calcium high' } } },
+  { id: 'H05', group: 'lab-blocks', desc: 'Very high, calcium 2.61 and eGFR 29: block flags aggregate per drug', p: P(Object.assign({}, VHIGH, { ca: 2.61, egfr: 29 })), expect: { cat: 'vhigh', labs: ['L-CA-HI', 'L-EGFR30', 'L-EGFR35'], blocked: ['teri', 'zol'], first: ['romo'], sign: { teri: true, zol: true, romo: false } } },
+
+  // ── N. Needed results before an antiresorptive (B1) ─────────────────────
+  { id: 'N01', group: 'needs', desc: 'High risk, calcium missing: antiresorptives need calcium first', p: P(Object.assign({}, HIGH, { ca: null })), expect: { cat: 'high', blocked: [], missing: ['ca'], needs: { obp: ['ca'], deno: ['ca'], zol: ['ca'] }, sign: { obp: true, deno: true, zol: true }, signHas: { deno: 'Calcium result needed' } } },
+  { id: 'N02', group: 'needs', desc: 'High risk, eGFR missing: antiresorptives need eGFR first', p: P(Object.assign({}, HIGH, { egfr: null })), expect: { cat: 'high', blocked: [], missing: ['egfr'], needs: { obp: ['egfr'], deno: ['egfr'], zol: ['egfr'] }, sign: { deno: true, obp: true, zol: true } } },
+  { id: 'N03', group: 'needs', desc: 'High risk, calcium and eGFR missing', p: P(Object.assign({}, HIGH, { ca: null, egfr: null })), expect: { cat: 'high', blocked: [], missing: ['ca', 'egfr'], needs: { deno: ['ca', 'egfr'] }, sign: { deno: true } } },
+  { id: 'N04', group: 'needs', desc: 'High risk, vitamin D 60 nmol/L: repletion first before antiresorptive', p: P(Object.assign({}, HIGH, { vd: 60 })), expect: { cat: 'high', labs: ['L-VD'], blocked: [], needs: { obp: ['vd-low'], deno: ['vd-low'], zol: ['vd-low'] }, sign: { deno: true }, signHas: { deno: 'Vitamin D' } } },
+  { id: 'N05', group: 'needs', desc: 'High risk, all labs normal: nothing needed, antiresorptives signable', p: P(HIGH), expect: { cat: 'high', needs: { obp: [], deno: [], zol: [] }, sign: { obp: false, deno: false, zol: false } } },
+  { id: 'N06', group: 'needs', desc: 'Very high, calcium and eGFR missing: teriparatide and romosozumab not held by labs', p: P(Object.assign({}, VHIGH, { ca: null, egfr: null, vd: 60 })), expect: { cat: 'vhigh', needs: { deno: ['ca', 'egfr', 'vd-low'], zol: ['ca', 'egfr', 'vd-low'] }, sign: { teri: false, romo: false, deno: true } } },
+  { id: 'N07', group: 'needs', desc: 'High risk, eGFR 29 and calcium missing: eGFR block stands, calcium need still listed', p: P(Object.assign({}, HIGH, { egfr: 29, ca: null })), expect: { cat: 'high', blocked: ['obp', 'zol'], first: ['deno'], needs: { obp: ['ca'], deno: ['ca'], zol: ['ca'] }, sign: { obp: true, zol: true, deno: true } } },
+
+  // ── S. Vertebral fracture secondary screen (SPEP) gates signing (B7) ────
+  { id: 'S01', group: 'spep', desc: 'Vertebral fracture 3 months ago, SPEP not recorded: no drug signable', p: P({ fractures: [{ site: 'vert', months: 3 }] }), expect: { cat: 'vhigh', spep: { block: true }, sign: { teri: true, romo: true, deno: true, zol: true }, signHas: { teri: 'protein electrophoresis' } } },
+  { id: 'S02', group: 'spep', desc: 'Vertebral fracture 3 months ago, SPEP normal: signable', p: P({ fractures: [{ site: 'vert', months: 3 }], spep: 'normal' }), expect: { cat: 'vhigh', spep: { block: false }, sign: { teri: false, romo: false, deno: false, zol: false } } },
+  { id: 'S03', group: 'spep', desc: 'Vertebral fracture, SPEP abnormal: blocked, cites myeloma', p: P({ fractures: [{ site: 'vert', months: 3 }], spep: 'abnormal' }), expect: { cat: 'vhigh', spep: { block: true }, sign: { teri: true, romo: true, deno: true, zol: true }, signHas: { deno: 'myeloma' } } },
+  { id: 'S04', group: 'spep', desc: 'Vertebral fracture, SPEP not recorded, documented waiver with clinician: signable', p: P({ fractures: [{ site: 'vert', months: 3 }], spepWaived: 'test waiver reason', spepWaivedBy: 'Dr Test' }), expect: { cat: 'vhigh', spep: { block: false }, sign: { teri: false, romo: false, deno: false, zol: false } } },
+  { id: 'S05', group: 'spep', desc: 'Vertebral fracture, waiver reason without a named clinician: still blocked', p: P({ fractures: [{ site: 'vert', months: 3 }], spepWaived: 'test waiver reason' }), expect: { cat: 'vhigh', spep: { block: true }, sign: { teri: true } } },
+  { id: 'S06', group: 'spep', desc: 'Vertebral fracture, abnormal SPEP with a waiver: waiver cannot override myeloma', p: P({ fractures: [{ site: 'vert', months: 3 }], spep: 'abnormal', spepWaived: 'test waiver reason', spepWaivedBy: 'Dr Test' }), expect: { cat: 'vhigh', spep: { block: true }, sign: { teri: true, deno: true } } },
+  { id: 'S07', group: 'spep', desc: 'Empty or blank waiver reason: still blocked', p: P({ fractures: [{ site: 'vert', months: 3 }], spepWaived: '   ', spepWaivedBy: 'Dr Test' }), expect: { cat: 'vhigh', spep: { block: true }, sign: { teri: true } } },
+  { id: 'S08', group: 'spep', desc: 'Hip fracture only: SPEP not required, drugs not held by it', p: P({ fractures: [{ site: 'hip', months: 3 }] }), expect: { cat: 'vhigh', spep: { block: false }, sign: { teri: false, romo: false } } },
+
+  // ── T. BMD without FRAX (B3) ────────────────────────────────────────────
+  { id: 'T01', group: 'bmd-no-frax', desc: 'T -2.4, FRAX not run: osteopenia range needs FRAX, not "low"', p: P({ t: -2.4 }), expect: { cat: 'incomplete', fires: ['I3'] } },
+  { id: 'T02', group: 'bmd-no-frax', desc: 'T -2.4, FRAX major 8%, hip 1%: stays low', p: P({ t: -2.4, mof: 8, hip: 1 }), expect: { cat: 'low', notFires: ['I3'] } },
+  { id: 'T03', group: 'bmd-no-frax', desc: 'T -2.5 exactly, FRAX not run: osteoporosis logic, high', p: P({ t: -2.5 }), expect: { cat: 'high', notFires: ['I3'] } },
+  { id: 'T04', group: 'bmd-no-frax', desc: 'T -2.6, FRAX not run: high', p: P({ t: -2.6 }), expect: { cat: 'high' } },
+  { id: 'T05', group: 'bmd-no-frax', desc: 'T -1.1, FRAX not run: osteopenia range, incomplete', p: P({ t: -1.1 }), expect: { cat: 'incomplete', fires: ['I3'] } },
+  { id: 'T06', group: 'bmd-no-frax', desc: 'T -2.4, FRAX hip 3.1% (no major): high via FRAX above threshold', p: P({ t: -2.4, hip: 3.1 }), expect: { cat: 'high', notFires: ['I3'] } },
+  { id: 'T07', group: 'bmd-no-frax', desc: 'T -2.4, FRAX major exactly 20%, hip 2%: low (boundary)', p: P({ t: -2.4, mof: 20, hip: 2 }), expect: { cat: 'low' } },
+  { id: 'T08', group: 'bmd-no-frax', desc: 'T -2.0 with vertebral fracture 5 years ago, FRAX not run: high from fracture, not incomplete', p: P({ t: -2.0, fractures: [{ site: 'vert', months: 60 }] }), expect: { cat: 'high', notFires: ['I3'] } },
+
+  // ── M. Fracture date unknown (M1, partial) ──────────────────────────────
+  { id: 'M01', group: 'fracture-date', desc: 'Vertebral fracture, date unknown: high stays, date prompt shown', p: P({ fractures: [{ site: 'vert', months: null }] }), expect: { cat: 'high', fires: ['H2', 'M1'], catNeeds: ['fracture-date'] } },
+  { id: 'M02', group: 'fracture-date', desc: 'Wrist fracture, date unknown, normal DXA, low FRAX: not silently low', p: P({ t: -0.8, mof: 6, hip: 0.5, fractures: [{ site: 'wrist', months: null }] }), expect: { cat: 'incomplete', fires: ['M1'], catNeeds: ['fracture-date'] } },
+  { id: 'M03', group: 'fracture-date', desc: 'Wrist fracture, date unknown, no DXA or FRAX: incomplete (as before), with date prompt', p: P({ fractures: [{ site: 'wrist', months: null }] }), expect: { cat: 'incomplete', fires: ['M1'], catNeeds: ['fracture-date'] } },
+  { id: 'M04', group: 'fracture-date', desc: 'Wrist fracture, date unknown, T -3.1: very high stays, date prompt shown', p: P({ t: -3.1, fractures: [{ site: 'wrist', months: null }] }), expect: { cat: 'vhigh', fires: ['VH7', 'M1'], catNeeds: ['fracture-date'] } },
+  { id: 'M05', group: 'fracture-date', desc: 'Wrist fracture 5 months ago (dated): very high, no date prompt', p: P({ t: -0.8, mof: 6, hip: 0.5, fractures: [{ site: 'wrist', months: 5 }] }), expect: { cat: 'vhigh', notFires: ['M1'], catNeeds: [] } },
+  { id: 'M06', group: 'fracture-date', desc: 'No fracture, normal DXA, low FRAX: low, no date prompt', p: P({ t: -0.8, mof: 6, hip: 0.5 }), expect: { cat: 'low', notFires: ['M1'], catNeeds: [] } }
 ];

@@ -25,6 +25,13 @@
   const LANGS = ['en', 'ar', 'ms'];
   const NONE = '__none__';                        // stored for "None" on a free-text question
   const NONE_LBL = { en: 'None', ar: 'لا شيء', ms: 'Tiada' };
+  /* Additive (patient page): 'Not sure' is stored as UNKNOWN, a visible unknown, never as a yes or no.
+     Only the single-choice items in UNK_IDS can take it. SAFETY_IDS cannot be skipped on the patient page. */
+  const UNKNOWN = '__unknown__';
+  const UNK_LBL = { en: 'Not sure', ar: 'غير واضح', ms: 'Tidak pasti' };
+  const UNK_IDS = ['falls', 'smoke', 'alcohol', 'night', 'dental', 'rfx', 'rfall'];
+  const SAFETY_IDS = ['fx', 'rfx', 'redf', 'sym'];
+  const canUnknown = q => !!q && q.type === 'single' && UNK_IDS.includes(q.id);
   const MAX_TEXT = 1000;                          // characters kept from any free-text answer
   const CTRL = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
   const PR = 'patient-reported';
@@ -89,7 +96,10 @@
   }
   function cleanValue(q, v) {
     if (v === undefined || v === null) return undefined;
-    if (q.type === 'single') return Number.isInteger(v) && v >= 0 && v < q.en.opts.length ? v : undefined;
+    if (q.type === 'single') {
+      if (v === UNKNOWN && canUnknown(q)) return UNKNOWN;
+      return Number.isInteger(v) && v >= 0 && v < q.en.opts.length ? v : undefined;
+    }
     if (q.type === 'multi') {
       if (!Array.isArray(v)) return undefined;
       const ok = v.filter(i => Number.isInteger(i) && i >= 0 && i < q.en.opts.length);
@@ -178,12 +188,16 @@
       if (a.cad === 2) out.push(['P-CAD', 'info', 'Not taking calcium and vitamin D as advised', 'MYCPG']);
     }
     out.push(...visitFlags(a));
+    const unk = ALLQ.filter(q => a[q.id] === UNKNOWN).map(q => q.en.q);
+    if (unk.length) out.push(['P-UNK', 'info', 'Not sure about: ' + unk.join(' | ') + '. Check at the visit', 'PATIENT']);
     if (a.ask && String(a.ask).trim()) out.push(['P-ASK', 'info', 'Patient question: "' + String(a.ask).trim().slice(0, 200) + '"', 'PATIENT']);
     return out;
   }
   function reasons(a) { const r = (a.why || []).map(i => WHY[i]).filter(Boolean); return r.length ? ' (' + r.join(', ') + ')' : ''; }
   /* True when a same-day flag is among the flags: the patient is told to seek care today. */
   function sameDay(fl) { return (fl || []).some(f => SAME_DAY.includes(f[0])); }
+  /* Additive: true as soon as the answers so far include a same-day red flag (used by the patient page). */
+  function sameDayNow(visit, answers, ctx) { return sameDay(flags(visit === 'review' ? 'review' : 'first', normalise(visit, answers), ctx || {})); }
 
   /* Adherence answer that counts as the 3-month adherence check, once a clinician accepts it. */
   function adherent(a) { return a && a.med === 0; }
@@ -197,7 +211,7 @@
     const rx = c.rx ? (typeof c.rx === 'string' ? c.rx : c.rx.id) : null;
     const fl = flags(visit, a, { rx });
     const NA = 'Not answered';
-    const opt = (id, v) => { const q = findQ(id); return q && Number.isInteger(v) && q.en.opts[v] !== undefined ? q.en.opts[v] : NA; };
+    const opt = (id, v) => { if (v === UNKNOWN) return UNK_LBL.en; const q = findQ(id); return q && Number.isInteger(v) && q.en.opts[v] !== undefined ? q.en.opts[v] : NA; };
     const txt = v => (v === NONE ? 'None' : (typeof v === 'string' && v.trim() !== '' ? Array.from(v).slice(0, MAX_TEXT).join('') : NA));
     const it = (label, value, extra) => {
       const e = Object.assign({ label, value, provenance: PR }, extra || {});
@@ -252,6 +266,7 @@
     };
   }
 
-  const api = { LANGS, NONE, NONE_LBL, MAX_TEXT, SETS, visitFor, questions, flags, adherent, normalise, summary, sameDay, isNone, fraxFactors };
+  const api = { LANGS, NONE, NONE_LBL, MAX_TEXT, SETS, visitFor, questions, flags, adherent, normalise, summary, sameDay, isNone, fraxFactors,
+    UNKNOWN, UNK_LBL, SAFETY_IDS, canUnknown, sameDayNow };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.OsteoCheckin = api;
 })(typeof window !== 'undefined' ? window : globalThis);

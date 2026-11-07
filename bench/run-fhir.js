@@ -152,7 +152,7 @@ const FIX = {
     stages: stagesFrom([[0, 0, 0], [1, 0, null]]) }),
   // Two vertebral fractures on prednisolone, referral rejected, DXA and labs done
   'C-1029': base({ id: 'C-1029', name: 'Fatima S.', age: 71, sex: 'F', owner: 'Dr Tan', urgent: true,
-    clin: { fxMonths: 14, multiFx: true, fxOnGc: true, hipVert: true, mof: 34, hip: 6.2, cvEvent: false, note: 'Two vertebral fractures; on prednisolone for rheumatoid arthritis' },
+    clin: { fxMonths: 14, multiFx: true, fxOnGc: true, hipVert: true, sites: ['vert', 'vert'], mof: 34, hip: 6.2, cvEvent: false, note: 'Two vertebral fractures; on prednisolone for rheumatoid arthritis' },
     stages: stagesFrom([[0, -30, -30], [1, -30, -27], [2, -27, -9], [3, -9, null]]), ordered: true, res: { t: -3.2, vd: 79, egfr: 48, ca: 2.35, spep: 'normal' },
     referral: { status: 'rejected', clinic: 'Al Noor fracture-liaison clinic', reason: 'Out of insurance network', history: [['sent', -8], ['rejected', -2]] } }),
   // Treated: alendronate dispensed, closed as treated, check-in with flags and a review
@@ -164,7 +164,7 @@ const FIX = {
     closed: { kind: 'treated', day: -60, by: 'Dr Lim', text: 'Evidence: dispensing record, 3-month adherence check, repeat DXA booked' } }),
   // Denosumab, next dose due day 22, open case with a LOCAL schedule
   'C-1004': base({ id: 'C-1004', name: 'Huda M.', age: 73, sex: 'F', owner: 'Dr Lim', ordered: true,
-    clin: { fxMonths: null, multiFx: false, fxOnGc: false, hipVert: true, mof: 26, hip: 5.0, cvEvent: false, note: 'Vertebral fracture on old X-ray' },
+    clin: { fxMonths: null, multiFx: false, fxOnGc: false, hipVert: true, sites: ['vert'], mof: 26, hip: 5.0, cvEvent: false, note: 'Vertebral fracture on old X-ray' },
     stages: stagesFrom([[0, -200, -200], [1, -200, -197], [2, -197, -175], [3, -175, -170], [4, -170, -160], [5, -160, -70], [6, -70, -60]]),
     res: { t: -2.7, vd: 90, egfr: 65, ca: 2.32 }, rx: { id: 'deno', name: 'Denosumab', by: 'Dr Lim', day: -165, dispensed: -160 }, denoDue: 22,
     closed: { kind: 'treated', day: -60, by: 'Dr Lim', text: 'Evidence: dispensing record, 3-month adherence check, repeat DXA booked' } }),
@@ -226,6 +226,20 @@ check('C-1029 has lab and DXA observations, SPEP, and the rejected referral is r
   const ref = byType(b, 'ServiceRequest').find(s => s.id === 'sr-referral-C-1029'); assert.strictEqual(ref.status, 'revoked');
   assert.strictEqual(byType(b, 'Condition').length, 2, 'two vertebral fractures give two Conditions');
   assert.ok(byType(b, 'Condition').every(c => c.onsetString));
+});
+check('C-1029 two vertebral fractures: no Hip fracture Condition; both Conditions are Vertebral fracture, confirmed', () => {
+  const conds = byType(bundles['C-1029'], 'Condition');
+  assert.strictEqual(conds.filter(c => c.code.text === 'Hip fracture').length, 0, 'the case note records no hip fracture');
+  assert.deepStrictEqual(conds.map(c => c.code.text), ['Vertebral fracture', 'Vertebral fracture']);
+  assert.ok(conds.every(c => c.verificationStatus.coding[0].code === 'confirmed'), 'site and date are in the case note');
+});
+check('a fracture with no recorded site: Condition says site not recorded and is unconfirmed', () => {
+  const clin = Object.assign({}, FIX['C-1004'].clin, { sites: undefined, fxMonths: 5, note: 'Fracture on old X-ray, site not written down' });
+  const b = F.bundle(Object.assign({}, FIX['C-1004'], { clin }), opts('C-1004'));
+  const c = one(b, 'Condition');
+  assert.strictEqual(c.code.text, 'Fragility fracture (site not recorded)');
+  assert.strictEqual(c.verificationStatus.coding[0].code, 'unconfirmed');
+  assert.ok(!byType(b, 'Condition').some(x => x.code.text === 'Hip fracture'), 'no hip fracture invented');
 });
 check('C-1018 MedicationRequest and MedicationDispense, dispense references the request, CarePlan has follow-up', () => {
   const b = bundles['C-1018'];

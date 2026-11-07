@@ -36,7 +36,7 @@ _Reader: keyword baseline (src/finder.js) through readVerified(). Labels were wr
 | AR07 | no | no | yes | No fracture documented | لا يوجد كسر في الفقرات القطنية. ارتفاع الفقرات طبيعي. |
 | AR08 | no | no | yes | No fracture documented | No كسر ظاهر في الفقرة T12. التصوير طبيعي. |
 | AR09 | review | review | yes | Hedged language | يشتبه بوجود كسر انضغاطي محتمل في الفقرة T9 ويوصى بالتصوير بالرنين مرة أخرى. |
-| AR10 | no | no | yes | High-energy trauma: not a fragility fracture | كسر في عنق الفخذ الأيمن ناتج عن حادث سير عالي الطاقة. |
+| AR10 | no | no | yes | High-energy trauma (current mechanism): not a fragility fracture | كسر في عنق الفخذ الأيمن ناتج عن حادث سير عالي الطاقة. |
 | AR11 | no | no | yes | Pathological fracture (tumour): not osteoporotic | كسر مرضي في الفقرة L2 بسبب ورم نقيلي معروف. |
 | AR12 | act | act | yes | Fragility fracture documented (vert) | كسر انضغاطي في الفقرة L1 لدى مريضة مصابة بهشاشة العظام. |
 | AR13 | review | review | yes | Fracture at a minor site | كسر في الضلع السادس الأيسر بعد سقوط بسيط. |

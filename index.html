@@ -1,4 +1,6 @@
+<html lang="en">
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>OsteoLoop</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap">
@@ -258,23 +260,35 @@ const REJECTS = ['Out of insurance network','Wrong service','Incomplete referral
 /* ---------- clinical rules: shared module src/rules.js (same code the benchmark tests) ---------- */
 const R = window.OsteoRules;
 const CATNAME = {vhigh:'Very high', high:'High', low:'Low', incomplete:'Not classified'};
-function toPatient(c){
-  const r0=c.res||{};
-  if(c.pt) return Object.assign({}, c.pt, {t:r0.t??null, egfr:r0.egfr??null, ca:r0.ca??null, vd:r0.vd??null, spep:r0.spep??null});
-  const k=c.clin, fx=[];
-  if(k.fxMonths!==null) fx.push({site:k.hipVert?'hip':'wrist', months:k.fxMonths, onGc:k.fxOnGc});
-  else if(k.hipVert) fx.push({site:'vert', months:60, onGc:k.fxOnGc});
-  if(k.multiFx) fx.push({site:'vert', months:k.fxMonths!==null?k.fxMonths:60, onGc:k.fxOnGc});
-  const r=c.res||{};
-  return {age:c.age, sex:'F', menopause:'post', fractures:fx, cvEvent:k.cvEvent,
-    t:r.t??null, mof:k.mof, hip:k.hip, egfr:r.egfr??null, ca:r.ca??null, vd:r.vd??null, spep:r.spep??null};
+/* Fractures from the clinical history. A site is set only where the note records it (clin.sites, one per fracture);
+   a fracture with no recorded site has site null, and an unknown date stays null, never a made-up number (B6, M1). */
+function clinFractures(k){
+  const s=k.sites||[], fx=[];
+  if(k.fxMonths!==null || k.hipVert) fx.push({site:s[0]||null, months:k.fxMonths??null, onGc:k.fxOnGc});
+  if(k.multiFx) fx.push({site:s[1]||null, months:k.fxMonths??null, onGc:k.fxOnGc});
+  return fx;
 }
-function category(c){ const r=R.category(toPatient(c)); return {key:r.key, name:CATNAME[r.key], why:r.fired.map(f=>f[1]), fired:r.fired}; }
+/* The app's view of a patient for the rules engine. spepWaived and spepWaivedBy come from a clinician's waiver (B7). */
+function toPatient(c){
+  const r0=c.res||{}, w=c.spepWaiver||null, waiver={spepWaived:w?w.reason:null, spepWaivedBy:w?w.by:null};
+  if(c.pt) return Object.assign({}, c.pt, {t:r0.t??c.pt.t??null, egfr:r0.egfr??null, ca:r0.ca??null, vd:r0.vd??null, spep:r0.spep??null}, waiver);
+  const k=c.clin;
+  return Object.assign({age:c.age, sex:'F', menopause:'post', fractures:clinFractures(k), cvEvent:k.cvEvent,
+    t:r0.t??null, mof:k.mof, hip:k.hip, egfr:r0.egfr??null, ca:r0.ca??null, vd:r0.vd??null, spep:r0.spep??null}, waiver);
+}
+function category(c){ const r=R.category(toPatient(c)); return {key:r.key, name:CATNAME[r.key], why:r.fired.map(f=>f[1]), fired:r.fired, needs:r.needs||[]}; }
 /* Returns [kind, text, source]. Lab flags plus the LOCAL secondary-cause screen (SPEP) for vertebral fractures. */
 function labBlocks(c){ if(!c.res) return []; const p=toPatient(c), out=R.labFlags(p).flags.map(f=>[f[1], f[2]+'.', f[3]]), s=R.secondaryScreen(p);
   if(s.text) out.push([s.block?'block':'flag', s.text+'.', s.source]); return out; }
-function secBlock(c){ return !!(c && c.res && R.secondaryScreen(toPatient(c)).block); }
-function treatments(c){ return R.treatments(toPatient(c)).map(t=>({id:t.id, name:t.name, kind:t.kind, block:t.block?'Blocked: '+t.block:null, why:t.kind==='first'?'First line':'Alternative'})); }
+/* Sign gate: the one rule for whether a drug can be signed (src/rules.js signBlock). Reasons are shown in plain words. */
+function signGate(c,drugId){ return R.signBlock(toPatient(c), drugId); }
+const PLAIN=[[/^Calcium low/,'Calcium is low: correct it first'],[/^Calcium high/,'Calcium is high: check parathyroid hormone first'],
+  [/^Calcium result needed/,'Calcium result needed first'],[/^eGFR result needed/,'eGFR result needed first'],
+  [/^Vitamin D below 75/,'Vitamin D low: replete first'],[/^eGFR below 30/,'eGFR below 30: oral bisphosphonates not recommended'],
+  [/^eGFR below 35/,'eGFR below 35: zoledronic acid contraindicated'],[/^Serum protein electrophoresis needed/,'Serum protein electrophoresis needed first'],
+  [/^Abnormal protein electrophoresis/,'Abnormal electrophoresis: exclude myeloma first']];
+function plain(t){ const m=PLAIN.find(([re])=>re.test(t)); return m?m[1]:t; }
+function treatments(c){ return R.treatments(toPatient(c)).map(t=>({id:t.id, name:t.name, kind:t.kind, block:t.block?'Blocked: '+t.block:null, needs:t.needs||[], why:t.kind==='first'?'First line':'Alternative'})); }
 
 /* ---------- seeded fictional cases (days relative to today = 0) ---------- */
 function mk(o){
@@ -284,7 +298,7 @@ function mk(o){
 }
 function seedCases(){ const A = [
   mk({id:'C-1042', name:'Mariam A.', age:64, owner:ME, lang:'ar', urgent:true,
-      clin:{fxMonths:8, multiFx:false, fxOnGc:false, hipVert:false, mof:18, hip:4.1, cvEvent:false, note:'Wrist fracture 8 months ago; parent had a hip fracture'},
+      clin:{fxMonths:8, multiFx:false, fxOnGc:false, hipVert:false, sites:['wrist'], mof:18, hip:4.1, cvEvent:false, note:'Wrist fracture 8 months ago; parent had a hip fracture'},
       hist:[[0,0,0],[1,0,null]], cur:1, demo:{t:-2.7, vd:42, egfr:68, ca:2.31}}),
   mk({id:'C-1031', name:'Aisha K.', age:69, owner:'Dr Lim',
       clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:false, mof:22, hip:3.4, cvEvent:false, note:'Height loss 4 cm; smoker'},
@@ -293,7 +307,7 @@ function seedCases(){ const A = [
       clin:{fxMonths:null, multiFx:false, fxOnGc:true, hipVert:false, mof:21, hip:2.2, cvEvent:false, note:'Long-term prednisolone; no GP on record'},
       hist:[[0,-3,-3],[1,-3,null]], cur:1, demo:{t:-2.6, vd:60, egfr:90, ca:2.3}}),
   mk({id:'C-1029', name:'Fatima S.', age:71, owner:ME, urgent:true,
-      clin:{fxMonths:14, multiFx:true, fxOnGc:true, hipVert:true, mof:34, hip:6.2, cvEvent:false, note:'Two vertebral fractures; on prednisolone for rheumatoid arthritis'},
+      clin:{fxMonths:14, multiFx:true, fxOnGc:true, hipVert:true, sites:['vert','vert'], mof:34, hip:6.2, cvEvent:false, note:'Two vertebral fractures; on prednisolone for rheumatoid arthritis'},
       hist:[[0,-30,-30],[1,-30,-27],[2,-27,-9],[3,-9,null]], cur:3, ack:true, tbFirst:{lang:'ar',pass:false},
       res:{t:-3.2, vd:79, egfr:48, ca:2.35},
       referral:{status:'rejected', clinic:'Al Noor fracture-liaison clinic', reason:'Out of insurance network', history:[['sent',-8],['rejected',-2]]}}),
@@ -302,7 +316,7 @@ function seedCases(){ const A = [
       hist:[[0,-70,-70],[1,-70,-66],[2,-66,-48],[3,-48,-45],[4,-45,-36],[5,-36,null]], cur:5, ack:true, tbFirst:{lang:'en',pass:true},
       res:{t:-2.9, vd:88, egfr:72, ca:2.3}, rx:{id:'obp', name:'Oral bisphosphonate (alendronate)', by:'Dr Lim', day:-40, dispensed:-36}}),
   mk({id:'C-1004', name:'Huda M.', age:73, owner:'Dr Lim',
-      clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:true, mof:26, hip:5.0, cvEvent:false, note:'Vertebral fracture on old X-ray'},
+      clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:true, sites:['vert'], mof:26, hip:5.0, cvEvent:false, note:'Vertebral fracture on old X-ray'},
       hist:[[0,-200,-200],[1,-200,-197],[2,-197,-175],[3,-175,-170],[4,-170,-160],[5,-160,-70],[6,-70,-60]], cur:null, ack:true, tbFirst:{lang:'ar',pass:true},
       res:{t:-2.7, vd:90, egfr:65, ca:2.32}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-165, dispensed:-160}, denoDue:22,
       closed:{kind:'treated', day:-60, by:'Dr Lim', text:'Evidence: dispensing record, 3-month adherence check, repeat DXA booked'}}),
@@ -312,7 +326,7 @@ function seedCases(){ const A = [
       res:{t:-2.6, vd:70, egfr:80, ca:2.3},
       closed:{kind:'drop', stage:4, day:-40, by:ME, text:'Fear of medication side effects', reason:'Fear of medication side effects'}}),
   mk({id:'C-1036', name:'Mei Ling C.', age:67, owner:'Dr Lim',
-      clin:{fxMonths:6, multiFx:false, fxOnGc:false, hipVert:true, mof:28, hip:5.3, cvEvent:false, note:'Hip fracture 6 months ago'},
+      clin:{fxMonths:6, multiFx:false, fxOnGc:false, hipVert:true, sites:['hip'], mof:28, hip:5.3, cvEvent:false, note:'Hip fracture 6 months ago'},
       hist:[[0,-40,-40],[1,-40,-38],[2,-38,-20],[3,-20,-12],[4,-12,null]], cur:4, ack:true, tbFirst:{lang:'en',pass:true}, urgent:true,
       res:{t:-3.1, vd:95, egfr:60, ca:2.4}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-8, dispensed:null}})
 ];
@@ -325,7 +339,7 @@ return A; }
 let CASES = seedCases();
 
 let DAY=0, tab='board', sel='C-1042', lang='en', tb=null, msg=null, dropFor=null, rxPick={}, signer={}, resDraft={}, nextId=2001;
-const BLANK_IN = {name:'', age:'', sex:'F', meno:'post', lang:'en', site:'none', fxm:'', multi:false, onTx:false, onGc:false, gc:false, falls:false, frail:false, cv:false, mof:'', hip:'', note:''};
+const BLANK_IN = {name:'', age:'', sex:'F', meno:'post', lang:'en', site:'none', fxm:'', multi:false, onTx:false, onGc:false, gc:false, falls:false, frail:false, cv:false, t:'', mof:'', hip:'', note:''};
 function blankIn(){ return Object.assign({}, BLANK_IN, {lang: PROF.languages[0]}); }
 let IN = blankIn(), inDone=null;
 const num = v => (v===null||v===undefined||String(v).trim()===''||Number.isNaN(+v)) ? null : +v;
@@ -436,10 +450,15 @@ function stageBody(c,i){
   }
   if(i===4){
     if(c.rx && !c.rx.dispensed) return `<span class="small">Prescribed: <b>${esc(c.rx.name)}</b> by ${esc(c.rx.by)} <span class="badge b-hum">Clinician</span></span><div class="actions"><button class="act primary" data-a="dispense">Dispensing recorded</button>${dropBtn}</div>`;
-    const rx=treatments(c), pick=rxPick[c.id]||null;
-    return `${labBlocks(c).map(([k,t,s])=>callout(k,esc(t),SRCN[s]||s)).join('')}<div class="rx">${rx.map(r=>`<label data-k="${r.kind}"><input type="radio" name="rx-${c.id}" value="${r.id}" ${r.block?'disabled':''} ${pick===r.id?'checked':''}><span>${esc(r.name)}<span class="why">${esc(r.block||r.why)}</span></span><span class="chip ${r.kind==='first'?'c-ok':r.kind==='alt'?'c-mute':'c-crit'}">${r.kind==='first'?'First line':r.kind==='alt'?'Alternative':'Blocked'}</span></label>`).join('')}</div>
+    const rx=treatments(c), pick=rxPick[c.id]||null, gate=pick?signGate(c,pick):null;
+    const sec=R.secondaryScreen(toPatient(c));
+    const waiver = c.spepWaiver ? callout('flag', esc(`SPEP waived by ${c.spepWaiver.by}: ${c.spepWaiver.reason}.`), 'LOCAL')
+      : (sec.block && !(c.res && c.res.spep==='abnormal') ? spepWaiverForm(c) : '');
+    const why = gate && gate.blocked ? callout('block', gate.reasons.map(x=>esc(plain(x))).join('<br>')) : '';
+    return `${labBlocks(c).map(([k,t,s])=>callout(k,esc(t),SRCN[s]||s)).join('')}${waiver}<div class="rx">${rx.map(r=>`<label data-k="${r.kind}"><input type="radio" name="rx-${c.id}" value="${r.id}" ${r.block?'disabled':''} ${pick===r.id?'checked':''}><span>${esc(r.name)}<span class="why">${esc(r.block?plain(r.block.replace(/^Blocked: /,'')):r.needs.length?'Needs result first':r.why)}</span></span><span class="chip ${r.kind==='first'?'c-ok':r.kind==='alt'?'c-mute':'c-crit'}">${r.kind==='first'?'First line':r.kind==='alt'?'Alternative':'Blocked'}</span></label>`).join('')}</div>
+      ${why}
       <label class="small muted" for="sg">Prescriber (sign-off)</label><input type="text" id="sg" value="${esc(signer[c.id]||'')}" placeholder="e.g. ${esc(ME)}">
-      <div class="actions"><button class="act primary" data-a="sign" ${pick&&(signer[c.id]||'').trim().length>2&&!secBlock(c)?'':'disabled'}>Sign prescription</button>${dropBtn}</div>`;
+      <div class="actions"><button class="act primary" data-a="sign" ${pick&&(signer[c.id]||'').trim().length>2&&!gate.blocked?'':'disabled'}>Sign prescription</button>${dropBtn}</div>`;
   }
   if(i===5) return `<label class="checkline"><input type="checkbox" data-f="adh" ${c.follow.adh?'checked':''}> 3-month adherence check done</label><label class="checkline"><input type="checkbox" data-f="btm" ${c.follow.btm?'checked':''}> 6-month response markers done</label><div class="actions"><button class="act primary" data-a="follow" ${c.follow.adh&&c.follow.btm?'':'disabled'}>Follow-up complete</button>${dropBtn}</div>`;
   if(i===6){
@@ -464,10 +483,16 @@ function resultsForm(c){
 }
 
 /* ---------- Stage 0 intake: the same rules engine runs live as the clinician types ---------- */
+/* DXA lowest T-score from the intake form: optional, a number from -6 to +4 (a Unicode minus is accepted). */
+function tScore(x){
+  const s=String(x.t==null?'':x.t).replace(/\u2212/g,'-').trim();
+  if(s==='') return {v:null, bad:false};
+  const v=+s; return (Number.isFinite(v) && v>=-6 && v<=4) ? {v, bad:false} : {v:null, bad:true};
+}
 function buildPt(x){
   const fx=[];
   if(x.site!=='none'){ fx.push({site:x.site, months:num(x.fxm), onTx:x.onTx, onGc:x.onGc}); if(x.multi) fx.push({site:'other', months:num(x.fxm), onTx:x.onTx, onGc:x.onGc}); }
-  return {age:num(x.age), sex:x.sex, menopause:x.sex==='M'?'na':x.meno, fractures:fx, gc:x.gc, falls:x.falls, frail:x.frail, cvEvent:x.cv, t:null, mof:num(x.mof), hip:num(x.hip)};
+  return {age:num(x.age), sex:x.sex, menopause:x.sex==='M'?'na':x.meno, fractures:fx, gc:x.gc, falls:x.falls, frail:x.frail, cvEvent:x.cv, t:tScore(x).v, mof:num(x.mof), hip:num(x.hip)};
 }
 const SITE={wrist:'Wrist', humerus:'Upper arm', hip:'Hip', vert:'Vertebral', pelvis:'Pelvic', other:'Other'};
 function noteFor(x){
@@ -480,15 +505,18 @@ function noteFor(x){
 function intakeVerdict(){
   const pt=buildPt(IN), cat=R.category(pt), dxa=R.dxaIndication(pt);
   const missing=[]; if(!IN.name.trim()) missing.push('name'); if(num(IN.age)===null) missing.push('age');
+  const ts=tScore(IN); if(ts.bad) missing.push('a valid T-score (-6 to +4)');
   const needFrax = cat.key==='incomplete' && !dxa.indicated && pt.mof===null && pt.hip===null;
   const opens = cat.key!=='low' && !needFrax;
   return {pt, cat, dxa, fast:R.fastTrack(pt), scope:R.scopeWarning(pt), missing, needFrax, opens};
 }
 function intakeResult(){
   const v=intakeVerdict(), k=v.cat.key;
-  const chip=`<span class="chip ${k==='vhigh'?'c-crit':k==='low'?'c-ok':'c-warn'}">${CATNAME[k]}${k==='incomplete'?'':' risk'}</span>`;
+  const chip=`<span class="chip ${k==='vhigh'?'c-crit':k==='low'?'c-ok':'c-warn'}">${v.needFrax?'FRAX needed':CATNAME[k]+(k==='incomplete'?'':' risk')}</span>`;
   let h=`<div class="hrow"><div class="sec-label">Result, live</div>${chip}</div>
     <ul class="fired">${v.cat.fired.map(f=>`<li><span><span class="rid">${f[0]}</span>${esc(f[1])}</span><span class="src">${f[2]==='MYCPG'?esc(guideSrc()):f[2]==='NICE'?'NICE NG259':'LOCAL'}</span></li>`).join('')}</ul>`;
+  if(v.cat.needs.includes('fracture-date')) h+=callout('flag','Fracture date needed before the risk can be fully classified.','LOCAL');
+  if(tScore(IN).bad) h+=callout('block','DXA T-score must be a number from -6 to +4.','DXA');
   if(v.dxa.indicated) h+=`<div class="small"><b>DXA indicated:</b> ${esc(v.dxa.reasons.map(r=>r[1]).join('; '))} <span class="src">NICE NG259</span></div>`;
   if(v.fast) h+=callout('flag','Very high risk: fast-track DXA within 6 weeks.','NICE NG259');
   if(v.scope) h+=callout('flag',esc(v.scope),guideSrc());
@@ -520,10 +548,11 @@ function vIntake(){
   <div class="card"><div class="sec-label">Risk factors</div><div class="checks">
     ${chk('gc','Glucocorticoids for 3 months or more')}${chk('falls','Two or more falls in a year, or injurious fall')}${chk('frail','Frail (clinician judgement)')}${chk('cv','Heart attack or stroke in the last 12 months')}
   </div><div class="fgrid">
+    ${fld('t','DXA lowest T-score',txt('t','blank if no DXA, e.g. -2.7','decimal'))}
     ${fld('mof','FRAX major osteoporotic (%)',txt('mof','blank if not run','decimal'))}
     ${fld('hip','FRAX hip (%)',txt('hip','blank if not run','decimal'))}
     ${fld('note','Other history (optional)',txt('note','e.g. parent had hip fracture'),true)}
-  </div><span class="small muted">FRAX is entered from the official calculator, not computed here.</span></div>
+  </div><span class="small muted">FRAX is entered from the official calculator, not computed here. The DXA T-score is entered from the DXA report.</span></div>
   <div class="card" id="inres">${intakeResult()}</div>`;
 }
 function issueIntake(){
@@ -553,7 +582,7 @@ function vCase(){
   const dn = c.denoDue==null ? '' : `<div class="card"><div class="hrow"><div class="sec-label">Denosumab schedule</div>${denoText(c)?`<span class="chip ${denoSev(c)==='crit'?'c-crit':'c-warn'}">${esc(denoText(c))}</span>`:''}</div>
     <span>Next denosumab dose due day ${c.denoDue} <span class="src">LOCAL</span></span><div class="actions"><button class="act primary" data-a="deno-dose">Record dose given</button></div></div>`;
   return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${AGE(c)}${SEXL(c)} · ${c.id} · ${LNAME[c.lang]||'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
-    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">${esc(guideSrc())}</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),guideSrc()):''}${closed}</div>
+    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">${esc(guideSrc())}</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${cat.needs.includes('fracture-date')?callout('flag','Fracture date needed before the risk can be fully classified.','LOCAL'):''}${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),guideSrc()):''}${closed}</div>
     ${dn}
     ${assign}
     <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
@@ -588,15 +617,15 @@ function checkinCard(c){
     ${c.checkins.length>1?`<span class="small muted">${c.checkins.length-1} earlier check-in${c.checkins.length>2?'s':''} in the audit log.</span>`:''}</div>`;
 }
 const PT = {
-  en:{hello:'Message from your clinic', body:'Your screening shows a high chance of weak bones (osteoporosis). This is common and can be treated, and treatment lowers the chance of another fracture.', q:'Quick check: what is your next step?', opts:['A bone density scan and blood tests','An operation','Nothing is needed'], btn:'I understand my next step', ok:'Thank you. Your care team can see that you understood.', bad:'A nurse will call you to explain. You can also call your clinic.', status:'Your next step', none:'No new messages.',
+  en:{hello:'Message from your clinic', body:'Your doctor wants to check your bone health.', q:'Quick check: what is your next step?', opts:['A bone density scan and blood tests','An operation','Nothing is needed'], btn:'I understand my next step', ok:'Thank you. Your care team can see that you understood.', bad:'A nurse will call you to explain. You can also call your clinic.', status:'Your next step', none:'No new messages.',
     next:{1:'A bone density scan and blood tests at your clinic. Your care team will contact you within 7 days.',2:'Have your bone density scan and blood tests. Your clinic has booked them.',3:'Your doctor is choosing the right treatment with you, using your scan and blood results.',4:'Collect your bone medicine from the pharmacy and start it as explained.',5:'Keep taking your medicine. Your care team will review you at 3 and 6 months.',6:'Your review is nearly complete. Your next bone density scan will be booked.',closed:'Your care plan for now is complete. Keep up your calcium, vitamin D and exercise.'},
     ciT:'Before your clinic visit', ciD:'About 3 minutes. Your answers go to your care team before you arrive, so the visit is about you.', ciB:'Start check-in', ciAgain:'Fill in again', ciLast:'Last sent: day ', of:'of', back:'Back', next2:'Next', skip:'Skip', cancel:'Cancel', revT:'Check your answers', send:'Send to my care team', edit:'Change',
     sent:'Sent. Your care team will see your answers before your visit.', urgent:'Some of your answers mean your care team should look at them soon. They will contact you within 2 working days. If you have severe pain, cannot walk, or think you have broken a bone, go to the emergency department now.', urgentNow:'Some of your answers need medical attention today. Go to the emergency department now, or call your clinic now. Do not wait for a call.', viewing:'Viewing as'},
-  ar:{hello:'رسالة من عيادتكم', body:'تُظهر نتيجة الفحص احتمالًا مرتفعًا لضعف العظام (هشاشة العظام). هذا أمر شائع ويمكن علاجه، والعلاج يقلل احتمال حدوث كسر آخر.', q:'سؤال سريع: ما هي خطوتكم التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لكم. يستطيع فريق الرعاية أن يرى أنكم فهمتم.', bad:'ستتصل بكم ممرضة لتشرح لكم. يمكنكم أيضًا الاتصال بعيادتكم.', status:'خطوتكم التالية', none:'لا توجد رسائل جديدة.',
+  ar:{hello:'رسالة من عيادتكم', body:'يرغب طبيبكم في فحص صحة عظامكم.', q:'سؤال سريع: ما هي خطوتكم التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لكم. يستطيع فريق الرعاية أن يرى أنكم فهمتم.', bad:'ستتصل بكم ممرضة لتشرح لكم. يمكنكم أيضًا الاتصال بعيادتكم.', status:'خطوتكم التالية', none:'لا توجد رسائل جديدة.',
     next:{1:'فحص كثافة العظام وتحاليل دم في عيادتكم. سيتواصل معكم فريق الرعاية خلال 7 أيام.',2:'أجروا فحص كثافة العظام وتحاليل الدم. حجزتهما عيادتكم.',3:'يختار طبيبكم معكم العلاج المناسب بناءً على نتائج الفحص والتحاليل.',4:'استلموا دواء العظام من الصيدلية وابدأوا به كما شُرح لكم.',5:'استمروا في تناول دوائكم. سيراجعكم فريق الرعاية بعد 3 أشهر و6 أشهر.',6:'مراجعتكم على وشك الاكتمال. سيتم حجز فحص كثافة العظام القادم.',closed:'اكتملت خطة رعايتكم حاليًا. استمروا في تناول الكالسيوم وفيتامين د وممارسة الرياضة.'},
     ciT:'قبل زيارتكم للعيادة', ciD:'حوالي 3 دقائق. تصل إجاباتكم إلى فريق الرعاية قبل وصولكم، لتكون الزيارة مخصصة لكم.', ciB:'ابدأوا تسجيل الحضور', ciAgain:'أعيدوا تعبئة الاستبيان', ciLast:'آخر إرسال: اليوم ', of:'من', back:'رجوع', next2:'التالي', skip:'تخطي', cancel:'إلغاء', revT:'راجعوا إجاباتكم', send:'أرسلوا إلى فريق الرعاية', edit:'تغيير',
     sent:'تم الإرسال. سيرى فريق الرعاية إجاباتكم قبل زيارتكم.', urgent:'بعض إجاباتكم تعني أن فريق الرعاية يجب أن يطّلع عليها قريبًا. سيتواصلون معكم خلال يومي عمل. إذا كان لديكم ألم شديد، أو لا تستطيعون المشي، أو تظنون أن عظمة قد كُسرت، فتوجهوا إلى قسم الطوارئ الآن.', urgentNow:'بعض إجاباتكم تحتاج إلى عناية طبية اليوم. توجهوا إلى قسم الطوارئ الآن، أو اتصلوا بعيادتكم الآن. لا تنتظروا اتصالًا.', viewing:'العرض باسم'},
-  ms:{hello:'Mesej daripada klinik anda', body:'Saringan anda menunjukkan kebarangkalian tinggi tulang yang lemah (osteoporosis). Keadaan ini biasa dan boleh dirawat, dan rawatan mengurangkan risiko patah tulang yang lain.', q:'Semakan pantas: apakah langkah seterusnya anda?', opts:['Imbasan ketumpatan tulang dan ujian darah','Pembedahan','Tiada apa-apa diperlukan'], btn:'Saya faham langkah seterusnya', ok:'Terima kasih. Pasukan penjagaan anda dapat melihat bahawa anda faham.', bad:'Seorang jururawat akan menelefon anda untuk menerangkan. Anda juga boleh menghubungi klinik anda.', status:'Langkah seterusnya anda', none:'Tiada mesej baharu.',
+  ms:{hello:'Mesej daripada klinik anda', body:'Doktor anda mahu memeriksa kesihatan tulang anda.', q:'Semakan pantas: apakah langkah seterusnya anda?', opts:['Imbasan ketumpatan tulang dan ujian darah','Pembedahan','Tiada apa-apa diperlukan'], btn:'Saya faham langkah seterusnya', ok:'Terima kasih. Pasukan penjagaan anda dapat melihat bahawa anda faham.', bad:'Seorang jururawat akan menelefon anda untuk menerangkan. Anda juga boleh menghubungi klinik anda.', status:'Langkah seterusnya anda', none:'Tiada mesej baharu.',
     next:{1:'Imbasan ketumpatan tulang dan ujian darah di klinik anda. Pasukan penjagaan akan menghubungi anda dalam masa 7 hari.',2:'Jalani imbasan ketumpatan tulang dan ujian darah. Klinik anda telah menempahnya.',3:'Doktor anda sedang memilih rawatan yang sesuai bersama anda, menggunakan keputusan imbasan dan ujian darah anda.',4:'Ambil ubat tulang anda dari farmasi dan mulakan seperti yang diterangkan.',5:'Teruskan mengambil ubat anda. Pasukan penjagaan akan menyemak anda pada bulan ke-3 dan ke-6.',6:'Semakan anda hampir siap. Imbasan ketumpatan tulang seterusnya akan ditempah.',closed:'Pelan penjagaan anda buat masa ini sudah lengkap. Teruskan kalsium, vitamin D dan senaman.'},
     ciT:'Sebelum lawatan klinik anda', ciD:'Lebih kurang 3 minit. Jawapan anda dihantar kepada pasukan penjagaan sebelum anda tiba, supaya lawatan itu tertumpu kepada anda.', ciB:'Mula semakan', ciAgain:'Isi semula', ciLast:'Kali terakhir dihantar: hari ', of:'daripada', back:'Kembali', next2:'Seterusnya', skip:'Langkau', cancel:'Batal', revT:'Semak jawapan anda', send:'Hantar kepada pasukan penjagaan saya', edit:'Tukar',
     sent:'Dihantar. Pasukan penjagaan anda akan melihat jawapan anda sebelum lawatan anda.', urgent:'Sebahagian jawapan anda bermakna pasukan penjagaan perlu menyemaknya tidak lama lagi. Mereka akan menghubungi anda dalam masa 2 hari bekerja. Jika anda mengalami sakit yang teruk, tidak dapat berjalan, atau fikir tulang anda patah, pergi ke jabatan kecemasan sekarang.', urgentNow:'Sebahagian jawapan anda memerlukan rawatan perubatan hari ini. Pergi ke jabatan kecemasan sekarang, atau hubungi klinik anda sekarang. Jangan tunggu panggilan.', viewing:'Dipaparkan sebagai'}
@@ -604,6 +633,15 @@ const PT = {
 let wiz=null, wizDone=null;
 /* ---------- FHIR export (src/fhir.js): synthetic R4 collection for the open case ---------- */
 let fhirMsg='';
+/* SPEP waiver (B7): for a vertebral fracture with electrophoresis not recorded. Never offered for an abnormal result. */
+let spepDraft={};
+function spepWaiverForm(c){
+  const d=spepDraft[c.id]||{reason:'', by:''}, ok=d.reason.trim()&&d.by.trim();
+  return `<div class="callout flag"><span><b>Electrophoresis not recorded.</b> Waive only if the test cannot be done. A waiver needs a reason and the named clinician who takes responsibility.</span><span class="src">LOCAL</span></div>
+    <div class="fgrid"><div class="field"><label class="small muted" for="spep-reason">Waiver reason</label><input type="text" id="spep-reason" value="${esc(d.reason)}" placeholder="e.g. prior SPEP normal elsewhere"></div>
+    <div class="field"><label class="small muted" for="spep-by">Clinician taking responsibility</label><input type="text" id="spep-by" value="${esc(d.by)}" placeholder="e.g. ${esc(ME)}"></div></div>
+    <div class="actions"><button class="act" data-a="spep-waive" ${ok?'':'disabled'}>Record SPEP waiver</button></div>`;
+}
 function fhirBundle(c){
   const f=FEED.find(x=>x.caseId===c.id), d=f?decide(f):null;
   const b = window.OsteoFhir.bundle(c,{anchor:new Date().toISOString().slice(0,10), day:DAY, stages:STAGES, clockFor, category:category(c), patient:toPatient(c),
@@ -708,9 +746,11 @@ const ALLREP = {}; [...RS.dev, ...RS.stress].forEach(r=>ALLREP[r.id]=r);
 const FEED_SEED = [['R001','Khadija M.'],['S01','Amna R.'],['R020','Shamsa K.',{rx:'Alendronate, dispensed 6 weeks ago'}],['R036','Noor A.'],['S09','Hessa B.'],['R071','Rashid T.'],['R005','Latifa S.',{status:'Palliative care'}],['S05','Moza H.'],['R053','Maryam J.'],['R077','Sara D.'],['R029','Alia F.'],['S13','Reem N.']];
 function seedFeed(){ return FEED_SEED.filter(([id])=>ALLREP[id]).map(([id,name,rec])=>{ const r=ALLREP[id]; return {r, name, status:'new', rules:FD.find(r), ai:null, caseId:null, rec:rec||null}; }); }
 /* Exclusion before a case opens: already on treatment, or palliative. Returns {label, why} or null. */
+/* kind 'review': a fracture on pharmacy-recorded treatment is a treatment failure (VH2), so it is reviewed, not skipped.
+   kind 'skip': palliative or other records; no case opens unless the user overrides. */
 function exclusion(f){ const x=f.rec; if(!x) return null;
-  if(x.rx) return {label:'Skip: already treated', why:x.rx};
-  if(x.status) return {label:/palliative/i.test(x.status)?'Skip: palliative':'Skip: '+x.status.toLowerCase(), why:x.status};
+  if(x.rx) return {kind:'review', label:'Treatment review', why:x.rx};
+  if(x.status) return {kind:'skip', label:/palliative/i.test(x.status)?'Skip: palliative':'Skip: '+x.status.toLowerCase(), why:x.status};
   return null; }
 function recChip(x){ return x.rx?`<span class="chip c-acc">Pharmacy: on ${esc(x.rx.split(',')[0].toLowerCase())}</span>`:x.status?`<span class="chip c-acc">Records: ${esc(x.status.toLowerCase())}</span>`:''; }
 let FEED = seedFeed(), SAMPLE = null, aiBusy = false, aiMsg = '', bench = null;
@@ -734,7 +774,8 @@ function feedCard(f,i){
   else if(f.status==='dismissed') act=`<span class="small muted">Dismissed by ${esc(ME)}, day ${f.dDay}.</span>`;
   else if(f.status==='skipped') act=`<span class="small muted">Skipped on day ${f.dDay}: ${esc(f.skipReason)}. Logged, no case opened.</span>`;
   else if(D.d!=='no'){ const ex=exclusion(f);
-    act = ex ? `<div class="actions"><button class="act primary" data-a="find-skip" data-c="*" data-i="${i}">${esc(ex.label)}</button><button class="act" data-a="find-open" data-c="*" data-i="${i}">Open anyway</button></div>`
+    act = ex && ex.kind==='review' ? `<span class="small"><b>Fracture while on treatment: review treatment</b></span><div class="actions"><button class="act primary" data-a="find-open" data-c="*" data-i="${i}">Open for treatment review</button><button class="act" data-a="find-dismiss" data-c="*" data-i="${i}">Dismiss</button></div>`
+      : ex ? `<div class="actions"><button class="act primary" data-a="find-skip" data-c="*" data-i="${i}">${esc(ex.label)}</button><button class="act" data-a="find-open" data-c="*" data-i="${i}">Open anyway</button></div>`
       : `<div class="actions"><button class="act primary" data-a="find-open" data-c="*" data-i="${i}">${D.d==='act'?'Open loop':'Open loop after review'}</button>${D.d==='review'?`<button class="act" data-a="find-dismiss" data-c="*" data-i="${i}">Dismiss</button>`:''}</div>`; }
   return `<div class="card" style="gap:6px"><div class="hrow"><div><b>${esc(f.name)}</b> <span class="small muted">${r.age==null?'age ?':r.age}${esc(r.sex||'sex ?')} · ${esc(r.mod)} · ${esc(r.ind)}</span></div><span class="small muted mono">${r.id}</span></div>
     <div class="rep" data-d="${D.d}">${markText(r.text, D.ev)}</div>
@@ -820,20 +861,20 @@ function benchText(){
    or the indication is a fall or injury and the site is hip, wrist, humerus or pelvis. Otherwise age is unknown. */
 const FX_ACUTE = /\b(acute|recent|recently|new|marrow oedema|marrow edema|bone marrow oedema)\b/i, FX_FALL = /\b(fall|fell|fallen|slipped|tripped|injur\w*|trauma\w*|FOOSH)\b/i;
 function openFromFeed(f){
-  const D=decide(f), r=f.r, ev=(D.ev||[]).join(' ');
+  const D=decide(f), r=f.r, ev=(D.ev||[]).join(' '), ex=exclusion(f), review=!!ex && ex.kind==='review';
   const old=/\b(old|healed|healing|chronic|previous|previously|prior|stable|united|status post|again noted|known|history of|in situ|unchanged)\b/i.test(ev);
   const site=D.site&&D.site!=='other'?D.site:null;
   const acute = !old && (FX_ACUTE.test(ev) || FX_ACUTE.test(r.ind||'') || (FX_FALL.test(r.ind||'') && ['hip','wrist','humerus','pelvis'].includes(site)));
-  const unknown = !!site && !acute;
-  const pt={age:r.age, sex:r.sex, menopause:r.sex==='F'&&r.age>=50?'post':'na', fractures:site?[{site, months:acute?0:null}]:[], t:null, mof:null, hip:null};
+  const unknown = !!site && !acute && !review;
+  const pt={age:r.age, sex:r.sex, menopause:r.sex==='F'&&r.age>=50?'post':'na', fractures:(site||review)?[{site, months:acute?0:null, onTx:review}]:[], t:null, mof:null, hip:null};
   const note = `Found in ${r.mod} report ${r.id}: "${ev}"` + (unknown ? '. Fracture age unknown: confirm date before treating as very high risk.' : '')
     + ((r.age==null||r.sex==null) ? ' Age or sex unknown in the source report: confirm before treating.' : '');
   const id='C-'+(nextId++), c=mk({id, name:f.name, age:r.age, sex:r.sex, sexUnknown:r.sex==null, owner:ME, lang:PROF.languages[0], urgent:R.fastTrack(pt), pt, demo:null, source:'finder',
     clin:{mof:null, hip:null, cvEvent:false, note}, hist:[[0,DAY,DAY],[1,DAY,null]]});
   c.log.push({d:DAY, text:`Found by case finder (${D.by}) in ${r.mod} report ${r.id}. ${CATNAME[R.category(pt).key]}${R.category(pt).key==='incomplete'?' (DXA needed)':' risk'}. Loop opened; owner ${ME}.${pt.menopause==='post'?' Menopausal status assumed from age; confirm.':''}`});
   if(unknown) c.log.push({d:DAY, text:'Fracture age unknown: confirm date before treating as very high risk.', cls:'alert'});
-  const ex=exclusion(f);
-  if(ex) c.log.push({d:DAY, text:`Opened despite records (${ex.why}); opened anyway by ${ME}.`, cls:'alert'});
+  if(review) c.log.push({d:DAY, text:`Opened for treatment review: fracture while on treatment (${ex.why}).`, cls:'alert'});
+  else if(ex) c.log.push({d:DAY, text:`Opened despite records (${ex.why}); opened anyway by ${ME}.`, cls:'alert'});
   CASES.unshift(c); f.status='opened'; f.caseId=id;
 }
 
@@ -926,7 +967,7 @@ function vHealth(){
   const issued=c=>c.stages[0].end;
   const span=(i)=>CASES.map(c=>c.stages[i].end!==null&&issued(c)!==null?c.stages[i].end-issued(c):null).filter(x=>x!==null);
   const m=[['Days to acknowledgement',span(1)],['Days to confirmation',span(2)],['Days to decision',span(3)],['Days to treatment start',span(4)]];
-  const treated=CASES.filter(c=>c.stages[4].end!==null).length;
+  const hi=CASES.filter(c=>['high','vhigh'].includes(category(c).key)), treated=hi.filter(c=>c.stages[4].end!==null).length;
   const open=CASES.filter(c=>!c.closed);
   const unresolved=open.filter(c=>!c.owner || stageState(c,curIdx(c))==='late').length;
   const drops={}; CASES.filter(c=>c.closed&&c.closed.kind==='drop').forEach(c=>drops[c.closed.reason]=(drops[c.closed.reason]||0)+1);
@@ -935,7 +976,7 @@ function vHealth(){
   const bars=(obj)=>{const e=Object.entries(obj);const mx=Math.max(1,...e.map(x=>x[1]));return e.length?`<div class="bars">${e.map(([k,v])=>`<div class="bar"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${100*v/mx}%;display:block"></span></span><span class="num">${v}</span></div>`).join('')}</div>`:'<div class="empty">None yet.</div>';};
   return `<div class="card" style="gap:4px"><h2>Loop health</h2><span class="small">Site profile: ${esc(PROF.name)} (${esc(PROF.id)}) · data residency: ${esc(PROF.dataResidency.mode)} · guideline: ${esc(guideSrc())}</span><span class="small muted">Computed live from stage timestamps across all ${CASES.length} cases. Synthetic data.</span></div>
    <div class="mgrid">
-     <div class="metric"><div class="v">${Math.round(100*treated/CASES.length)}%</div><div class="k">High-risk patients started on treatment</div><div class="n">${treated} of ${CASES.length}</div></div>
+     <div class="metric"><div class="v">${hi.length?Math.round(100*treated/hi.length)+'%':'–'}</div><div class="k">High-risk patients started on treatment</div><div class="n">${treated} of ${hi.length} high or very-high risk</div></div>
      <div class="metric"><div class="v" style="color:${unresolved?'var(--crit)':'inherit'}">${unresolved}</div><div class="k">Unresolved actionable results</div><div class="n">overdue or unassigned</div></div>
      <div class="metric"><div class="v">${CASES.filter(c=>c.closed&&c.closed.kind==='treated').length}</div><div class="k">Closed: handed to long-term follow-up</div><div class="n">closed is not cured; yearly check-in continues</div></div>
      ${m.map(([k,a])=>`<div class="metric"><div class="v">${a.length?median(a):'–'}</div><div class="k">${k} (median)</div><div class="n">n = ${a.length}</div></div>`).join('')}
@@ -980,13 +1021,13 @@ document.addEventListener('click', e=>{
     render(); return; }
   if(wiz && b.dataset.wnext){ wiz.step++; render(); return; }
   if(wiz && b.dataset.wgo!==undefined){ wiz.step=+b.dataset.wgo; render(); return; }
-  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; FEED=seedFeed(); aiMsg=''; bench=null; IN=blankIn(); inDone=null; impDraft.paste=''; impDraft.csv=''; impDraft.hl7v2=''; impDraft.fhir=''; impOut={}; tick(0); window.scrollTo(0,0); return; }
+  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; spepDraft={}; nextId=2001; wiz=null; wizDone=null; FEED=seedFeed(); aiMsg=''; bench=null; IN=blankIn(); inDone=null; impDraft.paste=''; impDraft.csv=''; impDraft.hl7v2=''; impDraft.fhir=''; impOut={}; tick(0); window.scrollTo(0,0); return; }
   const a=b.dataset.a; if(!a) return;
   if(a==='ci-print'){ document.body.classList.add('ci-printing'); try{ window.print(); }catch(e){} document.body.classList.remove('ci-printing'); return; }
   if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
   if(a==='find-open'){ openFromFeed(FEED[+b.dataset.i]); render(); return; }
   if(a==='find-dismiss'){ const f=FEED[+b.dataset.i]; f.status='dismissed'; f.dDay=DAY; render(); return; }
-  if(a==='find-skip'){ const f=FEED[+b.dataset.i], ex=f&&exclusion(f); if(ex){ f.status='skipped'; f.skipReason=ex.label.replace(/^Skip: /,'')+' ('+ex.why+')'; f.dDay=DAY; } render(); return; }
+  if(a==='find-skip'){ const f=FEED[+b.dataset.i], ex=f&&exclusion(f); if(ex&&ex.kind==='skip'){ f.status='skipped'; f.skipReason=ex.label.replace(/^Skip: /,'')+' ('+ex.why+')'; f.dDay=DAY; } render(); return; }
   if(a==='find-ai'){ if(!aiBusy) runFeedAI(); return; }
   if(a==='bench-ai'){ if(!aiBusy) runBenchAI(); return; }
   if(a==='bench-copy'){ const t=benchText(); navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{bench.msg='Copied. Paste it into the chat.'; render();}).catch(()=>{bench.msg=t; render();}); return; }
@@ -1032,7 +1073,9 @@ document.addEventListener('click', e=>{
     case 'reroute': c.referral.status='rerouted'; c.referral.clinic='Corniche fracture-liaison clinic (in network)'; c.referral.history.push(['rerouted',DAY]); c.thread.push({who:c.owner, d:DAY, text:'Rerouted to an in-network clinic. Same request.'}); log(c,'Referral rerouted to Corniche fracture-liaison clinic (in network).'); break;
     case 'accept': c.referral.status='accepted'; c.referral.history.push(['accepted',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Accepted. Recommend first-line treatment per CPG; happy to review.'}); complete(c,3,`Referral accepted by ${c.referral.clinic}.`); break;
     case 'reject': { const r=$('rj-'+c.id).value; c.referral.status='rejected'; c.referral.reason=r; c.referral.history.push(['rejected',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Rejected: '+r}); log(c,`Referral rejected by ${c.referral.clinic}: ${r}. Back on GP board.`,'alert'); break; }
-    case 'sign': { if(secBlock(c)) break; const r=treatments(c).find(x=>x.id===rxPick[c.id]); if(!r) break; c.rx={id:r.id,name:r.name,by:signer[c.id].trim(),day:DAY,dispensed:null}; log(c,`Prescription signed by ${c.rx.by}: ${r.name}.`); break; }
+    case 'spep-waive': { const d=spepDraft[c.id]||{}, reason=(d.reason||'').trim(), by=(d.by||'').trim(); if(!reason||!by) break;
+      c.spepWaiver={reason, by}; log(c,`SPEP waived by ${by}: ${reason}.`,'alert'); break; }
+    case 'sign': { const r=treatments(c).find(x=>x.id===rxPick[c.id]); if(!r || signGate(c,r.id).blocked) break; c.rx={id:r.id,name:r.name,by:signer[c.id].trim(),day:DAY,dispensed:null}; log(c,`Prescription signed by ${c.rx.by}: ${r.name}.`); break; }
     case 'dispense': c.rx.dispensed=DAY; if(c.rx.id==='deno'){ c.denoDue=DAY+182; log(c,`Denosumab dispensed: next dose due day ${c.denoDue} (6 months).`); } complete(c,4,'Dispensing recorded by pharmacy.'); break;
     case 'deno-dose': c.denoDue=DAY+182; log(c,`Denosumab dose recorded by ${ME}; next dose due day ${c.denoDue}.`); break;
     case 'follow': complete(c,5,'Follow-up complete: adherence and response markers recorded.'); break;
@@ -1070,7 +1113,10 @@ document.addEventListener('input', e=>{
     if(nb){ nb.textContent=(q.optional && !String(e.target.value).trim())?TT.skip:TT.next2; if(q.type==='text') nb.disabled=!(q.optional||String(e.target.value).trim()); }
     return; }
   if(e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
-  if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2 && !secBlock(CASES.find(x=>x.id===sel))); }
+  if(e.target.id==='spep-reason'||e.target.id==='spep-by'){ const d=(spepDraft[sel]=spepDraft[sel]||{reason:'', by:''}); d[e.target.id==='spep-reason'?'reason':'by']=e.target.value;
+    const b=document.querySelector('[data-a="spep-waive"]'); if(b) b.disabled=!(d.reason.trim()&&d.by.trim()); return; }
+  if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'), c=CASES.find(x=>x.id===sel);
+    if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2 && c && !signGate(c,rxPick[sel]).blocked); }
 });
 
 initSite();

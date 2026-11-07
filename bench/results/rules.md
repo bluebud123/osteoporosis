@@ -1,9 +1,10 @@
 # Rules benchmark results
 
-- Cases passed: **57/57**; individual checks passed: **102/102**
-- Very-high-risk recall: **13/13**
+- Cases passed: **91/91**; individual checks passed: **268/268**
+- Very-high-risk recall: **27/27**
 - False reassurance (at-risk or incomplete case labelled "low"): **0**
 - Guideline-blocked drug offered: **0**
+- Blocked or needs-result drug signable: **0**
 
 _DRAFT: expected answers pending clinician sign-off._
 
@@ -11,10 +12,10 @@ _DRAFT: expected answers pending clinician sign-off._
 
 | expected \ produced | vhigh | high | low | incomplete |
 | --- | --- | --- | --- | --- |
-| vhigh | 13 | 0 | 0 | 0 |
-| high | 0 | 15 | 0 | 0 |
-| low | 0 | 0 | 7 | 0 |
-| incomplete | 0 | 0 | 0 | 9 |
+| vhigh | 27 | 0 | 0 | 0 |
+| high | 0 | 28 | 0 | 0 |
+| low | 0 | 0 | 10 | 0 |
+| incomplete | 0 | 0 | 0 | 13 |
 
 ## Every case
 
@@ -72,8 +73,42 @@ _DRAFT: expected answers pending clinician sign-off._
 | G03 | robustness | T-score NaN | PASS |  | I1 |
 | G04 | robustness | eGFR missing on a high-risk patient | PASS |  | H1 |
 | G05 | robustness | Fractures field absent | PASS |  | I1 |
-| G06 | robustness | Vertebral fracture with unknown date | PASS |  | H2 |
+| G06 | robustness | Vertebral fracture with unknown date | PASS |  | H2 M1 |
 | G07 | robustness | Age 25 with old vertebral fracture | PASS |  | H2 |
 | G08 | robustness | T -3.0 with FRAX hip 4.6% | PASS |  | VH9 |
 | G09 | robustness | Falls, eGFR 25 and recent MI together | PASS |  | VH5 |
 | G10 | robustness | Negative FRAX value (data-entry error) | PASS |  | L1 |
+| H01 | lab-blocks | High risk, calcium 2.10: all antiresorptives blocked until corrected | PASS |  | H1 |
+| H02 | lab-blocks | Very high, calcium 2.10: antiresorptives blocked, anabolics not | PASS |  | VH7 |
+| H03 | lab-blocks | High risk, calcium exactly 2.15: not blocked | PASS |  | H1 |
+| H04 | lab-blocks | Very high, calcium 2.80: teriparatide blocked (hypercalcaemia), romosozumab not | PASS |  | VH7 |
+| H05 | lab-blocks | Very high, calcium 2.61 and eGFR 29: block flags aggregate per drug | PASS |  | VH7 |
+| N01 | needs | High risk, calcium missing: antiresorptives need calcium first | PASS |  | H1 |
+| N02 | needs | High risk, eGFR missing: antiresorptives need eGFR first | PASS |  | H1 |
+| N03 | needs | High risk, calcium and eGFR missing | PASS |  | H1 |
+| N04 | needs | High risk, vitamin D 60 nmol/L: repletion first before antiresorptive | PASS |  | H1 |
+| N05 | needs | High risk, all labs normal: nothing needed, antiresorptives signable | PASS |  | H1 |
+| N06 | needs | Very high, calcium and eGFR missing: teriparatide and romosozumab not held by labs | PASS |  | VH7 |
+| N07 | needs | High risk, eGFR 29 and calcium missing: eGFR block stands, calcium need still listed | PASS |  | H1 |
+| S01 | spep | Vertebral fracture 3 months ago, SPEP not recorded: no drug signable | PASS |  | VH1 |
+| S02 | spep | Vertebral fracture 3 months ago, SPEP normal: signable | PASS |  | VH1 |
+| S03 | spep | Vertebral fracture, SPEP abnormal: blocked, cites myeloma | PASS |  | VH1 |
+| S04 | spep | Vertebral fracture, SPEP not recorded, documented waiver with clinician: signable | PASS |  | VH1 |
+| S05 | spep | Vertebral fracture, waiver reason without a named clinician: still blocked | PASS |  | VH1 |
+| S06 | spep | Vertebral fracture, abnormal SPEP with a waiver: waiver cannot override myeloma | PASS |  | VH1 |
+| S07 | spep | Empty or blank waiver reason: still blocked | PASS |  | VH1 |
+| S08 | spep | Hip fracture only: SPEP not required, drugs not held by it | PASS |  | VH1 |
+| T01 | bmd-no-frax | T -2.4, FRAX not run: osteopenia range needs FRAX, not "low" | PASS |  | I3 |
+| T02 | bmd-no-frax | T -2.4, FRAX major 8%, hip 1%: stays low | PASS |  | L1 |
+| T03 | bmd-no-frax | T -2.5 exactly, FRAX not run: osteoporosis logic, high | PASS |  | H1 |
+| T04 | bmd-no-frax | T -2.6, FRAX not run: high | PASS |  | H1 |
+| T05 | bmd-no-frax | T -1.1, FRAX not run: osteopenia range, incomplete | PASS |  | I3 |
+| T06 | bmd-no-frax | T -2.4, FRAX hip 3.1% (no major): high via FRAX above threshold | PASS |  | H3 |
+| T07 | bmd-no-frax | T -2.4, FRAX major exactly 20%, hip 2%: low (boundary) | PASS |  | L1 |
+| T08 | bmd-no-frax | T -2.0 with vertebral fracture 5 years ago, FRAX not run: high from fracture, not incomplete | PASS |  | H2 |
+| M01 | fracture-date | Vertebral fracture, date unknown: high stays, date prompt shown | PASS |  | H2 M1 |
+| M02 | fracture-date | Wrist fracture, date unknown, normal DXA, low FRAX: not silently low | PASS |  | M1 |
+| M03 | fracture-date | Wrist fracture, date unknown, no DXA or FRAX: incomplete (as before), with date prompt | PASS |  | I1 M1 |
+| M04 | fracture-date | Wrist fracture, date unknown, T -3.1: very high stays, date prompt shown | PASS |  | VH7 M1 |
+| M05 | fracture-date | Wrist fracture 5 months ago (dated): very high, no date prompt | PASS |  | VH1 |
+| M06 | fracture-date | No fracture, normal DXA, low FRAX: low, no date prompt | PASS |  | L1 |

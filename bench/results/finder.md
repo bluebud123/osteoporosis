@@ -30,18 +30,18 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 ## Stress set (15 reports; unfamiliar wording and clinical shorthand)
 
 - reports 15
-- exact 40%
-- act sensitivity 33% (4/12)
+- exact 87%
+- act sensitivity 92% (11/12)
 - act PPV 100%
-- fractures surfaced to a human 8/12
-- silently dismissed 4
+- fractures surfaced to a human 12/12
+- silently dismissed 0
 - unverifiable outputs 0
 
 ### Confusion matrix (rows = label, columns = finder)
 
 | label \ finder | act | review | no |
 | --- | --- | --- | --- |
-| act | 4 | 4 | 4 |
+| act | 11 | 1 | 0 |
 | review | 0 | 0 | 1 |
 | no | 0 | 0 | 2 |
 
@@ -49,13 +49,6 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 
 | ID | Label | Finder | Reason | Report |
 | --- | --- | --- | --- | --- |
-| S01 | act | review | Fracture site unclear | # NOF left, displaced. |
-| S02 | act | no | No fracture documented | Comminuted # distal radius with dorsal angulation. |
-| S03 | act | review | Bone-density wording but no recognised fracture term | The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury. |
-| S05 | act | no | No fracture documented | Lungs clear. Vertebra plana at T9. |
-| S06 | act | review | Fracture site unclear | Undisplaced #NOH. |
-| S07 | act | no | No fracture documented | Bilateral pubic rami #s. |
-| S08 | act | no | No fracture documented | Interval progression of L1 compression, now 50%. |
-| S10 | act | review | Fracture site unclear | Left hip hemiarthroplasty in situ. History of NOF fracture 2023. |
+| S03 | act | review | Height loss or wedging without a stated fracture | The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury. |
 | S13 | review | no | No fracture documented | Wedge-shaped T11, likely longstanding Scheuermann type change rather than fracture. |
 

@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **56/57**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **68/68**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -30,12 +30,12 @@ Passed **56/57**. Each test drives the real app (index.html) headless and checks
 | L24 | Case finder turns an incidental vertebral fracture in a chest X-ray report into a high-risk case when its age is unknown | Req 1, 2 | PASS |
 | L25 | Trauma and tumour reports are not offered as cases; AI controls are hidden outside claude.ai | Req 1 | PASS |
 | L26 | Benchmark table shows the rules' honest stress-set result, and Health shows the proposed indicator | Req 6 | PASS |
-| L27 | Finder skips a patient already on alendronate: chip shown, no primary "Open loop" | Req 1, 5 | PASS |
+| L27 | Finder: a fracture on alendronate goes to "Treatment review" (VH2), not a silent skip | Req 1, 5 | PASS |
 | L28 | Finder skip for a palliative patient logs status skipped with its reason and opens no case | Req 1 | PASS |
-| L29 | "Open anyway" still opens a case for an excluded report and records the override | Req 1 | PASS |
+| L29 | Treatment review opens a very-high-risk case for a fracture on alendronate, and records the pharmacy record | Req 1, 5 | PASS |
 | L30 | Hip or pelvic fragility fracture on MRI with marrow oedema opens as very high risk | Req 1, 2 | PASS |
 | L31 | Abnormal electrophoresis blocks signing in a vertebral-fracture case; normal electrophoresis allows it | Req 5 | PASS |
-| L32 | Electrophoresis not yet done is a visible flag on a vertebral-fracture case, not a block | Req 5 | **FAIL** |
+| L32 | Vertebral fracture with electrophoresis not done: Sign is disabled, and a reason alone is not a waiver | Req 5 | PASS |
 | L33 | Denosumab: dispensing sets the next dose; warn 14 days before due, overdue crit after 28 days; record dose clears it | Req 5, 6 | PASS |
 | L34 | A closed case with denosumab due stays pinned on the board, and recording the dose clears it | Req 6 | PASS |
 | L35 | Closure as treated hands the patient to long-term follow-up; Health says closed is not cured | Req 5, 6 | PASS |
@@ -61,3 +61,14 @@ Passed **56/57**. Each test drives the real app (index.html) headless and checks
 | L59 | FHIR export carries the active site profile as a meta tag (still SYNTHETIC); Health names the profile | Req 6 | PASS |
 | L60 | Site profile: generic offers English only and says no guideline is selected | Req 5 | PASS |
 | L61 | Import: a held report (no age or sex) can be opened after review; the case says age and sex are unknown | Req 1, 5 | PASS |
+| L62 | Calcium 2.10: denosumab Sign is disabled and the card says calcium is low | Req 5 | PASS |
+| L63 | Calcium missing: denosumab Sign is disabled, "needs result first" is shown on the drug, and the card asks for calcium | Req 5 | PASS |
+| L64 | Denosumab: vitamin D 42 keeps Sign disabled; with calcium and vitamin D in range Sign is enabled and signs | Req 5 | PASS |
+| L65 | Electrophoresis waiver with a reason and a named clinician lets a vertebral-fracture case sign, and is logged | Req 5 | PASS |
+| L66 | Abnormal electrophoresis cannot be waived: no waiver control, Sign stays disabled | Req 5 | PASS |
+| L67 | Intake: a DXA T-score of -2.8 with FRAX 8% and 1% is High (rule H1), not low | Req 1, 5 | PASS |
+| L68 | Intake: a DXA T-score of -2.4 with no FRAX is "FRAX needed", not low, and opens no loop yet | Req 1, 5 | PASS |
+| L69 | Intake: an undated vertebral fracture shows the fracture-date prompt on the result and on the case | Req 1, 5 | PASS |
+| L70 | Patient stage-1 message does not name osteoporosis before DXA, in English, Arabic and Malay | Req 6 | PASS |
+| L71 | Health: the high-risk treatment metric counts only high and very-high cases in its denominator | Req 6 | PASS |
+| L72 | Page declares a phone viewport and English as the document language | X-1 | PASS |

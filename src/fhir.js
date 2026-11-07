@@ -41,6 +41,8 @@
     humerus: ['Proximal humerus fracture', 'fx-humerus'], pelvis: ['Pelvic or sacral fracture', 'fx-pelvis'],
     vert: ['Vertebral fracture', 'fx-vert'], other: ['Other fragility fracture', 'fx-other']
   };
+  /* A fracture whose site was never recorded is not coded as any site (B6). */
+  const SITE_UNKNOWN = ['Fragility fracture (site not recorded)', 'fx-site-unknown'];
 
   /* ---------- small helpers ---------- */
   const pad = n => String(n).padStart(2, '0');
@@ -77,10 +79,10 @@
   /* Fractures as the app's patient view has them (mirrors toPatient in index.html). Used if no view is passed. */
   function fracturesOf(c) {
     if (c.pt && Array.isArray(c.pt.fractures)) return c.pt.fractures.map(f => ({ site: f.site, months: f.months, onGc: !!f.onGc }));
-    const k = c.clin || {}, out = [];
-    if (k.fxMonths !== null && k.fxMonths !== undefined) out.push({ site: k.hipVert ? 'hip' : 'wrist', months: k.fxMonths, onGc: !!k.fxOnGc });
-    else if (k.hipVert) out.push({ site: 'vert', months: 60, onGc: !!k.fxOnGc });
-    if (k.multiFx) out.push({ site: 'vert', months: k.fxMonths !== null && k.fxMonths !== undefined ? k.fxMonths : 60, onGc: !!k.fxOnGc });
+    const k = c.clin || {}, s = k.sites || [], out = [];
+    const months = k.fxMonths === undefined ? null : k.fxMonths;
+    if (months !== null || k.hipVert) out.push({ site: s[0] || null, months, onGc: !!k.fxOnGc });
+    if (k.multiFx) out.push({ site: s[1] || null, months, onGc: !!k.fxOnGc });
     return out;
   }
 
@@ -152,7 +154,8 @@
     /* Condition: one per fracture, with the evidence. */
     const conds = [];
     (P.fractures || []).forEach((f, j) => {
-      const [label, lcode] = SITE[f.site] || SITE.other;
+      const known = !!SITE[f.site];
+      const [label, lcode] = known ? SITE[f.site] : SITE_UNKNOWN;
       const m = num(f.months);
       const acute = m === 0;
       const onset = m === null ? 'Date unknown: confirm before treating as very high risk'
@@ -164,7 +167,7 @@
       const cond = tagged({
         resourceType: 'Condition', id: 'cond-' + cid + '-' + j,
         clinicalStatus: { coding: [{ system: HL7.condClin, code: 'active' }] },
-        verificationStatus: { coding: [{ system: HL7.condVer, code: m === null ? 'unconfirmed' : 'confirmed' }] },
+        verificationStatus: { coding: [{ system: HL7.condVer, code: m === null || !known ? 'unconfirmed' : 'confirmed' }] },
         category: [{ coding: [{ system: HL7.condCat, code: 'problem-list-item' }] }],
         code: { text: label, coding: [{ system: LOCAL, code: lcode }] },
         subject: sub, onsetString: onset, recordedDate: dateOf(anchor, 0),

@@ -36,7 +36,7 @@ R034,P-0034,CT chest,2026-09-25,66,M,"No lymphadenopathy. Known previous T5 comp
 R035,P-0035,XR knee,2026-09-24,74,F,Moderate medial compartment osteoarthritis. Incidental healed fracture of the proximal humerus noted on prior shoulder film referenced in history.,Knee pain,review,dev
 R036,P-0036,CXR lateral,2026-09-23,70,F,"Right lower lobe consolidation. Possible mild wedging of T9, of uncertain significance.",Fever,review,dev
 R037,P-0037,CT abdomen,2026-09-22,67,F,"Mild anterior wedging of T12, may be developmental or represent a mild compression deformity.",Pain,review,dev
-R038,P-0038,XR lumbar spine,2026-09-21,72,F,Osteopenia. Vertebral heights are preserved. Multilevel degenerative disc disease.,Back pain,review,dev
+R038,P-0038,XR lumbar spine,2026-08-09,72,F,Osteopenia. Vertebral heights are preserved. Multilevel degenerative disc disease.,Back pain,review,dev
 R039,P-0039,CXR,2026-09-20,79,F,Fracture of the right 7th rib laterally. No pneumothorax.,Chest pain after coughing fit,review,dev
 R040,P-0040,XR hip,2026-11-04,64,F,Subtle lucency at the femoral neck; an undisplaced fracture cannot be excluded. Suggest MRI.,Hip pain,review,dev
 R041,P-0041,XR lumbar spine,2026-09-18,45,F,Compression fracture of L1 with 20% height loss.,"Back pain, no injury",review,dev
@@ -44,7 +44,7 @@ R042,P-0042,CT chest,2026-09-17,69,F,"Query compression fracture at T6, suboptim
 R043,P-0043,XR wrist,2026-09-16,75,M,Possible undisplaced scaphoid fracture. Distal radius intact. Recommend repeat imaging.,Wrist pain after fall,review,dev
 R044,P-0044,XR ankle,2026-09-15,81,F,Undisplaced fracture of the lateral malleolus.,Twisted ankle,review,dev
 R045,P-0045,CXR lateral,2026-09-14,73,F,Slight loss of height of the T8 vertebral body. Correlate clinically.,Pre-op,review,dev
-R046,P-0046,XR thoracic spine,2026-08-09,68,F,Generalised osteopenia. Appearance may represent early compression of T10.,Pain,review,dev
+R046,P-0046,XR thoracic spine,2026-09-13,68,F,Generalised osteopenia. Appearance may represent early compression of T10.,Pain,review,dev
 R047,P-0047,XR shoulder,2026-09-12,70,F,Suspicious for an undisplaced greater tuberosity fracture. Consider ultrasound or MRI.,Shoulder pain,review,dev
 R048,P-0048,CXR,2026-09-11,86,F,Multiple old healed left rib fractures. No acute fracture. Lungs clear.,Fall,review,dev
 R049,P-0049,DXA lateral VFA,2026-09-10,62,F,Vertebral fracture assessment: possible grade 1 deformity at T7. No definite fracture.,Osteoporosis assessment,review,dev

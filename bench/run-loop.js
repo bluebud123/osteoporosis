@@ -36,6 +36,7 @@ async function vertCaseAtTreatment(spep) {
   clickEl(card(a, 'R001').querySelector('[data-a="find-open"]')); a.click('[data-open="C-2001"]');
   a.click('[data-a="topatient"]'); a.click('[data-tb="0"]'); a.click('[data-a="ack"]'); a.click('[data-tab="case"]');
   a.click('[data-a="order"]'); a.set('#r-t', '-2.8', 'input');
+  a.set('#r-vd', '80', 'input'); a.set('#r-egfr', '70', 'input'); a.set('#r-ca', '2.3', 'input');
   if (spep) a.set('#r-spep', spep, 'change');
   a.click('[data-a="results"]'); a.click('[data-a="decide"]');
   a.set('input[name="rx-C-2001"][value="obp"]', true); a.set('#sg', 'Dr Tan', 'input');
@@ -298,13 +299,14 @@ const tests = [
     const a = await boot(); a.click('[data-tab="find"]');
     const t = a.text();
     a.click('[data-tab="health"]');
-    return /Rules · Stress: unfamiliar wording \(15\)\s*40%\s*4\/12\s*4/.test(t) && /started on treatment within 6 months/.test(a.text()) && /None measures osteoporosis treatment/.test(a.text());
+    return /Rules · Stress: unfamiliar wording \(15\)\s*87%\s*11\/12\s*0/.test(t) && /started on treatment within 6 months/.test(a.text()) && /None measures osteoporosis treatment/.test(a.text());
   }],
-  ['L27', 'Finder skips a patient already on alendronate: chip shown, no primary "Open loop"', 'Req 1, 5', async () => {
+  ['L27', 'Finder: a fracture on alendronate goes to "Treatment review" (VH2), not a silent skip', 'Req 1, 5', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
     const c = card(a, 'R020'), primary = c.querySelector('button.primary');
-    return /Pharmacy: on alendronate/.test(c.textContent) && primary.dataset.a === 'find-skip' && /Skip: already treated/.test(primary.textContent)
-      && !c.querySelector('[data-a="find-open"].primary') && /Open anyway/.test(c.querySelector('[data-a="find-open"]').textContent);
+    return /Pharmacy: on alendronate/.test(c.textContent) && /Fracture while on treatment: review treatment/.test(c.textContent)
+      && primary.dataset.a === 'find-open' && /Open for treatment review/.test(primary.textContent)
+      && !/Skip: already treated/.test(c.textContent) && !c.querySelector('[data-a="find-skip"]') && !!c.querySelector('[data-a="find-dismiss"]');
   }],
   ['L28', 'Finder skip for a palliative patient logs status skipped with its reason and opens no case', 'Req 1', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
@@ -315,12 +317,13 @@ const tests = [
     return chipShown && /Skipped on day 0: palliative \(Palliative care\)/.test(after.textContent)
       && !after.querySelector('[data-a="find-open"]') && !after.querySelector('[data-a="find-skip"]') && !/Loop opened/.test(a.text());
   }],
-  ['L29', '"Open anyway" still opens a case for an excluded report and records the override', 'Req 1', async () => {
+  ['L29', 'Treatment review opens a very-high-risk case for a fracture on alendronate, and records the pharmacy record', 'Req 1, 5', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
     clickEl(card(a, 'R020').querySelector('[data-a="find-open"]'));
     const opened = /Loop opened as C-2001/.test(a.text());
     a.click('[data-open="C-2001"]');
-    return opened && /Shamsa K\./.test(a.text()) && /Opened despite records \(Alendronate, dispensed 6 weeks ago\)/.test(a.text());
+    return opened && /Shamsa K\./.test(a.text()) && /Very high risk/.test(a.text()) && /Fracture while on osteoporosis treatment/.test(a.text())
+      && /Opened for treatment review: fracture while on treatment \(Alendronate, dispensed 6 weeks ago\)/.test(a.text());
   }],
   ['L30', 'Hip or pelvic fragility fracture on MRI with marrow oedema opens as very high risk', 'Req 1, 2', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
@@ -338,9 +341,13 @@ const tests = [
     nor.click('[data-a="sign"]');
     return blocked && noSign && signable && /Prescription signed by Dr Tan: Oral bisphosphonate/.test(nor.text());
   }],
-  ['L32', 'Electrophoresis not yet done is a visible flag on a vertebral-fracture case, not a block', 'Req 5', async () => {
+  ['L32', 'Vertebral fracture with electrophoresis not done: Sign is disabled, and a reason alone is not a waiver', 'Req 5', async () => {
     const a = await vertCaseAtTreatment(null);
-    return /Serum protein electrophoresis needed before treatment \(exclude myeloma\)/.test(a.text()) && !a.q('[data-a="sign"]').disabled;
+    const flag = /Serum protein electrophoresis needed first/.test(a.text());
+    const disabled = a.q('[data-a="sign"]').disabled;
+    a.set('#spep-reason', 'Patient declined the blood test', 'input');
+    const reasonOnly = a.q('[data-a="sign"]').disabled && a.q('[data-a="spep-waive"]').disabled;
+    return flag && disabled && reasonOnly;
   }],
   ['L33', 'Denosumab: dispensing sets the next dose; warn 14 days before due, overdue crit after 28 days; record dose clears it', 'Req 5, 6', async () => {
     const a = await boot(); a.open('C-1036');
@@ -578,6 +585,96 @@ const tests = [
     a.click('[data-open="C-2001"]');
     return opened && held && /Age or sex unknown in the source report: confirm before treating/.test(a.text())
       && /Found by case finder \(Rules\)/.test(a.text());
+  }],
+  ['L62', 'Calcium 2.10: denosumab Sign is disabled and the card says calcium is low', 'Req 5', async () => {
+    const a = await boot(); a.open('C-1042');
+    a.click('[data-a="topatient"]'); a.click('[data-tb="0"]'); a.click('[data-a="ack"]'); a.click('[data-tab="case"]');
+    a.click('[data-a="order"]'); a.set('#r-ca', '2.10', 'input'); a.click('[data-a="results"]'); a.click('[data-a="decide"]');
+    a.set('input[name="rx-C-1042"][value="deno"]', true); a.set('#sg', 'Dr Tan', 'input');
+    const disabled = a.q('[data-a="sign"]').disabled;
+    a.click('[data-a="sign"]');
+    return disabled && /Calcium is low: correct it first/.test(a.text()) && !/Prescription signed/.test(a.text());
+  }],
+  ['L63', 'Calcium missing: denosumab Sign is disabled, "needs result first" is shown on the drug, and the card asks for calcium', 'Req 5', async () => {
+    const a = await boot(); a.open('C-1042');
+    a.click('[data-a="topatient"]'); a.click('[data-tb="0"]'); a.click('[data-a="ack"]'); a.click('[data-tab="case"]');
+    a.click('[data-a="order"]'); a.set('#r-ca', '', 'input'); a.click('[data-a="results"]'); a.click('[data-a="decide"]');
+    const needs = /needs result first/i.test(a.text());
+    a.set('input[name="rx-C-1042"][value="deno"]', true); a.set('#sg', 'Dr Tan', 'input');
+    return needs && a.q('[data-a="sign"]').disabled && /Calcium result needed first/.test(a.text());
+  }],
+  ['L64', 'Denosumab: vitamin D 42 keeps Sign disabled; with calcium and vitamin D in range Sign is enabled and signs', 'Req 5', async () => {
+    const low = await boot(); low.open('C-1042');                    // demo values: calcium 2.31, vitamin D 42
+    low.click('[data-a="topatient"]'); low.click('[data-tb="0"]'); low.click('[data-a="ack"]'); low.click('[data-tab="case"]');
+    low.click('[data-a="order"]'); low.click('[data-a="results"]'); low.click('[data-a="decide"]');
+    low.set('input[name="rx-C-1042"][value="deno"]', true); low.set('#sg', 'Dr Tan', 'input');
+    const lowVd = low.q('[data-a="sign"]').disabled && /Vitamin D low: replete first/.test(low.text());
+    const ok = await boot(); ok.open('C-1042');
+    ok.click('[data-a="topatient"]'); ok.click('[data-tb="0"]'); ok.click('[data-a="ack"]'); ok.click('[data-tab="case"]');
+    ok.click('[data-a="order"]'); ok.set('#r-vd', '80', 'input'); ok.click('[data-a="results"]'); ok.click('[data-a="decide"]');
+    ok.set('input[name="rx-C-1042"][value="deno"]', true); ok.set('#sg', 'Dr Tan', 'input');
+    const enabled = !ok.q('[data-a="sign"]').disabled;
+    ok.click('[data-a="sign"]');
+    return lowVd && enabled && /Prescription signed by Dr Tan: Denosumab/.test(ok.text());
+  }],
+  ['L65', 'Electrophoresis waiver with a reason and a named clinician lets a vertebral-fracture case sign, and is logged', 'Req 5', async () => {
+    const a = await vertCaseAtTreatment(null);
+    a.set('#spep-reason', 'Prior SPEP normal at another hospital (report on file)', 'input');
+    a.set('#spep-by', 'Dr Tan', 'input'); a.click('[data-a="spep-waive"]');
+    const signable = !a.q('[data-a="sign"]').disabled;
+    a.click('[data-a="sign"]');
+    return signable && /Prescription signed by Dr Tan: Oral bisphosphonate/.test(a.text())
+      && /SPEP waived by Dr Tan: Prior SPEP normal at another hospital/.test(a.text());
+  }],
+  ['L66', 'Abnormal electrophoresis cannot be waived: no waiver control, Sign stays disabled', 'Req 5', async () => {
+    const a = await vertCaseAtTreatment('abnormal');
+    return !a.q('#spep-reason') && !a.q('[data-a="spep-waive"]') && a.q('[data-a="sign"]').disabled
+      && /Abnormal protein electrophoresis: exclude myeloma/.test(a.text());
+  }],
+  ['L67', 'Intake: a DXA T-score of -2.8 with FRAX 8% and 1% is High (rule H1), not low', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Ruth T.', 'input'); a.set('#in-age', '62', 'input'); a.set('#in-mof', '8', 'input'); a.set('#in-hip', '1', 'input'); a.set('#in-t', '-2.8', 'input');
+    const t = a.text();
+    return /High risk/.test(t) && /T-score -2.5 or lower/.test(t) && !/Low risk/.test(t) && !/Below thresholds/.test(t) && !!a.q('[data-a="intake-issue"]');
+  }],
+  ['L68', 'Intake: a DXA T-score of -2.4 with no FRAX is "FRAX needed", not low, and opens no loop yet', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Ruth T.', 'input'); a.set('#in-age', '62', 'input'); a.set('#in-t', '-2.4', 'input');
+    const t = a.text();
+    return /FRAX needed/.test(t) && /Run FRAX/.test(t) && !/Below thresholds/.test(t) && !a.q('[data-a="intake-issue"]');
+  }],
+  ['L69', 'Intake: an undated vertebral fracture shows the fracture-date prompt on the result and on the case', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Omar V.', 'input'); a.set('#in-age', '71', 'input'); a.set('#in-site', 'vert');
+    const prompt = /Fracture date needed before the risk can be fully classified/.test(a.text());
+    a.click('[data-a="intake-issue"]'); a.click('[data-open="C-2001"]');
+    return prompt && /Fracture date needed before the risk can be fully classified/.test(a.text());
+  }],
+  ['L70', 'Patient stage-1 message does not name osteoporosis before DXA, in English, Arabic and Malay', 'Req 6', async () => {
+    const a = await boot(); a.open('C-1042');
+    a.click('[data-tab="patient"]');
+    const want = { en: 'Your doctor wants to check your bone health.', ar: 'يرغب طبيبكم في فحص صحة عظامكم.', ms: 'Doktor anda mahu memeriksa kesihatan tulang anda.' };
+    const bad = { en: /weak bones|osteoporosis/i, ar: /هشاشة|ضعف العظام/, ms: /tulang yang lemah|osteoporosis/i };
+    return ['en', 'ar', 'ms'].every(l => {
+      a.click(`[data-lang="${l}"]`);
+      return a.text().includes(want[l]) && !bad[l].test(a.text());
+    });
+  }],
+  ['L71', 'Health: the high-risk treatment metric counts only high and very-high cases in its denominator', 'Req 6', async () => {
+    const a = await boot(); a.click('[data-a="intake"]');
+    a.set('#in-name', 'Siti N.', 'input'); a.set('#in-age', '63', 'input'); a.set('#in-mof', '14', 'input');   // Not classified: FRAX without DXA
+    a.click('[data-a="intake-issue"]'); a.click('[data-tab="board"]');
+    const rows = [...a.q('#view').querySelectorAll('.case-row')];
+    const highRows = rows.filter(r => ['Very high', 'High'].includes(r.querySelector('.chip').textContent.trim())).length;
+    a.click('[data-tab="health"]');
+    const m = [...a.q('#view').querySelectorAll('.metric')].find(x => /High-risk patients started on treatment/.test(x.textContent));
+    const denom = m ? +(m.querySelector('.n').textContent.match(/of (\d+)/) || [])[1] : -1;
+    return denom === highRows && highRows > 0 && highRows < rows.length;   // the Not classified case is left out
+  }],
+  ['L72', 'Page declares a phone viewport and English as the document language', 'X-1', async () => {
+    const a = await boot();
+    const vp = a.q('meta[name="viewport"]');
+    return !!vp && /width=device-width/.test(vp.getAttribute('content')) && /initial-scale=1/.test(vp.getAttribute('content')) && a.q('html').getAttribute('lang') === 'en';
   }]
 ];
 

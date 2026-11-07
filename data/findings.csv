@@ -44,7 +44,7 @@ F-0042,R042,keyword,review,vert,"Query compression fracture at T6, suboptimally 
 F-0043,R043,keyword,review,other,Possible undisplaced scaphoid fracture.,1
 F-0044,R044,keyword,review,other,Undisplaced fracture of the lateral malleolus.,1
 F-0045,R045,keyword,review,vert,Slight loss of height of the T8 vertebral body.,1
-F-0046,R046,keyword,review,,Generalised osteopenia.,1
+F-0046,R046,keyword,review,vert,Appearance may represent early compression of T10.,1
 F-0047,R047,keyword,review,humerus,Suspicious for an undisplaced greater tuberosity fracture.,1
 F-0048,R048,keyword,review,other,Multiple old healed left rib fractures.,1
 F-0049,R049,keyword,review,vert,Vertebral fracture assessment: possible grade 1 deformity at T7.,1
@@ -99,16 +99,16 @@ F-0097,R097,keyword,no,,,1
 F-0098,R098,keyword,act,vert,"Severe osteoporosis with multiple lumbar compression fractures at L1, L2 and L4.",1
 F-0099,R099,keyword,act,vert,Mild compression deformity of T12 is unchanged from prior.,1
 F-0100,R100,keyword,review,wrist,Fracture of the distal radius cannot be confirmed;,1
-F-0101,S01,keyword,review,,"# NOF left, displaced.",1
-F-0102,S02,keyword,no,,,1
-F-0103,S03,keyword,review,,The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury.,1
+F-0101,S01,keyword,act,hip,"# NOF left, displaced.",1
+F-0102,S02,keyword,act,wrist,Comminuted # distal radius with dorsal angulation.,1
+F-0103,S03,keyword,review,vert,The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury.,1
 F-0104,S04,keyword,act,vert,Osteoporotic collapse L2.,1
-F-0105,S05,keyword,no,,,1
-F-0106,S06,keyword,review,,Undisplaced #NOH.,1
-F-0107,S07,keyword,no,,,1
-F-0108,S08,keyword,no,,,1
+F-0105,S05,keyword,act,vert,Vertebra plana at T9.,1
+F-0106,S06,keyword,act,humerus,Undisplaced #NOH.,1
+F-0107,S07,keyword,act,pelvis,Bilateral pubic rami #s.,1
+F-0108,S08,keyword,act,vert,"Interval progression of L1 compression, now 50%.",1
 F-0109,S09,keyword,act,vert,Acute osteoporotic VCF at L3 with marrow oedema.,1
-F-0110,S10,keyword,review,,History of NOF fracture 2023.,1
+F-0110,S10,keyword,act,hip,Left hip hemiarthroplasty in situ. | History of NOF fracture 2023.,1
 F-0111,S11,keyword,no,,,1
 F-0112,S12,keyword,no,,,1
 F-0113,S13,keyword,no,,,1

@@ -13,15 +13,25 @@
  *   cvEvent (MI or stroke in last 12 months),
  *   t (lowest T-score, null if no DXA), mof, hip (FRAX 10-yr %, null if not run),
  *   egfr, ca (adjusted calcium mmol/L), vd (25-OH vitamin D nmol/L)
+ *   spep ('normal'|'abnormal'|null), spepWaived (documented reason, non-empty string),
+ *   spepWaivedBy (named clinician, non-empty string; both needed for a waiver)
  */
 (function (root) {
   const MAJOR = ['hip', 'vert', 'wrist', 'humerus'];
+  const ANTIRESORPTIVE = ['obp', 'deno', 'zol'];
+  // Text for each 'needs' code. A needs code means a result is missing or must be acted on before signing.
+  const NEEDS_TEXT = {
+    ca: 'Calcium result needed before an antiresorptive',
+    egfr: 'eGFR result needed before an antiresorptive',
+    'vd-low': 'Vitamin D below 75 nmol/L: replete before an antiresorptive'
+  };
   const num = v => (v === null || v === undefined || v === '' || Number.isNaN(+v)) ? null : +v;
 
   function fractureSummary(p) {
     const f = p.fractures || [];
     return {
       any: f.length > 0,
+      undated: f.some(x => num(x.months) === null),
       recent12: f.some(x => num(x.months) !== null && x.months <= 12),
       multiple: f.length >= 2,
       onTx: f.some(x => x.onTx),
@@ -31,8 +41,17 @@
     };
   }
 
-  /* MYCPG: risk category. Returns {key:'vhigh'|'high'|'low'|'incomplete', fired:[[ruleId, text, source]]} */
+  /* MYCPG: risk category. Returns {key:'vhigh'|'high'|'low'|'incomplete', fired:[[ruleId, text, source]], needs:[codes]}.
+     A fracture with an unknown date never falls to 'low' and always carries the 'fracture-date' need (M1). */
   function category(p) {
+    const r = categoryCore(p), fx = fractureSummary(p);
+    if (!fx.undated) return { key: r.key, fired: r.fired, needs: [] };
+    const m = ['M1', 'Fracture date needed: confirm whether the fracture was within 12 months before setting the risk category', 'LOCAL'];
+    if (r.key === 'low') return { key: 'incomplete', fired: [m], needs: ['fracture-date'] };
+    return { key: r.key, fired: r.fired.concat([m]), needs: ['fracture-date'] };
+  }
+
+  function categoryCore(p) {
     const fx = fractureSummary(p), t = num(p.t), mof = num(p.mof), hip = num(p.hip);
     const vh = [];
     if (fx.recent12) vh.push(['VH1', 'Fracture within the last 12 months', 'MYCPG']);
@@ -57,6 +76,9 @@
     // Never call a patient "low" on FRAX alone when FRAX says DXA is warranted (found by benchmark A12/A14/C03/C04)
     if (t === null && ((mof !== null && mof >= 10) || (hip !== null && hip > 3)))
       return { key: 'incomplete', fired: [['I2', 'FRAX at or above the DXA threshold without BMD: do DXA before setting a category', 'NICE']] };
+    // Osteopenia-range T-score without FRAX: FRAX is needed before the patient can be called low (B3)
+    if (t !== null && t > -2.5 && t < -1.0 && mof === null && hip === null)
+      return { key: 'incomplete', fired: [['I3', 'Osteopenia-range T-score without FRAX: run FRAX before setting a category', 'MYCPG']] };
     return { key: 'low', fired: [['L1', 'Below treatment thresholds', 'MYCPG']] };
   }
 
@@ -73,35 +95,66 @@
   /* NICE: fast-track DXA within 6 weeks when anabolic treatment is likely (very high risk). */
   function fastTrack(p) { return category(p).key === 'vhigh'; }
 
-  /* Lab flags. kind: 'block' stops or holds treatment, 'flag' needs action alongside. */
+  /* Lab flags. kind: 'block' stops or holds treatment, 'flag' needs action alongside.
+     Element 4 (drugs): the drug ids the flag applies to. treatments() reads every 'block' flag through this list. */
   function labFlags(p) {
     const out = [], ca = num(p.ca), vd = num(p.vd), eg = num(p.egfr);
-    if (ca !== null && ca > 2.60) out.push(['L-CA-HI', 'block', 'Calcium high: check PTH; suspected hyperparathyroidism to specialist', 'NICE']);
-    if (ca !== null && ca < 2.15) out.push(['L-CA-LO', 'block', 'Calcium low: correct before an antiresorptive', 'LOCAL']);
-    if (vd !== null && vd < 75) out.push(['L-VD', 'flag', 'Vitamin D below 75 nmol/L: replete (50,000 IU weekly x 8 weeks or 6,000 IU daily), then 800-1,000 IU/day', 'MYCPG']);
-    if (eg !== null && eg < 30) out.push(['L-EGFR30', 'block', 'eGFR below 30: oral bisphosphonates not recommended', 'MYCPG']);
-    if (eg !== null && eg < 35) out.push(['L-EGFR35', 'block', 'eGFR below 35: zoledronic acid contraindicated', 'MYCPG']);
+    if (ca !== null && ca > 2.60) out.push(['L-CA-HI', 'block', 'Calcium high: check PTH; suspected hyperparathyroidism to specialist', 'NICE', ['teri']]);
+    if (ca !== null && ca < 2.15) out.push(['L-CA-LO', 'block', 'Calcium low: correct before an antiresorptive', 'LOCAL', ANTIRESORPTIVE]);
+    if (vd !== null && vd < 75) out.push(['L-VD', 'flag', 'Vitamin D below 75 nmol/L: replete (50,000 IU weekly x 8 weeks or 6,000 IU daily), then 800-1,000 IU/day', 'MYCPG', ANTIRESORPTIVE]);
+    if (eg !== null && eg < 30) out.push(['L-EGFR30', 'block', 'eGFR below 30: oral bisphosphonates not recommended', 'MYCPG', ['obp']]);
+    if (eg !== null && eg < 35) out.push(['L-EGFR35', 'block', 'eGFR below 35: zoledronic acid contraindicated', 'MYCPG', ['zol']]);
     const missing = ['ca', 'vd', 'egfr'].filter(k => num(p[k]) === null);
     return { flags: out, missing };
   }
 
-  /* MYCPG: treatment options by category with contraindication blocks. */
+  /* MYCPG: treatment options by category with contraindication blocks.
+     Each option: {id, name, kind:'first'|'alt'|'blocked', block: text|null, needs:[codes]}.
+     kind 'blocked' when any block applies: a drug-specific contraindication or a labFlags 'block' flag that names the drug.
+     needs: results missing or to act on before signing (antiresorptives only). Needs do not change kind. */
   function treatments(p) {
-    const cat = category(p).key, eg = num(p.egfr), list = [];
-    const add = (id, name, kind, block) => list.push({ id, name, kind: block ? 'blocked' : kind, block: block || null });
+    const cat = category(p).key, lf = labFlags(p), list = [];
+    const labBlocks = id => lf.flags.filter(f => f[1] === 'block' && (f[4] || []).includes(id)).map(f => f[2]);
+    const needsFor = id => {
+      if (!ANTIRESORPTIVE.includes(id)) return [];
+      const n = [];
+      if (lf.missing.includes('ca')) n.push('ca');
+      if (lf.missing.includes('egfr')) n.push('egfr');
+      if (lf.flags.some(f => f[0] === 'L-VD')) n.push('vd-low');
+      return n;
+    };
+    const add = (id, name, kind, drugBlock) => {
+      const blocks = [drugBlock].concat(labBlocks(id)).filter(Boolean);
+      list.push({ id, name, kind: blocks.length ? 'blocked' : kind, block: blocks.length ? blocks.join('; ') : null, needs: needsFor(id) });
+    };
     if (cat === 'vhigh') {
       add('teri', 'Teriparatide (up to 24 months), then an antiresorptive', 'first');
       add('romo', 'Romosozumab (12 months), then an antiresorptive', 'first', p.cvEvent ? 'Heart attack or stroke in the last 12 months' : null);
       add('deno', 'Denosumab', 'alt');
-      add('zol', 'Zoledronic acid (IV)', 'alt', eg !== null && eg < 35 ? 'eGFR below 35' : null);
+      add('zol', 'Zoledronic acid (IV)', 'alt');
     } else if (cat === 'high') {
-      add('obp', 'Oral bisphosphonate (e.g. alendronate)', 'first', eg !== null && eg < 30 ? 'eGFR below 30' : null);
+      add('obp', 'Oral bisphosphonate (e.g. alendronate)', 'first');
       add('deno', 'Denosumab', 'first');
-      add('zol', 'Zoledronic acid (IV)', 'alt', eg !== null && eg < 35 ? 'eGFR below 35' : null);
+      add('zol', 'Zoledronic acid (IV)', 'alt');
     } else if (cat === 'low') {
       add('life', 'Lifestyle, calcium and vitamin D; review risk', 'first');
     }
     return list;
+  }
+
+  /* Single gate for the Sign button. blocked is true when the drug is not offered, a block applies, a needed result is
+     missing or to act on, or the vertebral SPEP screen blocks. reasons are displayable strings. */
+  function signBlock(p, drugId) {
+    const reasons = [];
+    const tx = treatments(p).find(t => t.id === drugId);
+    if (!tx) reasons.push('Not offered for this risk category');
+    else {
+      if (tx.kind === 'blocked' && tx.block) reasons.push(tx.block);
+      (tx.needs || []).forEach(n => reasons.push(NEEDS_TEXT[n]));
+    }
+    const sec = secondaryScreen(p);
+    if (sec.block) reasons.push(sec.text);
+    return { blocked: reasons.length > 0, reasons };
   }
   function firstLine(p) { const t = treatments(p).filter(x => x.kind === 'first'); return t.map(x => x.id); }
 
@@ -111,16 +164,20 @@
   }
 
   /* LOCAL: secondary-cause screen before treating a vertebral fracture. spep: 'normal' | 'abnormal' | null.
-     Abnormal electrophoresis blocks treatment (exclude myeloma). Missing when required is a visible flag, not a block. */
+     Abnormal electrophoresis always blocks treatment (exclude myeloma), and a waiver cannot override it.
+     Not recorded blocks until it is recorded, or a waiver is passed with both spepWaived (reason) and spepWaivedBy (clinician). */
   function secondaryScreen(p) {
     const required = (p.fractures || []).some(f => f.site === 'vert');
     const spep = p.spep == null ? null : String(p.spep).toLowerCase();
-    if (spep === 'abnormal') return { required, block: true, text: 'Abnormal protein electrophoresis: exclude myeloma (haematology) before osteoporosis treatment', source: 'LOCAL' };
-    if (!required) return { required: false, block: false, text: null, source: 'LOCAL' };
-    if (spep === 'normal') return { required: true, block: false, text: null, source: 'LOCAL' };
-    return { required: true, block: false, text: 'Serum protein electrophoresis needed before treatment (exclude myeloma)', source: 'LOCAL' };
+    if (spep === 'abnormal') return { required, block: true, text: 'Abnormal protein electrophoresis: exclude myeloma (haematology) before osteoporosis treatment', source: 'LOCAL', waived: null };
+    if (!required) return { required: false, block: false, text: null, source: 'LOCAL', waived: null };
+    if (spep === 'normal') return { required: true, block: false, text: null, source: 'LOCAL', waived: null };
+    const reason = typeof p.spepWaived === 'string' ? p.spepWaived.trim() : '';
+    const by = typeof p.spepWaivedBy === 'string' ? p.spepWaivedBy.trim() : '';
+    if (reason && by) return { required: true, block: false, text: null, source: 'LOCAL', waived: { reason, by } };
+    return { required: true, block: true, text: 'Serum protein electrophoresis needed before treatment (exclude myeloma)', source: 'LOCAL', waived: null };
   }
 
-  const api = { category, dxaIndication, fastTrack, labFlags, treatments, firstLine, scopeWarning, fractureSummary, secondaryScreen };
+  const api = { category, dxaIndication, fastTrack, labFlags, treatments, firstLine, scopeWarning, fractureSummary, secondaryScreen, signBlock, ANTIRESORPTIVE, NEEDS_TEXT };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.OsteoRules = api;
 })(typeof window !== 'undefined' ? window : globalThis);
