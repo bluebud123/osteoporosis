@@ -110,6 +110,17 @@
     return (p.sex === 'F' && p.menopause === 'post') ? null : 'Outside the Malaysian CPG population (postmenopausal women): apply with clinician judgement';
   }
 
-  const api = { category, dxaIndication, fastTrack, labFlags, treatments, firstLine, scopeWarning, fractureSummary };
+  /* LOCAL: secondary-cause screen before treating a vertebral fracture. spep: 'normal' | 'abnormal' | null.
+     Abnormal electrophoresis blocks treatment (exclude myeloma). Missing when required is a visible flag, not a block. */
+  function secondaryScreen(p) {
+    const required = (p.fractures || []).some(f => f.site === 'vert');
+    const spep = p.spep == null ? null : String(p.spep).toLowerCase();
+    if (spep === 'abnormal') return { required, block: true, text: 'Abnormal protein electrophoresis: exclude myeloma (haematology) before osteoporosis treatment', source: 'LOCAL' };
+    if (!required) return { required: false, block: false, text: null, source: 'LOCAL' };
+    if (spep === 'normal') return { required: true, block: false, text: null, source: 'LOCAL' };
+    return { required: true, block: false, text: 'Serum protein electrophoresis needed before treatment (exclude myeloma)', source: 'LOCAL' };
+  }
+
+  const api = { category, dxaIndication, fastTrack, labFlags, treatments, firstLine, scopeWarning, fractureSummary, secondaryScreen };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.OsteoRules = api;
 })(typeof window !== 'undefined' ? window : globalThis);

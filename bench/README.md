@@ -6,8 +6,8 @@ Four suites, all run with `npm run bench` (needs Node 18+ and `npm install` once
 | --- | --- | --- |
 | `run-rules.js` | 57 synthetic vignettes against the clinical rules in `src/rules.js` | 57/57 cases, 102/102 checks |
 | `run-checkin.js` | 27 patient check-in answer sets against the flag rules in `src/checkin.js` | 27/27 |
-| `run-finder.js` | Case finder against 100 development reports and 15 stress reports (clinical shorthand), hand-labelled act, review or no | Baseline: dev 99% exact, 0 dismissed; stress 33% exact, 6 dismissed |
-| `run-loop.js` | 26 scenarios that drive the real app headless and check the loop's guarantees, including intake, the patient check-in and the case finder | 26/26 |
+| `run-finder.js` | Case finder against 100 development reports and 15 stress reports (clinical shorthand), hand-labelled act, review or no; plus 6 adversarial checks on `verify()` | Baseline: dev 99% exact, 0 dismissed; stress 33% exact, 6 dismissed; verifier adversarial 6/6 |
+| `run-loop.js` | 35 scenarios that drive the real app headless and check the loop's guarantees: intake, patient check-in, case finder (fracture age, pharmacy and palliative exclusions), vertebral-fracture SPEP, denosumab schedule, long-term follow-up on closure | 35/35 |
 
 Full results are in `results/rules.md`, `results/checkin.md`, `results/finder.md` and `results/loop.md`.
 

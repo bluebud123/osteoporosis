@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **26/26**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **35/35**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -27,6 +27,15 @@ Passed **26/26**. Each test drives the real app (index.html) headless and checks
 | L21 | A seeded patient flag is pinned on the board at start | Req 2, 6 | PASS |
 | L22 | "Every dose" check-in can be accepted as the adherence check at follow-up | Req 5 | PASS |
 | L23 | Check-in cannot start before the patient has acknowledged the result | Req 3 | PASS |
-| L24 | Case finder turns an incidental vertebral fracture in a chest X-ray report into a very-high-risk case | Req 1, 2 | PASS |
+| L24 | Case finder turns an incidental vertebral fracture in a chest X-ray report into a high-risk case when its age is unknown | Req 1, 2 | PASS |
 | L25 | Trauma and tumour reports are not offered as cases; AI controls are hidden outside claude.ai | Req 1 | PASS |
 | L26 | Benchmark table shows the rules' honest stress-set result, and Health shows the proposed indicator | Req 6 | PASS |
+| L27 | Finder skips a patient already on alendronate: chip shown, no primary "Open loop" | Req 1, 5 | PASS |
+| L28 | Finder skip for a palliative patient logs status skipped with its reason and opens no case | Req 1 | PASS |
+| L29 | "Open anyway" still opens a case for an excluded report and records the override | Req 1 | PASS |
+| L30 | Hip or pelvic fragility fracture on MRI with marrow oedema opens as very high risk | Req 1, 2 | PASS |
+| L31 | Abnormal electrophoresis blocks signing in a vertebral-fracture case; normal electrophoresis allows it | Req 5 | PASS |
+| L32 | Electrophoresis not yet done is a visible flag on a vertebral-fracture case, not a block | Req 5 | PASS |
+| L33 | Denosumab: dispensing sets the next dose; warn 14 days before due, overdue crit after 28 days; record dose clears it | Req 5, 6 | PASS |
+| L34 | A closed case with denosumab due stays pinned on the board, and recording the dose clears it | Req 6 | PASS |
+| L35 | Closure as treated hands the patient to long-term follow-up; Health says closed is not cured | Req 5, 6 | PASS |

@@ -74,13 +74,36 @@
     return best;
   }
 
-  /* Checks any reader's output (baseline or AI) against the report: evidence must be quoted verbatim. */
+  /* Verifier-only vocabulary (wider than FX_DEF on purpose: it only confirms a finding, it does not find one). */
+  const V_FX = /(\bfractures?\b|\bfractured\b|\bcompression deformity\b|\bwedge deformity\b|\bwedge compression\b|\bbiconcave deformity\b|\bcrush\b|\bcollapsed?\b|\bvertebroplasty\b|\bkyphoplasty\b|#|\bNO[FH]\b|\bVCF\b|\bvertebra plana\b|\binsufficiency (fractures?|#)|\bwedg(e|ing)\b|\bdeformity\b|\bcollapse\b)/gi;
+  const V_HT = /(\b(loss of|reduced|reduction in)\b[^.;]{0,30}\bheight\b|\bheight (loss|reduction)\b)/gi;
+  const V_BD = /(\bosteopeni\w*|\bosteoporo\w*|\b(reduction in|reduced|low) bone (mineral )?density\b)/gi;
+  /* Does one sentence support the decision? act: an un-negated fracture term that is not pathological.
+     review: an un-negated fracture, deformity, height-loss or bone-density term. */
+  function supports(s, decision) {
+    const pa = patho(s), terms = decision === 'act' ? [V_FX] : [V_FX, V_HT, V_BD];
+    for (const re of terms) for (const m of s.matchAll(re)) {
+      // 'collapse' only counts next to a vertebral level or the word vertebra (not lung collapse)
+      if (/^collapsed?$/i.test(m[0]) && !/(\b[TL]\d{1,2}\b|vertebra)/i.test(s)) continue;
+      if (!negated(s, m) && (decision === 'review' || !pa)) return true;
+    }
+    return false;
+  }
+
+  /* Checks any reader's output (baseline or AI) against the report: evidence must be quoted verbatim,
+     and for act/review at least one quoted sentence must state a fracture (or height loss, or bone density) that is not negated. */
   function verify(r, out) {
     const problems = [];
     if (!out || !['act', 'review', 'no'].includes(out.decision)) problems.push('invalid decision');
     if (out && out.decision !== 'no') {
-      if (!out.evidence || !out.evidence.length) problems.push('no evidence quoted');
-      else out.evidence.forEach(e => { if (!String(r.text).includes(e)) problems.push('evidence not found in report: "' + String(e).slice(0, 60) + '"'); });
+      const ev = [].concat(out.evidence || []);
+      if (!ev.length) problems.push('no evidence quoted');
+      else {
+        ev.forEach(e => { if (!String(r.text).includes(e)) problems.push('evidence not found in report: "' + String(e).slice(0, 60) + '"'); });
+        if (!ev.some(e => sentences(e).some(s => supports(s, out.decision))))
+          problems.push(out.decision === 'act' ? 'no un-negated, non-pathological fracture statement in the quoted evidence'
+            : 'no un-negated fracture, deformity, height-loss or bone-density statement in the quoted evidence');
+      }
     }
     return { ok: problems.length === 0, problems };
   }

@@ -21,7 +21,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | File | What it is |
 | --- | --- |
 | `index.html` | The main app: screening intake (rules run live), case board, 7-stage case loop with result entry, patient phone, specialist inbox, loop-health metrics, Reset button |
-| `src/finder.js` | The case finder: reads radiology report text and finds documented fragility fractures. It has a deterministic keyword baseline, a prompt for an AI reader, and a verifier that rejects any finding whose quoted evidence isn't in the report |
+| `src/finder.js` | The case finder: reads radiology report text and finds documented fragility fractures. It has a deterministic keyword baseline, a prompt for an AI reader, and a verifier that rejects any finding whose quoted evidence isn't in the report, or whose quoted sentence doesn't state an un-negated fracture (for an open decision) or a fracture, deformity, height-loss or bone-density finding (for review) |
 | `src/checkin.js` | The patient check-in: question sets for the first clinic and treatment reviews (English and Arabic), and the deterministic rules that turn answers into clinician flags |
 | `src/rules.js` | The clinical rules engine. It is deterministic, every rule is tagged with its source, and the app and the benchmark share it |
 | `bench/` | The benchmark: synthetic clinical vignettes and headless loop scenarios (see below) |
@@ -93,7 +93,8 @@ npm install && npm run bench
 | Patient check-in flags (27 answer sets) | 27/27 pass |
 | Case finder, keyword baseline: development set (100 reports) | 99% exact, 48/48 fractures caught, 0 silently dismissed |
 | Case finder, keyword baseline: stress set (15 reports, clinical shorthand) | 33% exact, 3/12 caught, **6 silently dismissed** |
-| Loop guarantees (26 headless scenarios on the real app) | 26/26 pass |
+| Case finder verifier: adversarial checks (negated, non-fracture, pathological and not-in-report quotes rejected; real fracture quotes accepted) | 6/6 pass |
+| Loop guarantees (35 headless scenarios on the real app) | 35/35 pass |
 
 On its first run the benchmark found a real false-reassurance bug, which is now fixed: a patient with high FRAX but no DXA was being labelled "low". Details, method and limits are in [`bench/README.md`](bench/README.md). The expected answers are drafts until the clinical lead signs them off.
 

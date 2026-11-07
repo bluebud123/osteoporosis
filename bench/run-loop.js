@@ -26,6 +26,21 @@ function boot() {
   });
 }
 
+/* Helpers for the finder and treatment scenarios. */
+const card = (a, id) => [...a.q('#view').querySelectorAll('.card')].find(c => c.textContent.includes(id));
+const clickEl = el => { if (!el) throw new Error('missing element in card'); el.dispatchEvent(new el.ownerDocument.defaultView.MouseEvent('click', { bubbles: true })); };
+/* R001 (incidental T8 wedge fracture, cough) opened by the finder, taken to the treatment stage. spep: 'normal' | 'abnormal' | null (not entered). */
+async function vertCaseAtTreatment(spep) {
+  const a = await boot(); a.click('[data-tab="find"]');
+  clickEl(card(a, 'R001').querySelector('[data-a="find-open"]')); a.click('[data-open="C-2001"]');
+  a.click('[data-a="topatient"]'); a.click('[data-tb="0"]'); a.click('[data-a="ack"]'); a.click('[data-tab="case"]');
+  a.click('[data-a="order"]'); a.set('#r-t', '-2.8', 'input');
+  if (spep) a.set('#r-spep', spep, 'change');
+  a.click('[data-a="results"]'); a.click('[data-a="decide"]');
+  a.set('input[name="rx-C-2001"][value="obp"]', true); a.set('#sg', 'Dr Tan', 'input');
+  return a;
+}
+
 const tests = [
   ['L01', 'Full journey closes only with evidence', 'Req 1, 5', async () => {
     const a = await boot(); a.open('C-1042');
@@ -195,14 +210,17 @@ const tests = [
     const a = await boot(); a.open('C-1042'); a.click('[data-tab="patient"]');
     return !a.q('[data-a="ci-start"]') && !!a.q('[data-tb="0"]');
   }],
-  ['L24', 'Case finder turns an incidental vertebral fracture in a chest X-ray report into a very-high-risk case', 'Req 1, 2', async () => {
+  ['L24', 'Case finder turns an incidental vertebral fracture in a chest X-ray report into a high-risk case when its age is unknown', 'Req 1, 2', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
     const marked = /<mark>Incidental moderate wedge compression fracture of T8/.test(a.q('#view').innerHTML);
     const btn = [...a.q('#view').querySelectorAll('[data-a="find-open"]')].find(b => /R001/.test(b.closest('.card').textContent));
     btn.dispatchEvent(new (a.q('body').ownerDocument.defaultView.MouseEvent)('click', { bubbles: true }));
     const opened = /Loop opened as C-2001/.test(a.text());
     a.click('[data-open="C-2001"]');
-    return marked && opened && /Khadija M\./.test(a.text()) && /Very high risk/.test(a.text()) && /Found by case finder \(Rules\) in CXR lateral report R001/.test(a.text());
+    // Fracture age is unknown (cough, no acute wording): High, not Very high; the gap is stated in the note and log.
+    return marked && opened && /Khadija M\./.test(a.text()) && /High risk/.test(a.text()) && !/Very high risk/.test(a.text())
+      && /Fracture age unknown: confirm date before treating as very high risk/.test(a.text())
+      && /Found by case finder \(Rules\) in CXR lateral report R001/.test(a.text());
   }],
   ['L25', 'Trauma and tumour reports are not offered as cases; AI controls are hidden outside claude.ai', 'Req 1', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
@@ -215,6 +233,89 @@ const tests = [
     const t = a.text();
     a.click('[data-tab="health"]');
     return /Rules · Stress: unfamiliar wording \(15\)\s*33%\s*3\/12\s*6/.test(t) && /started on treatment within 6 months/.test(a.text()) && /None measures osteoporosis treatment/.test(a.text());
+  }],
+  ['L27', 'Finder skips a patient already on alendronate: chip shown, no primary "Open loop"', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    const c = card(a, 'R020'), primary = c.querySelector('button.primary');
+    return /Pharmacy: on alendronate/.test(c.textContent) && primary.dataset.a === 'find-skip' && /Skip: already treated/.test(primary.textContent)
+      && !c.querySelector('[data-a="find-open"].primary') && /Open anyway/.test(c.querySelector('[data-a="find-open"]').textContent);
+  }],
+  ['L28', 'Finder skip for a palliative patient logs status skipped with its reason and opens no case', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    const c = card(a, 'R005');
+    const chipShown = /Records: palliative care/.test(c.textContent) && c.querySelector('button.primary').dataset.a === 'find-skip';
+    clickEl(c.querySelector('button.primary'));
+    const after = card(a, 'R005');
+    return chipShown && /Skipped on day 0: palliative \(Palliative care\)/.test(after.textContent)
+      && !after.querySelector('[data-a="find-open"]') && !after.querySelector('[data-a="find-skip"]') && !/Loop opened/.test(a.text());
+  }],
+  ['L29', '"Open anyway" still opens a case for an excluded report and records the override', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    clickEl(card(a, 'R020').querySelector('[data-a="find-open"]'));
+    const opened = /Loop opened as C-2001/.test(a.text());
+    a.click('[data-open="C-2001"]');
+    return opened && /Shamsa K\./.test(a.text()) && /Opened despite records \(Alendronate, dispensed 6 weeks ago\)/.test(a.text());
+  }],
+  ['L30', 'Hip or pelvic fragility fracture on MRI with marrow oedema opens as very high risk', 'Req 1, 2', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    clickEl(card(a, 'R029').querySelector('[data-a="find-open"]'));
+    a.click('[data-open="C-2001"]');
+    return /Very high risk/.test(a.text()) && !/Fracture age unknown/.test(a.text()) && /Found by case finder \(Rules\) in MRI pelvis report R029/.test(a.text());
+  }],
+  ['L31', 'Abnormal electrophoresis blocks signing in a vertebral-fracture case; normal electrophoresis allows it', 'Req 5', async () => {
+    const abn = await vertCaseAtTreatment('abnormal');
+    const blocked = abn.q('[data-a="sign"]').disabled && /Abnormal protein electrophoresis: exclude myeloma/.test(abn.text());
+    abn.click('[data-a="sign"]');                                    // a disabled button must not sign either
+    const noSign = !/Prescription signed/.test(abn.text());
+    const nor = await vertCaseAtTreatment('normal');
+    const signable = !nor.q('[data-a="sign"]').disabled;
+    nor.click('[data-a="sign"]');
+    return blocked && noSign && signable && /Prescription signed by Dr Tan: Oral bisphosphonate/.test(nor.text());
+  }],
+  ['L32', 'Electrophoresis not yet done is a visible flag on a vertebral-fracture case, not a block', 'Req 5', async () => {
+    const a = await vertCaseAtTreatment(null);
+    return /Serum protein electrophoresis needed before treatment \(exclude myeloma\)/.test(a.text()) && !a.q('[data-a="sign"]').disabled;
+  }],
+  ['L33', 'Denosumab: dispensing sets the next dose; warn 14 days before due, overdue crit after 28 days; record dose clears it', 'Req 5, 6', async () => {
+    const a = await boot(); a.open('C-1036');
+    a.click('[data-a="dispense"]');                                  // due day 182
+    for (let i = 0; i < 24; i++) a.click('#adv');                    // day 168: warn
+    a.click('[data-tab="board"]');
+    const row = () => [...a.q('#view').querySelectorAll('.case-row')].find(r => r.textContent.includes('Mei Ling'));
+    const warn = /Denosumab dose due/.test(row().textContent);
+    for (let i = 0; i < 7; i++) a.click('#adv');                     // day 217: 35 days overdue
+    const crit = /Denosumab overdue: rebound fracture risk/.test(row().textContent) && row().dataset.sev === 'crit';
+    a.open('C-1036');
+    const due = /Next denosumab dose due day 182/.test(a.text());
+    a.click('[data-a="deno-dose"]');                                 // dose given day 217: next due day 399
+    const cleared = /Next denosumab dose due day 399/.test(a.text()) && !/Denosumab overdue/.test(a.text());
+    a.click('[data-tab="board"]');
+    return warn && crit && due && cleared && !/Denosumab overdue/.test(row().textContent);
+  }],
+  ['L34', 'A closed case with denosumab due stays pinned on the board, and recording the dose clears it', 'Req 6', async () => {
+    const a = await boot();
+    const pinnedText = () => a.text().split('On track')[0];
+    const notYet = !/Huda M\./.test(pinnedText());                   // day 0: due day 22, warn from day 8
+    a.click('#adv'); a.click('#adv');                                // day 14
+    const warn = /Huda M\..*Denosumab dose due/.test(pinnedText());
+    for (let i = 0; i < 6; i++) a.click('#adv');                     // day 56: 34 days overdue
+    const crit = /Huda M\..*Denosumab overdue: rebound fracture risk/.test(pinnedText());
+    a.open('C-1004');                                                // closed case, still visible in the case view
+    a.click('[data-a="deno-dose"]');                                 // next due day 238
+    a.click('[data-tab="board"]');
+    const cleared = !/Huda M\./.test(pinnedText()) && /Huda M\./.test(a.text());
+    return notYet && warn && crit && cleared;
+  }],
+  ['L35', 'Closure as treated hands the patient to long-term follow-up; Health says closed is not cured', 'Req 5, 6', async () => {
+    const a = await boot(); a.open('C-1042');
+    a.click('[data-a="topatient"]'); a.click('[data-tb="0"]'); a.click('[data-a="ack"]'); a.click('[data-tab="case"]');
+    a.click('[data-a="order"]'); a.click('[data-a="results"]'); a.click('[data-a="decide"]');
+    a.set('input[name="rx-C-1042"][value="teri"]', true); a.set('#sg', 'Dr Tan', 'input'); a.click('[data-a="sign"]'); a.click('[data-a="dispense"]');
+    a.set('[data-f="adh"]', true); a.set('[data-f="btm"]', true); a.click('[data-a="follow"]');
+    a.set('[data-f="dxa"]', true); a.click('[data-a="close"]');
+    const fu = /Closed day 0/.test(a.text()) && /Handed to long-term follow-up: yearly check-in from day 365, repeat DXA in 2 years/.test(a.text());
+    a.click('[data-tab="health"]');
+    return fu && /Closed: handed to long-term follow-up/.test(a.text()) && /closed is not cured/.test(a.text());
   }]
 ];
 

@@ -36,7 +36,7 @@ The project is static HTML with no build step, so it hosts free on GitHub Pages 
 | `bench/reports.js`, `bench/reports-stress.js` | Labelled synthetic reports (dev 100, stress 15), loaded by both Node and the page |
 | `src/checkin.js` | Patient check-in (`window.OsteoCheckin`). Question sets `first` and `review` in English and Arabic, plus `flags()` |
 | `prototypes/assessment-mobile.html` | Older standalone assessment flow. It has its own inline copy of the rules, and the I2 fix was applied there too |
-| `bench/` | `run-rules.js` (57 vignettes), `run-checkin.js` (27 answer sets), `run-finder.js` (115 reports; `--ai` with `ANTHROPIC_API_KEY`), `run-loop.js` (26 jsdom scenarios driving the real `index.html`) |
+| `bench/` | `run-rules.js` (57 vignettes), `run-checkin.js` (27 answer sets), `run-finder.js` (115 reports; `--ai` with `ANTHROPIC_API_KEY`), `run-loop.js` (35 jsdom scenarios driving the real `index.html`) |
 
 ## Commands
 
@@ -74,8 +74,15 @@ Done:
 - Patient check-in before every clinic visit.
 - Pivot (agreed): a case finder on radiology report text. Keyword baseline: dev 99%, stress 33% with 6 real fractures silently dismissed. AI reader with verified evidence in the Find tab.
 - Proposed indicator: fragility-fracture patients started on treatment within 6 months. It is not in DoH's 2025 orthopaedic Jawda set (OS001–OS009).
+- Verifier: `verify()` also requires a quoted sentence that supports the decision (act: un-negated, non-pathological fracture term; review: un-negated fracture, deformity, height-loss or bone-density term). Six adversarial checks in `run-finder.js`.
+- Finder fracture age: recent (VH1) only when the evidence or indication says acute, recent, new or marrow oedema, or a fall or injury at hip, wrist, humerus or pelvis. Otherwise "Fracture age unknown: confirm date before treating as very high risk".
+- Finder records lookup (simulated): pharmacy or palliative status excludes a report before a case opens ("Skip" primary, "Open anyway" secondary).
+- Vertebral fracture secondary screen (LOCAL, `secondaryScreen` in `src/rules.js`): serum protein electrophoresis. Abnormal blocks signing; not done is a visible flag. Not in `labFlags()`.
+- Denosumab: dispensing sets the next dose 182 days later (LOCAL). Warn from 14 days before due; crit more than 28 days overdue; applies to closed cases. "Record dose given" resets it.
+- Closure as treated = handed to long-term follow-up (yearly check-in, repeat DXA in 2 years). Not cure. Health view says so.
 
 Open items for the clinical lead:
+- Sign off the LOCAL rules added in this round: the SPEP treatment block for vertebral fractures, the denosumab 182-day interval with 14- and 28-day clocks, the fracture-age rule, and yearly follow-up after closure.
 - Sign off the expected answers in `bench/results/rules.md` and `bench/results/checkin.md`, and the `LOCAL` drug-safety flags (osteonecrosis of the jaw, atypical femoral fracture, denosumab rebound, GI side effects on oral bisphosphonates).
 - Native-speaker clinical review of the Arabic. It uses the feminine form, because the CPG population is postmenopausal women.
 - Institutional permission to submit; confirm the challenge's IP terms.

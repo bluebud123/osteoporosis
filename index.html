@@ -201,17 +201,20 @@ const R = window.OsteoRules;
 const CATNAME = {vhigh:'Very high', high:'High', low:'Low', incomplete:'Not classified'};
 function toPatient(c){
   const r0=c.res||{};
-  if(c.pt) return Object.assign({}, c.pt, {t:r0.t??null, egfr:r0.egfr??null, ca:r0.ca??null, vd:r0.vd??null});
+  if(c.pt) return Object.assign({}, c.pt, {t:r0.t??null, egfr:r0.egfr??null, ca:r0.ca??null, vd:r0.vd??null, spep:r0.spep??null});
   const k=c.clin, fx=[];
   if(k.fxMonths!==null) fx.push({site:k.hipVert?'hip':'wrist', months:k.fxMonths, onGc:k.fxOnGc});
   else if(k.hipVert) fx.push({site:'vert', months:60, onGc:k.fxOnGc});
   if(k.multiFx) fx.push({site:'vert', months:k.fxMonths!==null?k.fxMonths:60, onGc:k.fxOnGc});
   const r=c.res||{};
   return {age:c.age, sex:'F', menopause:'post', fractures:fx, cvEvent:k.cvEvent,
-    t:r.t??null, mof:k.mof, hip:k.hip, egfr:r.egfr??null, ca:r.ca??null, vd:r.vd??null};
+    t:r.t??null, mof:k.mof, hip:k.hip, egfr:r.egfr??null, ca:r.ca??null, vd:r.vd??null, spep:r.spep??null};
 }
 function category(c){ const r=R.category(toPatient(c)); return {key:r.key, name:CATNAME[r.key], why:r.fired.map(f=>f[1]), fired:r.fired}; }
-function labBlocks(c){ if(!c.res) return []; return R.labFlags(toPatient(c)).flags.map(f=>[f[1], f[2]+'.']); }
+/* Returns [kind, text, source]. Lab flags plus the LOCAL secondary-cause screen (SPEP) for vertebral fractures. */
+function labBlocks(c){ if(!c.res) return []; const p=toPatient(c), out=R.labFlags(p).flags.map(f=>[f[1], f[2]+'.', f[3]]), s=R.secondaryScreen(p);
+  if(s.text) out.push([s.block?'block':'flag', s.text+'.', s.source]); return out; }
+function secBlock(c){ return !!(c && c.res && R.secondaryScreen(toPatient(c)).block); }
 function treatments(c){ return R.treatments(toPatient(c)).map(t=>({id:t.id, name:t.name, kind:t.kind, block:t.block?'Blocked: '+t.block:null, why:t.kind==='first'?'First line':'Alternative'})); }
 
 /* ---------- seeded fictional cases (days relative to today = 0) ---------- */
@@ -242,7 +245,7 @@ function seedCases(){ const A = [
   mk({id:'C-1004', name:'Huda M.', age:73, owner:'Dr Lim',
       clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:true, mof:26, hip:5.0, cvEvent:false, note:'Vertebral fracture on old X-ray'},
       hist:[[0,-200,-200],[1,-200,-197],[2,-197,-175],[3,-175,-170],[4,-170,-160],[5,-160,-70],[6,-70,-60]], cur:null, ack:true, tbFirst:{lang:'ar',pass:true},
-      res:{t:-2.7, vd:90, egfr:65, ca:2.32}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-165, dispensed:-160},
+      res:{t:-2.7, vd:90, egfr:65, ca:2.32}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-165, dispensed:-160}, denoDue:22,
       closed:{kind:'treated', day:-60, by:'Dr Lim', text:'Evidence: dispensing record, 3-month adherence check, repeat DXA booked'}}),
   mk({id:'C-1011', name:'Leila B.', age:61, owner:ME,
       clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:false, mof:21, hip:3.2, cvEvent:false, note:'Osteoporosis on DXA'},
@@ -284,7 +287,16 @@ function closeCase(c,kind,text,by,reason){
   const i=curIdx(c); if(i!==null && i>=0){ if(kind==='treated') c.stages[i].end=DAY; }
   c.closed={kind,day:DAY,by,text,reason,stage:i}; log(c,'Closed: '+text);
 }
+/* Denosumab: next dose due in c.denoDue (dispense or dose recorded + 182 days). Warn from 14 days before due;
+   crit when more than 28 days overdue (rebound fracture risk). Applies to closed cases too. */
+function denoSev(c){ if(c.denoDue==null) return null; if(DAY>c.denoDue+28) return 'crit'; if(DAY>=c.denoDue-14) return 'warn'; return null; }
+function denoText(c){ const s=denoSev(c); return s==='crit'?'Denosumab overdue: rebound fracture risk':s==='warn'?'Denosumab dose due':null; }
 function sev(c){
+  const b=sevBase(c), d=denoSev(c);
+  if(!d) return b;
+  return (b==='crit'||d==='crit')?'crit':'warn';
+}
+function sevBase(c){
   if(c.closed) return c.closed.kind==='treated'?'ok':'mute';
   if(!c.owner) return 'crit';
   const pf=pflag(c); if(pf && pf[1]==='crit') return 'crit';
@@ -295,8 +307,9 @@ function sev(c){
 }
 function pflag(c){ const k=c.checkins&&c.checkins[0]; if(!k||k.reviewed) return null; return k.flags.find(f=>f[1]==='crit')||k.flags.find(f=>f[1]==='warn')||null; }
 function statusText(c){
-  if(c.closed) return c.closed.kind==='treated'?'Closed · treated':'Closed · '+(c.closed.reason||'no treatment');
+  if(c.closed) return denoText(c) || (c.closed.kind==='treated'?'Closed · handed to follow-up':'Closed · '+(c.closed.reason||'no treatment'));
   if(!c.owner) return 'Unassigned';
+  if(denoText(c)) return denoText(c);
   const pf=pflag(c); if(pf) return 'Patient flag · '+pf[2].split(':')[0];
   const i=curIdx(c); const st=stageState(c,i);
   if(c.referral.status==='rejected' && i===3) return 'Referral rejected';
@@ -314,7 +327,7 @@ function tick(n){
 /* ---------- views ---------- */
 function counts(){
   const open=CASES.filter(c=>!c.closed);
-  return {needs: open.filter(c=>sev(c)==='crit'||sev(c)==='warn').length, inbox: CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed).length};
+  return {needs: CASES.filter(c=>sev(c)==='crit'||sev(c)==='warn').length, inbox: CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed).length};
 }
 function renderTabs(){
   const k=counts();
@@ -330,11 +343,11 @@ function row(c){
 }
 function vBoard(){
   const open=CASES.filter(c=>!c.closed), closed=CASES.filter(c=>c.closed);
-  const pin=open.filter(c=>sev(c)==='crit'||sev(c)==='warn'), rest=open.filter(c=>!pin.includes(c));
-  return `<div class="card" style="gap:4px"><h2>Case board</h2><span class="small muted">Unassigned, overdue and rejected cases are pinned and cannot be hidden.</span><div class="actions"><button class="act primary" data-a="intake" data-c="*">Screen a new patient</button></div></div>
+  const pin=CASES.filter(c=>sev(c)==='crit'||sev(c)==='warn'), rest=open.filter(c=>!pin.includes(c)), shut=closed.filter(c=>!pin.includes(c));
+  return `<div class="card" style="gap:4px"><h2>Case board</h2><span class="small muted">Unassigned, overdue, rejected and denosumab-due cases are pinned and cannot be hidden.</span><div class="actions"><button class="act primary" data-a="intake" data-c="*">Screen a new patient</button></div></div>
   <div class="sec-label">Needs action (${pin.length})</div>${pin.map(row).join('')||'<div class="empty">Nothing stalled.</div>'}
   <div class="sec-label">On track (${rest.length})</div>${rest.map(row).join('')||'<div class="empty">No open cases on track.</div>'}
-  <div class="sec-label">Closed (${closed.length})</div>${closed.map(row).join('')}`;
+  <div class="sec-label">Closed (${shut.length})</div>${shut.map(row).join('')}`;
 }
 function callout(k,html,src){ return `<div class="callout ${k}"><span>${html}</span>${src?`<span><span class="src">${esc(src)}</span></span>`:''}</div>`; }
 function stageBody(c,i){
@@ -352,7 +365,7 @@ function stageBody(c,i){
   }
   if(i===3){
     const r=c.referral; let h='';
-    labBlocks(c).forEach(([k,t])=>h+=callout(k,esc(t),'MY CPG 2022'));
+    labBlocks(c).forEach(([k,t,s])=>h+=callout(k,esc(t),SRCN[s]||s));
     if(r.status==='none') h+=`<div class="actions"><button class="act primary" data-a="decide">Decide in primary care</button><button class="act" data-a="econsult">E-consult fracture-liaison clinic</button></div>`;
     if(r.status==='sent'||r.status==='rerouted') h+=`<span class="small muted">E-consult with ${esc(r.clinic)}, awaiting answer (clock 7 days).</span><div class="actions"><button class="act" data-a="tospec">Open specialist inbox</button></div>`;
     if(r.status==='rejected') h+=callout('block',`Referral rejected by ${esc(r.clinic)}: ${esc(r.reason)}. You stay owner until a new referral is accepted.`)+`<div class="actions"><button class="act primary" data-a="reroute">Reroute to in-network clinic</button><button class="act" data-a="decide">Decide in primary care instead</button></div>`;
@@ -361,9 +374,9 @@ function stageBody(c,i){
   if(i===4){
     if(c.rx && !c.rx.dispensed) return `<span class="small">Prescribed: <b>${esc(c.rx.name)}</b> by ${esc(c.rx.by)} <span class="badge b-hum">Clinician</span></span><div class="actions"><button class="act primary" data-a="dispense">Dispensing recorded</button>${dropBtn}</div>`;
     const rx=treatments(c), pick=rxPick[c.id]||null;
-    return `${labBlocks(c).map(([k,t])=>callout(k,esc(t),'MY CPG 2022')).join('')}<div class="rx">${rx.map(r=>`<label data-k="${r.kind}"><input type="radio" name="rx-${c.id}" value="${r.id}" ${r.block?'disabled':''} ${pick===r.id?'checked':''}><span>${esc(r.name)}<span class="why">${esc(r.block||r.why)}</span></span><span class="chip ${r.kind==='first'?'c-ok':r.kind==='alt'?'c-mute':'c-crit'}">${r.kind==='first'?'First line':r.kind==='alt'?'Alternative':'Blocked'}</span></label>`).join('')}</div>
+    return `${labBlocks(c).map(([k,t,s])=>callout(k,esc(t),SRCN[s]||s)).join('')}<div class="rx">${rx.map(r=>`<label data-k="${r.kind}"><input type="radio" name="rx-${c.id}" value="${r.id}" ${r.block?'disabled':''} ${pick===r.id?'checked':''}><span>${esc(r.name)}<span class="why">${esc(r.block||r.why)}</span></span><span class="chip ${r.kind==='first'?'c-ok':r.kind==='alt'?'c-mute':'c-crit'}">${r.kind==='first'?'First line':r.kind==='alt'?'Alternative':'Blocked'}</span></label>`).join('')}</div>
       <label class="small muted" for="sg">Prescriber (sign-off)</label><input type="text" id="sg" value="${esc(signer[c.id]||'')}" placeholder="e.g. ${esc(ME)}">
-      <div class="actions"><button class="act primary" data-a="sign" ${pick&&(signer[c.id]||'').trim().length>2?'':'disabled'}>Sign prescription</button>${dropBtn}</div>`;
+      <div class="actions"><button class="act primary" data-a="sign" ${pick&&(signer[c.id]||'').trim().length>2&&!secBlock(c)?'':'disabled'}>Sign prescription</button>${dropBtn}</div>`;
   }
   if(i===5) return `<label class="checkline"><input type="checkbox" data-f="adh" ${c.follow.adh?'checked':''}> 3-month adherence check done</label><label class="checkline"><input type="checkbox" data-f="btm" ${c.follow.btm?'checked':''}> 6-month response markers done</label><div class="actions"><button class="act primary" data-a="follow" ${c.follow.adh&&c.follow.btm?'':'disabled'}>Follow-up complete</button>${dropBtn}</div>`;
   if(i===6){
@@ -377,10 +390,13 @@ function stageBody(c,i){
   return '';
 }
 function resultsForm(c){
-  const d = resDraft[c.id] || (resDraft[c.id] = c.demo ? {t:String(c.demo.t), vd:String(c.demo.vd), egfr:String(c.demo.egfr), ca:String(c.demo.ca)} : {t:'', vd:'', egfr:'', ca:''});
+  const d = resDraft[c.id] || (resDraft[c.id] = c.demo ? {t:String(c.demo.t), vd:String(c.demo.vd), egfr:String(c.demo.egfr), ca:String(c.demo.ca), spep:''} : {t:'', vd:'', egfr:'', ca:'', spep:''});
   const f=(k,l,u,im)=>`<div class="field"><label class="small muted" for="r-${k}">${l}</label><input type="text" id="r-${k}" data-r="${k}" ${im?`inputmode="${im}"`:''} value="${esc(d[k])}" placeholder="${u}"></div>`;
+  const sec=R.secondaryScreen(toPatient(c));
+  const spepFld = sec.required ? `<div class="field full"><label class="small muted" for="r-spep">Serum protein electrophoresis (vertebral fracture: exclude myeloma)</label><select id="r-spep" data-r="spep">
+      <option value="" ${!d.spep?'selected':''}>Not done</option><option value="normal" ${d.spep==='normal'?'selected':''}>Normal</option><option value="abnormal" ${d.spep==='abnormal'?'selected':''}>Abnormal</option></select></div>` : '';
   return `<span class="small muted">DXA and labs ordered${c.demo?' (demo values pre-filled)':''}. Enter results as they return.</span>
-    <div class="fgrid">${f('t','Lowest T-score','e.g. −2.7','')}${f('vd','25-OH vitamin D','nmol/L','decimal')}${f('egfr','eGFR','mL/min/1.73m²','decimal')}${f('ca','Adjusted calcium','mmol/L','decimal')}</div>
+    <div class="fgrid">${f('t','Lowest T-score','e.g. −2.7','')}${f('vd','25-OH vitamin D','nmol/L','decimal')}${f('egfr','eGFR','mL/min/1.73m²','decimal')}${f('ca','Adjusted calcium','mmol/L','decimal')}${spepFld}</div>
     ${msg&&msg.id===c.id?callout('block',esc(msg.text)):''}`;
 }
 
@@ -469,9 +485,13 @@ function vCase(){
   const assign = !c.owner && !c.closed ? callout('block','<b>Unassigned.</b> No GP on record. The case stays pinned until someone takes ownership.')+`<div class="actions"><button class="act primary" data-a="assign">Assign to me (${esc(ME)})</button></div>` : '';
   const res = c.res ? `<dt>Lowest T-score</dt><dd class="mono">${c.res.t} <span class="badge b-rec">Recorded</span></dd><dt>Vitamin D</dt><dd class="mono">${c.res.vd} nmol/L</dd><dt>eGFR</dt><dd class="mono">${c.res.egfr}</dd>` : `<dt>DXA</dt><dd><span class="chip c-warn">Not done · indicated</span></dd>`;
   const thread = c.thread.length ? `<div class="card"><div class="sec-label">E-consult thread</div><div class="thread">${c.thread.map(m=>`<div class="msg-b"><div class="who">${esc(m.who)} · Day ${m.d}</div>${esc(m.text)}</div>`).join('')}</div></div>` : '';
-  const closed = c.closed ? callout(c.closed.kind==='treated'?'ok':'flag',`<b>Closed day ${c.closed.day}</b> by ${esc(c.closed.by)}: ${esc(c.closed.text)}`) : '';
+  const fu = c.closed && c.closed.kind==='treated' ? `<br>Handed to long-term follow-up: yearly check-in from day ${c.closed.day+365}, repeat DXA in 2 years.` : '';
+  const closed = c.closed ? callout(c.closed.kind==='treated'?'ok':'flag',`<b>Closed day ${c.closed.day}</b> by ${esc(c.closed.by)}: ${esc(c.closed.text)}${fu}`) : '';
+  const dn = c.denoDue==null ? '' : `<div class="card"><div class="hrow"><div class="sec-label">Denosumab schedule</div>${denoText(c)?`<span class="chip ${denoSev(c)==='crit'?'c-crit':'c-warn'}">${esc(denoText(c))}</span>`:''}</div>
+    <span>Next denosumab dose due day ${c.denoDue} <span class="src">LOCAL</span></span><div class="actions"><button class="act primary" data-a="deno-dose">Record dose given</button></div></div>`;
   return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}${c.sex||'F'} · ${c.id} · ${c.lang==='ar'?'Arabic':'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
     <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),'MY CPG 2022'):''}${closed}</div>
+    ${dn}
     ${assign}
     <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
     ${checkinCard(c)}
@@ -565,8 +585,15 @@ function median(a){ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), 
 /* ---------- case finder: radiology reports in, cases out ---------- */
 const FD = window.OsteoFinder, RS = window.OsteoReports || {dev:[], stress:[]};
 const ALLREP = {}; [...RS.dev, ...RS.stress].forEach(r=>ALLREP[r.id]=r);
-const FEED_SEED = [['R001','Khadija M.'],['S01','Amna R.'],['R020','Shamsa K.'],['R036','Noor A.'],['S09','Hessa B.'],['R071','Rashid T.'],['R005','Latifa S.'],['S05','Moza H.'],['R053','Maryam J.'],['R077','Sara D.'],['R029','Alia F.'],['S13','Reem N.']];
-function seedFeed(){ return FEED_SEED.filter(([id])=>ALLREP[id]).map(([id,name])=>{ const r=ALLREP[id]; return {r, name, status:'new', rules:FD.find(r), ai:null, caseId:null}; }); }
+/* Third element: simulated records lookup for the patient (pharmacy or EMR). Shown as a chip; excludes the item before a case opens. */
+const FEED_SEED = [['R001','Khadija M.'],['S01','Amna R.'],['R020','Shamsa K.',{rx:'Alendronate, dispensed 6 weeks ago'}],['R036','Noor A.'],['S09','Hessa B.'],['R071','Rashid T.'],['R005','Latifa S.',{status:'Palliative care'}],['S05','Moza H.'],['R053','Maryam J.'],['R077','Sara D.'],['R029','Alia F.'],['S13','Reem N.']];
+function seedFeed(){ return FEED_SEED.filter(([id])=>ALLREP[id]).map(([id,name,rec])=>{ const r=ALLREP[id]; return {r, name, status:'new', rules:FD.find(r), ai:null, caseId:null, rec:rec||null}; }); }
+/* Exclusion before a case opens: already on treatment, or palliative. Returns {label, why} or null. */
+function exclusion(f){ const x=f.rec; if(!x) return null;
+  if(x.rx) return {label:'Skip: already treated', why:x.rx};
+  if(x.status) return {label:/palliative/i.test(x.status)?'Skip: palliative':'Skip: '+x.status.toLowerCase(), why:x.status};
+  return null; }
+function recChip(x){ return x.rx?`<span class="chip c-acc">Pharmacy: on ${esc(x.rx.split(',')[0].toLowerCase())}</span>`:x.status?`<span class="chip c-acc">Records: ${esc(x.status.toLowerCase())}</span>`:''; }
 let FEED = seedFeed(), SAMPLE = null, aiBusy = false, aiMsg = '', bench = null;
 const DN = {act:'Open loop', review:'Needs review', no:'No action'};
 function decide(f){
@@ -584,10 +611,13 @@ function feedCard(f,i){
   let act='';
   if(f.status==='opened') act=`<span class="small">Loop opened as ${f.caseId}.</span><div class="actions"><button class="act" data-open="${f.caseId}">Open case</button></div>`;
   else if(f.status==='dismissed') act=`<span class="small muted">Dismissed by ${esc(ME)}, day ${f.dDay}.</span>`;
-  else if(D.d!=='no') act=`<div class="actions"><button class="act primary" data-a="find-open" data-c="*" data-i="${i}">${D.d==='act'?'Open loop':'Open loop after review'}</button>${D.d==='review'?`<button class="act" data-a="find-dismiss" data-c="*" data-i="${i}">Dismiss</button>`:''}</div>`;
+  else if(f.status==='skipped') act=`<span class="small muted">Skipped on day ${f.dDay}: ${esc(f.skipReason)}. Logged, no case opened.</span>`;
+  else if(D.d!=='no'){ const ex=exclusion(f);
+    act = ex ? `<div class="actions"><button class="act primary" data-a="find-skip" data-c="*" data-i="${i}">${esc(ex.label)}</button><button class="act" data-a="find-open" data-c="*" data-i="${i}">Open anyway</button></div>`
+      : `<div class="actions"><button class="act primary" data-a="find-open" data-c="*" data-i="${i}">${D.d==='act'?'Open loop':'Open loop after review'}</button>${D.d==='review'?`<button class="act" data-a="find-dismiss" data-c="*" data-i="${i}">Dismiss</button>`:''}</div>`; }
   return `<div class="card" style="gap:6px"><div class="hrow"><div><b>${esc(f.name)}</b> <span class="small muted">${r.age}${r.sex} · ${esc(r.mod)} · ${esc(r.ind)}</span></div><span class="small muted mono">${r.id}</span></div>
     <div class="rep" data-d="${D.d}">${markText(r.text, D.ev)}</div>
-    <div class="chips">${chip('Rules',f.rules.decision)}${aiChip}<span class="small muted">${esc(D.why)}</span></div>${missed}${act}</div>`;
+    <div class="chips">${chip('Rules',f.rules.decision)}${aiChip}${f.rec?recChip(f.rec):''}<span class="small muted">${esc(D.why)}</span></div>${missed}${act}</div>`;
 }
 function benchTable(){
   const sets=[['Development (100)',RS.dev],['Stress: unfamiliar wording (15)',RS.stress]];
@@ -605,7 +635,7 @@ function vFind(){
     : `<span class="small muted">AI reader runs when this page is opened inside claude.ai. This copy shows the keyword rules only.</span>`;
   return `<div class="card" style="gap:6px"><h2>Case finder</h2><span class="small muted">Today's radiology reports from across the network. Fractures that were written down but never acted on become cases, with the sentence that proves it. No extra typing for clinicians.</span>${aiCtl}${aiMsg?`<span class="small">${esc(aiMsg)}</span>`:''}</div>
     <div class="sec-label">Needs action (${pending.length})</div>${pending.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">Nothing waiting.</div>'}
-    <div class="sec-label">Opened or dismissed (${done.length})</div>${done.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">None yet.</div>'}
+    <div class="sec-label">Opened, dismissed or skipped (${done.length})</div>${done.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">None yet.</div>'}
     <div class="sec-label">No action (${quiet.length})</div>${quiet.map(f=>feedCard(f,FEED.indexOf(f))).join('')}
     <div class="card"><div class="sec-label">Benchmark: keyword rules vs AI on labelled reports</div>
       <span class="small muted">Synthetic reports, labels drafted by the clinical lead (pending sign-off). An AI answer only counts if the sentence it quotes is really in the report; anything else is sent for human review.</span>
@@ -647,14 +677,23 @@ function benchText(){
   });
   return L.join('\n');
 }
+/* Fracture age is set to recent (0 months, very high risk VH1) only when the quoted evidence or indication says so,
+   or the indication is a fall or injury and the site is hip, wrist, humerus or pelvis. Otherwise age is unknown. */
+const FX_ACUTE = /\b(acute|recent|recently|new|marrow oedema|marrow edema|bone marrow oedema)\b/i, FX_FALL = /\b(fall|fell|fallen|slipped|tripped|injur\w*|trauma\w*|FOOSH)\b/i;
 function openFromFeed(f){
   const D=decide(f), r=f.r, ev=(D.ev||[]).join(' ');
   const old=/\b(old|healed|healing|chronic|previous|previously|prior|stable|united|status post|again noted|known|history of|in situ|unchanged)\b/i.test(ev);
   const site=D.site&&D.site!=='other'?D.site:null;
-  const pt={age:r.age, sex:r.sex, menopause:r.sex==='F'&&r.age>=50?'post':'na', fractures:site?[{site, months:old?null:0}]:[], t:null, mof:null, hip:null};
+  const acute = !old && (FX_ACUTE.test(ev) || FX_ACUTE.test(r.ind||'') || (FX_FALL.test(r.ind||'') && ['hip','wrist','humerus','pelvis'].includes(site)));
+  const unknown = !!site && !acute;
+  const pt={age:r.age, sex:r.sex, menopause:r.sex==='F'&&r.age>=50?'post':'na', fractures:site?[{site, months:acute?0:null}]:[], t:null, mof:null, hip:null};
+  const note = `Found in ${r.mod} report ${r.id}: "${ev}"` + (unknown ? '. Fracture age unknown: confirm date before treating as very high risk.' : '');
   const id='C-'+(nextId++), c=mk({id, name:f.name, age:r.age, sex:r.sex, owner:ME, lang:'en', urgent:R.fastTrack(pt), pt, demo:null, source:'finder',
-    clin:{mof:null, hip:null, cvEvent:false, note:`Found in ${r.mod} report ${r.id}: "${ev}"`}, hist:[[0,DAY,DAY],[1,DAY,null]]});
+    clin:{mof:null, hip:null, cvEvent:false, note}, hist:[[0,DAY,DAY],[1,DAY,null]]});
   c.log.push({d:DAY, text:`Found by case finder (${D.by}) in ${r.mod} report ${r.id}. ${CATNAME[R.category(pt).key]}${R.category(pt).key==='incomplete'?' (DXA needed)':' risk'}. Loop opened; owner ${ME}.${pt.menopause==='post'?' Menopausal status assumed from age; confirm.':''}`});
+  if(unknown) c.log.push({d:DAY, text:'Fracture age unknown: confirm date before treating as very high risk.', cls:'alert'});
+  const ex=exclusion(f);
+  if(ex) c.log.push({d:DAY, text:`Opened despite records (${ex.why}); opened anyway by ${ME}.`, cls:'alert'});
   CASES.unshift(c); f.status='opened'; f.caseId=id;
 }
 window.claude && window.claude.use && window.claude.use('sample').then(s=>{ SAMPLE=s; if(tab==='find') render(); }).catch(()=>{});
@@ -674,6 +713,7 @@ function vHealth(){
    <div class="mgrid">
      <div class="metric"><div class="v">${Math.round(100*treated/CASES.length)}%</div><div class="k">High-risk patients started on treatment</div><div class="n">${treated} of ${CASES.length}</div></div>
      <div class="metric"><div class="v" style="color:${unresolved?'var(--crit)':'inherit'}">${unresolved}</div><div class="k">Unresolved actionable results</div><div class="n">overdue or unassigned</div></div>
+     <div class="metric"><div class="v">${CASES.filter(c=>c.closed&&c.closed.kind==='treated').length}</div><div class="k">Closed: handed to long-term follow-up</div><div class="n">closed is not cured; yearly check-in continues</div></div>
      ${m.map(([k,a])=>`<div class="metric"><div class="v">${a.length?median(a):'–'}</div><div class="k">${k} (median)</div><div class="n">n = ${a.length}</div></div>`).join('')}
    </div>
    ${(()=>{ const fx=CASES.filter(c=>{ const p=toPatient(c); return (p.fractures||[]).length>0; });
@@ -718,6 +758,7 @@ document.addEventListener('click', e=>{
   if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
   if(a==='find-open'){ openFromFeed(FEED[+b.dataset.i]); render(); return; }
   if(a==='find-dismiss'){ const f=FEED[+b.dataset.i]; f.status='dismissed'; f.dDay=DAY; render(); return; }
+  if(a==='find-skip'){ const f=FEED[+b.dataset.i], ex=f&&exclusion(f); if(ex){ f.status='skipped'; f.skipReason=ex.label.replace(/^Skip: /,'')+' ('+ex.why+')'; f.dDay=DAY; } render(); return; }
   if(a==='find-ai'){ if(!aiBusy) runFeedAI(); return; }
   if(a==='bench-ai'){ if(!aiBusy) runBenchAI(); return; }
   if(a==='bench-copy'){ const t=benchText(); navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{bench.msg='Copied. Paste it into the chat.'; render();}).catch(()=>{bench.msg=t; render();}); return; }
@@ -748,24 +789,28 @@ document.addEventListener('click', e=>{
     case 'nurse': c.ack=true; complete(c,1,'Nurse call completed; patient understands next step.'); break;
     case 'order': c.ordered=true; log(c,'DXA and labs ordered'+(c.urgent?' (fast-track).':'.')); break;
     case 'results': {
-      const d=resDraft[c.id]||{}, r={t:num(String(d.t||'').replace('−','-')), vd:num(d.vd), egfr:num(d.egfr), ca:num(d.ca)};
+      const d=resDraft[c.id]||{}, sec=R.secondaryScreen(toPatient(c));
+      const r={t:num(String(d.t||'').replace('−','-')), vd:num(d.vd), egfr:num(d.egfr), ca:num(d.ca), spep:sec.required&&(d.spep==='normal'||d.spep==='abnormal')?d.spep:null};
       if(r.t===null){ msg={id:c.id, text:'Enter the lowest T-score to record the DXA result.'}; break; }
       msg=null; c.res=r; const miss=['vd','egfr','ca'].filter(k=>r[k]===null);
-      complete(c,2,`DXA and labs returned: lowest T ${r.t}, vitamin D ${r.vd??'pending'}, eGFR ${r.egfr??'pending'}, calcium ${r.ca??'pending'}. Category now ${category(c).name}.`);
+      complete(c,2,`DXA and labs returned: lowest T ${r.t}, vitamin D ${r.vd??'pending'}, eGFR ${r.egfr??'pending'}, calcium ${r.ca??'pending'}${sec.required?`, electrophoresis ${r.spep??'not done'}`:''}. Category now ${category(c).name}.`);
       if(miss.length) log(c,'Labs still missing: '+miss.join(', ')+'. Treatment blocks cannot be checked until they return.','alert');
+      if(sec.required && r.spep===null) log(c,'Serum protein electrophoresis not done: needed before treatment (exclude myeloma).','alert');
       break; }
     case 'decide': complete(c,3,'Treatment decided in primary care per CPG.'); break;
     case 'econsult': c.referral={status:'sent', clinic:'Al Noor fracture-liaison clinic', reason:null, history:[['sent',DAY]]}; c.thread.push({who:c.owner, d:DAY, text:`${c.age}F, ${category(c).why.join('; ')}. Asking for a treatment plan.`}); log(c,'E-consult sent to Al Noor fracture-liaison clinic.'); break;
     case 'reroute': c.referral.status='rerouted'; c.referral.clinic='Corniche fracture-liaison clinic (in network)'; c.referral.history.push(['rerouted',DAY]); c.thread.push({who:c.owner, d:DAY, text:'Rerouted to an in-network clinic. Same request.'}); log(c,'Referral rerouted to Corniche fracture-liaison clinic (in network).'); break;
     case 'accept': c.referral.status='accepted'; c.referral.history.push(['accepted',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Accepted. Recommend first-line treatment per CPG; happy to review.'}); complete(c,3,`Referral accepted by ${c.referral.clinic}.`); break;
     case 'reject': { const r=$('rj-'+c.id).value; c.referral.status='rejected'; c.referral.reason=r; c.referral.history.push(['rejected',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Rejected: '+r}); log(c,`Referral rejected by ${c.referral.clinic}: ${r}. Back on GP board.`,'alert'); break; }
-    case 'sign': { const r=treatments(c).find(x=>x.id===rxPick[c.id]); if(!r) break; c.rx={id:r.id,name:r.name,by:signer[c.id].trim(),day:DAY,dispensed:null}; log(c,`Prescription signed by ${c.rx.by}: ${r.name}.`); break; }
-    case 'dispense': c.rx.dispensed=DAY; complete(c,4,'Dispensing recorded by pharmacy.'); break;
+    case 'sign': { if(secBlock(c)) break; const r=treatments(c).find(x=>x.id===rxPick[c.id]); if(!r) break; c.rx={id:r.id,name:r.name,by:signer[c.id].trim(),day:DAY,dispensed:null}; log(c,`Prescription signed by ${c.rx.by}: ${r.name}.`); break; }
+    case 'dispense': c.rx.dispensed=DAY; if(c.rx.id==='deno'){ c.denoDue=DAY+182; log(c,`Denosumab dispensed: next dose due day ${c.denoDue} (6 months).`); } complete(c,4,'Dispensing recorded by pharmacy.'); break;
+    case 'deno-dose': c.denoDue=DAY+182; log(c,`Denosumab dose recorded by ${ME}; next dose due day ${c.denoDue}.`); break;
     case 'follow': complete(c,5,'Follow-up complete: adherence and response markers recorded.'); break;
     case 'close': {
       const ev = c.rx && c.rx.dispensed!=null && c.follow.adh && c.follow.dxa;
       if(!ev){ msg={id:c.id,text:'Closure refused: evidence incomplete (dispensing record, adherence check and repeat DXA booking are all required). Attach evidence, or close with a documented clinician decision (Patient declines…).'}; log(c,'Closure attempt refused by gate: evidence missing.','alert'); break; }
-      msg=null; closeCase(c,'treated','Evidence: dispensing record, adherence check, repeat DXA booked.',ME); break; }
+      msg=null; closeCase(c,'treated','Evidence: dispensing record, adherence check, repeat DXA booked.',ME);
+      log(c,`Handed to long-term follow-up: yearly check-in from day ${c.closed.day+365}, repeat DXA in 2 years.`); break; }
     case 'drop': dropFor=c.id; break;
     case 'drop-cancel': dropFor=null; break;
     case 'drop-ok': { const r=$('dr').value, by=$('drb').value.trim()||ME; dropFor=null; closeCase(c,'drop',r,by,r); break; }
@@ -776,6 +821,7 @@ function inVal(t){ return t.type==='checkbox'?t.checked:t.value; }
 document.addEventListener('change', e=>{
   if(e.target.id==='pt-sel'){ sel=e.target.value; wiz=null; wizDone=null; tb=null; render(); return; }
   if(e.target.dataset.in){ IN[e.target.dataset.in]=inVal(e.target); if(e.target.tagName==='SELECT'||e.target.type==='checkbox'){ render(); } return; }
+  if(e.target.tagName==='SELECT' && e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
   const c=CASES.find(x=>x.id===sel); if(!c) return;
   if(e.target.name && e.target.name.startsWith('rx-')){ rxPick[c.id]=e.target.value; render(); }
   if(e.target.dataset.f){ c.follow[e.target.dataset.f]=e.target.checked; render(); }
@@ -786,7 +832,7 @@ document.addEventListener('input', e=>{
     if(q.type==='text') wiz.a[q.id]=e.target.value; else { wiz.a[q.id]=Object.assign({}, wiz.a[q.id]||{}, {[e.target.dataset.wf]:e.target.value}); }
     const nb=document.querySelector('[data-wnext]'); if(nb) nb.textContent=(q.optional && !String(e.target.value).trim())?PT[(CASES.find(x=>x.id===sel)||{}).lang||'en'].skip:PT[(CASES.find(x=>x.id===sel)||{}).lang||'en'].next2; return; }
   if(e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
-  if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2); }
+  if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2 && !secBlock(CASES.find(x=>x.id===sel))); }
 });
 
 tick(0);
