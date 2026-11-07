@@ -1,6 +1,0 @@
-Age: 78
-Sex: Female
-Study: XR hip
-Indication: Fall at home
-
-Intertrochanteric fracture of the left femur.

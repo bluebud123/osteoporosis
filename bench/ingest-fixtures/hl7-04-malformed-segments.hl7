@@ -1,7 +1,0 @@
-MSH|^~\&|RIS|OSTEO-TEST|OSTEOLOOP|SYNTH|20260421093000||ORU^R01|MSG-0001|P|2.5.1||||||UNICODE UTF-8
-??garbage line here
-PID|1||P-100260^^^LOCAL^MR||SYNTH^PATIENT||19600101|M
-OBR|1|ORD-7815|RPT-7815|XR^XR WRIST^L|||20260401||||||||||||||||||||||||Fall at home
-OBX1|2|TX|REPORT^R||Malformed set id line that must not be read|||||||F
-OBX|1|TX|REPORT^Report||Left distal radius fracture with dorsal angulation.||||||F
-ZXX|custom|segment

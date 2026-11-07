@@ -1,9 +1,0 @@
-case_id,finding_id,patient_id,opened_day,owner_role,risk_category,stage_now,closure_kind,closed_day
-C-1042,F-0030,P-0030,0,GP,vhigh,1,,
-C-1031,F-0007,P-0007,-49,GP,incomplete,2,,
-C-1047,F-0040,P-0040,-3,unassigned,incomplete,1,,
-C-1029,F-0001,P-0001,-30,GP,vhigh,3,,
-C-1018,F-0091,P-0091,-70,GP,high,5,,
-C-1004,F-0087,P-0087,-200,GP,vhigh,closed,treated,-60
-C-1011,F-0038,P-0038,-90,GP,high,closed,drop,-40
-C-1036,F-0096,P-0096,-40,GP,vhigh,4,,

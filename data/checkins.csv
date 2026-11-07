@@ -1,2 +1,0 @@
-checkin_id,case_id,set,answers_json,flags
-CI-0001,C-1018,review,"{""med"":1,""why"":[0],""sym"":[0],""rfall"":0,""rfx"":1,""dental"":1,""cad"":0}","[""P-MISS"",""P-GI""]"
