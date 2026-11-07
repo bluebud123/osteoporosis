@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **35/35**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **40/40**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -39,3 +39,8 @@ Passed **35/35**. Each test drives the real app (index.html) headless and checks
 | L33 | Denosumab: dispensing sets the next dose; warn 14 days before due, overdue crit after 28 days; record dose clears it | Req 5, 6 | PASS |
 | L34 | A closed case with denosumab due stays pinned on the board, and recording the dose clears it | Req 6 | PASS |
 | L35 | Closure as treated hands the patient to long-term follow-up; Health says closed is not cured | Req 5, 6 | PASS |
+| L40 | Check-in wizard: each new control renders; the clinician summary lists red flags first and marks everything patient-reported | Req 3, 6 | PASS |
+| L41 | Check-in wizard in Arabic is right-to-left; the summary records the answers were given in Arabic | Req 5 | PASS |
+| L42 | Language picker offers English, العربية and Bahasa Melayu; a same-day red flag gives the Malay emergency message | Req 5, 6 | PASS |
+| L43 | Free text containing HTML or script is shown escaped on the clinician card | Req 4 | PASS |
+| L44 | A 5,000-character complaint is kept to 1,000 characters and says so on the clinician card | Req 4 | PASS |

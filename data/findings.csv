@@ -99,15 +99,15 @@ F-0097,R097,keyword,no,,,1
 F-0098,R098,keyword,act,vert,"Severe osteoporosis with multiple lumbar compression fractures at L1, L2 and L4.",1
 F-0099,R099,keyword,act,vert,Mild compression deformity of T12 is unchanged from prior.,1
 F-0100,R100,keyword,review,wrist,Fracture of the distal radius cannot be confirmed;,1
-F-0101,S01,keyword,no,,,1
+F-0101,S01,keyword,review,,"# NOF left, displaced.",1
 F-0102,S02,keyword,no,,,1
 F-0103,S03,keyword,review,,The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury.,1
 F-0104,S04,keyword,act,vert,Osteoporotic collapse L2.,1
 F-0105,S05,keyword,no,,,1
-F-0106,S06,keyword,no,,,1
+F-0106,S06,keyword,review,,Undisplaced #NOH.,1
 F-0107,S07,keyword,no,,,1
 F-0108,S08,keyword,no,,,1
-F-0109,S09,keyword,review,,Acute osteoporotic VCF at L3 with marrow oedema.,1
+F-0109,S09,keyword,act,vert,Acute osteoporotic VCF at L3 with marrow oedema.,1
 F-0110,S10,keyword,review,,History of NOF fracture 2023.,1
 F-0111,S11,keyword,no,,,1
 F-0112,S12,keyword,no,,,1

@@ -41,6 +41,22 @@ async function vertCaseAtTreatment(spep) {
   return a;
 }
 
+/* Check-in wizard helpers. The visit section is the same in both sets and is answered by button position. */
+const scaleTo = (a, n) => a.click(`[data-scale="${n}"]`);
+const firstNoFracture = a => { a.ans(1); a.ans(0); a.ans(1); a.ans(1); a.ans(1); a.ans(1); a.ans(1); a.ans(1); a.click('[data-wnext]'); };  // first set: no fracture, skip height and weight
+const visitAnswers = (a, o = {}) => {
+  a.set('#wf-text', o.cc || 'Pain in my lower back when I stand for long', 'input'); a.click('[data-wnext]');   // chief complaint
+  a.ans(o.loc ?? 2); a.ans(o.dur ?? 1);                                  // lower back, weeks
+  scaleTo(a, o.pnow ?? 5); a.click('[data-wnext]');
+  scaleTo(a, o.pworst ?? 7); a.click('[data-wnext]');
+  a.ans(o.night ?? 1); a.ans(o.walk ?? 0);                               // no night pain, walks as usual
+  (o.redf || [6]).forEach(i => a.ans(i)); a.click('[data-wnext]');       // red flags
+  a.set('#wf-text', o.meds || 'Calcium and vitamin D', 'input'); a.click('[data-wnext]');
+  a.click('[data-wnone]'); a.click('[data-wnext]');                      // allergies: none
+  a.click('[data-wnext]');                                               // worries: skipped
+};
+const finishCheckin = a => { a.click('[data-wnext]'); a.click('[data-a="ci-send"]'); };   // question for the doctor: skipped
+
 const tests = [
   ['L01', 'Full journey closes only with evidence', 'Req 1, 5', async () => {
     const a = await boot(); a.open('C-1042');
@@ -171,7 +187,9 @@ const tests = [
     a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
     a.ans(0); a.ans(0); a.ans(0);                                   // fracture: yes, wrist, last 12 months
     [0, 1, 1, 1, 1, 1, 1].forEach(i => a.ans(i));                   // falls none, then no to the rest
-    a.click('[data-wnext]'); a.click('[data-wnext]');               // skip height/weight and question
+    a.click('[data-wnext]');                                        // skip height and weight
+    visitAnswers(a, { redf: [6] });
+    a.click('[data-wnext]');                                        // skip the question for the doctor
     const review = /Check your answers/.test(a.text());
     a.click('[data-a="ci-send"]');
     const urgentMsg = /emergency department/.test(a.text());
@@ -189,7 +207,8 @@ const tests = [
     const arabic = /خلال الشهر الماضي/.test(a.text());
     a.ans(2); a.ans(1); a.click('[data-wnext]');                    // stopped; reason cost
     a.ans(3); a.click('[data-wnext]');                              // no symptoms
-    a.ans(0); a.ans(1); a.ans(1); a.ans(0); a.click('[data-wnext]'); a.click('[data-a="ci-send"]');
+    a.ans(0); a.ans(1); a.ans(1); a.ans(0);                          // no fall, no fracture, no dental plan, calcium taken
+    visitAnswers(a); finishCheckin(a);
     a.click('[data-tab="case"]');
     return arabic && /Reports stopping denosumab: rebound/.test(a.text()) && /answered in Arabic, shown in English/.test(a.text());
   }],
@@ -201,7 +220,8 @@ const tests = [
   ['L22', '"Every dose" check-in can be accepted as the adherence check at follow-up', 'Req 5', async () => {
     const a = await boot(); a.open('C-1018');                        // Salma, follow-up stage, alendronate
     a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
-    a.ans(0); a.ans(3); a.click('[data-wnext]'); a.ans(0); a.ans(1); a.ans(1); a.ans(0); a.click('[data-wnext]'); a.click('[data-a="ci-send"]');
+    a.ans(0); a.ans(3); a.click('[data-wnext]'); a.ans(0); a.ans(1); a.ans(1); a.ans(0);
+    visitAnswers(a); finishCheckin(a);
     const calm = /Sent\. Your care team/.test(a.text());
     a.click('[data-tab="case"]'); a.click('[data-a="ci-adh"]');
     return calm && a.q('[data-f="adh"]').checked && /Adherence check accepted from patient check-in/.test(a.text());
@@ -232,7 +252,7 @@ const tests = [
     const a = await boot(); a.click('[data-tab="find"]');
     const t = a.text();
     a.click('[data-tab="health"]');
-    return /Rules · Stress: unfamiliar wording \(15\)\s*33%\s*3\/12\s*6/.test(t) && /started on treatment within 6 months/.test(a.text()) && /None measures osteoporosis treatment/.test(a.text());
+    return /Rules · Stress: unfamiliar wording \(15\)\s*40%\s*4\/12\s*4/.test(t) && /started on treatment within 6 months/.test(a.text()) && /None measures osteoporosis treatment/.test(a.text());
   }],
   ['L27', 'Finder skips a patient already on alendronate: chip shown, no primary "Open loop"', 'Req 1, 5', async () => {
     const a = await boot(); a.click('[data-tab="find"]');
@@ -316,6 +336,61 @@ const tests = [
     const fu = /Closed day 0/.test(a.text()) && /Handed to long-term follow-up: yearly check-in from day 365, repeat DXA in 2 years/.test(a.text());
     a.click('[data-tab="health"]');
     return fu && /Closed: handed to long-term follow-up/.test(a.text()) && /closed is not cured/.test(a.text());
+  }],
+  ['L40', 'Check-in wizard: each new control renders; the clinician summary lists red flags first and marks everything patient-reported', 'Req 3, 6', async () => {
+    const a = await boot(); a.open('C-1031');
+    a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
+    firstNoFracture(a);
+    visitAnswers(a, { cc: 'Dull ache across my lower back', redf: [0, 3], pnow: 9 });
+    finishCheckin(a);
+    a.click('[data-tab="case"]');
+    const t = a.text(), flagsFirst = t.indexOf('Red flags and flags') < t.indexOf('Chief complaint');
+    const urgentFirst = t.indexOf('New leg weakness or numbness: same-day') < t.indexOf('Pain 8 or more out of 10');
+    return flagsFirst && urgentFirst && /Clinician summary/.test(t) && /Dull ache across my lower back/.test(t)
+      && /Patient-reported/.test(t) && /Patient-reported answers never change the risk category/.test(t);
+  }],
+  ['L41', 'Check-in wizard in Arabic is right-to-left; the summary records the answers were given in Arabic', 'Req 5', async () => {
+    const a = await boot(); a.open('C-1031');
+    a.click('[data-tab="patient"]'); a.click('[data-lang="ar"]'); a.click('[data-a="ci-start"]');
+    const rtl = !!a.q('.wq[dir="rtl"]') && /منذ سن الخمسين/.test(a.text());
+    firstNoFracture(a);
+    visitAnswers(a, { cc: 'ألم في أسفل الظهر' });
+    finishCheckin(a);
+    const sent = /إجاباتكم/.test(a.text());
+    a.click('[data-tab="case"]');
+    return rtl && sent && /answered in Arabic/.test(a.text());
+  }],
+  ['L42', 'Language picker offers English, العربية and Bahasa Melayu; a same-day red flag gives the Malay emergency message', 'Req 5, 6', async () => {
+    const a = await boot(); a.open('C-1031');
+    a.click('[data-tab="patient"]');
+    const labels = [...a.q('.lang').querySelectorAll('button')].map(b => b.textContent.trim());
+    const three = labels.join('|') === 'English|العربية|Bahasa Melayu';
+    a.click('[data-lang="ms"]'); a.click('[data-a="ci-start"]');
+    const malay = /Sejak umur 50/.test(a.text());
+    firstNoFracture(a);
+    visitAnswers(a, { redf: [1] });                                    // bladder or bowel change: same day
+    finishCheckin(a);
+    return three && malay && /Pergi ke jabatan kecemasan sekarang/.test(a.text());
+  }],
+  ['L43', 'Free text containing HTML or script is shown escaped on the clinician card', 'Req 4', async () => {
+    const a = await boot(); a.open('C-1031');
+    a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
+    firstNoFracture(a);
+    visitAnswers(a, { cc: '<img src=x onerror=alert(1)><script>alert(2)</script>' });
+    finishCheckin(a);
+    a.click('[data-tab="case"]');
+    const html = a.q('#view').innerHTML;
+    return !/<img src=x/.test(html) && !/<script>alert\(2\)/.test(html) && /&lt;script&gt;alert\(2\)/.test(html);
+  }],
+  ['L44', 'A 5,000-character complaint is kept to 1,000 characters and says so on the clinician card', 'Req 4', async () => {
+    const a = await boot(); a.open('C-1031');
+    a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
+    firstNoFracture(a);
+    visitAnswers(a, { cc: 'a'.repeat(5000) });
+    finishCheckin(a);
+    a.click('[data-tab="case"]');
+    const t = a.text();
+    return !/a{1001}/.test(t) && /cut at 1,000 characters/.test(t);
   }]
 ];
 

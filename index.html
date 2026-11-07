@@ -147,6 +147,16 @@ textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);
 .rev div{display:grid;gap:1px;border-bottom:1px solid var(--line);padding-bottom:6px}
 .rev .qq{color:var(--muted);font-size:12px}
 details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
+.scale{display:flex;flex-wrap:wrap;gap:6px}
+.scale button{font:inherit;font-size:15px;min-width:38px;flex:1 0 auto;padding:9px 0;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;text-align:center}
+.scale button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.scale-ends{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:4px}
+.ci-sec{margin-top:8px}
+.ci-row{display:grid;grid-template-columns:minmax(110px,36%) 1fr;gap:8px;font-size:12.5px;padding:3px 0;border-bottom:1px dashed var(--line)}
+.ci-k{opacity:.75}
+.ci-v{white-space:pre-wrap;overflow-wrap:anywhere}
+.ci-urgent{color:var(--crit);font-weight:600} .ci-warn{color:var(--warn)}
+@media print{body.ci-printing *{visibility:hidden!important} body.ci-printing .ci-sum,body.ci-printing .ci-sum *{visibility:visible!important} body.ci-printing .ci-sum{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none} .noprint{display:none!important}}
 .flagline{font-size:13px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 /* intake */
 .fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
@@ -175,6 +185,7 @@ details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
 <script src="src/rules.js"></script>
 <script src="src/checkin.js"></script>
 <script src="src/finder.js"></script>
+<script src="src/fhir.js"></script>
 <script src="bench/reports.js"></script>
 <script src="bench/reports-stress.js"></script>
 <script>
@@ -356,7 +367,7 @@ function stageBody(c,i){
   const dropBtn = `<button class="act danger" data-a="drop">Patient declines…</button>`;
   if(i===1){
     if(c.ack===false) return callout('flag','Teach-back answer was wrong. Nurse call task created.')+`<div class="actions"><button class="act primary" data-a="nurse">Nurse call done, patient understands</button>${dropBtn}</div>`;
-    return `<span class="small muted">Waiting for the patient to acknowledge on their phone (${c.lang==='ar'?'Arabic':'English'}).</span><div class="actions"><button class="act" data-a="topatient">Open patient view</button><button class="act" data-a="sms">Resend by SMS</button>${dropBtn}</div>`;
+    return `<span class="small muted">Waiting for the patient to acknowledge on their phone (${LNAME[c.lang]||'English'}).</span><div class="actions"><button class="act" data-a="topatient">Open patient view</button><button class="act" data-a="sms">Resend by SMS</button>${dropBtn}</div>`;
   }
   if(i===2){
     const fast = c.urgent ? callout('flag','Very high risk: fast-track DXA within 6 weeks. If it will be delayed, start an antiresorptive rather than wait.','NICE NG259') : '';
@@ -489,23 +500,27 @@ function vCase(){
   const closed = c.closed ? callout(c.closed.kind==='treated'?'ok':'flag',`<b>Closed day ${c.closed.day}</b> by ${esc(c.closed.by)}: ${esc(c.closed.text)}${fu}`) : '';
   const dn = c.denoDue==null ? '' : `<div class="card"><div class="hrow"><div class="sec-label">Denosumab schedule</div>${denoText(c)?`<span class="chip ${denoSev(c)==='crit'?'c-crit':'c-warn'}">${esc(denoText(c))}</span>`:''}</div>
     <span>Next denosumab dose due day ${c.denoDue} <span class="src">LOCAL</span></span><div class="actions"><button class="act primary" data-a="deno-dose">Record dose given</button></div></div>`;
-  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}${c.sex||'F'} · ${c.id} · ${c.lang==='ar'?'Arabic':'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
+  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}${c.sex||'F'} · ${c.id} · ${LNAME[c.lang]||'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
     <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),'MY CPG 2022'):''}${closed}</div>
     ${dn}
     ${assign}
     <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
-    ${checkinCard(c)}
+    ${checkinCard(c)}${summaryCard(c)}
     ${thread}
-    <div class="card"><div class="sec-label">Audit log</div><ul class="log">${c.log.map(e=>`<li><span class="d">Day ${e.d}</span><span class="${e.cls||''}">${esc(e.text)}</span></li>`).join('')}</ul></div>`;
+    ${fhirCard(c)}<div class="card"><div class="sec-label">Audit log</div><ul class="log">${c.log.map(e=>`<li><span class="d">Day ${e.d}</span><span class="${e.cls||''}">${esc(e.text)}</span></li>`).join('')}</ul></div>`;
 }
 const CI = window.OsteoCheckin;
+/* Language names: English labels for the clinician, native labels for the patient's picker. */
+const LNAME = {en:'English', ar:'Arabic', ms:'Bahasa Melayu'}, LBTN = {en:'English', ar:'العربية', ms:'Bahasa Melayu'};
 const SRCN = {MYCPG:'MY CPG 2022', NICE:'NICE NG259', FRAX:'FRAX input', LOCAL:'LOCAL', PATIENT:'Patient'};
 function ansText(q,v,L){
-  const T=q[L]||q.en;
-  if(v===undefined||v===null||v==='') return L==='ar'?'تم التخطي':'Skipped';
+  const T=q[L]||q.en, SK={en:'Skipped',ar:'تم التخطي',ms:'Dilangkau'}[L]||'Skipped';
+  if(v===undefined||v===null||v==='') return SK;
   if(q.type==='single') return T.opts[v];
-  if(q.type==='multi') return v.map(i=>T.opts[i]).join(', ')||(L==='ar'?'تم التخطي':'Skipped');
-  if(q.type==='numbers') return q.fields.map(([k,u],j)=>v[k]?`${T.labels[j]} ${v[k]} ${u}`:'').filter(Boolean).join(', ')||(L==='ar'?'تم التخطي':'Skipped');
+  if(q.type==='multi') return v.map(i=>T.opts[i]).join(', ')||SK;
+  if(q.type==='numbers') return q.fields.map(([k,u],j)=>v[k]?`${T.labels[j]} ${v[k]} ${u}`:'').filter(Boolean).join(', ')||SK;
+  if(q.type==='scale') return `${v} / 10`;
+  if(q.type==='text' && v===CI.NONE) return CI.NONE_LBL[L]||CI.NONE_LBL.en;
   return String(v);
 }
 function checkinCard(c){
@@ -515,7 +530,7 @@ function checkinCard(c){
   const accept = !k.reviewed && CI.adherent(k.answers) && curIdx(c)===5 && !c.follow.adh ? `<button class="act" data-a="ci-adh">Accept as 3-month adherence check</button>` : '';
   return `<div class="card"><div class="hrow"><div class="sec-label">Patient check-in · Day ${k.d} · ${k.visit==='first'?'before first clinic':'treatment review'}</div><span class="badge b-pt">Patient-reported</span></div>
     ${fl||'<span class="small muted">No flags. Nothing for the clinician to act on.</span>'}
-    <details class="ans"><summary>All answers (${qs.length}; answered in ${k.lang==='ar'?'Arabic':'English'}, shown in English)</summary><div class="rev" style="margin-top:6px">${qs.map(q=>`<div><span class="qq">${esc(q.en.q)}</span><span>${esc(ansText(q,k.answers[q.id],'en'))}</span></div>`).join('')}</div></details>
+    <details class="ans"><summary>All answers (${qs.length}; answered in ${LNAME[k.lang]||'English'}, shown in English)</summary><div class="rev" style="margin-top:6px">${qs.map(q=>`<div><span class="qq">${esc(q.en.q)}</span><span>${esc(ansText(q,k.answers[q.id],'en'))}</span></div>`).join('')}</div></details>
     <span class="small muted">Patient-reported answers never change the risk category on their own. Confirm with the patient before acting.</span>
     ${k.reviewed?`<span class="small">Reviewed by ${esc(k.reviewed.by)}, day ${k.reviewed.d}.</span>`:`<div class="actions"><button class="act primary" data-a="ci-review">Mark reviewed</button>${accept}</div>`}
     ${c.checkins.length>1?`<span class="small muted">${c.checkins.length-1} earlier check-in${c.checkins.length>2?'s':''} in the audit log.</span>`:''}</div>`;
@@ -523,14 +538,46 @@ function checkinCard(c){
 const PT = {
   en:{hello:'Message from your clinic', body:'Your screening shows a high chance of weak bones (osteoporosis). This is common and can be treated, and treatment lowers the chance of another fracture.', q:'Quick check: what is your next step?', opts:['A bone density scan and blood tests','An operation','Nothing is needed'], btn:'I understand my next step', ok:'Thank you. Your care team can see that you understood.', bad:'A nurse will call you to explain. You can also call your clinic.', status:'Your next step', none:'No new messages.',
     next:{1:'A bone density scan and blood tests at your clinic. Your care team will contact you within 7 days.',2:'Have your bone density scan and blood tests. Your clinic has booked them.',3:'Your doctor is choosing the right treatment with you, using your scan and blood results.',4:'Collect your bone medicine from the pharmacy and start it as explained.',5:'Keep taking your medicine. Your care team will review you at 3 and 6 months.',6:'Your review is nearly complete. Your next bone density scan will be booked.',closed:'Your care plan for now is complete. Keep up your calcium, vitamin D and exercise.'},
-    ciT:'Before your clinic visit', ciD:'About 2 minutes. Your answers go to your care team before you arrive, so the visit is about you.', ciB:'Start check-in', ciAgain:'Fill in again', ciLast:'Last sent: day ', of:'of', back:'Back', next2:'Next', skip:'Skip', cancel:'Cancel', revT:'Check your answers', send:'Send to my care team', edit:'Change',
-    sent:'Sent. Your care team will see your answers before your visit.', urgent:'Some of your answers mean your care team should look at them soon. They will contact you within 2 working days. If you have severe pain, cannot walk, or think you have broken a bone, go to the emergency department now.', viewing:'Viewing as'},
-  ar:{hello:'رسالة من عيادتك', body:'تُظهر نتيجة الفحص أنك أكثر عرضة لضعف العظام (هشاشة العظام). هذا أمر شائع ويمكن علاجه، والعلاج يقلل احتمال حدوث كسر آخر.', q:'سؤال سريع: ما هي خطوتك التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لك. يستطيع فريق الرعاية أن يرى أنك فهمت.', bad:'ستتصل بك ممرضة لتشرح لك. يمكنك أيضًا الاتصال بعيادتك.', status:'خطوتك التالية', none:'لا توجد رسائل جديدة.',
-    next:{1:'فحص كثافة العظام وتحاليل دم في عيادتك. سيتواصل معك فريق الرعاية خلال 7 أيام.',2:'أجري فحص كثافة العظام وتحاليل الدم. لقد حجزتها عيادتك.',3:'يختار طبيبك معك العلاج المناسب بناءً على نتائج الفحص والتحاليل.',4:'استلمي دواء العظام من الصيدلية وابدئي به كما شُرح لك.',5:'استمري في تناول دوائك. سيراجعك فريق الرعاية بعد 3 أشهر و6 أشهر.',6:'مراجعتك على وشك الاكتمال. سيتم حجز فحص كثافة العظام القادم.',closed:'اكتملت خطة رعايتك حاليًا. استمري في تناول الكالسيوم وفيتامين د وممارسة الرياضة.'},
-    ciT:'قبل زيارتك للعيادة', ciD:'حوالي دقيقتين. تصل إجاباتك إلى فريق الرعاية قبل وصولك، لتكون الزيارة مخصصة لك.', ciB:'ابدئي تسجيل الحضور', ciAgain:'املئي مرة أخرى', ciLast:'آخر إرسال: اليوم ', of:'من', back:'رجوع', next2:'التالي', skip:'تخطي', cancel:'إلغاء', revT:'راجعي إجاباتك', send:'أرسلي إلى فريق الرعاية', edit:'تغيير',
-    sent:'تم الإرسال. سيرى فريق الرعاية إجاباتك قبل زيارتك.', urgent:'بعض إجاباتك تعني أن فريق الرعاية يجب أن يطّلع عليها قريبًا. سيتواصلون معك خلال يومي عمل. إذا كان لديك ألم شديد، أو لا تستطيعين المشي، أو تظنين أن عظمة قد كُسرت، فتوجهي إلى قسم الطوارئ الآن.', viewing:'العرض باسم'}
+    ciT:'Before your clinic visit', ciD:'About 3 minutes. Your answers go to your care team before you arrive, so the visit is about you.', ciB:'Start check-in', ciAgain:'Fill in again', ciLast:'Last sent: day ', of:'of', back:'Back', next2:'Next', skip:'Skip', cancel:'Cancel', revT:'Check your answers', send:'Send to my care team', edit:'Change',
+    sent:'Sent. Your care team will see your answers before your visit.', urgent:'Some of your answers mean your care team should look at them soon. They will contact you within 2 working days. If you have severe pain, cannot walk, or think you have broken a bone, go to the emergency department now.', urgentNow:'Some of your answers need medical attention today. Go to the emergency department now, or call your clinic now. Do not wait for a call.', viewing:'Viewing as'},
+  ar:{hello:'رسالة من عيادتكم', body:'تُظهر نتيجة الفحص احتمالًا مرتفعًا لضعف العظام (هشاشة العظام). هذا أمر شائع ويمكن علاجه، والعلاج يقلل احتمال حدوث كسر آخر.', q:'سؤال سريع: ما هي خطوتكم التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لكم. يستطيع فريق الرعاية أن يرى أنكم فهمتم.', bad:'ستتصل بكم ممرضة لتشرح لكم. يمكنكم أيضًا الاتصال بعيادتكم.', status:'خطوتكم التالية', none:'لا توجد رسائل جديدة.',
+    next:{1:'فحص كثافة العظام وتحاليل دم في عيادتكم. سيتواصل معكم فريق الرعاية خلال 7 أيام.',2:'أجروا فحص كثافة العظام وتحاليل الدم. حجزتهما عيادتكم.',3:'يختار طبيبكم معكم العلاج المناسب بناءً على نتائج الفحص والتحاليل.',4:'استلموا دواء العظام من الصيدلية وابدأوا به كما شُرح لكم.',5:'استمروا في تناول دوائكم. سيراجعكم فريق الرعاية بعد 3 أشهر و6 أشهر.',6:'مراجعتكم على وشك الاكتمال. سيتم حجز فحص كثافة العظام القادم.',closed:'اكتملت خطة رعايتكم حاليًا. استمروا في تناول الكالسيوم وفيتامين د وممارسة الرياضة.'},
+    ciT:'قبل زيارتكم للعيادة', ciD:'حوالي 3 دقائق. تصل إجاباتكم إلى فريق الرعاية قبل وصولكم، لتكون الزيارة مخصصة لكم.', ciB:'ابدأوا تسجيل الحضور', ciAgain:'أعيدوا تعبئة الاستبيان', ciLast:'آخر إرسال: اليوم ', of:'من', back:'رجوع', next2:'التالي', skip:'تخطي', cancel:'إلغاء', revT:'راجعوا إجاباتكم', send:'أرسلوا إلى فريق الرعاية', edit:'تغيير',
+    sent:'تم الإرسال. سيرى فريق الرعاية إجاباتكم قبل زيارتكم.', urgent:'بعض إجاباتكم تعني أن فريق الرعاية يجب أن يطّلع عليها قريبًا. سيتواصلون معكم خلال يومي عمل. إذا كان لديكم ألم شديد، أو لا تستطيعون المشي، أو تظنون أن عظمة قد كُسرت، فتوجهوا إلى قسم الطوارئ الآن.', urgentNow:'بعض إجاباتكم تحتاج إلى عناية طبية اليوم. توجهوا إلى قسم الطوارئ الآن، أو اتصلوا بعيادتكم الآن. لا تنتظروا اتصالًا.', viewing:'العرض باسم'},
+  ms:{hello:'Mesej daripada klinik anda', body:'Saringan anda menunjukkan kebarangkalian tinggi tulang yang lemah (osteoporosis). Keadaan ini biasa dan boleh dirawat, dan rawatan mengurangkan risiko patah tulang yang lain.', q:'Semakan pantas: apakah langkah seterusnya anda?', opts:['Imbasan ketumpatan tulang dan ujian darah','Pembedahan','Tiada apa-apa diperlukan'], btn:'Saya faham langkah seterusnya', ok:'Terima kasih. Pasukan penjagaan anda dapat melihat bahawa anda faham.', bad:'Seorang jururawat akan menelefon anda untuk menerangkan. Anda juga boleh menghubungi klinik anda.', status:'Langkah seterusnya anda', none:'Tiada mesej baharu.',
+    next:{1:'Imbasan ketumpatan tulang dan ujian darah di klinik anda. Pasukan penjagaan akan menghubungi anda dalam masa 7 hari.',2:'Jalani imbasan ketumpatan tulang dan ujian darah. Klinik anda telah menempahnya.',3:'Doktor anda sedang memilih rawatan yang sesuai bersama anda, menggunakan keputusan imbasan dan ujian darah anda.',4:'Ambil ubat tulang anda dari farmasi dan mulakan seperti yang diterangkan.',5:'Teruskan mengambil ubat anda. Pasukan penjagaan akan menyemak anda pada bulan ke-3 dan ke-6.',6:'Semakan anda hampir siap. Imbasan ketumpatan tulang seterusnya akan ditempah.',closed:'Pelan penjagaan anda buat masa ini sudah lengkap. Teruskan kalsium, vitamin D dan senaman.'},
+    ciT:'Sebelum lawatan klinik anda', ciD:'Lebih kurang 3 minit. Jawapan anda dihantar kepada pasukan penjagaan sebelum anda tiba, supaya lawatan itu tertumpu kepada anda.', ciB:'Mula semakan', ciAgain:'Isi semula', ciLast:'Kali terakhir dihantar: hari ', of:'daripada', back:'Kembali', next2:'Seterusnya', skip:'Langkau', cancel:'Batal', revT:'Semak jawapan anda', send:'Hantar kepada pasukan penjagaan saya', edit:'Tukar',
+    sent:'Dihantar. Pasukan penjagaan anda akan melihat jawapan anda sebelum lawatan anda.', urgent:'Sebahagian jawapan anda bermakna pasukan penjagaan perlu menyemaknya tidak lama lagi. Mereka akan menghubungi anda dalam masa 2 hari bekerja. Jika anda mengalami sakit yang teruk, tidak dapat berjalan, atau fikir tulang anda patah, pergi ke jabatan kecemasan sekarang.', urgentNow:'Sebahagian jawapan anda memerlukan rawatan perubatan hari ini. Pergi ke jabatan kecemasan sekarang, atau hubungi klinik anda sekarang. Jangan tunggu panggilan.', viewing:'Dipaparkan sebagai'}
 };
 let wiz=null, wizDone=null;
+/* ---------- FHIR export (src/fhir.js): synthetic R4 collection for the open case ---------- */
+let fhirMsg='';
+function fhirBundle(c){
+  const f=FEED.find(x=>x.caseId===c.id), d=f?decide(f):null;
+  return window.OsteoFhir.bundle(c,{anchor:new Date().toISOString().slice(0,10), day:DAY, stages:STAGES, clockFor, category:category(c), patient:toPatient(c),
+    checkin:k=>CI.questions(k.visit,k.answers).map(q=>({linkId:q.id, text:q.en.q, value:ansText(q,k.answers[q.id],'en')})),
+    report:f?{id:f.r.id, mod:f.r.mod, text:f.r.text, evidence:(d&&d.ev)||[], decision:d?d.d:null}:null});
+}
+function fhirCard(c){
+  return `<div class="card"><div class="sec-label">Export FHIR bundle</div><span class="small muted">Synthetic FHIR R4 collection for this case. Codes are local for now: not yet mapped to SNOMED CT, LOINC or RxNorm.</span><div class="actions"><button class="act primary" data-a="fhir">Download JSON</button><button class="act" data-a="fhir-copy">Copy JSON</button></div>${fhirMsg?`<span class="small">${esc(fhirMsg)}</span>`:''}</div>`;
+}
+function fhirAction(copy){
+  const c=CASES.find(x=>x.id===sel); if(!c) return;
+  let json; try{ json=window.OsteoFhir.toJSON(fhirBundle(c)); }catch(e){ fhirMsg='Export failed for this case.'; render(); return; }
+  if(copy){
+    try{ navigator.clipboard.writeText(json).then(()=>{fhirMsg='Copied to the clipboard.'; render();}).catch(()=>{fhirMsg='Copy was blocked in this view. Try Download JSON.'; render();}); }
+    catch(e){ fhirMsg='Copy is not available in this view. Try Download JSON.'; render(); }
+    return;
+  }
+  try{
+    const url=URL.createObjectURL(new Blob([json],{type:'application/fhir+json'}));
+    const a=document.createElement('a'); a.href=url; a.download=c.id+'-fhir-bundle.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+    fhirMsg='Download started for '+c.id+'.';
+  }catch(e){ fhirMsg='Download is blocked in this view. Use Copy JSON.'; }
+  render();
+}
 function wizard(c,L,T,rtl){
   const qs=CI.questions(wiz.visit,wiz.a), n=qs.length;
   if(wiz.step>=n){
@@ -538,20 +585,28 @@ function wizard(c,L,T,rtl){
       <div class="actions" dir="${rtl}"><button class="act primary" data-a="ci-send">${T.send}</button><button class="act" data-wgo="${n-1}">${T.back}</button></div>`;
   }
   const q=qs[wiz.step], Q=q[L]||q.en, v=wiz.a[q.id];
-  let body='';
-  if(q.type==='single') body=`<div class="tb" dir="${rtl}">${Q.opts.map((o,i)=>`<button data-ans="${i}" aria-pressed="${v===i}">${esc(o)}</button>`).join('')}</div>`;
-  if(q.type==='multi') body=`<div class="tb" dir="${rtl}">${Q.opts.map((o,i)=>`<button data-ans="${i}" aria-pressed="${Array.isArray(v)&&v.includes(i)}">${esc(o)}</button>`).join('')}</div>`;
+  let body='', answered=true;
+  if(q.type==='single'){ body=`<div class="tb" dir="${rtl}">${Q.opts.map((o,i)=>`<button data-ans="${i}" aria-pressed="${v===i}">${esc(o)}</button>`).join('')}</div>`; answered=v!==undefined; }
+  if(q.type==='multi'){ body=`<div class="tb" dir="${rtl}">${Q.opts.map((o,i)=>`<button data-ans="${i}" aria-pressed="${Array.isArray(v)&&v.includes(i)}">${esc(o)}</button>`).join('')}</div>`; answered=Array.isArray(v)&&v.length>0; }
+  if(q.type==='scale'){
+    body=`<div class="scale" dir="ltr" role="group" aria-label="${esc(Q.q)}">${[0,1,2,3,4,5,6,7,8,9,10].map(i=>`<button data-scale="${i}" aria-pressed="${v===i}">${i}</button>`).join('')}</div><div class="scale-ends small muted" dir="${rtl}"><span>${esc(Q.lo)}</span><span>${esc(Q.hi)}</span></div>`;
+    answered=Number.isInteger(v);
+  }
   if(q.type==='numbers') body=`<div class="fgrid" dir="${rtl}">${q.fields.map(([k,u],j)=>`<div class="field"><label class="small muted" for="wf-${k}">${Q.labels[j]} (${u})</label><input type="text" inputmode="decimal" id="wf-${k}" data-wf="${k}" value="${esc((v||{})[k]||'')}"></div>`).join('')}</div>`;
-  if(q.type==='text') body=`<textarea id="wf-text" data-wf="text" dir="${rtl}" placeholder="${esc(Q.ph)}">${esc(v||'')}</textarea>`;
-  const answered = q.type==='multi' ? Array.isArray(v)&&v.length>0 : q.type==='single' ? v!==undefined : true;
+  if(q.type==='text'){
+    const none=v===CI.NONE;
+    body=(q.none?`<div class="lang" dir="${rtl}"><button class="pill" data-wnone="1" aria-pressed="${none}">${esc(CI.NONE_LBL[L]||CI.NONE_LBL.en)}</button></div>`:'')
+      +`<textarea id="wf-text" data-wf="text" dir="${rtl}" maxlength="${CI.MAX_TEXT}" placeholder="${esc(Q.ph)}">${esc(v&&!none?v:'')}</textarea>`;
+    answered=none||!!q.optional||String(v||'').trim().length>0;
+  }
   const nextBtn = q.type==='single' ? '' : `<button class="act primary" data-wnext="1" ${answered?'':'disabled'}>${q.optional&&!v?T.skip:T.next2}</button>`;
   return `<div class="small muted" dir="${rtl}">${T.ciT} · ${wiz.step+1} ${T.of} ${n}</div><div class="prog" dir="${rtl}"><i style="width:${Math.round(100*(wiz.step+1)/(n+1))}%"></i></div>
     <div class="wq" dir="${rtl}">${esc(Q.q)}</div>${body}
     <div class="actions" dir="${rtl}">${nextBtn}${wiz.step>0?`<button class="act" data-wgo="${wiz.step-1}">${T.back}</button>`:''}<button class="act" data-a="ci-cancel">${T.cancel}</button></div>`;
 }
 function vPatient(){
-  const c=CASES.find(x=>x.id===sel); const L=c?c.lang:'en'; const T=PT[L]; const rtl=L==='ar'?'rtl':'ltr';
-  const langs=`<div class="lang"><button class="pill" data-lang="en" aria-pressed="${L==='en'}">English</button><button class="pill" data-lang="ar" aria-pressed="${L==='ar'}" style="font-family:var(--f-ar)">العربية</button></div>`;
+  const c=CASES.find(x=>x.id===sel); const L=c?c.lang:'en'; const T=PT[L]||PT.en; const rtl=L==='ar'?'rtl':'ltr';
+  const langs=`<div class="lang">${CI.LANGS.map(l=>`<button class="pill" data-lang="${l}" aria-pressed="${L===l}"${l==='ar'?' style="font-family:var(--f-ar)"':''}>${LBTN[l]}</button>`).join('')}</div>`;
   const picker=`<label class="small muted" for="pt-sel">Demo: view the phone of</label><select id="pt-sel">${CASES.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name)} · ${x.id}</option>`).join('')}</select>`;
   let inner='';
   if(!c) inner=`<div class="pmsg muted">${T.none}</div>`;
@@ -566,11 +621,21 @@ function vPatient(){
       if(c.ack && ci===2 && c.stages[1].end===DAY) inner+=`<div class="pmsg" dir="${rtl}" style="color:var(--ok)">${T.ok}</div>`;
       inner+=`<div class="pcard" dir="${rtl}"><div class="sec-label">${T.status}</div><div class="pmsg">${c.closed?T.next.closed:T.next[ci]||''}</div></div>`;
     }
-    if(wizDone && wizDone.id===c.id) inner+=`<div class="callout ${wizDone.crit?'block':'ok'}" dir="${rtl}">${wizDone.crit?T.urgent:T.sent}</div>`;
+    if(wizDone && wizDone.id===c.id) inner+=`<div class="callout ${wizDone.crit?'block':'ok'}" dir="${rtl}">${wizDone.crit?(wizDone.now?T.urgentNow:T.urgent):T.sent}</div>`;
     if(!c.closed && !(ci===1 && c.ack!==true)) inner+=`<div class="pcard" dir="${rtl}"><div style="font-weight:600">${T.ciT}</div><div class="small muted">${T.ciD}</div>${last?`<div class="small muted">${T.ciLast}${last.d}</div>`:''}<div class="actions"><button class="act primary" data-a="ci-start">${last?T.ciAgain:T.ciB}</button></div></div>`;
   }
-  return `<div class="card" style="gap:6px"><h2>Patient's phone</h2><span class="small muted">What the patient sees and fills in before every clinic visit. Arabic needs native-speaker clinical review.</span>${picker}</div>
-    <div class="phone"><div class="screen">${inner}</div></div>`;
+  return `<div class="card" style="gap:6px"><h2>Patient's phone</h2><span class="small muted">What the patient sees and fills in before every clinic visit. Arabic and Malay need native-speaker clinical review.</span>${picker}</div>
+    <div class="phone"><div class="screen">${inner}</div></div>${c&&c.checkins[0]?summaryCard(c):''}`;
+}
+/* Clinician summary (src/checkin.js summary): one printable card, English labels, patient text verbatim and escaped. */
+function summaryCard(c){
+  const k=c.checkins&&c.checkins[0]; if(!k) return '';
+  const S=CI.summary({checkin:k, rx:c.rx&&c.rx.id});
+  return `<div class="card ci-sum">
+    <div class="hrow"><div><div class="sec-label">Clinician summary · Day ${k.d} · ${esc(S.visitLabel)}</div><span class="small muted">${esc(c.name)} · answered in ${esc(LNAME[k.lang]||'English')}</span></div><span class="badge b-pt">Patient-reported</span></div>
+    ${S.sections.map(sec=>`<div class="ci-sec"><div class="sec-label">${esc(sec.title)}</div>${sec.items.map(it=>`<div class="ci-row"><span class="ci-k">${esc(it.label)}</span><span class="ci-v ${it.level==='crit'?'ci-urgent':it.level==='warn'?'ci-warn':''}">${esc(it.value)}${it.cut?` <span class="small muted">(cut at ${CI.MAX_TEXT.toLocaleString('en-US')} characters)</span>`:''}</span></div>`).join('')}</div>`).join('')}
+    <span class="small muted">${esc(S.note)}</span>
+    <div class="actions noprint"><button class="act" data-a="ci-print">Print summary</button></div></div>`;
 }
 function vSpecialist(){
   const inbox=CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed);
@@ -744,6 +809,8 @@ document.addEventListener('click', e=>{
   if(b.dataset.open){ sel=b.dataset.open; tab='case'; tb=null; wiz=null; wizDone=null; msg=null; dropFor=null; render(); window.scrollTo(0,0); return; }
   if(b.dataset.lang){ const c=CASES.find(x=>x.id===sel); if(c) c.lang=b.dataset.lang; render(); return; }
   if(b.dataset.tb!==undefined){ tb=+b.dataset.tb; render(); return; }
+  if(wiz && b.dataset.scale!==undefined){ const q=CI.questions(wiz.visit,wiz.a)[wiz.step]; wiz.a[q.id]=+b.dataset.scale; render(); return; }
+  if(wiz && b.dataset.wnone!==undefined){ const q=CI.questions(wiz.visit,wiz.a)[wiz.step]; wiz.a[q.id]=CI.NONE; render(); return; }
   if(wiz && b.dataset.ans!==undefined){
     const q=CI.questions(wiz.visit,wiz.a)[wiz.step], i=+b.dataset.ans;
     if(q.type==='single'){ wiz.a[q.id]=i; wiz.step++; }
@@ -755,6 +822,7 @@ document.addEventListener('click', e=>{
   if(wiz && b.dataset.wgo!==undefined){ wiz.step=+b.dataset.wgo; render(); return; }
   if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; FEED=seedFeed(); aiMsg=''; bench=null; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
   const a=b.dataset.a; if(!a) return;
+  if(a==='ci-print'){ document.body.classList.add('ci-printing'); try{ window.print(); }catch(e){} document.body.classList.remove('ci-printing'); return; }
   if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
   if(a==='find-open'){ openFromFeed(FEED[+b.dataset.i]); render(); return; }
   if(a==='find-dismiss'){ const f=FEED[+b.dataset.i]; f.status='dismissed'; f.dDay=DAY; render(); return; }
@@ -764,6 +832,7 @@ document.addEventListener('click', e=>{
   if(a==='bench-copy'){ const t=benchText(); navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{bench.msg='Copied. Paste it into the chat.'; render();}).catch(()=>{bench.msg=t; render();}); return; }
   if(a==='intake-clear'){ IN=Object.assign({}, BLANK_IN); inDone=null; render(); return; }
   if(a==='intake-issue'){ issueIntake(); render(); window.scrollTo(0,0); return; }
+  if(a==='fhir'||a==='fhir-copy'){ fhirAction(a==='fhir-copy'); return; }
   const c=CASES.find(x=>x.id===(b.dataset.c||sel)); if(!c) return;
   const i=curIdx(c);
   switch(a){
@@ -774,16 +843,16 @@ document.addEventListener('click', e=>{
     case 'ci-start': wiz={id:c.id, visit:CI.visitFor(c), step:0, a:{}}; wizDone=null; break;
     case 'ci-cancel': wiz=null; break;
     case 'ci-send': {
-      const qs=CI.questions(wiz.visit,wiz.a), a={}; qs.forEach(q=>{ if(wiz.a[q.id]!==undefined) a[q.id]=wiz.a[q.id]; });
-      const fl=CI.flags(wiz.visit,a,{rx:c.rx&&c.rx.id}), crit=fl.some(f=>f[1]==='crit');
+      const a=CI.normalise(wiz.visit, wiz.a);      // clamps scales, caps text at 1,000 characters, drops answers to hidden questions
+      const fl=CI.flags(wiz.visit,a,{rx:c.rx&&c.rx.id}), crit=fl.some(f=>f[1]==='crit'), now=CI.sameDay(fl);
       c.checkins.unshift({d:DAY, visit:wiz.visit, lang:c.lang, answers:a, flags:fl, reviewed:null});
-      log(c,`Patient check-in received (${wiz.visit==='first'?'before first clinic':'treatment review'}, ${c.lang==='ar'?'Arabic':'English'}): ${fl.length} flag${fl.length===1?'':'s'}${crit?', urgent':''}.`, crit?'alert':'');
-      wizDone={id:c.id, crit}; wiz=null; break; }
+      log(c,`Patient check-in received (${wiz.visit==='first'?'before first clinic':'treatment review'}, ${LNAME[c.lang]||'English'}): ${fl.length} flag${fl.length===1?'':'s'}${crit?', urgent':''}${now?', same day':''}.`, crit?'alert':'');
+      wizDone={id:c.id, crit, now}; wiz=null; break; }
     case 'ci-review': c.checkins[0].reviewed={by:ME, d:DAY}; log(c,`Patient check-in reviewed by ${ME}.`); break;
     case 'ci-adh': c.follow.adh=true; c.checkins[0].reviewed={by:ME, d:DAY}; log(c,`Adherence check accepted from patient check-in (every dose) by ${ME}.`); break;
     case 'ack':
       if(!c.tbFirst) c.tbFirst={lang:c.lang, pass:tb===0};
-      if(tb===0){ c.ack=true; complete(c,1,`Patient acknowledged in ${c.lang==='ar'?'Arabic':'English'}; teach-back correct.`); }
+      if(tb===0){ c.ack=true; complete(c,1,`Patient acknowledged in ${LNAME[c.lang]||'English'}; teach-back correct.`); }
       else { c.ack=false; log(c,'Teach-back wrong. Nurse call task created.','alert'); }
       tb=null; break;
     case 'nurse': c.ack=true; complete(c,1,'Nurse call completed; patient understands next step.'); break;
@@ -830,7 +899,9 @@ document.addEventListener('input', e=>{
   if(e.target.dataset.in && e.target.type==='text'){ IN[e.target.dataset.in]=e.target.value; const r=$('inres'); if(r) r.innerHTML=intakeResult(); return; }
   if(wiz && e.target.dataset.wf){ const q=CI.questions(wiz.visit,wiz.a)[wiz.step];
     if(q.type==='text') wiz.a[q.id]=e.target.value; else { wiz.a[q.id]=Object.assign({}, wiz.a[q.id]||{}, {[e.target.dataset.wf]:e.target.value}); }
-    const nb=document.querySelector('[data-wnext]'); if(nb) nb.textContent=(q.optional && !String(e.target.value).trim())?PT[(CASES.find(x=>x.id===sel)||{}).lang||'en'].skip:PT[(CASES.find(x=>x.id===sel)||{}).lang||'en'].next2; return; }
+    const nb=document.querySelector('[data-wnext]'), L=(CASES.find(x=>x.id===sel)||{}).lang||'en', TT=PT[L]||PT.en;
+    if(nb){ nb.textContent=(q.optional && !String(e.target.value).trim())?TT.skip:TT.next2; if(q.type==='text') nb.disabled=!(q.optional||String(e.target.value).trim()); }
+    return; }
   if(e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
   if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2 && !secBlock(CASES.find(x=>x.id===sel))); }
 });
