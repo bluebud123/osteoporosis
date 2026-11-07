@@ -1,0 +1,116 @@
+report_id,patient_id,modality,date,age,sex,text,indication,label,set
+R001,P-0001,CXR lateral,2026-10-08,71,F,Lungs are clear. No pleural effusion. Incidental moderate wedge compression fracture of T8 with approximately 35% anterior height loss.,Cough,act,dev
+R002,P-0002,CT abdomen/pelvis,2026-10-27,68,F,"No acute intra-abdominal pathology. Appendix normal. Incidental note of an L1 compression fracture, age indeterminate.",Abdominal pain,act,dev
+R003,P-0003,CT chest,2026-10-26,77,F,Stable 4 mm nodule in the right upper lobe. Bones: biconcave deformity of T11 and T12 vertebral bodies consistent with osteoporotic fractures.,Pulmonary nodule follow-up,act,dev
+R004,P-0004,CXR lateral,2026-10-25,64,F,Heart size normal. Lungs clear. There is loss of height of the T7 vertebral body in keeping with a compression fracture.,Pre-operative,act,dev
+R005,P-0005,CT abdomen,2026-10-24,82,F,Left 5 mm vesicoureteric junction calculus with mild hydronephrosis. Old healed L2 vertebral compression fracture.,Renal colic,act,dev
+R006,P-0006,CT chest/abdomen,2026-10-23,73,M,No mass identified. Diffuse osteopenia. Crush fracture of T12 with approximately 50% height loss; no retropulsion. No lytic or sclerotic lesion.,Weight loss,act,dev
+R007,P-0007,CT KUB,2026-09-19,69,F,"No urinary tract calculus. Incidentally, there is a wedge fracture of L1.",Haematuria,act,dev
+R008,P-0008,CXR,2026-10-21,75,F,Mild cardiomegaly. Small bilateral effusions. Exaggerated thoracic kyphosis with multiple mid-thoracic vertebral compression fractures.,Shortness of breath,act,dev
+R009,P-0009,CT pulmonary angiogram,2026-10-20,66,F,"No pulmonary embolism. Superior endplate fracture of T9 with mild height loss, likely osteoporotic.",Chest pain,act,dev
+R010,P-0010,CT abdomen/pelvis,2026-10-19,80,F,Faecal loading. No obstruction. Vertebral bodies: L3 is collapsed. No aggressive features.,Constipation,act,dev
+R011,P-0011,XR lumbar spine,2026-10-18,72,F,Acute-appearing compression fracture of L2 with 25% loss of anterior height. Degenerative changes at L4-5.,Back pain after lifting,act,dev
+R012,P-0012,XR thoracic spine,2026-10-17,78,F,Wedge fractures of T6 and T8. Generalised reduction in bone density.,"Back pain, no trauma",act,dev
+R013,P-0013,MRI lumbar spine,2026-10-16,63,F,Bone marrow oedema within L1 with superior endplate depression in keeping with an acute osteoporotic compression fracture. No soft tissue mass.,Sudden back pain,act,dev
+R014,P-0014,XR lumbar spine,2026-10-15,70,F,Status post vertebroplasty at L1. Cement within the vertebral body. No new fracture.,Chronic back pain,act,dev
+R015,P-0015,XR thoracolumbar spine,2026-10-14,74,M,"Anterior wedging of T12 with approximately 30% height loss, consistent with fracture. Osteopenic bones.",Height loss,act,dev
+R016,P-0016,CT lumbar spine,2026-10-13,67,F,Fall from standing height. Burst-type pattern absent; there is a compression fracture of L4 superior endplate.,Fall from standing,act,dev
+R017,P-0017,XR thoracic spine,2026-10-12,85,F,Grade 3 wedge deformity of T10. Grade 2 deformity of T11. Appearances consistent with osteoporotic vertebral fractures.,Kyphosis,act,dev
+R018,P-0018,XR pelvis and hip,2026-10-11,81,F,Displaced subcapital fracture of the left neck of femur.,"Fall at home, unable to weight bear",act,dev
+R019,P-0019,XR hip,2026-10-10,76,M,Intertrochanteric fracture of the right femur with varus angulation.,Slipped in bathroom,act,dev
+R020,P-0020,XR pelvis,2026-10-09,79,F,"Right hemiarthroplasty in satisfactory position, performed for previous neck of femur fracture. No periprosthetic lucency.",Routine follow-up,act,dev
+R021,P-0021,XR hip,2026-10-08,84,F,Dynamic hip screw fixation of a left intertrochanteric fracture. Alignment maintained.,Post-op check,act,dev
+R022,P-0022,MRI hip,2026-10-07,70,F,"Undisplaced fracture of the right femoral neck, occult on radiographs. No avascular necrosis.","Hip pain, normal X-ray",act,dev
+R023,P-0023,CT hip,2026-10-06,88,F,Minimally displaced fracture of the greater trochanter extending intertrochanterically.,Fall from chair,act,dev
+R024,P-0024,XR wrist,2026-10-05,62,F,Dorsally angulated fracture of the distal radius (Colles type) with ulnar styloid fracture.,Fall on outstretched hand,act,dev
+R025,P-0025,XR wrist,2026-10-04,58,F,Intra-articular distal radius fracture. Mild shortening.,Tripped on pavement,act,dev
+R026,P-0026,XR shoulder,2026-10-03,73,F,Two-part fracture of the surgical neck of the left humerus.,Fall at home,act,dev
+R027,P-0027,XR shoulder,2026-10-02,69,M,Impacted fracture of the proximal humerus involving the greater tuberosity.,Fall from standing,act,dev
+R028,P-0028,XR pelvis,2026-10-01,80,F,Fractures of the right superior and inferior pubic rami.,Groin pain after fall,act,dev
+R029,P-0029,MRI pelvis,2026-09-30,76,F,Bilateral sacral insufficiency fractures with surrounding marrow oedema.,Low back and buttock pain,act,dev
+R030,P-0030,XR wrist,2026-11-07,65,F,Healing distal radius fracture with callus formation. Position unchanged.,Follow-up,act,dev
+R031,P-0031,CT pelvis,2026-09-28,71,F,No femoral neck fracture. There is an undisplaced fracture of the left pubic ramus.,Hip pain,act,dev
+R032,P-0032,XR shoulder,2026-09-27,83,F,Comminuted proximal humeral fracture. Glenohumeral joint is congruent.,Pain after fall,act,dev
+R033,P-0033,XR forearm,2026-09-26,60,F,Fracture of the distal radial metaphysis with dorsal tilt of 20 degrees.,Fell while walking,act,dev
+R034,P-0034,CT chest,2026-09-25,66,M,"No lymphadenopathy. Known previous T5 compression fracture, unchanged. No new osseous lesion.","Staging, lymphoma in remission",act,dev
+R035,P-0035,XR knee,2026-09-24,74,F,Moderate medial compartment osteoarthritis. Incidental healed fracture of the proximal humerus noted on prior shoulder film referenced in history.,Knee pain,review,dev
+R036,P-0036,CXR lateral,2026-09-23,70,F,"Right lower lobe consolidation. Possible mild wedging of T9, of uncertain significance.",Fever,review,dev
+R037,P-0037,CT abdomen,2026-09-22,67,F,"Mild anterior wedging of T12, may be developmental or represent a mild compression deformity.",Pain,review,dev
+R038,P-0038,XR lumbar spine,2026-09-21,72,F,Osteopenia. Vertebral heights are preserved. Multilevel degenerative disc disease.,Back pain,review,dev
+R039,P-0039,CXR,2026-09-20,79,F,Fracture of the right 7th rib laterally. No pneumothorax.,Chest pain after coughing fit,review,dev
+R040,P-0040,XR hip,2026-11-04,64,F,Subtle lucency at the femoral neck; an undisplaced fracture cannot be excluded. Suggest MRI.,Hip pain,review,dev
+R041,P-0041,XR lumbar spine,2026-09-18,45,F,Compression fracture of L1 with 20% height loss.,"Back pain, no injury",review,dev
+R042,P-0042,CT chest,2026-09-17,69,F,"Query compression fracture at T6, suboptimally assessed on this study.",Cough,review,dev
+R043,P-0043,XR wrist,2026-09-16,75,M,Possible undisplaced scaphoid fracture. Distal radius intact. Recommend repeat imaging.,Wrist pain after fall,review,dev
+R044,P-0044,XR ankle,2026-09-15,81,F,Undisplaced fracture of the lateral malleolus.,Twisted ankle,review,dev
+R045,P-0045,CXR lateral,2026-09-14,73,F,Slight loss of height of the T8 vertebral body. Correlate clinically.,Pre-op,review,dev
+R046,P-0046,XR thoracic spine,2026-08-09,68,F,Generalised osteopenia. Appearance may represent early compression of T10.,Pain,review,dev
+R047,P-0047,XR shoulder,2026-09-12,70,F,Suspicious for an undisplaced greater tuberosity fracture. Consider ultrasound or MRI.,Shoulder pain,review,dev
+R048,P-0048,CXR,2026-09-11,86,F,Multiple old healed left rib fractures. No acute fracture. Lungs clear.,Fall,review,dev
+R049,P-0049,DXA lateral VFA,2026-09-10,62,F,Vertebral fracture assessment: possible grade 1 deformity at T7. No definite fracture.,Osteoporosis assessment,review,dev
+R050,P-0050,XR foot,2026-09-09,77,F,Stress fracture of the second metatarsal shaft with periosteal reaction.,Foot pain after walking,review,dev
+R051,P-0051,XR wrist,2026-09-08,59,M,Distal radius fracture. Mechanism not stated.,Fall,act,dev
+R052,P-0052,CT abdomen,2026-09-07,72,F,"Reduced height of L2 compared with adjacent levels, likely chronic.",Pain,review,dev
+R053,P-0053,XR lumbar spine,2026-09-06,70,F,No vertebral fracture. Vertebral body heights are maintained. Mild facet arthropathy.,Back pain,no,dev
+R054,P-0054,XR hip,2026-09-05,78,F,No fracture of the proximal femur. Hip joint space preserved.,"Fall, hip pain",no,dev
+R055,P-0055,CXR,2026-09-04,66,F,Lungs clear. No rib fracture or pneumothorax.,Cough,no,dev
+R056,P-0056,XR wrist,2026-09-03,73,F,No acute fracture or dislocation. Soft tissue swelling over the dorsum.,Fall on hand,no,dev
+R057,P-0057,CT head,2026-09-02,81,F,No intracranial haemorrhage. No skull fracture.,Fall,no,dev
+R058,P-0058,CT abdomen/pelvis,2026-09-01,69,F,Sigmoid diverticulitis without abscess. Bones: no fracture or destructive lesion.,Diverticulitis,no,dev
+R059,P-0059,MRI lumbar spine,2026-08-31,75,F,L4-5 disc protrusion compressing the left L5 nerve root. Vertebral body heights normal; no compression fracture.,Sciatica,no,dev
+R060,P-0060,XR shoulder,2026-08-30,62,F,Calcific tendinopathy of supraspinatus. No fracture.,Pain,no,dev
+R061,P-0061,XR pelvis,2026-10-28,71,F,Bilateral hip osteoarthritis. Fracture is not identified.,Hip pain,no,dev
+R062,P-0062,CT thoracic spine,2026-10-27,80,F,Negative for acute fracture. Diffuse idiopathic skeletal hyperostosis.,Fall,no,dev
+R063,P-0063,CXR,2026-10-26,67,M,Normal chest radiograph.,Pre-op,no,dev
+R064,P-0064,XR knee,2026-10-25,74,F,Tricompartmental osteoarthritis. No fracture.,Knee pain,no,dev
+R065,P-0065,CT pelvis,2026-10-24,77,F,No evidence of pelvic or proximal femoral fracture.,Fall,no,dev
+R066,P-0066,XR thoracic spine,2026-10-23,68,F,Thoracic vertebrae of normal height and alignment. Schmorl's nodes at T9 and T10.,Pain,no,dev
+R067,P-0067,XR lumbar spine,2026-10-22,72,F,Endplate sclerosis and osteophytes at L3-4 and L4-5 consistent with degenerative change. No compression deformity.,Pain,no,dev
+R068,P-0068,XR wrist,2026-10-21,63,F,Previous distal radius fracture has united with no residual deformity.,Follow-up,act,dev
+R069,P-0069,CT abdomen,2026-10-20,70,F,Fracture of the vertebral bodies has been excluded. Bowel unremarkable.,Pain,no,dev
+R070,P-0070,CXR lateral,2026-10-19,79,F,Pulmonary oedema. Thoracic spine shows no evidence of compression fracture.,Breathlessness,no,dev
+R071,P-0071,CT spine,2026-10-18,55,M,High-speed motor vehicle collision. Burst fracture of L1 with retropulsion.,Motor vehicle accident,no,dev
+R072,P-0072,XR wrist,2026-10-17,52,M,Fall from height of 3 metres. Comminuted distal radius fracture.,Fall from ladder,no,dev
+R073,P-0073,XR pelvis,2026-10-16,61,F,Pedestrian struck by car. Fractures of the left superior and inferior pubic rami and sacral ala.,Road traffic accident,no,dev
+R074,P-0074,CT thoracic spine,2026-10-15,58,M,Fall from scaffolding. Chance fracture of T11.,Fall from scaffolding,no,dev
+R075,P-0075,XR shoulder,2026-10-14,65,M,Motorcycle accident. Displaced proximal humeral fracture.,Motorcycle accident,no,dev
+R076,P-0076,XR hip,2026-10-13,50,F,Road traffic accident. Posterior wall acetabular fracture with hip dislocation.,RTA,no,dev
+R077,P-0077,CT spine,2026-10-12,69,F,Pathological fracture of T10 through a lytic metastasis.,Known breast cancer,no,dev
+R078,P-0078,MRI spine,2026-10-11,72,M,Multiple myeloma deposits with collapse of L3 secondary to tumour infiltration.,Myeloma,no,dev
+R079,P-0079,XR femur,2026-10-10,66,F,Lytic lesion in the proximal femur with a pathological fracture. Suspicious for metastasis.,Thigh pain,no,dev
+R080,P-0080,CT abdomen,2026-10-09,75,M,Sclerotic metastases throughout the lumbar spine with collapse of L2 due to metastatic disease.,Prostate cancer staging,no,dev
+R081,P-0081,XR lumbar spine,2026-10-08,74,F,No new fracture. Stable old compression fracture of L1.,Back pain,act,dev
+R082,P-0082,CT chest,2026-10-07,70,F,No pulmonary embolus. No acute rib fracture. Chronic T8 wedge compression deformity again noted.,Follow-up,act,dev
+R083,P-0083,XR hip,2026-10-06,68,F,No fracture of the right hip. Left total hip replacement for osteoarthritis.,Pain,no,dev
+R084,P-0084,XR pelvis,2026-10-05,80,F,Fall from bed. Undisplaced fracture of the left inferior pubic ramus.,Fall from bed,act,dev
+R085,P-0085,XR wrist,2026-10-04,57,F,Undisplaced distal radius fracture.,Fell while jogging,act,dev
+R086,P-0086,CT abdomen,2026-10-03,76,F,Previous kyphoplasty at T12 and L1. No new vertebral fracture.,Pain,act,dev
+R087,P-0087,XR thoracic spine,2026-04-21,73,F,Fall from standing. No acute fracture is seen; however there is a chronic wedge deformity of T6.,Fall,act,dev
+R088,P-0088,XR spine,2026-10-01,62,F,"Degenerative lumbar scoliosis, Cobb angle 22 degrees. Vertebral heights preserved.",Scoliosis follow-up,no,dev
+R089,P-0089,XR hip,2026-09-30,79,M,Fall at home. Impacted subcapital femoral neck fracture.,Fall,act,dev
+R090,P-0090,CT abdomen,2026-09-29,71,F,Haemangioma in the L2 vertebral body. No fracture.,Pain,no,dev
+R091,P-0091,XR wrist,2026-08-29,67,F,No fracture. Osteopenic bones.,"Wrist pain, no injury",review,dev
+R092,P-0092,CXR,2026-09-27,84,F,Left basal consolidation. Old fracture of the right clavicle.,Fever,review,dev
+R093,P-0093,MRI lumbar spine,2026-09-26,70,F,Chronic L1 compression fracture without marrow oedema. No acute fracture.,Pain,act,dev
+R094,P-0094,CT abdomen,2026-09-25,65,M,Fall from roof. L2 compression fracture. Splenic laceration.,"Trauma, fall from roof",no,dev
+R095,P-0095,XR shoulder,2026-09-24,78,F,Fall from standing. Fracture dislocation of the shoulder with greater tuberosity fracture.,Fall,act,dev
+R096,P-0096,XR hip,2026-09-28,69,F,Cannulated screws across a previously fractured left femoral neck. Healed.,Follow-up,act,dev
+R097,P-0097,CT chest,2026-09-22,60,F,Lungs clear. Mild degenerative changes of the thoracic spine. No fracture.,Cough,no,dev
+R098,P-0098,XR lumbar spine,2026-09-21,82,F,"Severe osteoporosis with multiple lumbar compression fractures at L1, L2 and L4.",Pain,act,dev
+R099,P-0099,CT abdomen,2026-09-20,74,F,There is no fracture of L1. Mild compression deformity of T12 is unchanged from prior.,Pain,act,dev
+R100,P-0100,XR wrist,2026-09-19,66,F,Fracture of the distal radius cannot be confirmed; recommend repeat views.,Fall,review,dev
+S01,P-0101,XR hip,2026-09-18,79,F,"# NOF left, displaced.",Fall at home,act,stress
+S02,P-0102,XR wrist,2026-09-17,66,F,Comminuted # distal radius with dorsal angulation.,FOOSH,act,stress
+S03,P-0103,CT abdomen,2026-09-16,74,F,The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury.,Pain,act,stress
+S04,P-0104,XR spine,2026-09-15,81,F,Osteoporotic collapse L2.,Back pain,act,stress
+S05,P-0105,CXR lateral,2026-09-14,70,F,Lungs clear. Vertebra plana at T9.,Cough,act,stress
+S06,P-0106,XR shoulder,2026-09-13,68,F,Undisplaced #NOH.,Fell,act,stress
+S07,P-0107,CT pelvis,2026-09-12,76,F,Bilateral pubic rami #s.,Fall from standing,act,stress
+S08,P-0108,XR lumbar spine,2026-09-11,72,F,"Interval progression of L1 compression, now 50%.",Back pain,act,stress
+S09,P-0109,MRI spine,2026-09-10,69,F,Acute osteoporotic VCF at L3 with marrow oedema.,Pain,act,stress
+S10,P-0110,XR hip,2026-09-09,75,F,Left hip hemiarthroplasty in situ. History of NOF fracture 2023.,Follow-up,act,stress
+S11,P-0111,XR wrist,2026-09-08,73,F,No # seen.,Fall,no,stress
+S12,P-0112,CT spine,2026-09-07,71,F,Vertebral body heights and alignment are maintained.,Fall,no,stress
+S13,P-0113,XR spine,2026-09-06,64,F,"Wedge-shaped T11, likely longstanding Scheuermann type change rather than fracture.",Pain,review,stress
+S14,P-0114,CT chest,2026-09-05,77,F,"Multilevel thoracic vertebral height loss, worst at T7, appearance favours osteoporotic fractures.",Follow-up,act,stress
+S15,P-0115,XR hip,2026-09-04,82,F,Intertrochanteric fracture right femur.,Fell off bicycle,act,stress

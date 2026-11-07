@@ -1,0 +1,116 @@
+finding_id,report_id,reader,decision,site,evidence_quote,verified
+F-0001,R001,keyword,act,vert,Incidental moderate wedge compression fracture of T8 with approximately 35% anterior height loss.,1
+F-0002,R002,keyword,act,vert,"Incidental note of an L1 compression fracture, age indeterminate.",1
+F-0003,R003,keyword,act,vert,Bones: biconcave deformity of T11 and T12 vertebral bodies consistent with osteoporotic fractures.,1
+F-0004,R004,keyword,act,vert,There is loss of height of the T7 vertebral body in keeping with a compression fracture.,1
+F-0005,R005,keyword,act,vert,Old healed L2 vertebral compression fracture.,1
+F-0006,R006,keyword,act,vert,Crush fracture of T12 with approximately 50% height loss;,1
+F-0007,R007,keyword,act,vert,"Incidentally, there is a wedge fracture of L1.",1
+F-0008,R008,keyword,act,vert,Exaggerated thoracic kyphosis with multiple mid-thoracic vertebral compression fractures.,1
+F-0009,R009,keyword,act,vert,"Superior endplate fracture of T9 with mild height loss, likely osteoporotic.",1
+F-0010,R010,keyword,act,vert,Vertebral bodies: L3 is collapsed.,1
+F-0011,R011,keyword,act,vert,Acute-appearing compression fracture of L2 with 25% loss of anterior height.,1
+F-0012,R012,keyword,act,vert,Wedge fractures of T6 and T8.,1
+F-0013,R013,keyword,act,vert,Bone marrow oedema within L1 with superior endplate depression in keeping with an acute osteoporotic compression fracture.,1
+F-0014,R014,keyword,act,vert,Status post vertebroplasty at L1.,1
+F-0015,R015,keyword,act,vert,"Anterior wedging of T12 with approximately 30% height loss, consistent with fracture.",1
+F-0016,R016,keyword,act,vert,there is a compression fracture of L4 superior endplate.,1
+F-0017,R017,keyword,act,vert,Grade 3 wedge deformity of T10. | Appearances consistent with osteoporotic vertebral fractures.,1
+F-0018,R018,keyword,act,hip,Displaced subcapital fracture of the left neck of femur.,1
+F-0019,R019,keyword,act,hip,Intertrochanteric fracture of the right femur with varus angulation.,1
+F-0020,R020,keyword,act,hip,"Right hemiarthroplasty in satisfactory position, performed for previous neck of femur fracture.",1
+F-0021,R021,keyword,act,hip,Dynamic hip screw fixation of a left intertrochanteric fracture.,1
+F-0022,R022,keyword,act,hip,"Undisplaced fracture of the right femoral neck, occult on radiographs.",1
+F-0023,R023,keyword,act,hip,Minimally displaced fracture of the greater trochanter extending intertrochanterically.,1
+F-0024,R024,keyword,act,wrist,Dorsally angulated fracture of the distal radius (Colles type) with ulnar styloid fracture.,1
+F-0025,R025,keyword,act,wrist,Intra-articular distal radius fracture.,1
+F-0026,R026,keyword,act,humerus,Two-part fracture of the surgical neck of the left humerus.,1
+F-0027,R027,keyword,act,humerus,Impacted fracture of the proximal humerus involving the greater tuberosity.,1
+F-0028,R028,keyword,act,pelvis,Fractures of the right superior and inferior pubic rami.,1
+F-0029,R029,keyword,act,pelvis,Bilateral sacral insufficiency fractures with surrounding marrow oedema.,1
+F-0030,R030,keyword,act,wrist,Healing distal radius fracture with callus formation.,1
+F-0031,R031,keyword,act,pelvis,There is an undisplaced fracture of the left pubic ramus.,1
+F-0032,R032,keyword,act,humerus,Comminuted proximal humeral fracture.,1
+F-0033,R033,keyword,act,wrist,Fracture of the distal radial metaphysis with dorsal tilt of 20 degrees.,1
+F-0034,R034,keyword,act,vert,"Known previous T5 compression fracture, unchanged.",1
+F-0035,R035,keyword,act,humerus,Incidental healed fracture of the proximal humerus noted on prior shoulder film referenced in history.,1
+F-0036,R036,keyword,review,vert,"Possible mild wedging of T9, of uncertain significance.",1
+F-0037,R037,keyword,review,vert,"Mild anterior wedging of T12, may be developmental or represent a mild compression deformity.",1
+F-0038,R038,keyword,review,,Osteopenia.,1
+F-0039,R039,keyword,review,other,Fracture of the right 7th rib laterally.,1
+F-0040,R040,keyword,review,,an undisplaced fracture cannot be excluded.,1
+F-0041,R041,keyword,review,vert,Compression fracture of L1 with 20% height loss.,1
+F-0042,R042,keyword,review,vert,"Query compression fracture at T6, suboptimally assessed on this study.",1
+F-0043,R043,keyword,review,other,Possible undisplaced scaphoid fracture.,1
+F-0044,R044,keyword,review,other,Undisplaced fracture of the lateral malleolus.,1
+F-0045,R045,keyword,review,vert,Slight loss of height of the T8 vertebral body.,1
+F-0046,R046,keyword,review,,Generalised osteopenia.,1
+F-0047,R047,keyword,review,humerus,Suspicious for an undisplaced greater tuberosity fracture.,1
+F-0048,R048,keyword,review,other,Multiple old healed left rib fractures.,1
+F-0049,R049,keyword,review,vert,Vertebral fracture assessment: possible grade 1 deformity at T7.,1
+F-0050,R050,keyword,review,other,Stress fracture of the second metatarsal shaft with periosteal reaction.,1
+F-0051,R051,keyword,act,wrist,Distal radius fracture.,1
+F-0052,R052,keyword,review,vert,"Reduced height of L2 compared with adjacent levels, likely chronic.",1
+F-0053,R053,keyword,no,,,1
+F-0054,R054,keyword,no,,,1
+F-0055,R055,keyword,no,,,1
+F-0056,R056,keyword,no,,,1
+F-0057,R057,keyword,no,,,1
+F-0058,R058,keyword,no,,,1
+F-0059,R059,keyword,no,,,1
+F-0060,R060,keyword,no,,,1
+F-0061,R061,keyword,no,,,1
+F-0062,R062,keyword,no,,,1
+F-0063,R063,keyword,no,,,1
+F-0064,R064,keyword,no,,,1
+F-0065,R065,keyword,no,,,1
+F-0066,R066,keyword,no,,,1
+F-0067,R067,keyword,no,,,1
+F-0068,R068,keyword,act,wrist,Previous distal radius fracture has united with no residual deformity.,1
+F-0069,R069,keyword,no,,,1
+F-0070,R070,keyword,no,,,1
+F-0071,R071,keyword,no,vert,Burst fracture of L1 with retropulsion.,1
+F-0072,R072,keyword,no,wrist,Comminuted distal radius fracture.,1
+F-0073,R073,keyword,no,pelvis,Fractures of the left superior and inferior pubic rami and sacral ala.,1
+F-0074,R074,keyword,no,vert,Chance fracture of T11.,1
+F-0075,R075,keyword,no,humerus,Displaced proximal humeral fracture.,1
+F-0076,R076,keyword,no,pelvis,Posterior wall acetabular fracture with hip dislocation.,1
+F-0077,R077,keyword,no,,,1
+F-0078,R078,keyword,no,,,1
+F-0079,R079,keyword,no,,,1
+F-0080,R080,keyword,no,,,1
+F-0081,R081,keyword,act,vert,Stable old compression fracture of L1.,1
+F-0082,R082,keyword,act,vert,Chronic T8 wedge compression deformity again noted.,1
+F-0083,R083,keyword,no,,,1
+F-0084,R084,keyword,act,pelvis,Undisplaced fracture of the left inferior pubic ramus.,1
+F-0085,R085,keyword,act,wrist,Undisplaced distal radius fracture.,1
+F-0086,R086,keyword,act,vert,Previous kyphoplasty at T12 and L1.,1
+F-0087,R087,keyword,act,vert,however there is a chronic wedge deformity of T6.,1
+F-0088,R088,keyword,no,,,1
+F-0089,R089,keyword,act,hip,Impacted subcapital femoral neck fracture.,1
+F-0090,R090,keyword,no,,,1
+F-0091,R091,keyword,review,,Osteopenic bones.,1
+F-0092,R092,keyword,review,other,Old fracture of the right clavicle.,1
+F-0093,R093,keyword,act,vert,Chronic L1 compression fracture without marrow oedema.,1
+F-0094,R094,keyword,no,vert,L2 compression fracture.,1
+F-0095,R095,keyword,act,humerus,Fracture dislocation of the shoulder with greater tuberosity fracture.,1
+F-0096,R096,keyword,act,hip,Cannulated screws across a previously fractured left femoral neck.,1
+F-0097,R097,keyword,no,,,1
+F-0098,R098,keyword,act,vert,"Severe osteoporosis with multiple lumbar compression fractures at L1, L2 and L4.",1
+F-0099,R099,keyword,act,vert,Mild compression deformity of T12 is unchanged from prior.,1
+F-0100,R100,keyword,review,wrist,Fracture of the distal radius cannot be confirmed;,1
+F-0101,S01,keyword,no,,,1
+F-0102,S02,keyword,no,,,1
+F-0103,S03,keyword,review,,The T12 vertebral body demonstrates 40% reduction in anterior height consistent with an osteoporotic insufficiency injury.,1
+F-0104,S04,keyword,act,vert,Osteoporotic collapse L2.,1
+F-0105,S05,keyword,no,,,1
+F-0106,S06,keyword,no,,,1
+F-0107,S07,keyword,no,,,1
+F-0108,S08,keyword,no,,,1
+F-0109,S09,keyword,review,,Acute osteoporotic VCF at L3 with marrow oedema.,1
+F-0110,S10,keyword,review,,History of NOF fracture 2023.,1
+F-0111,S11,keyword,no,,,1
+F-0112,S12,keyword,no,,,1
+F-0113,S13,keyword,act,vert,"Wedge-shaped T11, likely longstanding Scheuermann type change rather than fracture.",1
+F-0114,S14,keyword,act,vert,"Multilevel thoracic vertebral height loss, worst at T7, appearance favours osteoporotic fractures.",1
+F-0115,S15,keyword,act,hip,Intertrochanteric fracture right femur.,1

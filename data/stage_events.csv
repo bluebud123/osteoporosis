@@ -1,0 +1,35 @@
+event_id,case_id,stage,owner_role,started_day,due_day,closed_day,evidence_type
+E-0001,C-1042,0,Screening clinic,0,0,0,screening result
+E-0002,C-1042,1,GP,0,7,,
+E-0003,C-1031,0,Screening clinic,-49,-49,-49,screening result
+E-0004,C-1031,1,GP,-49,-42,-44,acknowledgement
+E-0005,C-1031,2,"GP, imaging, lab",-44,-14,,
+E-0006,C-1047,0,Screening clinic,-3,-3,-3,screening result
+E-0007,C-1047,1,GP,-3,4,,
+E-0008,C-1029,0,Screening clinic,-30,-30,-30,screening result
+E-0009,C-1029,1,GP,-30,-23,-27,acknowledgement
+E-0010,C-1029,2,"GP, imaging, lab",-27,15,-9,DXA and lab results
+E-0011,C-1029,3,"GP, then specialist",-9,-2,,
+E-0012,C-1018,0,Screening clinic,-70,-70,-70,screening result
+E-0013,C-1018,1,GP,-70,-63,-66,acknowledgement
+E-0014,C-1018,2,"GP, imaging, lab",-66,-36,-48,DXA and lab results
+E-0015,C-1018,3,"GP, then specialist",-48,-41,-45,referral or decision
+E-0016,C-1018,4,Prescriber,-45,-31,-36,dispensing record
+E-0017,C-1018,5,GP,-36,54,,
+E-0018,C-1004,0,Screening clinic,-200,-200,-200,screening result
+E-0019,C-1004,1,GP,-200,-193,-197,acknowledgement
+E-0020,C-1004,2,"GP, imaging, lab",-197,-167,-175,DXA and lab results
+E-0021,C-1004,3,"GP, then specialist",-175,-168,-170,referral or decision
+E-0022,C-1004,4,Prescriber,-170,-156,-160,dispensing record
+E-0023,C-1004,5,GP,-160,-70,-70,follow-up review
+E-0024,C-1004,6,GP or programme lead,-70,-40,-60,closure record
+E-0025,C-1011,0,Screening clinic,-90,-90,-90,screening result
+E-0026,C-1011,1,GP,-90,-83,-84,acknowledgement
+E-0027,C-1011,2,"GP, imaging, lab",-84,-54,-60,DXA and lab results
+E-0028,C-1011,3,"GP, then specialist",-60,-53,-55,referral or decision
+E-0029,C-1011,4,Prescriber,-55,-41,,
+E-0030,C-1036,0,Screening clinic,-40,-40,-40,screening result
+E-0031,C-1036,1,GP,-40,-33,-38,acknowledgement
+E-0032,C-1036,2,"GP, imaging, lab",-38,4,-20,DXA and lab results
+E-0033,C-1036,3,"GP, then specialist",-20,-13,-12,referral or decision
+E-0034,C-1036,4,Prescriber,-12,2,,
