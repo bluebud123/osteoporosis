@@ -1,0 +1,481 @@
+<title>SpineLoop</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap">
+<style>
+/* Layout: phone-first app shell. Sticky header with clock, five views switched by a tab bar (bottom on phones, top on wide screens). */
+:root{
+  --bg:#e7ebed; --app:#f5f7f8; --surface:#ffffff; --sunk:#edf1f3; --ink:#14202a; --muted:#56636e; --line:#d4dbe0;
+  --accent:#2f5d8c; --accent-soft:#e1eaf4;
+  --ok:#2b7a4b; --ok-soft:#dfefe5; --warn:#a4620a; --warn-soft:#f7ead6; --crit:#b3261e; --crit-soft:#f7dfdd;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --f-ar:"IBM Plex Sans Arabic","Geeza Pro","Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a0f12; --app:#10171c; --surface:#162027; --sunk:#1c262d; --ink:#e3e9ed; --muted:#93a1ab; --line:#2a353d;
+  --accent:#88b4e0; --accent-soft:#1b2a39; --ok:#6cc08b; --ok-soft:#153020; --warn:#e3a447; --warn-soft:#332614; --crit:#f2867c; --crit-soft:#391b19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a0f12; --app:#10171c; --surface:#162027; --sunk:#1c262d; --ink:#e3e9ed; --muted:#93a1ab; --line:#2a353d;
+  --accent:#88b4e0; --accent-soft:#1b2a39; --ok:#6cc08b; --ok-soft:#153020; --warn:#e3a447; --warn-soft:#332614; --crit:#f2867c; --crit-soft:#391b19; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 24px}
+.app{max-width:560px;margin:0 auto;background:var(--app);border:1px solid var(--line);border-radius:20px;overflow:hidden;min-height:640px;display:flex;flex-direction:column}
+@media (max-width:600px){body{padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px));padding-block:0}.app{border:0;border-radius:0;min-height:100vh}}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:21px} h2{font-size:18px} h3{font-size:15px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 14px;display:grid;gap:8px}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.clock{display:flex;gap:6px;align-items:center}
+.day{font-family:var(--f-mono);font-size:13px;background:var(--sunk);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.notice{font-size:11.5px;color:var(--warn);background:var(--warn-soft);padding:4px 8px;border-radius:6px}
+nav.tabs{display:flex;border-top:1px solid var(--line);background:var(--surface);position:sticky;bottom:0;z-index:6;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs button{flex:1;font:inherit;font-size:12.5px;font-weight:500;background:none;border:0;color:var(--muted);padding:10px 4px;cursor:pointer;border-top:2px solid transparent}
+nav.tabs button[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
+nav.tabs .cnt{display:inline-block;min-width:16px;font-family:var(--f-mono);font-size:10.5px;background:var(--crit);color:var(--surface);border-radius:8px;padding:0 4px;margin-left:3px}
+main{flex:1;padding:12px;display:grid;gap:10px;align-content:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:8px;min-width:0}
+.sec-label{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+button.act{font:inherit;font-size:14px;font-weight:500;border-radius:8px;padding:8px 12px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.act.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.act.danger{color:var(--crit);border-color:color-mix(in srgb,var(--crit) 45%,transparent)}
+button.act:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:100%}
+.chip{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.c-ok{color:var(--ok);background:var(--ok-soft)} .c-warn{color:var(--warn);background:var(--warn-soft)} .c-crit{color:var(--crit);background:var(--crit-soft)} .c-acc{color:var(--accent);background:var(--accent-soft)} .c-mute{color:var(--muted);background:var(--sunk)}
+.src{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:0 4px;white-space:nowrap}
+.badge{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:1px 5px;border-radius:4px}
+.b-rec{color:var(--accent);background:var(--accent-soft)} .b-calc{color:var(--ok);background:var(--ok-soft)} .b-ai{color:var(--warn);background:var(--warn-soft)} .b-hum{color:var(--ink);background:var(--sunk);border:1px solid var(--line)}
+
+/* board */
+.case-row{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px 10px 0;cursor:pointer;text-align:left;font:inherit;color:inherit;width:100%}
+.case-row .stripe{align-self:stretch;border-radius:10px 0 0 10px;background:var(--line)}
+.case-row[data-sev="crit"] .stripe{background:var(--crit)} .case-row[data-sev="warn"] .stripe{background:var(--warn)} .case-row[data-sev="ok"] .stripe{background:var(--ok)}
+.case-row .nm{font-weight:600}
+.case-row .meta{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.case-row .right{display:grid;justify-items:end;gap:4px}
+.stagebar{display:flex;gap:2px}
+.stagebar i{width:10px;height:5px;border-radius:2px;background:var(--line)}
+.stagebar i[data-s="done"]{background:var(--ok)} .stagebar i[data-s="cur"]{background:var(--accent)} .stagebar i[data-s="late"]{background:var(--crit)}
+
+/* case */
+.timeline{list-style:none;margin:0;padding:0;display:grid}
+.tl{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;padding:9px 0;border-top:1px solid var(--line)}
+.tl:first-child{border-top:0}
+.dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:11px;border:1.5px solid var(--line);color:var(--muted)}
+.tl[data-s="done"] .dot{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.tl[data-s="cur"] .dot{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.tl[data-s="late"] .dot{border-color:var(--crit);color:var(--crit);box-shadow:0 0 0 3px var(--crit-soft)}
+.tl[data-s="skip"] .dot{border-style:dashed}
+.tl .t{font-weight:600}
+.tl[data-s="todo"] .t{color:var(--muted)}
+.tl .m{font-size:12px;color:var(--muted)}
+.tl .st{font-size:11.5px;font-weight:600;white-space:nowrap}
+.tl[data-s="done"] .st{color:var(--ok)} .tl[data-s="cur"] .st{color:var(--accent)} .tl[data-s="late"] .st{color:var(--crit)}
+.tl .body{display:grid;gap:8px;margin-top:8px}
+.callout{border-radius:8px;padding:9px 10px;font-size:13.5px;display:grid;gap:4px}
+.callout.flag{background:var(--warn-soft);border-left:3px solid var(--warn)}
+.callout.block{background:var(--crit-soft);border-left:3px solid var(--crit)}
+.callout.ok{background:var(--ok-soft);border-left:3px solid var(--ok)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:13.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.rx{display:grid;gap:6px}
+.rx label{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:8px;align-items:start;padding:7px 8px;border:1px solid var(--line);border-radius:8px;font-size:13.5px}
+.rx label[data-k="blocked"]{opacity:.55}
+.rx input{margin-top:3px;accent-color:var(--accent)}
+.rx .why{display:block;font-size:12px;color:var(--muted)}
+.checkline{display:flex;gap:8px;align-items:center;font-size:13.5px}
+.checkline input{width:17px;height:17px;accent-color:var(--accent)}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:12.5px;max-height:220px;overflow:auto}
+.log li{display:grid;grid-template-columns:56px minmax(0,1fr);gap:8px}
+.log .d{font-family:var(--f-mono);color:var(--muted)}
+.log .alert{color:var(--crit)}
+.thread{display:grid;gap:6px}
+.msg-b{background:var(--sunk);border-radius:8px;padding:7px 9px;font-size:13px}
+.msg-b .who{font-size:11px;color:var(--muted)}
+
+/* phone */
+.phone{border:1px solid var(--line);border-radius:26px;padding:12px;background:var(--sunk);max-width:360px;width:100%;margin:0 auto}
+.screen{background:var(--surface);border-radius:16px;padding:14px;display:grid;gap:10px;min-height:340px;align-content:start}
+.lang{display:flex;gap:6px}
+.pill{font:inherit;font-size:12.5px;border:1px solid var(--line);background:var(--sunk);color:var(--ink);padding:4px 10px;border-radius:999px;cursor:pointer}
+.pill[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.pmsg{font-size:14.5px;line-height:1.6}
+[dir="rtl"]{font-family:var(--f-ar)}
+.tb{display:grid;gap:6px}
+.tb button{font:inherit;text-align:start;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tb button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+
+/* metrics */
+.mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.metric{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px}
+.metric .v{font-family:var(--f-mono);font-size:22px;font-variant-numeric:tabular-nums}
+.metric .k{font-size:12px;color:var(--muted)}
+.metric .n{font-size:11px;color:var(--muted)}
+.bars{display:grid;gap:6px}
+.bar{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 28px;gap:8px;align-items:center;font-size:12.5px}
+.bar .track{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:4px}
+.bar .num{font-family:var(--f-mono);text-align:right}
+.empty{font-size:13.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="hrow">
+      <div><h1>SpineLoop</h1><div class="small muted">Bone-health screening to treatment, closed loop</div></div>
+      <div class="clock"><span class="day" id="day">Day 0</span><button class="act" id="adv">+7 days</button></div>
+    </div>
+    <div class="notice">Prototype · fictional patients · synthetic data · draft rules for clinician sign-off</div>
+  </header>
+  <main id="view"></main>
+  <nav class="tabs" id="tabs" aria-label="Views"></nav>
+</div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ME = 'Dr Tan';
+
+/* ---------- loop definition ---------- */
+const STAGES = [
+  {n:0, t:'Screen', role:'Screening clinic', clock:0},
+  {n:1, t:'Notify and acknowledge', role:'GP', clock:7},
+  {n:2, t:'Confirm: DXA and labs', role:'GP, imaging, lab', clock:30},
+  {n:3, t:'Decide or refer', role:'GP, then specialist', clock:7},
+  {n:4, t:'Treat: prescribe and dispense', role:'Prescriber', clock:14},
+  {n:5, t:'Follow up', role:'GP', clock:90},
+  {n:6, t:'Close', role:'GP or programme lead', clock:30}
+];
+const DROPS = ['Patient declined after counselling','Fear of medication side effects','Dental concern before bisphosphonate','Lost after transfer between providers','Clinician judged not indicated'];
+const REJECTS = ['Out of insurance network','Wrong service','Incomplete referral'];
+
+/* ---------- clinical rules (Malaysian CPG 2022 + NICE NG259), abbreviated ---------- */
+function category(c){
+  const k=c.clin, vh=[], h=[];
+  if(k.fxMonths!==null && k.fxMonths<=12) vh.push('fracture in the last 12 months');
+  if(k.multiFx) vh.push('multiple fractures');
+  if(k.fxOnGc) vh.push('fracture while on glucocorticoids');
+  if(c.res && c.res.t!==null && c.res.t<-3) vh.push('T-score below −3.0');
+  if(k.mof!==null && k.mof>30) vh.push('FRAX major >30%');
+  if(k.hip!==null && k.hip>4.5) vh.push('FRAX hip >4.5%');
+  if(vh.length) return {key:'vhigh', name:'Very high', why:vh};
+  if(c.res && c.res.t!==null && c.res.t<=-2.5) h.push('T-score −2.5 or lower');
+  if(k.hipVert) h.push('hip or vertebral fragility fracture');
+  if((k.mof!==null&&k.mof>20)||(k.hip!==null&&k.hip>3)) h.push('FRAX above treatment threshold');
+  if(h.length) return {key:'high', name:'High', why:h};
+  return {key:'low', name:'Low', why:['below thresholds']};
+}
+function labBlocks(c){
+  const r=c.res, out=[]; if(!r) return out;
+  if(r.vd!==null && r.vd<75) out.push(['flag','Vitamin D below 75 nmol/L: replete (50,000 IU weekly × 8 weeks, then 800–1,000 IU/day).']);
+  if(r.egfr!==null && r.egfr<30) out.push(['block','eGFR below 30: oral bisphosphonates not recommended.']);
+  if(r.egfr!==null && r.egfr<35) out.push(['block','eGFR below 35: zoledronic acid contraindicated.']);
+  if(r.ca!==null && r.ca>2.6) out.push(['block','Calcium high: check PTH, specialist review (NICE NG259).']);
+  return out;
+}
+function treatments(c){
+  const cat=category(c), eg=c.res?c.res.egfr:null, list=[];
+  const add=(id,name,why,kind,block)=>list.push({id,name,why,kind:block?'blocked':kind,block});
+  if(cat.key==='vhigh'){
+    add('teri','Teriparatide up to 24 months, then antiresorptive','Anabolic first, very high risk','first');
+    add('romo','Romosozumab 12 months, then antiresorptive','Anabolic first, very high risk','first', c.clin.cvEvent?'Blocked: heart attack or stroke in last 12 months':null);
+    add('deno','Denosumab','Alternative','alt');
+    add('zol','Zoledronic acid (IV)','Alternative','alt', eg!==null&&eg<35?'Blocked: eGFR below 35':null);
+  } else {
+    add('obp','Oral bisphosphonate (alendronate)','First line, high risk','first', eg!==null&&eg<30?'Blocked: eGFR below 30':null);
+    add('deno','Denosumab','First line, high risk','first');
+    add('zol','Zoledronic acid (IV)','If oral not tolerated','alt', eg!==null&&eg<35?'Blocked: eGFR below 35':null);
+  }
+  return list;
+}
+
+/* ---------- seeded fictional cases (days relative to today = 0) ---------- */
+function mk(o){
+  const st = STAGES.map(s=>({start:null,end:null,alerted:false,skip:false}));
+  (o.hist||[]).forEach(([i,s,e])=>{ st[i].start=s; st[i].end=e; });
+  return Object.assign({stages:st, ack:null, tbFirst:null, lang:'en', referral:{status:'none', clinic:null, reason:null, history:[]}, thread:[], rx:null, closed:null, log:[], res:null, ordered:false, follow:{adh:false, btm:false}}, o);
+}
+let CASES = [
+  mk({id:'C-1042', name:'Mariam A.', age:64, owner:ME, lang:'ar', urgent:true,
+      clin:{fxMonths:8, multiFx:false, fxOnGc:false, hipVert:false, mof:18, hip:4.1, cvEvent:false, note:'Wrist fracture 8 months ago; parent had a hip fracture'},
+      hist:[[0,0,0],[1,0,null]], cur:1, demo:{t:-2.7, vd:42, egfr:68, ca:2.31}}),
+  mk({id:'C-1031', name:'Aisha K.', age:69, owner:'Dr Lim',
+      clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:false, mof:22, hip:3.4, cvEvent:false, note:'Height loss 4 cm; smoker'},
+      hist:[[0,-49,-49],[1,-49,-44],[2,-44,null]], cur:2, ack:true, tbFirst:{lang:'en',pass:true}, ordered:true, demo:{t:-2.8, vd:81, egfr:55, ca:2.4}}),
+  mk({id:'C-1047', name:'Nora H.', age:58, owner:null,
+      clin:{fxMonths:null, multiFx:false, fxOnGc:true, hipVert:false, mof:21, hip:2.2, cvEvent:false, note:'Long-term prednisolone; no GP on record'},
+      hist:[[0,-3,-3],[1,-3,null]], cur:1, demo:{t:-2.6, vd:60, egfr:90, ca:2.3}}),
+  mk({id:'C-1029', name:'Fatima S.', age:71, owner:ME, urgent:true,
+      clin:{fxMonths:14, multiFx:true, fxOnGc:true, hipVert:true, mof:34, hip:6.2, cvEvent:false, note:'Two vertebral fractures; on prednisolone for rheumatoid arthritis'},
+      hist:[[0,-30,-30],[1,-30,-27],[2,-27,-9],[3,-9,null]], cur:3, ack:true, tbFirst:{lang:'ar',pass:false},
+      res:{t:-3.2, vd:79, egfr:48, ca:2.35},
+      referral:{status:'rejected', clinic:'Al Noor fracture-liaison clinic', reason:'Out of insurance network', history:[['sent',-8],['rejected',-2]]}}),
+  mk({id:'C-1018', name:'Salma R.', age:66, owner:'Dr Lim',
+      clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:false, mof:24, hip:3.6, cvEvent:false, note:'Osteoporosis on DXA'},
+      hist:[[0,-70,-70],[1,-70,-66],[2,-66,-48],[3,-48,-45],[4,-45,-36],[5,-36,null]], cur:5, ack:true, tbFirst:{lang:'en',pass:true},
+      res:{t:-2.9, vd:88, egfr:72, ca:2.3}, rx:{id:'obp', name:'Oral bisphosphonate (alendronate)', by:'Dr Lim', day:-40, dispensed:-36}}),
+  mk({id:'C-1004', name:'Huda M.', age:73, owner:'Dr Lim',
+      clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:true, mof:26, hip:5.0, cvEvent:false, note:'Vertebral fracture on old X-ray'},
+      hist:[[0,-200,-200],[1,-200,-197],[2,-197,-175],[3,-175,-170],[4,-170,-160],[5,-160,-70],[6,-70,-60]], cur:null, ack:true, tbFirst:{lang:'ar',pass:true},
+      res:{t:-2.7, vd:90, egfr:65, ca:2.32}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-165, dispensed:-160},
+      closed:{kind:'treated', day:-60, by:'Dr Lim', text:'Evidence: dispensing record, 3-month adherence check, repeat DXA booked'}}),
+  mk({id:'C-1011', name:'Leila B.', age:61, owner:ME,
+      clin:{fxMonths:null, multiFx:false, fxOnGc:false, hipVert:false, mof:21, hip:3.2, cvEvent:false, note:'Osteoporosis on DXA'},
+      hist:[[0,-90,-90],[1,-90,-84],[2,-84,-60],[3,-60,-55],[4,-55,null]], cur:null, ack:true, tbFirst:{lang:'en',pass:false},
+      res:{t:-2.6, vd:70, egfr:80, ca:2.3},
+      closed:{kind:'drop', stage:4, day:-40, by:ME, text:'Fear of medication side effects', reason:'Fear of medication side effects'}}),
+  mk({id:'C-1036', name:'Mei Ling C.', age:67, owner:'Dr Lim',
+      clin:{fxMonths:6, multiFx:false, fxOnGc:false, hipVert:true, mof:28, hip:5.3, cvEvent:false, note:'Hip fracture 6 months ago'},
+      hist:[[0,-40,-40],[1,-40,-38],[2,-38,-20],[3,-20,-12],[4,-12,null]], cur:4, ack:true, tbFirst:{lang:'en',pass:true}, urgent:true,
+      res:{t:-3.1, vd:95, egfr:60, ca:2.4}, rx:{id:'deno', name:'Denosumab', by:'Dr Lim', day:-8, dispensed:null}})
+];
+CASES.forEach(c=>{ c.log.push({d:c.stages[0].start, text:'Screened; actionable result issued.'}); });
+CASES[3].thread=[{who:ME, d:-9, text:'71F, two vertebral fractures on prednisolone, T −3.2. Very high risk; asking for anabolic initiation.'},{who:'Al Noor FLS', d:-2, text:'Rejected: patient\'s plan is outside our network.'}];
+
+let DAY=0, tab='board', sel='C-1042', lang='en', tb=null, msg=null, dropFor=null, rxPick={}, signer={};
+
+/* ---------- engine ---------- */
+function clockFor(c,i){ return (i===2 && c.urgent) ? 42 : STAGES[i].clock; }
+function stageState(c,i){
+  const s=c.stages[i];
+  if(s.skip) return 'skip';
+  if(s.end!==null) return 'done';
+  if(c.closed) return 'todo';
+  if(s.start!==null) return (DAY - s.start > clockFor(c,i)) ? 'late' : 'cur';
+  return 'todo';
+}
+function curIdx(c){ return c.closed?null:c.stages.findIndex((s,i)=>s.start!==null && s.end===null); }
+function log(c,text,cls){ c.log.unshift({d:DAY,text,cls}); }
+function complete(c,i,text){ c.stages[i].end=DAY; log(c,text); if(i<6){ c.stages[i+1].start=DAY; } }
+function closeCase(c,kind,text,by,reason){
+  const i=curIdx(c); if(i!==null && i>=0){ if(kind==='treated') c.stages[i].end=DAY; }
+  c.closed={kind,day:DAY,by,text,reason,stage:i}; log(c,'Closed: '+text);
+}
+function sev(c){
+  if(c.closed) return c.closed.kind==='treated'?'ok':'mute';
+  if(!c.owner) return 'crit';
+  const i=curIdx(c); if(i>=0 && stageState(c,i)==='late') return 'crit';
+  if(c.referral.status==='rejected') return 'warn';
+  return 'acc';
+}
+function statusText(c){
+  if(c.closed) return c.closed.kind==='treated'?'Closed · treated':'Closed · '+(c.closed.reason||'no treatment');
+  if(!c.owner) return 'Unassigned';
+  const i=curIdx(c); const st=stageState(c,i);
+  if(c.referral.status==='rejected' && i===3) return 'Referral rejected';
+  return (st==='late'?'Overdue · ':'')+STAGES[i].t;
+}
+function tick(n){
+  DAY+=n;
+  CASES.forEach(c=>{ const i=curIdx(c); if(i===null||i<0) return; const s=c.stages[i];
+    if(DAY - s.start > clockFor(c,i) && !s.alerted){ s.alerted=true; log(c,`Stage ${i} past its ${clockFor(c,i)}-day clock. Owner alerted: ${c.owner||'unassigned queue'}.`,'alert'); }
+    if(s.alerted && DAY - s.start > 2*clockFor(c,i) && !s.escalated){ s.escalated=true; log(c,'Escalated to programme lead (second missed clock).','alert'); }
+  });
+  render();
+}
+
+/* ---------- views ---------- */
+function counts(){
+  const open=CASES.filter(c=>!c.closed);
+  return {needs: open.filter(c=>sev(c)==='crit'||sev(c)==='warn').length, inbox: CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed).length};
+}
+function renderTabs(){
+  const k=counts();
+  const T=[['board','Board',k.needs],['case','Case',0],['patient','Patient',0],['specialist','Specialist',k.inbox],['health','Loop health',0]];
+  $('tabs').innerHTML=T.map(([id,l,n])=>`<button data-tab="${id}" aria-current="${tab===id?'page':'false'}">${l}${n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
+}
+function stagebar(c){ return `<span class="stagebar">${[1,2,3,4,5,6].map(i=>{const s=stageState(c,i);return `<i data-s="${s==='done'?'done':s==='late'?'late':s==='cur'?'cur':''}"></i>`}).join('')}</span>`; }
+function row(c){
+  const cat=category(c);
+  return `<button class="case-row" data-open="${c.id}" data-sev="${sev(c)==='acc'?'':sev(c)}"><span class="stripe"></span>
+    <span style="min-width:0"><span class="nm">${esc(c.name)}</span> <span class="small muted">${c.age}F · ${c.id}</span><span class="meta" style="display:block">${esc(statusText(c))} · ${esc(c.owner||'no owner')}</span></span>
+    <span class="right"><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name}</span>${stagebar(c)}</span></button>`;
+}
+function vBoard(){
+  const open=CASES.filter(c=>!c.closed), closed=CASES.filter(c=>c.closed);
+  const pin=open.filter(c=>sev(c)==='crit'||sev(c)==='warn'), rest=open.filter(c=>!pin.includes(c));
+  return `<div class="card" style="gap:4px"><h2>Case board</h2><span class="small muted">Unassigned, overdue and rejected cases are pinned and cannot be hidden.</span></div>
+  <div class="sec-label">Needs action (${pin.length})</div>${pin.map(row).join('')||'<div class="empty">Nothing stalled.</div>'}
+  <div class="sec-label">On track (${rest.length})</div>${rest.map(row).join('')||'<div class="empty">No open cases on track.</div>'}
+  <div class="sec-label">Closed (${closed.length})</div>${closed.map(row).join('')}`;
+}
+function callout(k,html,src){ return `<div class="callout ${k}"><span>${html}</span>${src?`<span><span class="src">${esc(src)}</span></span>`:''}</div>`; }
+function stageBody(c,i){
+  if(dropFor===c.id && (i>=1)) return `<label class="small muted" for="dr">Drop-off reason</label><select id="dr">${DROPS.map(d=>`<option>${esc(d)}</option>`).join('')}</select>
+    <label class="small muted" for="drb">Signed by</label><input type="text" id="drb" value="${esc(ME)}"><div class="actions"><button class="act danger" data-a="drop-ok">Close with documented decision</button><button class="act" data-a="drop-cancel">Cancel</button></div>`;
+  const dropBtn = `<button class="act danger" data-a="drop">Patient declines…</button>`;
+  if(i===1){
+    if(c.ack===false) return callout('flag','Teach-back answer was wrong. Nurse call task created.')+`<div class="actions"><button class="act primary" data-a="nurse">Nurse call done, patient understands</button>${dropBtn}</div>`;
+    return `<span class="small muted">Waiting for the patient to acknowledge on their phone (${c.lang==='ar'?'Arabic':'English'}).</span><div class="actions"><button class="act" data-a="topatient">Open patient view</button><button class="act" data-a="sms">Resend by SMS</button></div>`;
+  }
+  if(i===2){
+    const fast = c.urgent ? callout('flag','Very high risk: fast-track DXA within 6 weeks. If it will be delayed, start an antiresorptive rather than wait.','NICE NG259') : '';
+    return fast + (c.ordered ? `<span class="small muted">DXA and labs ordered.</span><div class="actions"><button class="act primary" data-a="results">Results returned (simulated)</button>${dropBtn}</div>`
+      : `<div class="actions"><button class="act primary" data-a="order">Order DXA and labs</button>${dropBtn}</div>`);
+  }
+  if(i===3){
+    const r=c.referral; let h='';
+    labBlocks(c).forEach(([k,t])=>h+=callout(k,esc(t),'MY CPG 2022'));
+    if(r.status==='none') h+=`<div class="actions"><button class="act primary" data-a="decide">Decide in primary care</button><button class="act" data-a="econsult">E-consult fracture-liaison clinic</button></div>`;
+    if(r.status==='sent'||r.status==='rerouted') h+=`<span class="small muted">E-consult with ${esc(r.clinic)}, awaiting answer (clock 7 days).</span><div class="actions"><button class="act" data-a="tospec">Open specialist inbox</button></div>`;
+    if(r.status==='rejected') h+=callout('block',`Referral rejected by ${esc(r.clinic)}: ${esc(r.reason)}. You stay owner until a new referral is accepted.`)+`<div class="actions"><button class="act primary" data-a="reroute">Reroute to in-network clinic</button><button class="act" data-a="decide">Decide in primary care instead</button></div>`;
+    return h;
+  }
+  if(i===4){
+    if(c.rx && !c.rx.dispensed) return `<span class="small">Prescribed: <b>${esc(c.rx.name)}</b> by ${esc(c.rx.by)} <span class="badge b-hum">Clinician</span></span><div class="actions"><button class="act primary" data-a="dispense">Dispensing recorded</button>${dropBtn}</div>`;
+    const rx=treatments(c), pick=rxPick[c.id]||null;
+    return `${labBlocks(c).map(([k,t])=>callout(k,esc(t),'MY CPG 2022')).join('')}<div class="rx">${rx.map(r=>`<label data-k="${r.kind}"><input type="radio" name="rx-${c.id}" value="${r.id}" ${r.block?'disabled':''} ${pick===r.id?'checked':''}><span>${esc(r.name)}<span class="why">${esc(r.block||r.why)}</span></span><span class="chip ${r.kind==='first'?'c-ok':r.kind==='alt'?'c-mute':'c-crit'}">${r.kind==='first'?'First line':r.kind==='alt'?'Alternative':'Blocked'}</span></label>`).join('')}</div>
+      <label class="small muted" for="sg">Prescriber (sign-off)</label><input type="text" id="sg" value="${esc(signer[c.id]||'')}" placeholder="e.g. ${esc(ME)}">
+      <div class="actions"><button class="act primary" data-a="sign" ${pick&&(signer[c.id]||'').trim().length>2?'':'disabled'}>Sign prescription</button>${dropBtn}</div>`;
+  }
+  if(i===5) return `<label class="checkline"><input type="checkbox" data-f="adh" ${c.follow.adh?'checked':''}> 3-month adherence check done</label><label class="checkline"><input type="checkbox" data-f="btm" ${c.follow.btm?'checked':''}> 6-month response markers done</label><div class="actions"><button class="act primary" data-a="follow" ${c.follow.adh&&c.follow.btm?'':'disabled'}>Follow-up complete</button>${dropBtn}</div>`;
+  if(i===6){
+    const ev = c.rx && c.rx.dispensed!=null && c.follow.adh && c.follow.dxa;
+    return `<span class="small muted">Closure gate: a case closes only with evidence, or with an authorised clinician's documented decision.</span>
+      <dl class="kv"><dt>Dispensing record</dt><dd>${c.rx&&c.rx.dispensed!=null?'Attached':'Missing'}</dd><dt>Adherence check</dt><dd>${c.follow.adh?'Attached':'Missing'}</dd><dt>Repeat DXA</dt><dd>${c.follow.dxa?'Booked':'Not booked'}</dd></dl>
+      <label class="checkline"><input type="checkbox" data-f="dxa" ${c.follow.dxa?'checked':''}> Book repeat DXA in 2 years (local default)</label>
+      ${msg&&msg.id===c.id?callout('block',esc(msg.text)):''}
+      <div class="actions"><button class="act primary" data-a="close">Close case</button></div>`;
+  }
+  return '';
+}
+function vCase(){
+  const c=CASES.find(x=>x.id===sel); if(!c) return '<div class="empty">Pick a case on the board.</div>';
+  const cat=category(c), ci=curIdx(c);
+  const tl = STAGES.map((s,i)=>{
+    const st=stageState(c,i), stg=c.stages[i];
+    const lab={done:'Done',cur:'In progress',late:'Overdue',todo:'Waiting',skip:'Not needed'}[st];
+    const time = stg.start!==null ? `Day ${stg.start}${stg.end!==null?` → ${stg.end} (${stg.end-stg.start} d)`:''} · clock ${clockFor(c,i)} d` : `clock ${clockFor(c,i)} d`;
+    const body = (!c.closed && c.owner && i===ci && i>0) ? `<div class="body">${stageBody(c,i)}</div>` : '';
+    return `<li class="tl" data-s="${st}"><span class="dot">${i}</span><div style="min-width:0"><div class="t">${esc(s.t)}</div><div class="m">${esc(i===0?'Screening clinic':(c.owner||'Unassigned'))} · ${time}</div>${body}</div><span class="st">${lab}</span></li>`;
+  }).join('');
+  const assign = !c.owner && !c.closed ? callout('block','<b>Unassigned.</b> No GP on record. The case stays pinned until someone takes ownership.')+`<div class="actions"><button class="act primary" data-a="assign">Assign to me (${esc(ME)})</button></div>` : '';
+  const res = c.res ? `<dt>Lowest T-score</dt><dd class="mono">${c.res.t} <span class="badge b-rec">Recorded</span></dd><dt>Vitamin D</dt><dd class="mono">${c.res.vd} nmol/L</dd><dt>eGFR</dt><dd class="mono">${c.res.egfr}</dd>` : `<dt>DXA</dt><dd><span class="chip c-warn">Not done · indicated</span></dd>`;
+  const thread = c.thread.length ? `<div class="card"><div class="sec-label">E-consult thread</div><div class="thread">${c.thread.map(m=>`<div class="msg-b"><div class="who">${esc(m.who)} · Day ${m.d}</div>${esc(m.text)}</div>`).join('')}</div></div>` : '';
+  const closed = c.closed ? callout(c.closed.kind==='treated'?'ok':'flag',`<b>Closed day ${c.closed.day}</b> by ${esc(c.closed.by)}: ${esc(c.closed.text)}`) : '';
+  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}F · ${c.id} · ${c.lang==='ar'?'Arabic':'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
+    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">major ${c.clin.mof}% · hip ${c.clin.hip}% <span class="badge b-rec">Recorded</span></dd>${res}</dl>${closed}</div>
+    ${assign}
+    <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
+    ${thread}
+    <div class="card"><div class="sec-label">Audit log</div><ul class="log">${c.log.map(e=>`<li><span class="d">Day ${e.d}</span><span class="${e.cls||''}">${esc(e.text)}</span></li>`).join('')}</ul></div>`;
+}
+const PT = {
+  en:{hello:'Message from your clinic', body:'Your screening shows a high chance of weak bones (osteoporosis). This is common and can be treated, and treatment lowers the chance of another fracture.', next:'Next step: a bone density scan and blood tests at your clinic. Your care team will contact you within 7 days.', q:'Quick check: what is your next step?', opts:['A bone density scan and blood tests','An operation','Nothing is needed'], btn:'I understand my next step', ok:'Thank you. Your care team can see that you understood.', bad:'A nurse will call you to explain. You can also call your clinic.', status:'Your next step', none:'No new messages.'},
+  ar:{hello:'رسالة من عيادتك', body:'تُظهر نتيجة الفحص أنك أكثر عرضة لضعف العظام (هشاشة العظام). هذا أمر شائع ويمكن علاجه، والعلاج يقلل احتمال حدوث كسر آخر.', next:'الخطوة التالية: فحص كثافة العظام وتحاليل دم في عيادتك. سيتواصل معك فريق الرعاية خلال 7 أيام.', q:'سؤال سريع: ما هي خطوتك التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لك. يستطيع فريق الرعاية أن يرى أنك فهمت.', bad:'ستتصل بك ممرضة لتشرح لك. يمكنك أيضًا الاتصال بعيادتك.', status:'خطوتك التالية', none:'لا توجد رسائل جديدة.'}
+};
+function vPatient(){
+  const c=CASES.find(x=>x.id===sel); const L=c?c.lang:'en'; const T=PT[L]; const rtl=L==='ar'?'rtl':'ltr';
+  const langs=`<div class="lang"><button class="pill" data-lang="en" aria-pressed="${L==='en'}">English</button><button class="pill" data-lang="ar" aria-pressed="${L==='ar'}" style="font-family:var(--f-ar)">العربية</button></div>`;
+  let inner='';
+  if(!c) inner=`<div class="pmsg muted">${T.none}</div>`;
+  else {
+    const ci=curIdx(c);
+    inner=`<div class="small muted" dir="${rtl}">${T.hello}</div><div class="pmsg" dir="${rtl}">${T.body} ${T.next}</div>`;
+    if(ci===1 && c.ack===null) inner+=`<div class="small" dir="${rtl}" style="font-weight:600">${T.q}</div><div class="tb" dir="${rtl}">${T.opts.map((o,i)=>`<button data-tb="${i}" aria-pressed="${tb===i}">${o}</button>`).join('')}</div><button class="act primary" data-a="ack" ${tb===null?'disabled':''} ${L==='ar'?'style="font-family:var(--f-ar)"':''}>${T.btn}</button>`;
+    else if(c.ack===false && ci===1) inner+=`<div class="pmsg" dir="${rtl}" style="color:var(--warn)">${T.bad}</div>`;
+    else if(c.ack) inner+=`<div class="pmsg" dir="${rtl}" style="color:var(--ok)">${T.ok}</div>`;
+  }
+  return `<div class="card" style="gap:4px"><h2>Patient's phone</h2><span class="small muted">${c?esc(c.name)+' · '+c.id:''} · reviewed message templates. Arabic needs native-speaker clinical review.</span></div>
+    <div class="phone"><div class="screen">${langs}${inner}</div></div>`;
+}
+function vSpecialist(){
+  const inbox=CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed);
+  return `<div class="card" style="gap:4px"><h2>Specialist inbox</h2><span class="small muted">E-consults from primary care. Accept, or reject with a reason; a rejection goes straight back to the GP's board.</span></div>
+   ${inbox.map(c=>{const cat=category(c);return `<div class="card"><div class="hrow"><b>${esc(c.name)} · ${c.age}F</b><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name}</span></div>
+     <span class="small muted">To ${esc(c.referral.clinic)} · from ${esc(c.owner)}</span>
+     <div class="msg-b">${esc(c.thread.length?c.thread[c.thread.length-1].text:'')}</div>
+     <label class="small muted" for="rj-${c.id}">Reject reason</label><select id="rj-${c.id}">${REJECTS.map(r=>`<option>${r}</option>`).join('')}</select>
+     <div class="actions"><button class="act primary" data-a="accept" data-c="${c.id}">Accept</button><button class="act danger" data-a="reject" data-c="${c.id}">Reject</button></div></div>`}).join('') || '<div class="card empty">Inbox empty. Send an e-consult from a case at Stage 3.</div>'}`;
+}
+function median(a){ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function vHealth(){
+  const issued=c=>c.stages[0].end;
+  const span=(i)=>CASES.map(c=>c.stages[i].end!==null&&issued(c)!==null?c.stages[i].end-issued(c):null).filter(x=>x!==null);
+  const m=[['Days to acknowledgement',span(1)],['Days to confirmation',span(2)],['Days to decision',span(3)],['Days to treatment start',span(4)]];
+  const treated=CASES.filter(c=>c.stages[4].end!==null).length;
+  const open=CASES.filter(c=>!c.closed);
+  const unresolved=open.filter(c=>!c.owner || stageState(c,curIdx(c))==='late').length;
+  const drops={}; CASES.filter(c=>c.closed&&c.closed.kind==='drop').forEach(c=>drops[c.closed.reason]=(drops[c.closed.reason]||0)+1);
+  const rej={}; CASES.forEach(c=>{ if(c.referral.reason) rej[c.referral.reason]=(rej[c.referral.reason]||0)+1; });
+  const tbL=['en','ar'].map(l=>{const a=CASES.filter(c=>c.tbFirst&&c.tbFirst.lang===l);return [l==='en'?'English':'Arabic',a.length?Math.round(100*a.filter(c=>c.tbFirst.pass).length/a.length):null,a.length];});
+  const bars=(obj)=>{const e=Object.entries(obj);const mx=Math.max(1,...e.map(x=>x[1]));return e.length?`<div class="bars">${e.map(([k,v])=>`<div class="bar"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${100*v/mx}%;display:block"></span></span><span class="num">${v}</span></div>`).join('')}</div>`:'<div class="empty">None yet.</div>';};
+  return `<div class="card" style="gap:4px"><h2>Loop health</h2><span class="small muted">Computed live from stage timestamps across all ${CASES.length} cases. Synthetic data.</span></div>
+   <div class="mgrid">
+     <div class="metric"><div class="v">${Math.round(100*treated/CASES.length)}%</div><div class="k">High-risk patients started on treatment</div><div class="n">${treated} of ${CASES.length}</div></div>
+     <div class="metric"><div class="v" style="color:${unresolved?'var(--crit)':'inherit'}">${unresolved}</div><div class="k">Unresolved actionable results</div><div class="n">overdue or unassigned</div></div>
+     ${m.map(([k,a])=>`<div class="metric"><div class="v">${a.length?median(a):'–'}</div><div class="k">${k} (median)</div><div class="n">n = ${a.length}</div></div>`).join('')}
+   </div>
+   <div class="card"><div class="sec-label">Drop-off reasons</div>${bars(drops)}</div>
+   <div class="card"><div class="sec-label">Referral rejections</div>${bars(rej)}</div>
+   <div class="card"><div class="sec-label">Teach-back passed first time, by language</div>${tbL.map(([l,p,n])=>`<div class="bar"><span>${l}</span><span class="track"><span class="fill" style="width:${p||0}%;display:block"></span></span><span class="num">${p===null?'–':p+'%'}</span></div><div class="n small muted">n = ${n}</div>`).join('')}</div>`;
+}
+function render(){
+  $('day').textContent='Day '+DAY;
+  renderTabs();
+  $('view').innerHTML = tab==='board'?vBoard():tab==='case'?vCase():tab==='patient'?vPatient():tab==='specialist'?vSpecialist():vHealth();
+}
+
+/* ---------- actions ---------- */
+document.addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.id==='adv'){ tick(7); return; }
+  if(b.dataset.tab){ tab=b.dataset.tab; msg=null; render(); window.scrollTo(0,0); return; }
+  if(b.dataset.open){ sel=b.dataset.open; tab='case'; tb=null; msg=null; dropFor=null; render(); window.scrollTo(0,0); return; }
+  if(b.dataset.lang){ const c=CASES.find(x=>x.id===sel); if(c) c.lang=b.dataset.lang; render(); return; }
+  if(b.dataset.tb!==undefined){ tb=+b.dataset.tb; render(); return; }
+  const a=b.dataset.a; if(!a) return;
+  const c=CASES.find(x=>x.id===(b.dataset.c||sel)); if(!c) return;
+  const i=curIdx(c);
+  switch(a){
+    case 'assign': c.owner=ME; log(c,`Ownership taken by ${ME}.`); break;
+    case 'topatient': tab='patient'; break;
+    case 'tospec': tab='specialist'; break;
+    case 'sms': log(c,'Result resent by SMS.'); break;
+    case 'ack':
+      if(!c.tbFirst) c.tbFirst={lang:c.lang, pass:tb===0};
+      if(tb===0){ c.ack=true; complete(c,1,`Patient acknowledged in ${c.lang==='ar'?'Arabic':'English'}; teach-back correct.`); }
+      else { c.ack=false; log(c,'Teach-back wrong. Nurse call task created.','alert'); }
+      tb=null; break;
+    case 'nurse': c.ack=true; complete(c,1,'Nurse call completed; patient understands next step.'); break;
+    case 'order': c.ordered=true; log(c,'DXA and labs ordered'+(c.urgent?' (fast-track).':'.')); break;
+    case 'results': c.res=Object.assign({}, c.demo); complete(c,2,`DXA and labs returned: lowest T ${c.res.t}, vitamin D ${c.res.vd}, eGFR ${c.res.egfr}.`); break;
+    case 'decide': complete(c,3,'Treatment decided in primary care per CPG.'); break;
+    case 'econsult': c.referral={status:'sent', clinic:'Al Noor fracture-liaison clinic', reason:null, history:[['sent',DAY]]}; c.thread.push({who:c.owner, d:DAY, text:`${c.age}F, ${category(c).why.join('; ')}. Asking for a treatment plan.`}); log(c,'E-consult sent to Al Noor fracture-liaison clinic.'); break;
+    case 'reroute': c.referral.status='rerouted'; c.referral.clinic='Corniche fracture-liaison clinic (in network)'; c.referral.history.push(['rerouted',DAY]); c.thread.push({who:c.owner, d:DAY, text:'Rerouted to an in-network clinic. Same request.'}); log(c,'Referral rerouted to Corniche fracture-liaison clinic (in network).'); break;
+    case 'accept': c.referral.status='accepted'; c.referral.history.push(['accepted',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Accepted. Recommend first-line treatment per CPG; happy to review.'}); complete(c,3,`Referral accepted by ${c.referral.clinic}.`); break;
+    case 'reject': { const r=$('rj-'+c.id).value; c.referral.status='rejected'; c.referral.reason=r; c.referral.history.push(['rejected',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Rejected: '+r}); log(c,`Referral rejected by ${c.referral.clinic}: ${r}. Back on GP board.`,'alert'); break; }
+    case 'sign': { const r=treatments(c).find(x=>x.id===rxPick[c.id]); if(!r) break; c.rx={id:r.id,name:r.name,by:signer[c.id].trim(),day:DAY,dispensed:null}; log(c,`Prescription signed by ${c.rx.by}: ${r.name}.`); break; }
+    case 'dispense': c.rx.dispensed=DAY; complete(c,4,'Dispensing recorded by pharmacy.'); break;
+    case 'follow': complete(c,5,'Follow-up complete: adherence and response markers recorded.'); break;
+    case 'close': {
+      const ev = c.rx && c.rx.dispensed!=null && c.follow.adh && c.follow.dxa;
+      if(!ev){ msg={id:c.id,text:'Closure refused: evidence incomplete (dispensing record, adherence check and repeat DXA booking are all required). Attach evidence, or close with a documented clinician decision (Patient declines…).'}; log(c,'Closure attempt refused by gate: evidence missing.','alert'); break; }
+      msg=null; closeCase(c,'treated','Evidence: dispensing record, adherence check, repeat DXA booked.',ME); break; }
+    case 'drop': dropFor=c.id; break;
+    case 'drop-cancel': dropFor=null; break;
+    case 'drop-ok': { const r=$('dr').value, by=$('drb').value.trim()||ME; dropFor=null; closeCase(c,'drop',r,by,r); break; }
+  }
+  render();
+});
+document.addEventListener('change', e=>{
+  const c=CASES.find(x=>x.id===sel); if(!c) return;
+  if(e.target.name && e.target.name.startsWith('rx-')){ rxPick[c.id]=e.target.value; render(); }
+  if(e.target.dataset.f){ c.follow[e.target.dataset.f]=e.target.checked; render(); }
+});
+document.addEventListener('input', e=>{
+  if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2); }
+});
+
+tick(0);
+})();
+</script>

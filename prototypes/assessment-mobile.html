@@ -1,0 +1,516 @@
+<title>SpineLoop Mobile</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one phone-width column. Sticky patient + risk header, eight collapsible clinical sections in pathway order, sticky "next action" bar at the bottom. */
+:root{
+  --bg:#e8ecee; --app:#f6f8f9; --surface:#ffffff; --sunk:#eef2f4; --ink:#14202a; --muted:#56636e; --line:#d5dce1;
+  --accent:#2f5d8c; --accent-soft:#e2ebf4;
+  --ok:#2c7a4b; --ok-soft:#e0f0e6; --warn:#a4620a; --warn-soft:#f7ebd7; --crit:#b3261e; --crit-soft:#f7e0de;
+  --f-display:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a0f12; --app:#11181d; --surface:#172026; --sunk:#1d272e; --ink:#e3e9ed; --muted:#93a1ab; --line:#2a353d;
+  --accent:#88b4e0; --accent-soft:#1c2b3a; --ok:#6cc08b; --ok-soft:#163021; --warn:#e3a447; --warn-soft:#342715; --crit:#f2867c; --crit-soft:#391c1a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a0f12; --app:#11181d; --surface:#172026; --sunk:#1d272e; --ink:#e3e9ed; --muted:#93a1ab; --line:#2a353d;
+  --accent:#88b4e0; --accent-soft:#1c2b3a; --ok:#6cc08b; --ok-soft:#163021; --warn:#e3a447; --warn-soft:#342715; --crit:#f2867c; --crit-soft:#391c1a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 24px}
+.app{max-width:420px;margin:0 auto;background:var(--app);border:1px solid var(--line);border-radius:22px;overflow:hidden;position:relative}
+@media (max-width:460px){body{padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px));padding-block:0}.app{border:0;border-radius:0}}
+h1,h2{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);padding:12px 16px 10px;display:grid;gap:8px}
+.who{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.who h1{font-size:20px}
+.who .sub{font-size:12.5px;color:var(--muted)}
+.risk{font-family:var(--f-display);font-weight:600;font-size:14px;padding:4px 10px;border-radius:999px;white-space:nowrap;border:1.5px solid var(--line);color:var(--muted)}
+.risk[data-r="vhigh"]{color:var(--crit);border-color:var(--crit);background:var(--crit-soft)}
+.risk[data-r="high"]{color:var(--warn);border-color:var(--warn);background:var(--warn-soft)}
+.risk[data-r="low"]{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.track{display:flex;gap:4px}
+.track span{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.track span[data-s="done"]{background:var(--ok)} .track span[data-s="flag"]{background:var(--warn)} .track span[data-s="block"]{background:var(--crit)}
+.notice{font-size:11.5px;color:var(--warn);background:var(--warn-soft);padding:5px 8px;border-radius:6px}
+main{padding:12px 12px 120px;display:grid;gap:10px}
+details{background:var(--surface);border:1px solid var(--line);border-radius:12px}
+details[data-state="flag"]{border-color:color-mix(in srgb,var(--warn) 55%,var(--line))}
+details[data-state="block"]{border-color:color-mix(in srgb,var(--crit) 55%,var(--line))}
+summary{list-style:none;cursor:pointer;padding:12px 14px;display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.num{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-mono);font-size:12px;border:1.5px solid var(--line);color:var(--muted)}
+details[data-state="done"] .num{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+details[data-state="flag"] .num{border-color:var(--warn);color:var(--warn)}
+details[data-state="block"] .num{border-color:var(--crit);color:var(--crit)}
+.s-title{font-weight:600}
+.s-line{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip{font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.c-done{color:var(--ok);background:var(--ok-soft)} .c-flag{color:var(--warn);background:var(--warn-soft)} .c-block{color:var(--crit);background:var(--crit-soft)} .c-todo{color:var(--muted);background:var(--sunk)}
+.body{padding:0 14px 14px;display:grid;gap:10px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.fields label{display:grid;gap:3px;font-size:12px;color:var(--muted)}
+.fields .full{grid-column:1/-1}
+input[type=number],input[type=text],input[type=date],select{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
+.checks{display:grid;gap:2px}
+.checks label{display:flex;gap:10px;align-items:center;font-size:14px;padding:6px 0;border-bottom:1px solid var(--line)}
+.checks label:last-child{border-bottom:0}
+.checks input{width:18px;height:18px;accent-color:var(--accent);flex:none}
+.out{background:var(--sunk);border-radius:8px;padding:10px;display:grid;gap:4px;font-size:13.5px}
+.out .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.callout{border-radius:8px;padding:10px;font-size:13.5px;display:grid;gap:6px}
+.callout.flag{background:var(--warn-soft);color:var(--ink);border-left:3px solid var(--warn)}
+.callout.block{background:var(--crit-soft);color:var(--ink);border-left:3px solid var(--crit)}
+.callout.ok{background:var(--ok-soft);color:var(--ink);border-left:3px solid var(--ok)}
+.callout b{font-weight:600}
+.src{font-family:var(--f-mono);font-size:10.5px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1px 5px;white-space:nowrap}
+.badge{font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:4px}
+.b-rec{color:var(--accent);background:var(--accent-soft)} .b-calc{color:var(--ok);background:var(--ok-soft)} .b-hum{color:var(--ink);background:var(--sunk);border:1px solid var(--line)}
+.frx{border:1px solid var(--line);border-radius:8px;padding:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px 8px;position:relative}
+.frx .rm{position:absolute;top:4px;right:6px;background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
+.frx label{display:grid;gap:2px;font-size:11.5px;color:var(--muted)}
+.frx .full{grid-column:1/-1}
+.frx .inline{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--ink)}
+button.act{font:inherit;font-size:14px;font-weight:500;border-radius:8px;padding:9px 12px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.act.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+button.act:disabled{opacity:.45;cursor:not-allowed}
+.labs{width:100%;border-collapse:collapse;font-size:13.5px}
+.labs td{padding:5px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+.labs td:nth-child(2){width:96px}
+.labs td:nth-child(3){width:70px;text-align:right;font-size:12px}
+.labs input{padding:5px 7px;font-size:14px}
+.f-hi{color:var(--crit)} .f-lo{color:var(--warn)} .f-ok{color:var(--ok)}
+.rx{display:grid;gap:6px}
+.rx label{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:8px;align-items:start;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+.rx label[data-k="blocked"]{opacity:.55}
+.rx input{margin-top:3px;accent-color:var(--accent)}
+.rx .why{display:block;font-size:12px;color:var(--muted)}
+.sched{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.sched li{display:grid;grid-template-columns:92px minmax(0,1fr);gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.sched li:last-child{border-bottom:0}
+.sched .d{font-family:var(--f-mono);font-size:12.5px;color:var(--muted)}
+.bar{position:sticky;bottom:0;z-index:5;background:var(--surface);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));display:grid;gap:6px}
+.bar .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.bar .next{font-weight:600;font-size:14.5px}
+.foot{max-width:420px;margin:12px auto 0;font-size:11.5px;color:var(--muted);display:grid;gap:4px}
+.foot a{color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="who">
+      <div><h1 id="pname">Mariam A.</h1><div class="sub" id="psub"></div></div>
+      <span class="risk" id="risk">—</span>
+    </div>
+    <div class="track" id="track" aria-label="Pathway progress"></div>
+    <div class="notice">Prototype · fictional patient · draft rules for clinician sign-off</div>
+  </header>
+
+  <main>
+    <!-- 1 History -->
+    <details id="s1" open>
+      <summary><span class="num">1</span><span><span class="s-title">History</span><span class="s-line" id="l1"></span></span><span class="chip" id="c1"></span></summary>
+      <div class="body">
+        <div class="fields">
+          <label>Age<input id="age" type="number" min="18" max="110"></label>
+          <label>Sex<select id="sex"><option value="F">Female</option><option value="M">Male</option></select></label>
+          <label>Weight (kg)<input id="wt" type="number" min="25" max="250"></label>
+          <label>Height (cm)<input id="ht" type="number" min="120" max="210"></label>
+          <label class="full">Menopause<select id="meno"><option value="post">Postmenopausal</option><option value="pre">Premenopausal</option><option value="na">Not applicable</option></select></label>
+          <label class="full">Ethnic FRAX model (no Malaysian FRAX yet)<select id="eth"><option>Singapore Malay</option><option>Singapore Chinese</option><option>Singapore Indian</option><option>Hong Kong Chinese</option></select></label>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="gc"> Glucocorticoids ≥5 mg prednisolone daily for &gt;3 months</label>
+          <label><input type="checkbox" id="ra"> Rheumatoid arthritis</label>
+          <label><input type="checkbox" id="cv"> Heart attack or stroke in the last 12 months</label>
+          <label><input type="checkbox" id="frail"> Frail, or advanced age per clinician</label>
+        </div>
+        <div class="out"><span class="k">Assessment indicated? <span class="src">NICE NG259</span></span><span id="o1"></span></div>
+      </div>
+    </details>
+
+    <!-- 2 Risk factors -->
+    <details id="s2">
+      <summary><span class="num">2</span><span><span class="s-title">Risk factors</span><span class="s-line" id="l2"></span></span><span class="chip" id="c2"></span></summary>
+      <div class="body">
+        <div class="checks">
+          <label><input type="checkbox" id="parent"> Parent had a hip fracture</label>
+          <label><input type="checkbox" id="smoke"> Current smoker</label>
+          <label><input type="checkbox" id="alc"> Alcohol over 14 units a week</label>
+          <label><input type="checkbox" id="falls"> Two or more falls in the past year</label>
+          <label><input type="checkbox" id="hloss"> Height loss of 4 cm or more</label>
+          <label><input type="checkbox" id="early"> Early menopause or premature ovarian insufficiency</label>
+        </div>
+        <div class="out"><span class="k">BMI <span class="badge b-calc">Calculated</span></span><span id="o2"></span></div>
+      </div>
+    </details>
+
+    <!-- 3 Fragility fracture -->
+    <details id="s3">
+      <summary><span class="num">3</span><span><span class="s-title">Fragility fracture</span><span class="s-line" id="l3"></span></span><span class="chip" id="c3"></span></summary>
+      <div class="body">
+        <div id="frx-list" style="display:grid;gap:8px"></div>
+        <button class="act" id="add-frx">Add fracture</button>
+        <div id="o3"></div>
+      </div>
+    </details>
+
+    <!-- 4 DXA -->
+    <details id="s4">
+      <summary><span class="num">4</span><span><span class="s-title">DXA scan</span><span class="s-line" id="l4"></span></span><span class="chip" id="c4"></span></summary>
+      <div class="body">
+        <div class="checks"><label><input type="checkbox" id="dxa-done"> DXA done</label></div>
+        <div class="fields" id="dxa-fields">
+          <label>Lumbar spine T<input id="t-ls" type="number" step="0.1"></label>
+          <label>Femoral neck T<input id="t-fn" type="number" step="0.1"></label>
+          <label>Total hip T<input id="t-th" type="number" step="0.1"></label>
+          <label>Scan date<input id="dxa-date" type="date"></label>
+        </div>
+        <div id="o4"></div>
+      </div>
+    </details>
+
+    <!-- 5 FRAX -->
+    <details id="s5">
+      <summary><span class="num">5</span><span><span class="s-title">FRAX score</span><span class="s-line" id="l5"></span></span><span class="chip" id="c5"></span></summary>
+      <div class="body">
+        <div class="fields">
+          <label>Major osteoporotic, 10-yr %<input id="frax-mof" type="number" step="0.1" min="0" max="100"></label>
+          <label>Hip, 10-yr %<input id="frax-hip" type="number" step="0.1" min="0" max="100"></label>
+        </div>
+        <div class="out"><span class="k">How to get it</span><span>Run the official FRAX calculator with the <b id="eth-out"></b> model, then enter both numbers here. The app records the result; it does not compute FRAX. <span class="badge b-rec">Recorded</span></span></div>
+        <div id="o5"></div>
+      </div>
+    </details>
+
+    <!-- 6 Labs -->
+    <details id="s6">
+      <summary><span class="num">6</span><span><span class="s-title">Lab results</span><span class="s-line" id="l6"></span></span><span class="chip" id="c6"></span></summary>
+      <div class="body">
+        <table class="labs"><tbody>
+          <tr><td>Adjusted calcium (mmol/L)</td><td><input id="lab-ca" type="number" step="0.01"></td><td id="f-ca"></td></tr>
+          <tr><td>25(OH) vitamin D (nmol/L)</td><td><input id="lab-vd" type="number" step="1"></td><td id="f-vd"></td></tr>
+          <tr><td>eGFR (mL/min/1.73m²)</td><td><input id="lab-egfr" type="number" step="1"></td><td id="f-egfr"></td></tr>
+          <tr><td>ALP (U/L)</td><td><input id="lab-alp" type="number" step="1"></td><td id="f-alp"></td></tr>
+          <tr><td>TSH (mIU/L)</td><td><input id="lab-tsh" type="number" step="0.01"></td><td id="f-tsh"></td></tr>
+        </tbody></table>
+        <div id="o6" style="display:grid;gap:8px"></div>
+      </div>
+    </details>
+
+    <!-- 7 Treatment -->
+    <details id="s7">
+      <summary><span class="num">7</span><span><span class="s-title">Treatment</span><span class="s-line" id="l7"></span></span><span class="chip" id="c7"></span></summary>
+      <div class="body">
+        <div id="o7a"></div>
+        <div class="rx" id="rx"></div>
+        <div class="out"><span class="k">For everyone on treatment <span class="src">MY CPG 2022</span></span><span>Calcium 1,200 mg/day total and vitamin D at least 800 IU/day.</span></div>
+        <div class="fields"><label class="full">Prescribing clinician (sign-off)<input id="signer" type="text" placeholder="e.g. Dr Tan"></label></div>
+        <button class="act primary" id="prescribe" disabled>Sign and prescribe</button>
+        <div id="o7"></div>
+      </div>
+    </details>
+
+    <!-- 8 Follow-up -->
+    <details id="s8">
+      <summary><span class="num">8</span><span><span class="s-title">Follow-up</span><span class="s-line" id="l8"></span></span><span class="chip" id="c8"></span></summary>
+      <div class="body">
+        <ul class="sched" id="sched"></ul>
+        <div class="fields"><label class="full">Repeat DXA interval (local choice; CPG gives none)<select id="dxa-int"><option value="24">2 years</option><option value="36">3 years</option></select></label></div>
+        <div id="o8"></div>
+      </div>
+    </details>
+  </main>
+
+  <div class="bar"><span class="k">Next action</span><span class="next" id="next"></span><span class="muted" style="font-size:12.5px" id="next-why"></span></div>
+</div>
+
+<div class="foot">
+  <span>Rules: who to assess and DXA indications from NICE NG259 (2026, risk assessment). Diagnosis, risk categories, treatment and monitoring from the Malaysian CPG for postmenopausal osteoporosis (2022). Lab reference ranges and the repeat-DXA interval are local placeholders for sign-off.</span>
+  <span><a href="https://www.nice.org.uk/guidance/ng259" target="_blank" rel="noopener">NICE NG259</a> · <a href="https://mymahtas2.moh.gov.my/files/e-CPG%20Management%20of%20Osteoporosis%20(3rd%20Edition).pdf" target="_blank" rel="noopener">Malaysian CPG, 3rd edition</a> · <a href="https://frax.shef.ac.uk/FRAX/" target="_blank" rel="noopener">FRAX calculator</a></span>
+</div>
+
+<script>
+(function(){
+const TODAY = new Date('2026-11-07T00:00:00');
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const SITES = {hip:'Hip', vert:'Vertebral', wrist:'Wrist', humerus:'Humerus', pelvis:'Pelvis', other:'Other'};
+const MAJOR = ['hip','vert','wrist','humerus'];
+
+/* ---------- example patient (fictional) ---------- */
+const S = {
+  age:64, sex:'F', wt:52, ht:156, meno:'post', eth:'Singapore Malay', gc:false, ra:false, cv:false, frail:false,
+  parent:true, smoke:false, alc:false, falls:false, hloss:false, early:false,
+  frx:[{site:'wrist', months:8, onTx:false, onGc:false}],
+  dxaDone:false, tls:null, tfn:null, tth:null, dxaDate:'',
+  mof:18, hip:4.1,
+  ca:2.31, vd:42, egfr:68, alp:88, tsh:1.9,
+  rx:null, signer:'', prescribed:null, dxaInt:24
+};
+
+/* ---------- bind inputs ---------- */
+const NUM = {age:'age',wt:'wt',ht:'ht','t-ls':'tls','t-fn':'tfn','t-th':'tth','frax-mof':'mof','frax-hip':'hip','lab-ca':'ca','lab-vd':'vd','lab-egfr':'egfr','lab-alp':'alp','lab-tsh':'tsh','dxa-int':'dxaInt'};
+const SEL = {sex:'sex',meno:'meno',eth:'eth','dxa-date':'dxaDate',signer:'signer'};
+const CHK = {gc:'gc',ra:'ra',cv:'cv',frail:'frail',parent:'parent',smoke:'smoke',alc:'alc',falls:'falls',hloss:'hloss',early:'early','dxa-done':'dxaDone'};
+function fill(){
+  for(const [id,k] of Object.entries(NUM)) $(id).value = S[k]==null?'':S[k];
+  for(const [id,k] of Object.entries(SEL)) $(id).value = S[k];
+  for(const [id,k] of Object.entries(CHK)) $(id).checked = S[k];
+}
+const v = x => (x===null||x===''||isNaN(x)) ? null : +x;
+
+/* ---------- rules ---------- */
+function bmi(){ return S.wt && S.ht ? S.wt/Math.pow(S.ht/100,2) : null; }
+function assessReasons(){ // NICE NG259
+  const r=[]; const a=S.age, post = S.meno==='post';
+  const hasFrx = S.frx.length>0;
+  if(a>=50 || post){
+    if(hasFrx) r.push('previous fragility fracture');
+    if(S.gc) r.push('long-term glucocorticoids');
+    if(S.sex==='M' && a>=75) r.push('man aged 75+');
+    if(S.sex==='F' && a>=65) r.push('woman aged 65+');
+    const b=bmi();
+    if(S.falls) r.push('2+ falls in a year'); if(S.parent) r.push('parental hip fracture');
+    if(b!==null && b<18.5) r.push('BMI under 18.5'); if(S.smoke) r.push('current smoker'); if(S.alc) r.push('alcohol >14 units/week');
+  } else {
+    if(S.frx.some(f=>f.site==='hip'||f.site==='vert') || S.frx.length>=2) r.push('hip/vertebral or multiple fractures under 50');
+  }
+  return r;
+}
+function frxSummary(){
+  const f=S.frx;
+  return {
+    any:f.length>0, recent:f.some(x=>x.months<=12), multiple:f.length>=2,
+    onTx:f.some(x=>x.onTx), onGc:f.some(x=>x.onGc),
+    hipVert:f.some(x=>x.site==='hip'||x.site==='vert'),
+    majorRecent2y:f.some(x=>MAJOR.includes(x.site) && x.months<=24)
+  };
+}
+function lowestT(){ const t=[S.tls,S.tfn,S.tth].map(v).filter(x=>x!==null); return t.length?Math.min(...t):null; }
+function tCat(t){ return t===null?null : t<=-2.5?'Osteoporosis' : t<-1?'Osteopenia' : 'Normal'; }
+function dxaIndicated(){ // NICE NG259
+  const fx=frxSummary(), r=[];
+  if(S.age>=30 && fx.hipVert) r.push('previous hip or vertebral fragility fracture');
+  if(fx.majorRecent2y) r.push('major osteoporotic fracture in the last 2 years');
+  if(S.frx.length>=2) r.push('two or more fragility fractures');
+  const mof=v(S.mof); if(mof!==null && mof>=10) r.push('FRAX major osteoporotic risk 10% or more (consider)');
+  r.push('baseline DXA before starting treatment');
+  return r;
+}
+function category(){ // Malaysian CPG 2022
+  const fx=frxSummary(), t= S.dxaDone?lowestT():null, mof=v(S.mof), hip=v(S.hip);
+  const vh=[];
+  if(fx.recent) vh.push('fracture in the last 12 months');
+  if(fx.onTx) vh.push('fracture while on osteoporosis treatment');
+  if(fx.multiple) vh.push('multiple fractures');
+  if(fx.onGc) vh.push('fracture while on glucocorticoids');
+  if(S.falls) vh.push('injurious falls or high fall risk');
+  if(S.frail) vh.push('frailty or advanced age');
+  if(t!==null && t<-3.0) vh.push('T-score below −3.0');
+  if(mof!==null && mof>30) vh.push('FRAX major >30%');
+  if(hip!==null && hip>4.5) vh.push('FRAX hip >4.5%');
+  if(vh.length) return {key:'vhigh', name:'Very high risk', why:vh};
+  const h=[];
+  if(t!==null && t<=-2.5) h.push('T-score −2.5 or lower');
+  if(fx.hipVert) h.push('hip or vertebral fragility fracture (clinical osteoporosis, regardless of BMD)');
+  if(t!==null && t>-2.5 && t<-1 && ((hip!==null&&hip>3)||(mof!==null&&mof>20))) h.push('osteopenia with FRAX above treatment threshold');
+  if(h.length) return {key:'high', name:'High risk', why:h};
+  if(t===null && mof===null) return {key:'incomplete', name:'Not classified', why:['needs DXA or FRAX']};
+  return {key:'low', name:'Low risk', why:['below treatment thresholds']};
+}
+function labFlags(){
+  const out=[]; const ca=v(S.ca), vd=v(S.vd), eg=v(S.egfr), tsh=v(S.tsh);
+  const f={};
+  if(ca!==null){ f.ca = ca>2.60?'hi':ca<2.15?'lo':'ok';
+    if(ca>2.60) out.push(['block','Calcium high: check PTH. Suspected primary hyperparathyroidism goes to a specialist.','NICE NG259']);
+    if(ca<2.15) out.push(['block','Calcium low: correct before an antiresorptive.','Local, sign-off']); }
+  if(vd!==null){ f.vd = vd<75?'lo':'ok';
+    if(vd<75) out.push(['flag','Vitamin D below the 75 nmol/L target: replete with 50,000 IU weekly for 8 weeks (or 6,000 IU daily), then 800–1,000 IU/day.','MY CPG 2022']); }
+  if(eg!==null){ f.egfr = eg<35?'lo':'ok';
+    if(eg<30) out.push(['block','eGFR below 30: oral bisphosphonates not recommended.','MY CPG 2022']);
+    if(eg<35) out.push(['block','eGFR below 35: zoledronic acid contraindicated.','MY CPG 2022']); }
+  if(tsh!==null){ f.tsh = tsh<0.4?'lo':tsh>4.0?'hi':'ok';
+    if(tsh<0.4) out.push(['flag','Low TSH: consider hyperthyroidism or over-replacement as a secondary cause.','Local, sign-off']); }
+  f.alp = v(S.alp)===null?null:(v(S.alp)>130?'hi':'ok');
+  if(f.alp==='hi') out.push(['flag','Raised ALP: exclude Paget\'s disease, osteomalacia or recent fracture.','Local, sign-off']);
+  const missing = ['ca','vd','egfr'].filter(k=>v(S[k])===null);
+  return {out,f,missing};
+}
+function treatments(cat){
+  const eg=v(S.egfr); const list=[];
+  const add=(id,name,why,kind,block)=>list.push({id,name,why,kind:block?'blocked':kind,block});
+  if(cat.key==='vhigh'){
+    add('teri','Teriparatide (up to 24 months), then an antiresorptive','Anabolic first for very high risk','first');
+    add('romo','Romosozumab (12 months), then an antiresorptive','Anabolic first for very high risk','first', S.cv?'Blocked: heart attack or stroke in the last 12 months':null);
+    add('deno','Denosumab','Alternative if anabolic not available','alt');
+    add('zol','Zoledronic acid (IV bisphosphonate)','Alternative after denosumab','alt', eg!==null&&eg<35?'Blocked: eGFR below 35':null);
+  } else if(cat.key==='high'){
+    add('obp','Oral bisphosphonate (e.g. alendronate)','First line for high risk','first', eg!==null&&eg<30?'Blocked: eGFR below 30':null);
+    add('deno','Denosumab','First line for high risk','first');
+    add('zol','Zoledronic acid (IV bisphosphonate)','Option if oral not tolerated','alt', eg!==null&&eg<35?'Blocked: eGFR below 35':null);
+  } else if(cat.key==='low'){
+    add('life','Lifestyle, calcium and vitamin D; review risk','Below treatment threshold','first');
+    add('mht','Menopausal hormone therapy or raloxifene, if clinically indicated','Low risk option','alt');
+  }
+  return list;
+}
+function addMonths(d,m){ const x=new Date(d); x.setMonth(x.getMonth()+m); return x; }
+function fmt(d){ return d.toISOString().slice(0,10); }
+function schedule(){
+  if(!S.prescribed) return [];
+  const p=S.prescribed, base=new Date(p.date), items=[];
+  const vdLow = v(S.vd)!==null && v(S.vd)<75;
+  if(vdLow) items.push([addMonths(base,3),'Recheck vitamin D after repletion','Local, sign-off']);
+  items.push([addMonths(base,3),'Adherence and side-effect check','Local, sign-off']);
+  if(['obp','deno','zol','teri','romo'].includes(p.id)) items.push([addMonths(base,6),'Response check: bone turnover markers (failure if change under 25%)','MY CPG 2022']);
+  items.push([addMonths(base,+S.dxaInt),'Repeat DXA (failure if BMD falls ≥5% spine or ≥4% hip)','MY CPG 2022']);
+  if(p.id==='obp') items.push([addMonths(base,60),'5-year review: continue to 10 years if still high risk, or consider a 2-year drug holiday','MY CPG 2022']);
+  if(p.id==='zol') items.push([addMonths(base,36),'3-year review: continue to 6 years if still high risk, or consider a drug holiday','MY CPG 2022']);
+  if(p.id==='deno') items.push([addMonths(base,60),'Reassess at 5–10 years. No drug holiday; if stopped, switch to another therapy','MY CPG 2022']);
+  if(p.id==='teri') items.push([addMonths(base,24),'Stop at 24 months and start an antiresorptive','MY CPG 2022']);
+  if(p.id==='romo') items.push([addMonths(base,12),'Stop at 12 months and start an antiresorptive immediately','MY CPG 2022']);
+  return items.sort((a,b)=>a[0]-b[0]);
+}
+
+/* ---------- render ---------- */
+function setSec(n, state, chipText, line){
+  $('s'+n).dataset.state=state;
+  const cls={done:'c-done',flag:'c-flag',block:'c-block',todo:'c-todo'}[state];
+  $('c'+n).className='chip '+cls; $('c'+n).textContent=chipText; $('l'+n).textContent=line;
+}
+function callout(kind, html, src){ return `<div class="callout ${kind}"><span>${html}</span>${src?`<span><span class="src">${esc(src)}</span></span>`:''}</div>`; }
+function renderFrx(){
+  $('frx-list').innerHTML = S.frx.map((f,i)=>`<div class="frx">
+    <button class="rm" data-rm="${i}" aria-label="Remove fracture">×</button>
+    <label>Site<select data-fx="${i}" data-f="site">${Object.entries(SITES).map(([k,n])=>`<option value="${k}" ${f.site===k?'selected':''}>${n}</option>`).join('')}</select></label>
+    <label>Months ago<input type="number" min="0" data-fx="${i}" data-f="months" value="${f.months}"></label>
+    <label class="full inline"><input type="checkbox" data-fx="${i}" data-f="onTx" ${f.onTx?'checked':''}> Happened while on osteoporosis treatment</label>
+    <label class="full inline"><input type="checkbox" data-fx="${i}" data-f="onGc" ${f.onGc?'checked':''}> Happened while on glucocorticoids</label>
+  </div>`).join('') || '<div class="muted" style="font-size:13.5px">No fragility fracture recorded.</div>';
+}
+function render(){
+  const b=bmi(), ar=assessReasons(), fx=frxSummary(), cat=category(), labs=labFlags(), t=lowestT();
+  $('psub').textContent = `${S.age} ${S.sex==='F'?'F':'M'} · ${S.meno==='post'?'postmenopausal':S.meno==='pre'?'premenopausal':''} · BMI ${b?b.toFixed(1):'–'}`;
+  $('risk').dataset.r = cat.key; $('risk').textContent = cat.name;
+
+  // 1
+  const cpgFit = S.sex==='F' && S.meno==='post';
+  $('o1').innerHTML = (ar.length ? `Yes: ${esc(ar.join(', '))}.` : 'No NICE trigger found. Clinician may still assess.') +
+    (cpgFit?'':` <br><span style="color:var(--warn)">The Malaysian CPG covers postmenopausal women; apply its thresholds with clinician judgement.</span>`);
+  setSec(1, ar.length?'done':'flag', ar.length?'Assess':'Check', `${S.age}${S.sex}, ${S.gc?'on glucocorticoids':'no glucocorticoids'}`);
+
+  // 2
+  const rf=['parent','smoke','alc','falls','hloss','early'].filter(k=>S[k]);
+  $('o2').innerHTML = b?`<span class="mono">${b.toFixed(1)} kg/m²</span>${b<18.5?' · <span style="color:var(--warn)">below 18.5</span>':''}`:'Enter weight and height.';
+  setSec(2, 'done', `${rf.length} present`, rf.length?rf.map(k=>({parent:'parental hip fx',smoke:'smoker',alc:'alcohol',falls:'falls',hloss:'height loss',early:'early menopause'}[k])).join(', '):'none recorded');
+
+  // 3
+  let o3='';
+  if(fx.hipVert) o3+=callout('block','<b>Hip or vertebral fragility fracture:</b> clinical diagnosis of osteoporosis, regardless of BMD.','MY CPG 2022');
+  if(fx.recent) o3+=callout('block','<b>Fracture within 12 months:</b> very high risk; the window for preventing the next fracture is now.','MY CPG 2022');
+  $('o3').innerHTML=o3;
+  setSec(3, fx.any?(fx.recent||fx.hipVert?'block':'flag'):'done', fx.any?`${S.frx.length} recorded`:'None',
+    fx.any?S.frx.map(f=>`${SITES[f.site]} ${f.months} mo ago`).join(', '):'no fragility fracture');
+
+  // 4
+  $('dxa-fields').hidden = !S.dxaDone;
+  if(S.dxaDone){
+    const c=tCat(t);
+    $('o4').innerHTML = t===null?callout('flag','Enter at least one T-score.') :
+      `<div class="out"><span class="k">Lowest T-score <span class="badge b-calc">Calculated</span> <span class="src">MY CPG 2022</span></span><span><b class="mono">${t.toFixed(1)}</b> · ${c}${fx.any&&t<=-2.5?' · severe (established) osteoporosis':''}</span></div>`;
+    setSec(4, t===null?'flag':'done', t===null?'Needs T-score':c, t===null?'T-scores missing':`lowest T ${t.toFixed(1)}`);
+  } else {
+    const r=dxaIndicated();
+    const fast = cat.key==='vhigh' ? 'Anabolic treatment is likely: fast-track DXA within 6 weeks. If it can\'t be done, start an antiresorptive rather than wait.' : 'If DXA will be significantly delayed and an anabolic is unlikely, start an antiresorptive.';
+    $('o4').innerHTML = callout('flag', `<b>DXA not done — indicated.</b> Reasons: ${esc(r.join('; '))}.<br>${fast}`, 'NICE NG259') +
+      `<button class="act primary" id="order-dxa">Order DXA</button>`;
+    setSec(4,'flag','Not done','indicated: '+r[0]);
+  }
+
+  // 5
+  $('eth-out').textContent=S.eth;
+  const mof=v(S.mof), hip=v(S.hip);
+  let o5='';
+  if(mof===null||hip===null) { o5=callout('flag','Enter both FRAX results.'); setSec(5,'flag','Missing','not entered'); }
+  else {
+    const notes=[];
+    if(mof>30||hip>4.5) notes.push('above the very-high-risk threshold (major >30% or hip >4.5%)');
+    else if(mof>20||hip>3) notes.push('above the treatment threshold for osteopenia (major >20% or hip >3%)');
+    else notes.push('below the CPG treatment thresholds');
+    if(!S.dxaDone) notes.push('entered without BMD; re-run once DXA is done');
+    o5=`<div class="out"><span class="k">Interpretation <span class="src">MY CPG 2022</span></span><span>Major ${mof}% · hip ${hip}%: ${esc(notes.join('; '))}.</span></div>`;
+    setSec(5,'done',`${mof}% / ${hip}%`,`major ${mof}%, hip ${hip}%${S.dxaDone?'':' (no BMD)'}`);
+  }
+  $('o5').innerHTML=o5;
+
+  // 6
+  for(const k of ['ca','vd','egfr','alp','tsh']){
+    const st=labs.f[k]; const el=$('f-'+k);
+    el.className = st==='hi'?'f-hi':st==='lo'?(k==='egfr'?'f-hi':'f-lo'):st==='ok'?'f-ok':'';
+    el.textContent = st==='hi'?'High':st==='lo'?'Low':st==='ok'?'OK':'—';
+  }
+  $('o6').innerHTML = labs.out.map(([k,t,s])=>callout(k,esc(t),s)).join('') + (labs.missing.length?callout('flag','Missing before treatment: '+labs.missing.map(m=>({ca:'calcium',vd:'vitamin D',egfr:'eGFR'}[m])).join(', ')+'.'):'');
+  const labBlock = labs.out.some(o=>o[0]==='block'), labFlag = labs.out.length||labs.missing.length;
+  setSec(6, labBlock?'block':labFlag?'flag':'done', labBlock?'Act first':labFlag?`${labs.out.length+labs.missing.length} to act on`:'Clear',
+    labs.out.length?labs.out.map(o=>o[1].split(':')[0]).join(', '):'no abnormal results');
+
+  // 7
+  const rx=treatments(cat);
+  $('o7a').innerHTML = cat.key==='incomplete' ? callout('flag','Risk category not set yet: complete DXA or FRAX first.') :
+    `<div class="out"><span class="k">Risk category <span class="src">MY CPG 2022</span></span><span><b>${cat.name}</b>: ${esc(cat.why.join('; '))}.</span></div>`;
+  $('rx').innerHTML = rx.map(r=>`<label data-k="${r.kind}"><input type="radio" name="rx" value="${r.id}" ${r.block?'disabled':''} ${S.rx===r.id?'checked':''} ${S.prescribed?'disabled':''}><span>${esc(r.name)}<span class="why">${esc(r.block||r.why)}</span></span><span class="chip ${r.kind==='first'?'c-done':r.kind==='alt'?'c-todo':'c-block'}">${r.kind==='first'?'First line':r.kind==='alt'?'Alternative':'Blocked'}</span></label>`).join('');
+  $('signer').disabled = !!S.prescribed;
+  $('prescribe').disabled = !!S.prescribed || !S.rx || S.signer.trim().length<3 || cat.key==='incomplete';
+  $('prescribe').textContent = S.prescribed ? 'Prescribed' : 'Sign and prescribe';
+  const vdLow = v(S.vd)!==null && v(S.vd)<75;
+  $('o7').innerHTML = S.prescribed ? callout('ok',`<b>Prescribed ${esc(S.prescribed.date)}</b> by ${esc(S.prescribed.by)}: ${esc(S.prescribed.name)}. <span class="badge b-hum">Clinician decision</span>`) :
+    (vdLow ? callout('flag','Vitamin D is low: replete alongside, and before parenteral antiresorptives.','MY CPG 2022') : '');
+  setSec(7, S.prescribed?'done':(cat.key==='incomplete'?'todo':'flag'), S.prescribed?'Prescribed':'Awaiting sign-off', S.prescribed?S.prescribed.name:(rx.find(r=>r.kind==='first'&&!r.block)||{name:'—'}).name);
+
+  // 8
+  const sch=schedule();
+  $('sched').innerHTML = sch.length ? sch.map(([d,t,s])=>`<li><span class="d">${fmt(d)}</span><span>${esc(t)} <span class="src">${esc(s)}</span></span></li>`).join('') : '<li><span class="d">—</span><span class="muted">Schedule appears once treatment is prescribed.</span></li>';
+  $('o8').innerHTML = sch.length ? callout('ok','Loop stays open until each date is met with evidence, or a clinician closes it with a reason.') : '';
+  setSec(8, sch.length?'flag':'todo', sch.length?`${sch.length} due`:'Not started', sch.length?`next: ${fmt(sch[0][0])}`:'after treatment');
+
+  // track + next
+  $('track').innerHTML=[1,2,3,4,5,6,7,8].map(n=>{const s=$('s'+n).dataset.state;return `<span data-s="${s==='done'?'done':s==='block'?'block':s==='flag'?'flag':''}"></span>`}).join('');
+  let next, why;
+  if(labBlock){ next='Act on blocking lab results'; why=labs.out.filter(o=>o[0]==='block').map(o=>o[1].split(':')[0]).join(', '); }
+  else if(!S.dxaDone){ next = cat.key==='vhigh' ? 'Fast-track DXA within 6 weeks' : 'Order DXA'; why='Baseline DXA before treatment (NICE NG259)'; }
+  else if(mof===null||hip===null){ next='Enter FRAX results'; why='Run FRAX with the '+S.eth+' model'; }
+  else if(!S.prescribed && cat.key!=='incomplete' && cat.key!=='low'){ next='Sign off treatment'; why=cat.name+': '+cat.why[0]; }
+  else if(sch.length){ next=sch[0][1]; why='Due '+fmt(sch[0][0]); }
+  else { next='Rescreen at programme interval'; why='Below treatment thresholds'; }
+  $('next').textContent=next; $('next-why').textContent=why;
+}
+
+/* ---------- events ---------- */
+document.addEventListener('input', e=>{
+  const id=e.target.id, el=e.target;
+  if(NUM[id]!==undefined){ S[NUM[id]] = el.value===''?null:+el.value; }
+  else if(SEL[id]!==undefined){ S[SEL[id]] = el.value; }
+  else if(CHK[id]!==undefined){ S[CHK[id]] = el.checked; }
+  else if(el.dataset.fx!==undefined){ const f=S.frx[+el.dataset.fx]; const k=el.dataset.f; f[k] = el.type==='checkbox'?el.checked:(k==='months'?(+el.value||0):el.value); }
+  else if(el.name==='rx'){ S.rx=el.value; }
+  render();
+});
+document.addEventListener('change', e=>{ if(e.target.name==='rx'){ S.rx=e.target.value; render(); } if(e.target.dataset.fx!==undefined && e.target.tagName==='SELECT'){ renderFrx(); render(); } });
+document.addEventListener('click', e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  if(b.id==='add-frx'){ S.frx.push({site:'vert',months:1,onTx:false,onGc:false}); renderFrx(); render(); }
+  if(b.dataset.rm!==undefined){ S.frx.splice(+b.dataset.rm,1); renderFrx(); render(); }
+  if(b.id==='order-dxa'){ S.dxaDone=true; S.tls=-2.7; S.tfn=-2.4; S.tth=-2.1; S.dxaDate=fmt(TODAY); fill(); render(); $('s4').open=true; }
+  if(b.id==='prescribe'){ const r=treatments(category()).find(x=>x.id===S.rx); if(!r) return; S.prescribed={id:r.id,name:r.name,by:S.signer.trim(),date:fmt(TODAY)}; render(); $('s8').open=true; }
+});
+
+fill(); renderFrx(); render();
+})();
+</script>
