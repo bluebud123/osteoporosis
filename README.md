@@ -8,9 +8,11 @@ Entry for the **Future Health Digital Innovation Challenge 2026** (Population He
 
 > **Prototype.** Every patient is fictional and all data is synthetic. Clinical rules are drafts awaiting clinician sign-off. This is decision support, not diagnosis.
 
+**Live demo:** https://bluebud123.github.io/osteoporosis/ (GitHub Pages)
+
 ## Run it
 
-Everything is static HTML with no build step and no dependencies.
+The app is static HTML. It has no build step and no runtime dependencies.
 
 ```bash
 python3 -m http.server 8000   # then open http://localhost:8000
@@ -19,6 +21,8 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | File | What it is |
 | --- | --- |
 | `index.html` | The main app: case board, 7-stage case loop, patient phone, specialist inbox, loop-health metrics |
+| `src/rules.js` | The clinical rules engine. It is deterministic, every rule is tagged with its source, and the app and the benchmark share it |
+| `bench/` | The benchmark: synthetic clinical vignettes and headless loop scenarios (see below) |
 | `prototypes/assessment-mobile.html` | Clinical assessment flow: history → risk factors → fracture → DXA → FRAX → labs → treatment → follow-up |
 | `prototypes/xray-door-demo.html` | Earlier concept: AI read of lateral spine X-rays as an optional second door (corner points are simulated) |
 
@@ -44,6 +48,22 @@ The loop also handles six exceptions: overdue (alert, then escalation), unassign
 - **Local placeholders, each labelled in the UI:** lab reference ranges, the 2-year repeat-DXA interval, and all stage clocks.
 
 Every value on screen carries a provenance badge: **Recorded**, **Calculated** (with the rule's source) or **AI-drafted**.
+
+## Benchmark
+
+```bash
+npm install && npm run bench
+```
+
+| Measure | Result |
+| --- | --- |
+| Clinical vignettes (57 cases, 102 checks) | 57/57 pass |
+| Very-high-risk recall | 13/13 |
+| False reassurance (at-risk patient labelled "low") | 0 |
+| Guideline-blocked drug offered | 0 |
+| Loop guarantees (12 headless scenarios on the real app) | 12/12 pass |
+
+On its first run the benchmark found a real false-reassurance bug, which is now fixed: a patient with high FRAX but no DXA was being labelled "low". Details, method and limits are in [`bench/README.md`](bench/README.md). The expected answers are drafts until the clinical lead signs them off.
 
 ## Data
 

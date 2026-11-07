@@ -323,6 +323,7 @@ function category(){ // Malaysian CPG 2022
   if(t!==null && t>-2.5 && t<-1 && ((hip!==null&&hip>3)||(mof!==null&&mof>20))) h.push('osteopenia with FRAX above treatment threshold');
   if(h.length) return {key:'high', name:'High risk', why:h};
   if(t===null && mof===null) return {key:'incomplete', name:'Not classified', why:['needs DXA or FRAX']};
+  if(t===null && ((mof!==null && mof>=10) || (hip!==null && hip>3))) return {key:'incomplete', name:'Not classified', why:['FRAX at or above the DXA threshold without BMD: do DXA first (NICE NG259)']};
   return {key:'low', name:'Low risk', why:['below treatment thresholds']};
 }
 function labFlags(){

@@ -1,0 +1,15 @@
+{
+  "name": "spineloop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Closing the screening-to-care loop for fragility-fracture risk (prototype).",
+  "scripts": {
+    "bench": "node bench/run-rules.js && node bench/run-loop.js",
+    "bench:rules": "node bench/run-rules.js",
+    "bench:loop": "node bench/run-loop.js",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "jsdom": "24.1.3"
+  }
+}

@@ -139,6 +139,7 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
   <nav class="tabs" id="tabs" aria-label="Views"></nav>
 </div>
 
+<script src="src/rules.js"></script>
 <script>
 (function(){
 const $ = id => document.getElementById(id);
@@ -158,45 +159,21 @@ const STAGES = [
 const DROPS = ['Patient declined after counselling','Fear of medication side effects','Dental concern before bisphosphonate','Lost after transfer between providers','Clinician judged not indicated'];
 const REJECTS = ['Out of insurance network','Wrong service','Incomplete referral'];
 
-/* ---------- clinical rules (Malaysian CPG 2022 + NICE NG259), abbreviated ---------- */
-function category(c){
-  const k=c.clin, vh=[], h=[];
-  if(k.fxMonths!==null && k.fxMonths<=12) vh.push('fracture in the last 12 months');
-  if(k.multiFx) vh.push('multiple fractures');
-  if(k.fxOnGc) vh.push('fracture while on glucocorticoids');
-  if(c.res && c.res.t!==null && c.res.t<-3) vh.push('T-score below −3.0');
-  if(k.mof!==null && k.mof>30) vh.push('FRAX major >30%');
-  if(k.hip!==null && k.hip>4.5) vh.push('FRAX hip >4.5%');
-  if(vh.length) return {key:'vhigh', name:'Very high', why:vh};
-  if(c.res && c.res.t!==null && c.res.t<=-2.5) h.push('T-score −2.5 or lower');
-  if(k.hipVert) h.push('hip or vertebral fragility fracture');
-  if((k.mof!==null&&k.mof>20)||(k.hip!==null&&k.hip>3)) h.push('FRAX above treatment threshold');
-  if(h.length) return {key:'high', name:'High', why:h};
-  return {key:'low', name:'Low', why:['below thresholds']};
+/* ---------- clinical rules: shared module src/rules.js (same code the benchmark tests) ---------- */
+const R = window.SpineRules;
+const CATNAME = {vhigh:'Very high', high:'High', low:'Low', incomplete:'Not classified'};
+function toPatient(c){
+  const k=c.clin, fx=[];
+  if(k.fxMonths!==null) fx.push({site:k.hipVert?'hip':'wrist', months:k.fxMonths, onGc:k.fxOnGc});
+  else if(k.hipVert) fx.push({site:'vert', months:60, onGc:k.fxOnGc});
+  if(k.multiFx) fx.push({site:'vert', months:k.fxMonths!==null?k.fxMonths:60, onGc:k.fxOnGc});
+  const r=c.res||{};
+  return {age:c.age, sex:'F', menopause:'post', fractures:fx, cvEvent:k.cvEvent,
+    t:r.t??null, mof:k.mof, hip:k.hip, egfr:r.egfr??null, ca:r.ca??null, vd:r.vd??null};
 }
-function labBlocks(c){
-  const r=c.res, out=[]; if(!r) return out;
-  if(r.vd!==null && r.vd<75) out.push(['flag','Vitamin D below 75 nmol/L: replete (50,000 IU weekly × 8 weeks, then 800–1,000 IU/day).']);
-  if(r.egfr!==null && r.egfr<30) out.push(['block','eGFR below 30: oral bisphosphonates not recommended.']);
-  if(r.egfr!==null && r.egfr<35) out.push(['block','eGFR below 35: zoledronic acid contraindicated.']);
-  if(r.ca!==null && r.ca>2.6) out.push(['block','Calcium high: check PTH, specialist review (NICE NG259).']);
-  return out;
-}
-function treatments(c){
-  const cat=category(c), eg=c.res?c.res.egfr:null, list=[];
-  const add=(id,name,why,kind,block)=>list.push({id,name,why,kind:block?'blocked':kind,block});
-  if(cat.key==='vhigh'){
-    add('teri','Teriparatide up to 24 months, then antiresorptive','Anabolic first, very high risk','first');
-    add('romo','Romosozumab 12 months, then antiresorptive','Anabolic first, very high risk','first', c.clin.cvEvent?'Blocked: heart attack or stroke in last 12 months':null);
-    add('deno','Denosumab','Alternative','alt');
-    add('zol','Zoledronic acid (IV)','Alternative','alt', eg!==null&&eg<35?'Blocked: eGFR below 35':null);
-  } else {
-    add('obp','Oral bisphosphonate (alendronate)','First line, high risk','first', eg!==null&&eg<30?'Blocked: eGFR below 30':null);
-    add('deno','Denosumab','First line, high risk','first');
-    add('zol','Zoledronic acid (IV)','If oral not tolerated','alt', eg!==null&&eg<35?'Blocked: eGFR below 35':null);
-  }
-  return list;
-}
+function category(c){ const r=R.category(toPatient(c)); return {key:r.key, name:CATNAME[r.key], why:r.fired.map(f=>f[1].toLowerCase()), fired:r.fired}; }
+function labBlocks(c){ if(!c.res) return []; return R.labFlags(toPatient(c)).flags.map(f=>[f[1], f[2]+'.']); }
+function treatments(c){ return R.treatments(toPatient(c)).map(t=>({id:t.id, name:t.name, kind:t.kind, block:t.block?'Blocked: '+t.block:null, why:t.kind==='first'?'First line':'Alternative'})); }
 
 /* ---------- seeded fictional cases (days relative to today = 0) ---------- */
 function mk(o){
@@ -315,7 +292,7 @@ function stageBody(c,i){
   const dropBtn = `<button class="act danger" data-a="drop">Patient declines…</button>`;
   if(i===1){
     if(c.ack===false) return callout('flag','Teach-back answer was wrong. Nurse call task created.')+`<div class="actions"><button class="act primary" data-a="nurse">Nurse call done, patient understands</button>${dropBtn}</div>`;
-    return `<span class="small muted">Waiting for the patient to acknowledge on their phone (${c.lang==='ar'?'Arabic':'English'}).</span><div class="actions"><button class="act" data-a="topatient">Open patient view</button><button class="act" data-a="sms">Resend by SMS</button></div>`;
+    return `<span class="small muted">Waiting for the patient to acknowledge on their phone (${c.lang==='ar'?'Arabic':'English'}).</span><div class="actions"><button class="act" data-a="topatient">Open patient view</button><button class="act" data-a="sms">Resend by SMS</button>${dropBtn}</div>`;
   }
   if(i===2){
     const fast = c.urgent ? callout('flag','Very high risk: fast-track DXA within 6 weeks. If it will be delayed, start an antiresorptive rather than wait.','NICE NG259') : '';

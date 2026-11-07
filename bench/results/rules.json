@@ -1,0 +1,1165 @@
+{
+  "summary": {
+    "cases": 57,
+    "casesPassed": 57,
+    "checks": 102,
+    "checksPassed": 102,
+    "veryHighRecall": "13/13",
+    "falseReassurance": [],
+    "blockedDrugOffered": [],
+    "status": "DRAFT: expected answers pending clinician sign-off"
+  },
+  "confusion": {
+    "vhigh": {
+      "vhigh": 13,
+      "high": 0,
+      "low": 0,
+      "incomplete": 0
+    },
+    "high": {
+      "vhigh": 0,
+      "high": 15,
+      "low": 0,
+      "incomplete": 0
+    },
+    "low": {
+      "vhigh": 0,
+      "high": 0,
+      "low": 7,
+      "incomplete": 0
+    },
+    "incomplete": {
+      "vhigh": 0,
+      "high": 0,
+      "low": 0,
+      "incomplete": 9
+    }
+  },
+  "rows": [
+    {
+      "id": "A01",
+      "group": "very-high",
+      "desc": "Wrist fracture 8 months ago",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        },
+        {
+          "field": "fast-track",
+          "ok": true,
+          "want": true,
+          "have": true
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[teri, romo]",
+          "have": "[teri, romo]"
+        }
+      ],
+      "trace": "VH1"
+    },
+    {
+      "id": "A02",
+      "group": "very-high",
+      "desc": "Fracture exactly 12 months ago (boundary)",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "fast-track",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "VH1"
+    },
+    {
+      "id": "A03",
+      "group": "very-high",
+      "desc": "Wrist fracture 13 months ago, no DXA, no FRAX",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        },
+        {
+          "field": "fast-track",
+          "ok": true,
+          "want": false,
+          "have": false
+        }
+      ],
+      "trace": "I1"
+    },
+    {
+      "id": "A04",
+      "group": "very-high",
+      "desc": "Fracture while on osteoporosis treatment",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        }
+      ],
+      "trace": "VH2"
+    },
+    {
+      "id": "A05",
+      "group": "very-high",
+      "desc": "Two old fractures",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "VH3"
+    },
+    {
+      "id": "A06",
+      "group": "very-high",
+      "desc": "Fracture while on glucocorticoids",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        }
+      ],
+      "trace": "VH4"
+    },
+    {
+      "id": "A07",
+      "group": "very-high",
+      "desc": "Injurious falls / high fall risk",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        }
+      ],
+      "trace": "VH5"
+    },
+    {
+      "id": "A08",
+      "group": "very-high",
+      "desc": "Frail (clinician judgement)",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        }
+      ],
+      "trace": "VH6"
+    },
+    {
+      "id": "A09",
+      "group": "very-high",
+      "desc": "T-score -3.1",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[teri, romo]",
+          "have": "[teri, romo]"
+        }
+      ],
+      "trace": "VH7"
+    },
+    {
+      "id": "A10",
+      "group": "very-high",
+      "desc": "T-score exactly -3.0 (boundary: not very high)",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[obp, deno]",
+          "have": "[obp, deno]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "A11",
+      "group": "very-high",
+      "desc": "FRAX major 30.1%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "VH8"
+    },
+    {
+      "id": "A12",
+      "group": "very-high",
+      "desc": "FRAX major exactly 30%, no DXA (needs DXA, not \"low\")",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "I2"
+    },
+    {
+      "id": "A13",
+      "group": "very-high",
+      "desc": "FRAX hip 4.6%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        }
+      ],
+      "trace": "VH9"
+    },
+    {
+      "id": "A14",
+      "group": "very-high",
+      "desc": "FRAX hip exactly 4.5%, no DXA (needs DXA, not \"low\")",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "I2"
+    },
+    {
+      "id": "B01",
+      "group": "high",
+      "desc": "T-score exactly -2.5",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "B02",
+      "group": "high",
+      "desc": "T-score -2.6",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[obp, deno]",
+          "have": "[obp, deno]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "B03",
+      "group": "high",
+      "desc": "Vertebral fracture 5 years ago, no DXA (clinical osteoporosis)",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        },
+        {
+          "field": "fast-track",
+          "ok": true,
+          "want": false,
+          "have": false
+        }
+      ],
+      "trace": "H2"
+    },
+    {
+      "id": "B04",
+      "group": "high",
+      "desc": "Hip fracture 3 years ago",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "H2"
+    },
+    {
+      "id": "B05",
+      "group": "high",
+      "desc": "Osteopenia T -2.0, FRAX major 20.1%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        }
+      ],
+      "trace": "H3"
+    },
+    {
+      "id": "B06",
+      "group": "high",
+      "desc": "Osteopenia T -2.0, FRAX major exactly 20%, hip 2%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        }
+      ],
+      "trace": "L1"
+    },
+    {
+      "id": "B07",
+      "group": "high",
+      "desc": "Osteopenia T -2.0, FRAX hip 3.1%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        }
+      ],
+      "trace": "H3"
+    },
+    {
+      "id": "B08",
+      "group": "high",
+      "desc": "Osteopenia T -2.0, FRAX hip exactly 3%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        }
+      ],
+      "trace": "L1"
+    },
+    {
+      "id": "B09",
+      "group": "high",
+      "desc": "T exactly -1.0 (normal) with FRAX major 25%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        }
+      ],
+      "trace": "L1"
+    },
+    {
+      "id": "B10",
+      "group": "high",
+      "desc": "Normal BMD T -0.5 with FRAX major 25%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        }
+      ],
+      "trace": "L1"
+    },
+    {
+      "id": "C01",
+      "group": "low-incomplete",
+      "desc": "No DXA, no FRAX, no fracture",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": false,
+          "have": false
+        },
+        {
+          "field": "fast-track",
+          "ok": true,
+          "want": false,
+          "have": false
+        }
+      ],
+      "trace": "I1"
+    },
+    {
+      "id": "C02",
+      "group": "low-incomplete",
+      "desc": "FRAX major 8%, hip 1%, no DXA",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": false,
+          "have": false
+        }
+      ],
+      "trace": "L1"
+    },
+    {
+      "id": "C03",
+      "group": "low-incomplete",
+      "desc": "FRAX major 12%, no DXA (DXA to be considered, not \"low\")",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "I2"
+    },
+    {
+      "id": "C04",
+      "group": "low-incomplete",
+      "desc": "FRAX major 25% without DXA (above threshold, DXA needed)",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "I2"
+    },
+    {
+      "id": "C05",
+      "group": "low-incomplete",
+      "desc": "Normal DXA T -0.8, low FRAX",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[life]",
+          "have": "[life]"
+        }
+      ],
+      "trace": "L1"
+    },
+    {
+      "id": "D01",
+      "group": "labs",
+      "desc": "eGFR 29",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[obp, zol]",
+          "have": "[obp, zol]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[deno]",
+          "have": "[deno]"
+        },
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[L-EGFR30, L-EGFR35]",
+          "have": "[L-EGFR30, L-EGFR35]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D02",
+      "group": "labs",
+      "desc": "eGFR exactly 30",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[zol]",
+          "have": "[zol]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[obp, deno]",
+          "have": "[obp, deno]"
+        },
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[L-EGFR35]",
+          "have": "[L-EGFR35]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D03",
+      "group": "labs",
+      "desc": "eGFR 34",
+      "pass": true,
+      "checks": [
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[zol]",
+          "have": "[zol]"
+        },
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[L-EGFR35]",
+          "have": "[L-EGFR35]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D04",
+      "group": "labs",
+      "desc": "eGFR exactly 35",
+      "pass": true,
+      "checks": [
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        },
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D05",
+      "group": "labs",
+      "desc": "Calcium 2.61",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[L-CA-HI]",
+          "have": "[L-CA-HI]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D06",
+      "group": "labs",
+      "desc": "Calcium exactly 2.60",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D07",
+      "group": "labs",
+      "desc": "Calcium 2.14",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[L-CA-LO]",
+          "have": "[L-CA-LO]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D08",
+      "group": "labs",
+      "desc": "Calcium exactly 2.15",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D09",
+      "group": "labs",
+      "desc": "Vitamin D 74",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[L-VD]",
+          "have": "[L-VD]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D10",
+      "group": "labs",
+      "desc": "Vitamin D exactly 75",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "D11",
+      "group": "labs",
+      "desc": "All labs missing",
+      "pass": true,
+      "checks": [
+        {
+          "field": "lab flags",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        },
+        {
+          "field": "missing labs",
+          "ok": true,
+          "want": "[ca, vd, egfr]",
+          "have": "[ca, vd, egfr]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "E01",
+      "group": "contraindications",
+      "desc": "Very high, MI in last 12 months",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[romo]",
+          "have": "[romo]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[teri]",
+          "have": "[teri]"
+        }
+      ],
+      "trace": "VH7"
+    },
+    {
+      "id": "E02",
+      "group": "contraindications",
+      "desc": "Very high, eGFR 30",
+      "pass": true,
+      "checks": [
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[zol]",
+          "have": "[zol]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[teri, romo]",
+          "have": "[teri, romo]"
+        }
+      ],
+      "trace": "VH7"
+    },
+    {
+      "id": "E03",
+      "group": "contraindications",
+      "desc": "Very high, stroke and eGFR 20",
+      "pass": true,
+      "checks": [
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[romo, zol]",
+          "have": "[romo, zol]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[teri]",
+          "have": "[teri]"
+        }
+      ],
+      "trace": "VH7"
+    },
+    {
+      "id": "E04",
+      "group": "contraindications",
+      "desc": "High risk with MI: romosozumab not offered at all",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[obp, deno]",
+          "have": "[obp, deno]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "F01",
+      "group": "scope",
+      "desc": "Man, 70, T -2.6",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "scope warning",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "F02",
+      "group": "scope",
+      "desc": "Premenopausal woman, 45, T -2.6",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "scope warning",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "F03",
+      "group": "scope",
+      "desc": "Postmenopausal woman",
+      "pass": true,
+      "checks": [
+        {
+          "field": "scope warning",
+          "ok": true,
+          "want": false,
+          "have": false
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "G01",
+      "group": "robustness",
+      "desc": "T-score typed as text \"-2.7\"",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "G02",
+      "group": "robustness",
+      "desc": "T-score empty string, nothing else",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        }
+      ],
+      "trace": "I1"
+    },
+    {
+      "id": "G03",
+      "group": "robustness",
+      "desc": "T-score NaN",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        }
+      ],
+      "trace": "I1"
+    },
+    {
+      "id": "G04",
+      "group": "robustness",
+      "desc": "eGFR missing on a high-risk patient",
+      "pass": true,
+      "checks": [
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[]",
+          "have": "[]"
+        },
+        {
+          "field": "missing labs",
+          "ok": true,
+          "want": "[egfr]",
+          "have": "[egfr]"
+        }
+      ],
+      "trace": "H1"
+    },
+    {
+      "id": "G05",
+      "group": "robustness",
+      "desc": "Fractures field absent",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "incomplete",
+          "have": "incomplete"
+        }
+      ],
+      "trace": "I1"
+    },
+    {
+      "id": "G06",
+      "group": "robustness",
+      "desc": "Vertebral fracture with unknown date",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "H2"
+    },
+    {
+      "id": "G07",
+      "group": "robustness",
+      "desc": "Age 25 with old vertebral fracture",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "high",
+          "have": "high"
+        },
+        {
+          "field": "dxa indicated",
+          "ok": true,
+          "want": false,
+          "have": false
+        },
+        {
+          "field": "scope warning",
+          "ok": true,
+          "want": true,
+          "have": true
+        }
+      ],
+      "trace": "H2"
+    },
+    {
+      "id": "G08",
+      "group": "robustness",
+      "desc": "T -3.0 with FRAX hip 4.6%",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        }
+      ],
+      "trace": "VH9"
+    },
+    {
+      "id": "G09",
+      "group": "robustness",
+      "desc": "Falls, eGFR 25 and recent MI together",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "vhigh",
+          "have": "vhigh"
+        },
+        {
+          "field": "blocked",
+          "ok": true,
+          "want": "[romo, zol]",
+          "have": "[romo, zol]"
+        },
+        {
+          "field": "first line",
+          "ok": true,
+          "want": "[teri]",
+          "have": "[teri]"
+        }
+      ],
+      "trace": "VH5"
+    },
+    {
+      "id": "G10",
+      "group": "robustness",
+      "desc": "Negative FRAX value (data-entry error)",
+      "pass": true,
+      "checks": [
+        {
+          "field": "category",
+          "ok": true,
+          "want": "low",
+          "have": "low"
+        }
+      ],
+      "trace": "L1"
+    }
+  ]
+}
