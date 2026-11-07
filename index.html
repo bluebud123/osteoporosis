@@ -167,6 +167,14 @@ details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
 .fired{list-style:none;margin:0;padding:0;display:grid;gap:5px;font-size:13.5px}
 .fired li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:start}
 .rid{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-right:4px}
+/* site profile banner, report import */
+.banner{font-size:12.5px;font-weight:600;color:var(--warn);background:var(--warn-soft);border-left:3px solid var(--warn);padding:6px 8px;border-radius:6px}
+.banner.block{color:var(--crit);background:var(--crit-soft);border-left-color:var(--crit)}
+.sitebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.sitebar select{max-width:100%}
+.imp{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:8px}
+.imp textarea{min-height:110px;font-family:var(--f-mono);font-size:12.5px}
+.imp ul{margin:4px 0 0;padding-left:18px;font-size:12.5px;display:grid;gap:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -177,6 +185,8 @@ details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
       <div class="clock"><span class="day" id="day">Day 0</span><button class="act" id="adv">+7 days</button><button class="act" id="reset" title="Restore the seeded demo cases">Reset</button></div>
     </div>
     <div class="notice">Prototype · fictional patients · synthetic data · draft rules for clinician sign-off</div>
+    <div class="sitebar"><label class="small muted" for="site">Site profile</label><select id="site"></select></div>
+    <div id="banner" style="display:grid;gap:6px"></div>
   </header>
   <main id="view"></main>
   <nav class="tabs" id="tabs" aria-label="Views"></nav>
@@ -186,6 +196,9 @@ details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
 <script src="src/checkin.js"></script>
 <script src="src/finder.js"></script>
 <script src="src/fhir.js"></script>
+<script src="src/site.js"></script>
+<script src="src/ingest.js"></script>
+<script src="src/readers.js"></script>
 <script src="bench/reports.js"></script>
 <script src="bench/reports-stress.js"></script>
 <script>
@@ -194,15 +207,50 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const ME = 'Dr Tan';
 
+/* ---------- site profile (src/site.js): stage clocks, languages, guideline label, data residency ----------
+   Profile values are read from OsteoSite; the shipped templates carry the same clocks the app used before.
+   Optional deployment or demo overrides: window.OSTEO_SITE_OVERRIDES = {'<profile id>': {...}}. Invalid overrides are refused and shown. */
+const SITE_LIB = window.OsteoSite, INGEST = window.OsteoIngest, READ = window.OsteoReaders;
+const SITE_OVR = (window.OSTEO_SITE_OVERRIDES && typeof window.OSTEO_SITE_OVERRIDES === 'object') ? window.OSTEO_SITE_OVERRIDES : {};
+const DEMO = {routes:false, ai:false};   // demo switches only: HL7 and FHIR routes, claude.ai reader on de-identified text
+let SITE_ID = 'my-moh', PROF = null, SITE_PROBLEMS = [], SAMPLE_ASKED = false;
+function siteOverride(){
+  const o = Object.assign({}, SITE_OVR[SITE_ID] || {});
+  if(DEMO.routes) o.feeds = Object.assign({}, o.feeds||{}, {hl7v2:true, fhir:true});
+  if(DEMO.ai) o.dataResidency = {mode:'deidentified-external', reader:'claude-sample'};
+  return o;
+}
+function setSite(){
+  const r = SITE_LIB.resolve(SITE_ID, siteOverride());
+  SITE_PROBLEMS = r.ok ? [] : r.problems;
+  PROF = r.ok ? r.profile : SITE_LIB.resolve(SITE_ID, {}).profile;
+}
+function guideSrc(){ return PROF.guideline.interim ? (PROF.id==='generic' ? 'No guideline selected' : 'INTERIM stand-in: MY CPG 2022') : 'MY CPG 2022'; }
+function aiAllowed(){ return PROF.dataResidency.reader === 'claude-sample' && PROF.dataResidency.mode !== 'local-only'; }
+/* Text the AI reader may see. Non-local profiles that are de-identified pass through the readers.js de-identifier first. */
+function siteView(r){ return PROF.dataResidency.mode === 'deidentified-external' ? Object.assign({}, r, {text: READ.deidentify(r.text), ind: READ.deidentify(r.ind||'')}) : r; }
+function bannerHtml(){
+  let h = '';
+  if(SITE_PROBLEMS.length) h += `<div class="banner block" role="alert">Site profile override refused, so the shipped template is used without it: ${esc(SITE_PROBLEMS.join('; '))}</div>`;
+  if(PROF.guideline.interim) h += `<div class="banner" role="status">${PROF.id==='generic' ? '' : 'Guideline for this site is an interim stand-in pending clinical sign-off. '}${esc(PROF.guideline.warning||'')}</div>`;
+  return h;
+}
+function initSite(){
+  const sel = $('site');
+  sel.innerHTML = SITE_LIB.listProfiles().map(id => `<option value="${esc(id)}">${esc(SITE_LIB.getProfile(id).name)}</option>`).join('');
+  sel.value = SITE_ID;
+}
+setSite();
+
 /* ---------- loop definition ---------- */
 const STAGES = [
-  {n:0, t:'Screen', role:'Screening clinic', clock:0},
-  {n:1, t:'Notify and acknowledge', role:'GP', clock:7},
-  {n:2, t:'Confirm: DXA and labs', role:'GP, imaging, lab', clock:30},
-  {n:3, t:'Decide or refer', role:'GP, then specialist', clock:7},
-  {n:4, t:'Treat: prescribe and dispense', role:'Prescriber', clock:14},
-  {n:5, t:'Follow up', role:'GP', clock:90},
-  {n:6, t:'Close', role:'GP or programme lead', clock:30}
+  {n:0, t:'Screen', role:'Screening clinic'},
+  {n:1, t:'Notify and acknowledge', role:'GP'},
+  {n:2, t:'Confirm: DXA and labs', role:'GP, imaging, lab'},
+  {n:3, t:'Decide or refer', role:'GP, then specialist'},
+  {n:4, t:'Treat: prescribe and dispense', role:'Prescriber'},
+  {n:5, t:'Follow up', role:'GP'},
+  {n:6, t:'Close', role:'GP or programme lead'}
 ];
 const DROPS = ['Patient declined after counselling','Fear of medication side effects','Dental concern before bisphosphonate','Lost after transfer between providers','Clinician judged not indicated'];
 const REJECTS = ['Out of insurance network','Wrong service','Incomplete referral'];
@@ -278,11 +326,15 @@ let CASES = seedCases();
 
 let DAY=0, tab='board', sel='C-1042', lang='en', tb=null, msg=null, dropFor=null, rxPick={}, signer={}, resDraft={}, nextId=2001;
 const BLANK_IN = {name:'', age:'', sex:'F', meno:'post', lang:'en', site:'none', fxm:'', multi:false, onTx:false, onGc:false, gc:false, falls:false, frail:false, cv:false, mof:'', hip:'', note:''};
-let IN = Object.assign({}, BLANK_IN), inDone=null;
+function blankIn(){ return Object.assign({}, BLANK_IN, {lang: PROF.languages[0]}); }
+let IN = blankIn(), inDone=null;
 const num = v => (v===null||v===undefined||String(v).trim()===''||Number.isNaN(+v)) ? null : +v;
+const AGE = c => c.age==null ? 'age ?' : c.age;
+const SEXL = c => c.sex || (c.sexUnknown ? '?' : 'F');
 
 /* ---------- engine ---------- */
-function clockFor(c,i){ return (i===2 && c.urgent) ? 42 : STAGES[i].clock; }
+/* Stage clocks come from the site profile (days). Stage 2 for an urgent case uses the profile's confirmUrgent clock. */
+function clockFor(c,i){ return (i===2 && c.urgent) ? PROF.stageClocks.confirmUrgent : PROF.stageClocks[String(i)]; }
 function stageState(c,i){
   const s=c.stages[i];
   if(s.skip) return 'skip';
@@ -349,7 +401,7 @@ function stagebar(c){ return `<span class="stagebar">${[1,2,3,4,5,6].map(i=>{con
 function row(c){
   const cat=category(c);
   return `<button class="case-row" data-open="${c.id}" data-sev="${sev(c)==='acc'?'':sev(c)}"><span class="stripe"></span>
-    <span style="min-width:0"><span class="nm">${esc(c.name)}</span> <span class="small muted">${c.age}${c.sex||'F'} · ${c.id}</span><span class="meta" style="display:block">${esc(statusText(c))} · ${esc(c.owner||'no owner')}</span></span>
+    <span style="min-width:0"><span class="nm">${esc(c.name)}</span> <span class="small muted">${AGE(c)}${SEXL(c)} · ${c.id}</span><span class="meta" style="display:block">${esc(statusText(c))} · ${esc(c.owner||'no owner')}</span></span>
     <span class="right"><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name}</span>${stagebar(c)}</span></button>`;
 }
 function vBoard(){
@@ -378,7 +430,7 @@ function stageBody(c,i){
     const r=c.referral; let h='';
     labBlocks(c).forEach(([k,t,s])=>h+=callout(k,esc(t),SRCN[s]||s));
     if(r.status==='none') h+=`<div class="actions"><button class="act primary" data-a="decide">Decide in primary care</button><button class="act" data-a="econsult">E-consult fracture-liaison clinic</button></div>`;
-    if(r.status==='sent'||r.status==='rerouted') h+=`<span class="small muted">E-consult with ${esc(r.clinic)}, awaiting answer (clock 7 days).</span><div class="actions"><button class="act" data-a="tospec">Open specialist inbox</button></div>`;
+    if(r.status==='sent'||r.status==='rerouted') h+=`<span class="small muted">E-consult with ${esc(r.clinic)}, awaiting answer (clock ${clockFor(c,3)} days).</span><div class="actions"><button class="act" data-a="tospec">Open specialist inbox</button></div>`;
     if(r.status==='rejected') h+=callout('block',`Referral rejected by ${esc(r.clinic)}: ${esc(r.reason)}. You stay owner until a new referral is accepted.`)+`<div class="actions"><button class="act primary" data-a="reroute">Reroute to in-network clinic</button><button class="act" data-a="decide">Decide in primary care instead</button></div>`;
     return h;
   }
@@ -436,12 +488,12 @@ function intakeResult(){
   const v=intakeVerdict(), k=v.cat.key;
   const chip=`<span class="chip ${k==='vhigh'?'c-crit':k==='low'?'c-ok':'c-warn'}">${CATNAME[k]}${k==='incomplete'?'':' risk'}</span>`;
   let h=`<div class="hrow"><div class="sec-label">Result, live</div>${chip}</div>
-    <ul class="fired">${v.cat.fired.map(f=>`<li><span><span class="rid">${f[0]}</span>${esc(f[1])}</span><span class="src">${f[2]==='MYCPG'?'MY CPG 2022':f[2]==='NICE'?'NICE NG259':'LOCAL'}</span></li>`).join('')}</ul>`;
+    <ul class="fired">${v.cat.fired.map(f=>`<li><span><span class="rid">${f[0]}</span>${esc(f[1])}</span><span class="src">${f[2]==='MYCPG'?esc(guideSrc()):f[2]==='NICE'?'NICE NG259':'LOCAL'}</span></li>`).join('')}</ul>`;
   if(v.dxa.indicated) h+=`<div class="small"><b>DXA indicated:</b> ${esc(v.dxa.reasons.map(r=>r[1]).join('; '))} <span class="src">NICE NG259</span></div>`;
   if(v.fast) h+=callout('flag','Very high risk: fast-track DXA within 6 weeks.','NICE NG259');
-  if(v.scope) h+=callout('flag',esc(v.scope),'MY CPG 2022');
-  if(v.needFrax) h+=callout('flag','Run FRAX (Singapore or Hong Kong model) and enter the result before a category can be set.','MY CPG 2022');
-  if(k==='low') h+=callout('ok','Below thresholds: no loop opened. Lifestyle, calcium and vitamin D advice; reassess at the next screening.','MY CPG 2022');
+  if(v.scope) h+=callout('flag',esc(v.scope),guideSrc());
+  if(v.needFrax) h+=callout('flag','Run FRAX (Singapore or Hong Kong model) and enter the result before a category can be set.',guideSrc());
+  if(k==='low') h+=callout('ok','Below thresholds: no loop opened. Lifestyle, calcium and vitamin D advice; reassess at the next screening.',guideSrc());
   if(v.missing.length) h+=`<span class="small muted">Enter ${v.missing.join(' and ')} to continue.</span>`;
   h+=`<div class="actions">${v.opens?`<button class="act primary" data-a="intake-issue" data-c="*" ${v.missing.length?'disabled':''}>Issue result and open loop</button>`:''}<button class="act" data-a="intake-clear" data-c="*">Clear form</button></div>`;
   return h;
@@ -459,7 +511,7 @@ function vIntake(){
     ${fld('age','Age',txt('age','years','numeric'))}
     ${fld('sex','Sex',sel('sex',[['F','Female'],['M','Male']]))}
     ${x.sex==='F'?fld('meno','Menopause',sel('meno',[['post','Postmenopausal'],['pre','Premenopausal']])):''}
-    ${fld('lang','Message language',sel('lang',[['en','English'],['ar','Arabic']]))}
+    ${fld('lang','Message language',sel('lang',PROF.languages.map(l=>[l,LNAME[l]||l])))}
   </div></div>
   <div class="card"><div class="sec-label">Fragility fracture</div><div class="fgrid">
     ${fld('site','Most recent fracture',sel('site',[['none','None'],['wrist','Wrist'],['humerus','Upper arm'],['hip','Hip'],['vert','Vertebral'],['pelvis','Pelvis'],['other','Other']]))}
@@ -480,7 +532,7 @@ function issueIntake(){
   const c=mk({id, name:x.name.trim(), age:v.pt.age, sex:x.sex, owner:ME, lang:x.lang, urgent:v.fast, pt:v.pt, demo:null,
     clin:{mof:v.pt.mof, hip:v.pt.hip, cvEvent:x.cv, note:noteFor(x)}, hist:[[0,DAY,DAY],[1,DAY,null]]});
   c.log.push({d:DAY, text:`Screened: ${CATNAME[v.cat.key]}${v.cat.key==='incomplete'?' (DXA needed)':' risk'} (${v.cat.fired.map(f=>f[0]).join(', ')}). Actionable result issued; owner ${ME}.`});
-  CASES.unshift(c); inDone={id, name:c.name}; IN=Object.assign({}, BLANK_IN);
+  CASES.unshift(c); inDone={id, name:c.name}; IN=blankIn();
 }
 
 function vCase(){
@@ -500,8 +552,8 @@ function vCase(){
   const closed = c.closed ? callout(c.closed.kind==='treated'?'ok':'flag',`<b>Closed day ${c.closed.day}</b> by ${esc(c.closed.by)}: ${esc(c.closed.text)}${fu}`) : '';
   const dn = c.denoDue==null ? '' : `<div class="card"><div class="hrow"><div class="sec-label">Denosumab schedule</div>${denoText(c)?`<span class="chip ${denoSev(c)==='crit'?'c-crit':'c-warn'}">${esc(denoText(c))}</span>`:''}</div>
     <span>Next denosumab dose due day ${c.denoDue} <span class="src">LOCAL</span></span><div class="actions"><button class="act primary" data-a="deno-dose">Record dose given</button></div></div>`;
-  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${c.age}${c.sex||'F'} · ${c.id} · ${LNAME[c.lang]||'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
-    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),'MY CPG 2022'):''}${closed}</div>
+  return `<div class="card"><div class="hrow"><div><h2>${esc(c.name)}</h2><span class="small muted">${AGE(c)}${SEXL(c)} · ${c.id} · ${LNAME[c.lang]||'English'} speaker</span></div><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name} risk</span></div>
+    <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">${esc(guideSrc())}</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),guideSrc()):''}${closed}</div>
     ${dn}
     ${assign}
     <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
@@ -512,7 +564,7 @@ function vCase(){
 const CI = window.OsteoCheckin;
 /* Language names: English labels for the clinician, native labels for the patient's picker. */
 const LNAME = {en:'English', ar:'Arabic', ms:'Bahasa Melayu'}, LBTN = {en:'English', ar:'العربية', ms:'Bahasa Melayu'};
-const SRCN = {MYCPG:'MY CPG 2022', NICE:'NICE NG259', FRAX:'FRAX input', LOCAL:'LOCAL', PATIENT:'Patient'};
+const SRCN = {get MYCPG(){ return guideSrc(); }, NICE:'NICE NG259', FRAX:'FRAX input', LOCAL:'LOCAL', PATIENT:'Patient'};
 function ansText(q,v,L){
   const T=q[L]||q.en, SK={en:'Skipped',ar:'تم التخطي',ms:'Dilangkau'}[L]||'Skipped';
   if(v===undefined||v===null||v==='') return SK;
@@ -554,9 +606,11 @@ let wiz=null, wizDone=null;
 let fhirMsg='';
 function fhirBundle(c){
   const f=FEED.find(x=>x.caseId===c.id), d=f?decide(f):null;
-  return window.OsteoFhir.bundle(c,{anchor:new Date().toISOString().slice(0,10), day:DAY, stages:STAGES, clockFor, category:category(c), patient:toPatient(c),
+  const b = window.OsteoFhir.bundle(c,{anchor:new Date().toISOString().slice(0,10), day:DAY, stages:STAGES, clockFor, category:category(c), patient:toPatient(c),
     checkin:k=>CI.questions(k.visit,k.answers).map(q=>({linkId:q.id, text:q.en.q, value:ansText(q,k.answers[q.id],'en')})),
     report:f?{id:f.r.id, mod:f.r.mod, text:f.r.text, evidence:(d&&d.ev)||[], decision:d?d.d:null}:null});
+  b.meta.tag.push({system:'urn:osteoloop:site-profile', code:PROF.id, display:PROF.name});   // which site profile produced this export
+  return b;
 }
 function fhirCard(c){
   return `<div class="card"><div class="sec-label">Export FHIR bundle</div><span class="small muted">Synthetic FHIR R4 collection for this case. Codes are local for now: not yet mapped to SNOMED CT, LOINC or RxNorm.</span><div class="actions"><button class="act primary" data-a="fhir">Download JSON</button><button class="act" data-a="fhir-copy">Copy JSON</button></div>${fhirMsg?`<span class="small">${esc(fhirMsg)}</span>`:''}</div>`;
@@ -606,7 +660,7 @@ function wizard(c,L,T,rtl){
 }
 function vPatient(){
   const c=CASES.find(x=>x.id===sel); const L=c?c.lang:'en'; const T=PT[L]||PT.en; const rtl=L==='ar'?'rtl':'ltr';
-  const langs=`<div class="lang">${CI.LANGS.map(l=>`<button class="pill" data-lang="${l}" aria-pressed="${L===l}"${l==='ar'?' style="font-family:var(--f-ar)"':''}>${LBTN[l]}</button>`).join('')}</div>`;
+  const langs=`<div class="lang">${CI.LANGS.filter(l=>PROF.languages.includes(l)||l===L).map(l=>`<button class="pill" data-lang="${l}" aria-pressed="${L===l}"${l==='ar'?' style="font-family:var(--f-ar)"':''}>${LBTN[l]}</button>`).join('')}</div>`;
   const picker=`<label class="small muted" for="pt-sel">Demo: view the phone of</label><select id="pt-sel">${CASES.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name)} · ${x.id}</option>`).join('')}</select>`;
   let inner='';
   if(!c) inner=`<div class="pmsg muted">${T.none}</div>`;
@@ -640,7 +694,7 @@ function summaryCard(c){
 function vSpecialist(){
   const inbox=CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed);
   return `<div class="card" style="gap:4px"><h2>Specialist inbox</h2><span class="small muted">E-consults from primary care. Accept, or reject with a reason; a rejection goes straight back to the GP's board.</span></div>
-   ${inbox.map(c=>{const cat=category(c);return `<div class="card"><div class="hrow"><b>${esc(c.name)} · ${c.age}F</b><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name}</span></div>
+   ${inbox.map(c=>{const cat=category(c);return `<div class="card"><div class="hrow"><b>${esc(c.name)} · ${AGE(c)}${SEXL(c)}</b><span class="chip ${cat.key==='vhigh'?'c-crit':'c-warn'}">${cat.name}</span></div>
      <span class="small muted">To ${esc(c.referral.clinic)} · from ${esc(c.owner)}</span>
      <div class="msg-b">${esc(c.thread.length?c.thread[c.thread.length-1].text:'')}</div>
      <label class="small muted" for="rj-${c.id}">Reject reason</label><select id="rj-${c.id}">${REJECTS.map(r=>`<option>${r}</option>`).join('')}</select>
@@ -662,6 +716,8 @@ function recChip(x){ return x.rx?`<span class="chip c-acc">Pharmacy: on ${esc(x.
 let FEED = seedFeed(), SAMPLE = null, aiBusy = false, aiMsg = '', bench = null;
 const DN = {act:'Open loop', review:'Needs review', no:'No action'};
 function decide(f){
+  // Imported reports that may be cut off, or lack age or sex, are held: review, never an automatic no.
+  if(f.hold) return {d:'review', by:'Rules', ev:f.rules.evidence, site:f.rules.site, why:f.hold+' Keyword rules: '+f.rules.reasons.join('; ')};
   // Union for safety: whichever reader ranks higher wins; AI output only counts if its evidence verifies.
   const R={act:2,review:1,no:0}, a=f.ai && f.ai.ok ? f.ai : null;
   if(a && R[a.decision]>R[f.rules.decision]) return {d:a.decision, by:'AI', ev:a.evidence, site:a.site, why:a.reason||''};
@@ -680,7 +736,7 @@ function feedCard(f,i){
   else if(D.d!=='no'){ const ex=exclusion(f);
     act = ex ? `<div class="actions"><button class="act primary" data-a="find-skip" data-c="*" data-i="${i}">${esc(ex.label)}</button><button class="act" data-a="find-open" data-c="*" data-i="${i}">Open anyway</button></div>`
       : `<div class="actions"><button class="act primary" data-a="find-open" data-c="*" data-i="${i}">${D.d==='act'?'Open loop':'Open loop after review'}</button>${D.d==='review'?`<button class="act" data-a="find-dismiss" data-c="*" data-i="${i}">Dismiss</button>`:''}</div>`; }
-  return `<div class="card" style="gap:6px"><div class="hrow"><div><b>${esc(f.name)}</b> <span class="small muted">${r.age}${r.sex} · ${esc(r.mod)} · ${esc(r.ind)}</span></div><span class="small muted mono">${r.id}</span></div>
+  return `<div class="card" style="gap:6px"><div class="hrow"><div><b>${esc(f.name)}</b> <span class="small muted">${r.age==null?'age ?':r.age}${esc(r.sex||'sex ?')} · ${esc(r.mod)} · ${esc(r.ind)}</span></div><span class="small muted mono">${r.id}</span></div>
     <div class="rep" data-d="${D.d}">${markText(r.text, D.ev)}</div>
     <div class="chips">${chip('Rules',f.rules.decision)}${aiChip}${f.rec?recChip(f.rec):''}<span class="small muted">${esc(D.why)}</span></div>${missed}${act}</div>`;
 }
@@ -692,43 +748,61 @@ function benchTable(){
     if(bench && bench.res && bench.res[name]) body+=rowsFor('<b>AI</b> · '+name, bench.res[name]); });
   return `<div class="tblwrap"><table class="btab"><thead><tr><th>Reader · set</th><th>Exact</th><th>Fractures caught</th><th>Silently dismissed</th><th>Unverified</th></tr></thead><tbody>${body}</tbody></table></div>`;
 }
+function aiOn(){ return !!SAMPLE && aiAllowed(); }
+/* The AI reader is asked for only when the site profile allows a non-local reader (src/site.js). */
+function ensureSample(){
+  if(SAMPLE || SAMPLE_ASKED || !aiAllowed()) return;
+  SAMPLE_ASKED = true;
+  try { Promise.resolve(window.claude && window.claude.use ? window.claude.use('sample') : null)
+    .then(s => { SAMPLE = s || null; render(); }).catch(() => {}); } catch(e) {}
+}
 function vFind(){
   const pending=FEED.filter(f=>f.status==='new'&&decide(f).d!=='no');
   const quiet=FEED.filter(f=>f.status==='new'&&decide(f).d==='no');
   const done=FEED.filter(f=>f.status!=='new');
-  const aiCtl = SAMPLE ? `<div class="actions"><button class="act primary" data-a="find-ai" data-c="*" ${aiBusy?'disabled':''}>${FEED.some(f=>f.ai)?'Read again with AI':'Read with AI'}</button></div>`
-    : `<span class="small muted">AI reader runs when this page is opened inside claude.ai. This copy shows the keyword rules only.</span>`;
-  return `<div class="card" style="gap:6px"><h2>Case finder</h2><span class="small muted">Today's radiology reports from across the network. Fractures that were written down but never acted on become cases, with the sentence that proves it. No extra typing for clinicians.</span>${aiCtl}${aiMsg?`<span class="small">${esc(aiMsg)}</span>`:''}</div>
+  const why = !aiAllowed()
+    ? (PROF.dataResidency.mode==='local-only' ? 'AI reader is off: this site profile is local-only, so report text does not leave the site. This copy shows the keyword rules only.'
+      : 'AI reader is off for this site profile (reader: '+PROF.dataResidency.reader+'). This copy shows the keyword rules only.')
+    : 'AI reader runs when this page is opened inside claude.ai. This copy shows the keyword rules only.';
+  const aiCtl = aiOn() ? `<div class="actions"><button class="act primary" data-a="find-ai" data-c="*" ${aiBusy?'disabled':''}>${FEED.some(f=>f.ai)?'Read again with AI':'Read with AI'}</button></div>`
+    : `<span class="small muted">${esc(why)}</span>`;
+  const aiDemo = `<label class="checkline"><input type="checkbox" id="ai-demo" ${DEMO.ai?'checked':''}> Demo: allow the claude.ai AI reader on de-identified text (off in the shipped profiles)</label>`;
+  return `<div class="card" style="gap:6px"><h2>Case finder</h2><span class="small muted">Today's radiology reports from across the network. Fractures that were written down but never acted on become cases, with the sentence that proves it. No extra typing for clinicians.</span>${aiDemo}${aiCtl}${aiMsg?`<span class="small">${esc(aiMsg)}</span>`:''}</div>
+    ${importPanel()}
     <div class="sec-label">Needs action (${pending.length})</div>${pending.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">Nothing waiting.</div>'}
     <div class="sec-label">Opened, dismissed or skipped (${done.length})</div>${done.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">None yet.</div>'}
     <div class="sec-label">No action (${quiet.length})</div>${quiet.map(f=>feedCard(f,FEED.indexOf(f))).join('')}
     <div class="card"><div class="sec-label">Benchmark: keyword rules vs AI on labelled reports</div>
       <span class="small muted">Synthetic reports, labels drafted by the clinical lead (pending sign-off). An AI answer only counts if the sentence it quotes is really in the report; anything else is sent for human review.</span>
       ${benchTable()}
-      ${SAMPLE?`<div class="actions"><button class="act" data-a="bench-ai" data-c="*" ${aiBusy?'disabled':''}>Run AI benchmark (about 9 calls)</button>${bench&&bench.res?`<button class="act" data-a="bench-copy" data-c="*">Copy results</button>`:''}</div>`:''}
+      ${aiOn()?`<div class="actions"><button class="act" data-a="bench-ai" data-c="*" ${aiBusy?'disabled':''}>Run AI benchmark (about 9 calls)</button>${bench&&bench.res?`<button class="act" data-a="bench-copy" data-c="*">Copy results</button>`:''}</div>`:''}
       ${bench&&bench.msg?`<span class="small">${esc(bench.msg)}</span>`:''}</div>`;
 }
+/* Callers verify each output against siteView(report), the text the reader actually saw. */
 async function aiReadBatch(reports){
-  const out = await SAMPLE.json(FD.aiBatchPrompt(reports), {modelTier:'default'});
+  const views = reports.map(siteView);
+  const out = await SAMPLE.json(FD.aiBatchPrompt(views), {modelTier:'default'});
   const byId={}; (Array.isArray(out)?out:[]).forEach(o=>{ if(o&&o.id) byId[o.id]=o; });
-  return reports.map(r=>{ const o=byId[r.id]||{decision:'invalid',evidence:[]}; if(o.evidence&&!Array.isArray(o.evidence)) o.evidence=[String(o.evidence)]; return o; });
+  return views.map(r=>{ const o=byId[r.id]||{decision:'invalid',evidence:[]}; if(o.evidence&&!Array.isArray(o.evidence)) o.evidence=[String(o.evidence)]; return o; });
 }
 function aiErr(e){ return {not_granted:'Claude access was not allowed for this page.', rate_limited:'Too many requests just now. Try again in a minute.', sampling_disabled:'Claude is not available for this account.'}[e&&e.code] || 'The AI reader could not finish ('+((e&&e.code)||'error')+'). Try again.'; }
 async function runFeedAI(){
+  if(!aiOn()) return;
   aiBusy=true; aiMsg='AI is reading '+FEED.length+' reports…'; render();
-  try { const outs=await aiReadBatch(FEED.map(f=>f.r)); FEED.forEach((f,i)=>{ const o=outs[i]; f.ai=Object.assign({}, o, {ok:FD.verify(f.r,o).ok}); });
+  try { const outs=await aiReadBatch(FEED.map(f=>f.r)); FEED.forEach((f,i)=>{ const o=outs[i]; f.ai=Object.assign({}, o, {ok:FD.verify(siteView(f.r),o).ok}); });
     const caught=FEED.filter(f=>f.ai.ok&&f.rules.decision==='no'&&f.ai.decision!=='no').length;
     aiMsg=`AI read ${FEED.length} reports. ${caught} found that the keyword rules missed. ${FEED.filter(f=>!f.ai.ok).length} answers failed verification and go to human review.`; }
   catch(e){ aiMsg=aiErr(e); }
   aiBusy=false; render();
 }
 async function runBenchAI(){
+  if(!aiOn()) return;
   aiBusy=true; bench={res:{}, msg:'Running…'}; render();
   const sets=[['Development (100)',RS.dev],['Stress: unfamiliar wording (15)',RS.stress]];
   try {
     for(const [name,R] of sets){ const outs=[];
       for(let i=0;i<R.length;i+=15){ bench.msg=`${name}: reports ${i+1}–${Math.min(i+15,R.length)} of ${R.length}…`; render(); outs.push(...await aiReadBatch(R.slice(i,i+15))); }
-      bench.res[name]=FD.score(R,outs); }
+      bench.res[name]=FD.score(R.map(siteView),outs); }
     bench.msg='Done. AI answers were checked against the report text; unverifiable ones count as human review.';
   } catch(e){ bench.msg=aiErr(e); }
   aiBusy=false; render();
@@ -752,8 +826,9 @@ function openFromFeed(f){
   const acute = !old && (FX_ACUTE.test(ev) || FX_ACUTE.test(r.ind||'') || (FX_FALL.test(r.ind||'') && ['hip','wrist','humerus','pelvis'].includes(site)));
   const unknown = !!site && !acute;
   const pt={age:r.age, sex:r.sex, menopause:r.sex==='F'&&r.age>=50?'post':'na', fractures:site?[{site, months:acute?0:null}]:[], t:null, mof:null, hip:null};
-  const note = `Found in ${r.mod} report ${r.id}: "${ev}"` + (unknown ? '. Fracture age unknown: confirm date before treating as very high risk.' : '');
-  const id='C-'+(nextId++), c=mk({id, name:f.name, age:r.age, sex:r.sex, owner:ME, lang:'en', urgent:R.fastTrack(pt), pt, demo:null, source:'finder',
+  const note = `Found in ${r.mod} report ${r.id}: "${ev}"` + (unknown ? '. Fracture age unknown: confirm date before treating as very high risk.' : '')
+    + ((r.age==null||r.sex==null) ? ' Age or sex unknown in the source report: confirm before treating.' : '');
+  const id='C-'+(nextId++), c=mk({id, name:f.name, age:r.age, sex:r.sex, sexUnknown:r.sex==null, owner:ME, lang:PROF.languages[0], urgent:R.fastTrack(pt), pt, demo:null, source:'finder',
     clin:{mof:null, hip:null, cvEvent:false, note}, hist:[[0,DAY,DAY],[1,DAY,null]]});
   c.log.push({d:DAY, text:`Found by case finder (${D.by}) in ${r.mod} report ${r.id}. ${CATNAME[R.category(pt).key]}${R.category(pt).key==='incomplete'?' (DXA needed)':' risk'}. Loop opened; owner ${ME}.${pt.menopause==='post'?' Menopausal status assumed from age; confirm.':''}`});
   if(unknown) c.log.push({d:DAY, text:'Fracture age unknown: confirm date before treating as very high risk.', cls:'alert'});
@@ -761,8 +836,92 @@ function openFromFeed(f){
   if(ex) c.log.push({d:DAY, text:`Opened despite records (${ex.why}); opened anyway by ${ME}.`, cls:'alert'});
   CASES.unshift(c); f.status='opened'; f.caseId=id;
 }
-window.claude && window.claude.use && window.claude.use('sample').then(s=>{ SAMPLE=s; if(tab==='find') render(); }).catch(()=>{});
 
+/* ---------- import reports (src/ingest.js): paste, CSV, HL7 v2 or FHIR JSON. Ok reports join the finder list unreviewed. ---------- */
+const IMP_MAX = 200;
+const IMP_NAME = {paste:'Paste report text', csv:'CSV', hl7v2:'HL7 v2 message', fhir:'FHIR R4 JSON'};
+const IMP_HINT = {
+  paste:'Optional header lines first (Age, Sex, Study, Indication, Date, Id), then a blank line and the report text.',
+  csv:'A header row, then one report per row. A column named report text (or findings or impression) is required.',
+  hl7v2:'One ORU^R01 result message: MSH, PID, OBR and OBX segments.',
+  fhir:'One DiagnosticReport, or a Bundle of DiagnosticReports and Patients.'};
+let impDraft = {paste:'', csv:'', hl7v2:'', fhir:'', name:'Imported patient'}, impOut = {};
+/* Reasons to hold a parsed report for a person: the message may be cut off, or age or sex is missing. */
+function holdWhy(rep, res){
+  const why = [];
+  if(res.flags.includes('possible-truncation')) why.push('the message may be cut off, so its end cannot be trusted');
+  if(rep.age==null) why.push('age unknown');
+  if(rep.sex==null) why.push('sex unknown');
+  return why;
+}
+function importRun(route, input){
+  const text = input!==undefined ? input : String(impDraft[route]||'');
+  const o = {route, ok:false, file:null, added:[], held:[], skipped:[], errors:[], warnings:[]};
+  let res;
+  try { res = INGEST.ingest(route, text, {profile: PROF}); }
+  catch(e){ res = {ok:false, reports:[], errors:['internal error while reading input'], warnings:[], flags:[]}; }
+  o.errors = (res.errors||[]).slice(0,20); o.warnings = (res.warnings||[]).slice(0,20);
+  if(res.ok && res.reports.length > IMP_MAX) o.errors.push('the input has '+res.reports.length+' reports; the limit is '+IMP_MAX+' per import. Split the file and send it again.');
+  else if(res.ok){
+    for(const rep of res.reports){
+      const r = INGEST.toFinderInput(rep);
+      if(!r) continue;
+      if(FEED.some(x=>x.r.id===r.id)){ o.skipped.push(r.id+': already in the case finder list, not added'); continue; }
+      const why = holdWhy(rep, res);
+      const f = {r, name:(impDraft.name||'').trim().slice(0,60)||'Imported patient', status:'new', rules:FD.find(r), ai:null, caseId:null, rec:null, src:route,
+        hold: why.length ? 'Held for review: '+why.join('; ')+'.' : null};
+      FEED.unshift(f); o.added.push(r.id);
+      if(f.hold) o.held.push({id:r.id, why:f.hold});
+    }
+    if(!o.added.length && !o.skipped.length) o.errors.push('no report found in input');
+  }
+  o.ok = o.added.length > 0;
+  if(o.ok) impDraft[route] = '';   // the text has been taken in; clear the box
+  impOut[route] = o;
+  return o;
+}
+function importFile(input){
+  const route = input.dataset.impfile, file = input.files && input.files[0];
+  if(!file) return;
+  const lim = PROF.limits.maxInputChars;
+  const fail = msg => { impOut[route] = {route, ok:false, file:null, added:[], held:[], skipped:[], errors:[msg], warnings:[]}; render(); };
+  if(file.size > lim) return fail('the file is '+file.size+' bytes; the input limit for this site profile is '+lim+' characters');
+  try {
+    const fr = new FileReader();
+    fr.onload = () => { importRun(route, String(fr.result||'')); impOut[route].file = String(file.name||'file').slice(0,80); render(); };
+    fr.onerror = () => fail('the file could not be read');
+    fr.readAsText(file);
+  } catch(e) { fail('the file could not be read'); }
+}
+function importOut(route){
+  const o = impOut[route]; if(!o) return '';
+  const n = o.added.length;
+  const head = o.ok ? `${n} report${n===1?'':'s'} added to the case finder list, unreviewed${o.held.length?`; ${o.held.length} held for review`:''}.` : 'Nothing was added.';
+  const list = (items, tag) => items.length ? `<ul>${items.map(t=>`<li>${tag?esc(tag)+' ':''}${esc(t)}</li>`).join('')}</ul>` : '';
+  return `<div class="callout ${o.ok?'ok':'block'}" role="status"><span>${o.file?esc('File '+o.file+'. '):''}${esc(head)}</span>
+    ${list(o.held.map(h=>h.id+': '+h.why), '')}${list(o.errors, 'Error:')}${list(o.warnings, 'Check:')}${list(o.skipped, '')}</div>`;
+}
+function importPanel(){
+  const on = r => PROF.feeds[r] === true;
+  const max = PROF.limits.maxInputChars;
+  const fileIn = (route, accept) => `<label class="small muted" for="imp-file-${route}">Or upload a file</label><input type="file" id="imp-file-${route}" data-impfile="${route}" accept="${accept}">`;
+  const sec = (route, extra) => `<div class="imp">
+    <div class="hrow"><b>${esc(IMP_NAME[route])}</b><span class="chip ${on(route)?'c-ok':'c-mute'}">${on(route)?'On for this profile':'Off for this profile'}</span></div>
+    <span class="small muted">${esc(IMP_HINT[route])}</span>
+    <textarea data-imp="${route}" maxlength="${max}" spellcheck="false" aria-label="${esc(IMP_NAME[route])}">${esc(impDraft[route])}</textarea>
+    ${extra}
+    <div class="actions"><button class="act" data-a="imp-run" data-route="${route}">Import ${esc(IMP_NAME[route])}</button></div>
+    ${importOut(route)}</div>`;
+  return `<div class="card" style="gap:6px"><div class="sec-label">Import reports</div>
+    <span class="small muted">Reports read here are unreviewed and synthetic only. Ok reports join the case finder list like the seeded ones. A report whose message may be cut off, or that has no age or sex, is held for review, never closed as no action.</span>
+    <label class="checkline"><input type="checkbox" id="imp-demo" ${DEMO.routes?'checked':''}> Demo: turn on the HL7 v2 and FHIR routes (off in the shipped profiles)</label>
+    <div class="field"><label class="small muted" for="imp-name">Name shown on the card</label><input type="text" id="imp-name" value="${esc(impDraft.name)}" maxlength="60"></div>
+    ${sec('paste','')}
+    ${sec('csv', fileIn('csv', '.csv,text/csv'))}
+    ${sec('hl7v2','')}
+    ${sec('fhir', fileIn('fhir', '.json,application/json'))}
+  </div>`;
+}
 function vHealth(){
   const issued=c=>c.stages[0].end;
   const span=(i)=>CASES.map(c=>c.stages[i].end!==null&&issued(c)!==null?c.stages[i].end-issued(c):null).filter(x=>x!==null);
@@ -774,7 +933,7 @@ function vHealth(){
   const rej={}; CASES.forEach(c=>{ if(c.referral.reason) rej[c.referral.reason]=(rej[c.referral.reason]||0)+1; });
   const tbL=['en','ar'].map(l=>{const a=CASES.filter(c=>c.tbFirst&&c.tbFirst.lang===l);return [l==='en'?'English':'Arabic',a.length?Math.round(100*a.filter(c=>c.tbFirst.pass).length/a.length):null,a.length];});
   const bars=(obj)=>{const e=Object.entries(obj);const mx=Math.max(1,...e.map(x=>x[1]));return e.length?`<div class="bars">${e.map(([k,v])=>`<div class="bar"><span>${esc(k)}</span><span class="track"><span class="fill" style="width:${100*v/mx}%;display:block"></span></span><span class="num">${v}</span></div>`).join('')}</div>`:'<div class="empty">None yet.</div>';};
-  return `<div class="card" style="gap:4px"><h2>Loop health</h2><span class="small muted">Computed live from stage timestamps across all ${CASES.length} cases. Synthetic data.</span></div>
+  return `<div class="card" style="gap:4px"><h2>Loop health</h2><span class="small">Site profile: ${esc(PROF.name)} (${esc(PROF.id)}) · data residency: ${esc(PROF.dataResidency.mode)} · guideline: ${esc(guideSrc())}</span><span class="small muted">Computed live from stage timestamps across all ${CASES.length} cases. Synthetic data.</span></div>
    <div class="mgrid">
      <div class="metric"><div class="v">${Math.round(100*treated/CASES.length)}%</div><div class="k">High-risk patients started on treatment</div><div class="n">${treated} of ${CASES.length}</div></div>
      <div class="metric"><div class="v" style="color:${unresolved?'var(--crit)':'inherit'}">${unresolved}</div><div class="k">Unresolved actionable results</div><div class="n">overdue or unassigned</div></div>
@@ -797,6 +956,7 @@ function vHealth(){
 }
 function render(){
   $('day').textContent='Day '+DAY;
+  $('banner').innerHTML=bannerHtml();
   renderTabs();
   $('view').innerHTML = tab==='find'?vFind():tab==='intake'?vIntake():tab==='board'?vBoard():tab==='case'?vCase():tab==='patient'?vPatient():tab==='specialist'?vSpecialist():vHealth();
 }
@@ -820,7 +980,7 @@ document.addEventListener('click', e=>{
     render(); return; }
   if(wiz && b.dataset.wnext){ wiz.step++; render(); return; }
   if(wiz && b.dataset.wgo!==undefined){ wiz.step=+b.dataset.wgo; render(); return; }
-  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; FEED=seedFeed(); aiMsg=''; bench=null; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
+  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; FEED=seedFeed(); aiMsg=''; bench=null; IN=blankIn(); inDone=null; impDraft.paste=''; impDraft.csv=''; impDraft.hl7v2=''; impDraft.fhir=''; impOut={}; tick(0); window.scrollTo(0,0); return; }
   const a=b.dataset.a; if(!a) return;
   if(a==='ci-print'){ document.body.classList.add('ci-printing'); try{ window.print(); }catch(e){} document.body.classList.remove('ci-printing'); return; }
   if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
@@ -830,7 +990,8 @@ document.addEventListener('click', e=>{
   if(a==='find-ai'){ if(!aiBusy) runFeedAI(); return; }
   if(a==='bench-ai'){ if(!aiBusy) runBenchAI(); return; }
   if(a==='bench-copy'){ const t=benchText(); navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{bench.msg='Copied. Paste it into the chat.'; render();}).catch(()=>{bench.msg=t; render();}); return; }
-  if(a==='intake-clear'){ IN=Object.assign({}, BLANK_IN); inDone=null; render(); return; }
+  if(a==='imp-run'){ importRun(b.dataset.route); render(); return; }
+  if(a==='intake-clear'){ IN=blankIn(); inDone=null; render(); return; }
   if(a==='intake-issue'){ issueIntake(); render(); window.scrollTo(0,0); return; }
   if(a==='fhir'||a==='fhir-copy'){ fhirAction(a==='fhir-copy'); return; }
   const c=CASES.find(x=>x.id===(b.dataset.c||sel)); if(!c) return;
@@ -867,7 +1028,7 @@ document.addEventListener('click', e=>{
       if(sec.required && r.spep===null) log(c,'Serum protein electrophoresis not done: needed before treatment (exclude myeloma).','alert');
       break; }
     case 'decide': complete(c,3,'Treatment decided in primary care per CPG.'); break;
-    case 'econsult': c.referral={status:'sent', clinic:'Al Noor fracture-liaison clinic', reason:null, history:[['sent',DAY]]}; c.thread.push({who:c.owner, d:DAY, text:`${c.age}F, ${category(c).why.join('; ')}. Asking for a treatment plan.`}); log(c,'E-consult sent to Al Noor fracture-liaison clinic.'); break;
+    case 'econsult': c.referral={status:'sent', clinic:'Al Noor fracture-liaison clinic', reason:null, history:[['sent',DAY]]}; c.thread.push({who:c.owner, d:DAY, text:`${AGE(c)}${SEXL(c)}, ${category(c).why.join('; ')}. Asking for a treatment plan.`}); log(c,'E-consult sent to Al Noor fracture-liaison clinic.'); break;
     case 'reroute': c.referral.status='rerouted'; c.referral.clinic='Corniche fracture-liaison clinic (in network)'; c.referral.history.push(['rerouted',DAY]); c.thread.push({who:c.owner, d:DAY, text:'Rerouted to an in-network clinic. Same request.'}); log(c,'Referral rerouted to Corniche fracture-liaison clinic (in network).'); break;
     case 'accept': c.referral.status='accepted'; c.referral.history.push(['accepted',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Accepted. Recommend first-line treatment per CPG; happy to review.'}); complete(c,3,`Referral accepted by ${c.referral.clinic}.`); break;
     case 'reject': { const r=$('rj-'+c.id).value; c.referral.status='rejected'; c.referral.reason=r; c.referral.history.push(['rejected',DAY]); c.thread.push({who:c.referral.clinic, d:DAY, text:'Rejected: '+r}); log(c,`Referral rejected by ${c.referral.clinic}: ${r}. Back on GP board.`,'alert'); break; }
@@ -888,6 +1049,10 @@ document.addEventListener('click', e=>{
 });
 function inVal(t){ return t.type==='checkbox'?t.checked:t.value; }
 document.addEventListener('change', e=>{
+  if(e.target.id==='site'){ SITE_ID=e.target.value; setSite(); IN.lang=PROF.languages[0]; ensureSample(); render(); return; }   // default message language follows the site
+  if(e.target.id==='imp-demo'){ DEMO.routes=e.target.checked; setSite(); render(); return; }
+  if(e.target.id==='ai-demo'){ DEMO.ai=e.target.checked; setSite(); ensureSample(); render(); return; }
+  if(e.target.dataset.impfile){ importFile(e.target); return; }
   if(e.target.id==='pt-sel'){ sel=e.target.value; wiz=null; wizDone=null; tb=null; render(); return; }
   if(e.target.dataset.in){ IN[e.target.dataset.in]=inVal(e.target); if(e.target.tagName==='SELECT'||e.target.type==='checkbox'){ render(); } return; }
   if(e.target.tagName==='SELECT' && e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
@@ -896,6 +1061,8 @@ document.addEventListener('change', e=>{
   if(e.target.dataset.f){ c.follow[e.target.dataset.f]=e.target.checked; render(); }
 });
 document.addEventListener('input', e=>{
+  if(e.target.dataset.imp!==undefined){ impDraft[e.target.dataset.imp]=e.target.value; return; }
+  if(e.target.id==='imp-name'){ impDraft.name=e.target.value; return; }
   if(e.target.dataset.in && e.target.type==='text'){ IN[e.target.dataset.in]=e.target.value; const r=$('inres'); if(r) r.innerHTML=intakeResult(); return; }
   if(wiz && e.target.dataset.wf){ const q=CI.questions(wiz.visit,wiz.a)[wiz.step];
     if(q.type==='text') wiz.a[q.id]=e.target.value; else { wiz.a[q.id]=Object.assign({}, wiz.a[q.id]||{}, {[e.target.dataset.wf]:e.target.value}); }
@@ -906,6 +1073,8 @@ document.addEventListener('input', e=>{
   if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2 && !secBlock(CASES.find(x=>x.id===sel))); }
 });
 
+initSite();
+ensureSample();
 tick(0);
 })();
 </script>

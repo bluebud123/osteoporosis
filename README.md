@@ -52,6 +52,10 @@ There are two readers, and the final decision is whichever ranks higher:
 
 The finder never auto-dismisses a report: "No action" items stay listed for audit. A blind report set written by clinicians who haven't seen the rules is still needed before the numbers count.
 
+## Importing reports and site profiles
+
+The Find tab imports report text four ways: paste, CSV, HL7 v2 (ORU^R01) and FHIR R4 JSON. Imported reports join the finder list unreviewed. A report whose message may be cut off, or that has no age or sex, is held for review and is never closed as no action. A site profile (`src/site.js`) sets the stage clocks, default language, guideline label and data residency. The shipped profiles are templates: the HL7 and FHIR routes and the claude.ai reader are off in them. See [`docs/integration.md`](docs/integration.md) and [`docs/site-profiles.md`](docs/site-profiles.md).
+
 ## Proposed indicator
 
 DoH Abu Dhabi's 2025 orthopaedic Jawda indicators (OS001–OS009) cover surgical-site infection, readmission, return to theatre, ER visits, mortality and transfusion. None measures osteoporosis treatment after a fragility fracture. OsteoLoop computes "fragility-fracture patients started on treatment within 6 months" directly from stage timestamps.
@@ -95,6 +99,7 @@ npm install && npm run bench
 | Case finder, keyword baseline: stress set (15 reports, clinical shorthand) | 33% exact, 3/12 caught, **6 silently dismissed** |
 | Case finder verifier: adversarial checks (negated, non-fracture, pathological and not-in-report quotes rejected; real fracture quotes accepted) | 6/6 pass |
 | Loop guarantees (35 headless scenarios on the real app) | 35/35 pass |
+| FHIR R4 export of a case (`bench/run-fhir.js`): structure, references, value sets, synthetic tags, no real-looking identifiers; not the official HL7 validator | 58/58 pass |
 
 On its first run the benchmark found a real false-reassurance bug, which is now fixed: a patient with high FRAX but no DXA was being labelled "low". Details, method and limits are in [`bench/README.md`](bench/README.md). The expected answers are drafts until the clinical lead signs them off.
 

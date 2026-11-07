@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **40/40**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **56/57**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -35,7 +35,7 @@ Passed **40/40**. Each test drives the real app (index.html) headless and checks
 | L29 | "Open anyway" still opens a case for an excluded report and records the override | Req 1 | PASS |
 | L30 | Hip or pelvic fragility fracture on MRI with marrow oedema opens as very high risk | Req 1, 2 | PASS |
 | L31 | Abnormal electrophoresis blocks signing in a vertebral-fracture case; normal electrophoresis allows it | Req 5 | PASS |
-| L32 | Electrophoresis not yet done is a visible flag on a vertebral-fracture case, not a block | Req 5 | PASS |
+| L32 | Electrophoresis not yet done is a visible flag on a vertebral-fracture case, not a block | Req 5 | **FAIL** |
 | L33 | Denosumab: dispensing sets the next dose; warn 14 days before due, overdue crit after 28 days; record dose clears it | Req 5, 6 | PASS |
 | L34 | A closed case with denosumab due stays pinned on the board, and recording the dose clears it | Req 6 | PASS |
 | L35 | Closure as treated hands the patient to long-term follow-up; Health says closed is not cured | Req 5, 6 | PASS |
@@ -44,3 +44,20 @@ Passed **40/40**. Each test drives the real app (index.html) headless and checks
 | L42 | Language picker offers English, العربية and Bahasa Melayu; a same-day red flag gives the Malay emergency message | Req 5, 6 | PASS |
 | L43 | Free text containing HTML or script is shown escaped on the clinician card | Req 4 | PASS |
 | L44 | A 5,000-character complaint is kept to 1,000 characters and says so on the clinician card | Req 4 | PASS |
+| L45 | Import: a pasted report opens a finder item, unreviewed, with the keyword decision shown; the box is cleared | Req 1 | PASS |
+| L46 | Import: a CSV pasted into the box opens a finder item | Req 1 | PASS |
+| L47 | Import: a CSV uploaded as a file runs the same import | Req 1 | PASS |
+| L48 | Import: an HL7 v2 message is refused while the site profile has the route off, and opens a finder item once it is on | Req 1, 5 | PASS |
+| L49 | Import: a FHIR bundle opens a finder item with age and sex taken from its Patient | Req 1 | PASS |
+| L50 | Import: malformed FHIR is refused with a plain error and adds nothing | Req 1 | PASS |
+| L51 | Import: an HL7 message cut off mid-result is held in review, never closed as no action | Req 1 | PASS |
+| L52 | Import: a report with no age or sex is held in review, with the reason shown | Req 1 | PASS |
+| L53 | Import: HTML in report text is shown as text, not markup | Req 4 | PASS |
+| L54 | Site profile: uae-doh shows the interim banner and labels the guideline as interim; my-moh shows neither | Req 5 | PASS |
+| L55 | Site profile: switching the profile changes the stage clock shown (override on uae-doh) and the default language | Req 5 | PASS |
+| L56 | Site profile: an override that would turn off the verifier is refused, shown on screen, and the template is used | Req 5 | PASS |
+| L57 | Residency: local-only hides the AI reader controls with the reason, and never asks for the sample capability | Req 5 | PASS |
+| L58 | Residency: with the AI reader allowed, report text is de-identified before the sample call | Req 5 | PASS |
+| L59 | FHIR export carries the active site profile as a meta tag (still SYNTHETIC); Health names the profile | Req 6 | PASS |
+| L60 | Site profile: generic offers English only and says no guideline is selected | Req 5 | PASS |
+| L61 | Import: a held report (no age or sex) can be opened after review; the case says age and sex are unknown | Req 1, 5 | PASS |

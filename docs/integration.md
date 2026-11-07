@@ -32,8 +32,8 @@ Current state of each box:
 | Feed (paste, CSV, HL7, FHIR) | `src/ingest.js` | Parsers built and tested on synthetic fixtures. No live feed. |
 | Ingest | `src/ingest.js`, `ingest()` and `toFinderInput()` | Built. Never throws. Returns `{ok, report, reports, warnings, errors, flags}`. |
 | Finder and verifier | `src/finder.js` | Built (keyword baseline, plus an optional AI reader in the app). |
-| Review queue and loop | `index.html` | Built as a prototype with seeded demo cases. Not yet fed by ingest; wiring is the lead's job. |
-| Site profile | `src/site.js` | Built with three templates. Validates and merges per-site overrides. Not yet read by `index.html`. |
+| Review queue and loop | `index.html` | Built as a prototype with seeded demo cases. The Find tab imports paste, CSV, HL7 v2 and FHIR text through `ingest()`; imported reports join the finder list unreviewed, and held ones go to review. No live feed. |
+| Site profile | `src/site.js` | Built with three templates. Validates and merges per-site overrides. `index.html` reads stage clocks, default language, guideline label and data residency from the active profile. Invalid overrides are refused and shown. |
 | FHIR write-back | none | Not built. `src/fhir.js` only builds a downloadable FHIR R4 bundle for one case. It makes no network calls. |
 
 ## Deployment modes
@@ -92,4 +92,4 @@ Mode 3 needs everything in mode 2, plus:
 - No performance test at site volume. Only fuzzing (600 mutated inputs) and the size limits have been run.
 - No data-protection impact assessment, consent process or institutional approval has been obtained.
 - Access control and audit logging for any feed are not built.
-- `index.html` does not yet call `ingest()` or read a site profile. That wiring is for the lead.
+- `index.html` now calls `ingest()` from the Find tab and reads the site profile. The HL7 v2 and FHIR routes stay off in the shipped profiles; a demo switch turns them on for synthetic data only. The claude.ai AI reader is hidden under `local-only` (all shipped profiles) and, when a site allows it, sees de-identified text only.

@@ -27,6 +27,7 @@ function boot() {
 }
 
 /* Helpers for the finder and treatment scenarios. */
+const feedCard = (a, id) => [...a.q('#view').querySelectorAll('.card')].find(c => c.querySelector('.rep') && c.textContent.includes(id));
 const card = (a, id) => [...a.q('#view').querySelectorAll('.card')].find(c => c.textContent.includes(id));
 const clickEl = el => { if (!el) throw new Error('missing element in card'); el.dispatchEvent(new el.ownerDocument.defaultView.MouseEvent('click', { bubbles: true })); };
 /* R001 (incidental T8 wedge fracture, cough) opened by the finder, taken to the treatment stage. spep: 'normal' | 'abnormal' | null (not entered). */
@@ -56,6 +57,51 @@ const visitAnswers = (a, o = {}) => {
   a.click('[data-wnext]');                                               // worries: skipped
 };
 const finishCheckin = a => { a.click('[data-wnext]'); a.click('[data-a="ci-send"]'); };   // question for the doctor: skipped
+
+/* Boot with page globals set before the page scripts run: site overrides (built in the page's own realm, so the page
+   accepts them as plain objects) and a stand-in for the claude.ai sample capability that records its calls. */
+function bootWith(setup) {
+  const s = setup || {};
+  return new Promise((resolve) => {
+    const html = fs.readFileSync(APP, 'utf8').replace(/<link[^>]+fonts\.googleapis[^>]*>/g, '');
+    const vc = new VirtualConsole(); vc.on('jsdomError', e => console.error('page error:', e.message));
+    const dom = new JSDOM(html, { runScripts: 'dangerously', resources: 'usable', url: 'file://' + APP, pretendToBeVisual: true, virtualConsole: vc,
+      beforeParse(W) {
+        if (s.overrides) W.OSTEO_SITE_OVERRIDES = W.JSON.parse(JSON.stringify(s.overrides));
+        if (s.claude) W.claude = s.claude();
+      } });
+    dom.window.scrollTo = () => {};
+    dom.window.addEventListener('load', () => {
+      const d = dom.window.document, W = dom.window;
+      const q = sel => d.querySelector(sel);
+      const click = sel => { const e = q(sel); if (!e) throw new Error('missing element ' + sel); e.dispatchEvent(new W.MouseEvent('click', { bubbles: true })); };
+      const set = (sel, v, ev) => { const e = q(sel); if (!e) throw new Error('missing element ' + sel); if (e.type === 'checkbox' || e.type === 'radio') e.checked = v; else e.value = v; e.dispatchEvent(new W.Event(ev || 'change', { bubbles: true })); };
+      const text = () => q('#view').textContent.replace(/\s+/g, ' ');
+      const open = id => { click('[data-tab="board"]'); click(`[data-open="${id}"]`); };
+      const ans = i => click(`[data-ans="${i}"]`);
+      resolve({ q, click, set, text, open, ans, W, wait: ms => new Promise(r => setTimeout(r, ms)) });
+    });
+  });
+}
+/* A stand-in claude.ai sample capability: records each use and each prompt, answers with no decisions. */
+const sampleMock = log => () => ({ use: async name => { log.uses.push(name); return { json: async prompt => { log.prompts.push(prompt); return []; } }; } });
+
+/* Import helpers: report text for each route. Each builder returns a string the paste or file route reads. */
+const FIX = path.resolve(__dirname, 'ingest-fixtures');
+const runImport = (a, route, text) => { a.set(`[data-imp="${route}"]`, text, 'input'); a.click(`[data-a="imp-run"][data-route="${route}"]`); };
+const hl7Seg = (name, fields, n) => { const f = new Array(n).fill(''); f[0] = name; fields.forEach(([i, v]) => { f[i] = v; }); return f.join('|'); };
+const hl7Good = [
+  'MSH|^~\\&|RIS|OSTEO-TEST|OSTEOLOOP|SYNTH|20260421093000||ORU^R01|MSG-0002|P|2.5.1',
+  hl7Seg('PID', [[1, '1'], [3, 'P-200001^^^LOCAL^MR'], [5, 'SYNTH^PATIENT'], [7, '19550314'], [8, 'F']], 9),
+  hl7Seg('OBR', [[1, '1'], [3, 'IMP-H1'], [4, 'XR^XR THORACIC SPINE^L'], [7, '20260421093000'], [31, 'Back pain']], 32),
+  hl7Seg('OBX', [[1, '1'], [2, 'TX'], [3, 'REPORT^Report'], [5, 'Lungs are clear. Wedge compression fracture of T8 with approximately 30% anterior height loss.'], [11, 'F']], 12)
+].join('\n');
+const fhirGood = JSON.stringify({ resourceType: 'Bundle', type: 'collection', entry: [
+  { fullUrl: 'Patient/P-300001', resource: { resourceType: 'Patient', id: 'P-300001', birthDate: '1955-03-14', gender: 'female' } },
+  { resource: { resourceType: 'DiagnosticReport', id: 'IMP-F1', status: 'final', code: { text: 'CT thoracolumbar spine' }, subject: { reference: 'Patient/P-300001' },
+    effectiveDateTime: '2026-02-11T08:30:00+08:00', conclusion: 'Acute-appearing compression deformity of L2 with 30% height loss.' } }] });
+const csvGood = ['id,report text,age,sex,study,indication', 'IMP-C1,"Wedge compression fracture of T9 with 25% height loss. Lungs clear.",74,F,XR thoracic spine,Back pain'].join('\n');
+const pasteGood = 'Id: IMP-P1\nAge: 78\nSex: F\nStudy: XR thoracic spine\nIndication: Back pain\n\nWedge compression fracture of T9 with 25% height loss.';
 
 const tests = [
   ['L01', 'Full journey closes only with evidence', 'Req 1, 5', async () => {
@@ -391,6 +437,147 @@ const tests = [
     a.click('[data-tab="case"]');
     const t = a.text();
     return !/a{1001}/.test(t) && /cut at 1,000 characters/.test(t);
+  }],
+  ['L45', 'Import: a pasted report opens a finder item, unreviewed, with the keyword decision shown; the box is cleared', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    runImport(a, 'paste', pasteGood);
+    const c = feedCard(a, 'IMP-P1');
+    return /1 report added to the case finder list, unreviewed/.test(a.text()) && !!c && /Rules: Act/.test(c.textContent)
+      && /Imported patient/.test(c.textContent) && a.q('[data-imp="paste"]').value === '';
+  }],
+  ['L46', 'Import: a CSV pasted into the box opens a finder item', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    runImport(a, 'csv', csvGood);
+    const c = feedCard(a, 'IMP-C1');
+    return !!c && /Rules: Act/.test(c.textContent) && /1 report added/.test(a.text());
+  }],
+  ['L47', 'Import: a CSV uploaded as a file runs the same import', 'Req 1', async () => {
+    const a = await bootWith(); a.click('[data-tab="find"]');
+    const file = new a.W.File(['id,report text,age,sex\nIMP-C2,"Wedge compression fracture of T7 with height loss.",66,F'], 'reports.csv', { type: 'text/csv' });
+    const input = a.q('[data-impfile="csv"]');
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    input.dispatchEvent(new a.W.Event('change', { bubbles: true }));
+    await a.wait(150);
+    return /File reports\.csv\./.test(a.text()) && !!feedCard(a, 'IMP-C2');
+  }],
+  ['L48', 'Import: an HL7 v2 message is refused while the site profile has the route off, and opens a finder item once it is on', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    runImport(a, 'hl7v2', hl7Good);
+    const refused = /not enabled for this site profile/.test(a.text()) && !feedCard(a, 'IMP-H1');
+    a.set('#imp-demo', true, 'change');
+    runImport(a, 'hl7v2', hl7Good);
+    const c = feedCard(a, 'IMP-H1');
+    return refused && !!c && /Rules: Act/.test(c.textContent);
+  }],
+  ['L49', 'Import: a FHIR bundle opens a finder item with age and sex taken from its Patient', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]'); a.set('#imp-demo', true, 'change');
+    runImport(a, 'fhir', fhirGood);
+    const c = feedCard(a, 'IMP-F1');
+    return !!c && /70F/.test(c.textContent) && /1 report added/.test(a.text());
+  }],
+  ['L50', 'Import: malformed FHIR is refused with a plain error and adds nothing', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]'); a.set('#imp-demo', true, 'change');
+    const before = a.q('#view').querySelectorAll('.rep').length;
+    runImport(a, 'fhir', '{"resourceType": "DiagnosticReport", ');
+    const after = a.q('#view').querySelectorAll('.rep').length;
+    return /FHIR input is not valid JSON/.test(a.text()) && /Nothing was added/.test(a.text()) && before === after;
+  }],
+  ['L51', 'Import: an HL7 message cut off mid-result is held in review, never closed as no action', 'Req 1', async () => {
+    const trunc = fs.readFileSync(path.join(FIX, 'hl7-05-truncated.hl7'), 'utf8');
+    const a = await boot(); a.click('[data-tab="find"]'); a.set('#imp-demo', true, 'change');
+    runImport(a, 'hl7v2', trunc);
+    const c = feedCard(a, 'RPT-7830');
+    const rep = c && c.querySelector('.rep');
+    return !!rep && rep.dataset.d === 'review' && /Held for review: the message may be cut off/.test(c.textContent)
+      && a.text().indexOf('RPT-7830') < a.text().indexOf('No action (')
+      && /1 report added to the case finder list, unreviewed; 1 held for review/.test(a.text());
+  }],
+  ['L52', 'Import: a report with no age or sex is held in review, with the reason shown', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    runImport(a, 'paste', 'Id: IMP-N1\n\nWedge compression fracture of T9 with 25% height loss.');
+    const c = feedCard(a, 'IMP-N1');
+    return !!c && c.querySelector('.rep').dataset.d === 'review' && /age unknown; sex unknown/.test(c.textContent) && /age \?/.test(c.textContent);
+  }],
+  ['L53', 'Import: HTML in report text is shown as text, not markup', 'Req 4', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    runImport(a, 'paste', 'Id: IMP-E1\nAge: 70\nSex: F\n\n<img src=x onerror=alert(1)>Wedge compression fracture of T5 with height loss.');
+    const html = a.q('#view').innerHTML;
+    return !!feedCard(a, 'IMP-E1') && !/<img src=x/.test(html) && /&lt;img src=x/.test(html) && /HTML markup in report text/.test(a.text());
+  }],
+  ['L54', 'Site profile: uae-doh shows the interim banner and labels the guideline as interim; my-moh shows neither', 'Req 5', async () => {
+    const a = await boot();
+    const ban = () => a.q('#banner').textContent.replace(/\s+/g, ' ');
+    const none = ban() === '' && !/INTERIM/.test(a.text());
+    a.set('#site', 'uae-doh', 'change');
+    a.open('C-1031');
+    return none && /Guideline for this site is an interim stand-in pending clinical sign-off/.test(ban())
+      && /INTERIM stand-in: MY CPG 2022/.test(a.text()) && !/ MY CPG 2022/.test(a.text().replace(/INTERIM stand-in: MY CPG 2022/g, ''));
+  }],
+  ['L55', 'Site profile: switching the profile changes the stage clock shown (override on uae-doh) and the default language', 'Req 5', async () => {
+    const a = await bootWith({ overrides: { 'uae-doh': { stageClocks: { '2': 21 } } } });
+    a.open('C-1031');
+    const before = /Day -44 · clock 30 d/.test(a.text());   // stage 2 of C-1031 started on day -44
+    a.set('#site', 'uae-doh', 'change');
+    a.open('C-1031');
+    const after = /Day -44 · clock 21 d/.test(a.text()) && !/Day -44 · clock 30 d/.test(a.text());
+    a.click('[data-tab="board"]'); a.click('[data-a="intake"]');
+    const lang = a.q('#in-lang');
+    return before && after && lang.value === 'ar' && [...lang.querySelectorAll('option')].map(o => o.value).join(',') === 'ar,en';
+  }],
+  ['L56', 'Site profile: an override that would turn off the verifier is refused, shown on screen, and the template is used', 'Req 5', async () => {
+    const a = await bootWith({ overrides: { 'my-moh': { controls: { verifier: false } } } });
+    const ban = a.q('#banner').textContent.replace(/\s+/g, ' ');
+    a.open('C-1031');
+    return /Site profile override refused/.test(ban) && /override cannot turn off verifier/.test(ban) && /clock 30 d/.test(a.text());
+  }],
+  ['L57', 'Residency: local-only hides the AI reader controls with the reason, and never asks for the sample capability', 'Req 5', async () => {
+    const log = { uses: [], prompts: [] };
+    const a = await bootWith({ claude: sampleMock(log) });
+    a.click('[data-tab="find"]'); await a.wait(30);
+    const hidden = !a.q('[data-a="find-ai"]') && !a.q('[data-a="bench-ai"]') && /local-only/.test(a.text()) && !a.q('#ai-demo').checked;
+    const noCall = log.uses.length === 0;
+    a.set('#ai-demo', true, 'change'); await a.wait(30);
+    return hidden && noCall && !!a.q('[data-a="find-ai"]') && log.uses.length === 1;
+  }],
+  ['L58', 'Residency: with the AI reader allowed, report text is de-identified before the sample call', 'Req 5', async () => {
+    const log = { uses: [], prompts: [] };
+    const a = await bootWith({ claude: sampleMock(log) });
+    a.click('[data-tab="find"]'); a.set('#ai-demo', true, 'change'); await a.wait(30);
+    runImport(a, 'paste', 'Id: IMP-A1\nAge: 71\nSex: F\n\nDr Ahmad bin Ali reviewed on 12/03/2026. Wedge compression fracture of T9 with 25% height loss.');
+    a.click('[data-a="find-ai"]'); await a.wait(60);
+    const p = log.prompts.join('\n');
+    return log.prompts.length === 1 && /\[NAME\]/.test(p) && /\[DATE\]/.test(p) && !/Ahmad/.test(p) && !/12\/03\/2026/.test(p) && /IMP-A1/.test(p);
+  }],
+  ['L59', 'FHIR export carries the active site profile as a meta tag (still SYNTHETIC); Health names the profile', 'Req 6', async () => {
+    const a = await bootWith(); a.set('#site', 'uae-doh', 'change'); a.open('C-1042');
+    const W = a.W; let captured = null;
+    W.URL.createObjectURL = blob => { captured = blob; return 'blob:synthetic'; };
+    W.URL.revokeObjectURL = () => {};
+    W.HTMLAnchorElement.prototype.click = function () {};
+    a.click('[data-a="fhir"]');
+    if (!captured) return false;
+    const text = await new Promise((res, rej) => { const fr = new W.FileReader(); fr.onload = () => res(fr.result); fr.onerror = () => rej(fr.error); fr.readAsText(captured); });
+    const b = JSON.parse(text), tags = (b.meta && b.meta.tag) || [];
+    const prof = tags.find(t => t.system === 'urn:osteoloop:site-profile');
+    a.click('[data-tab="health"]');
+    return !!prof && prof.code === 'uae-doh' && tags.some(t => t.code === 'SYNTHETIC') && /Site profile: Abu Dhabi hospital, DoH context \(template\) \(uae-doh\)/.test(a.text());
+  }],
+  ['L60', 'Site profile: generic offers English only and says no guideline is selected', 'Req 5', async () => {
+    const a = await boot(); a.set('#site', 'generic', 'change');
+    const ban = a.q('#banner').textContent.replace(/\s+/g, ' ');
+    a.click('[data-a="intake"]');
+    const lang = a.q('#in-lang');
+    return /No guideline is selected/.test(ban) && lang.value === 'en' && [...lang.querySelectorAll('option')].map(o => o.value).join(',') === 'en';
+  }],
+  ['L61', 'Import: a held report (no age or sex) can be opened after review; the case says age and sex are unknown', 'Req 1, 5', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    runImport(a, 'paste', 'Id: IMP-N2\n\nWedge compression fracture of T9 with 25% height loss.');
+    const c = feedCard(a, 'IMP-N2'), btn = c.querySelector('[data-a="find-open"]');
+    clickEl(btn);
+    const opened = /Loop opened as C-2001/.test(a.text()), held = /Held for review: age unknown; sex unknown/.test(feedCard(a, 'IMP-N2').textContent);
+    a.click('[data-open="C-2001"]');
+    return opened && held && /Age or sex unknown in the source report: confirm before treating/.test(a.text())
+      && /Found by case finder \(Rules\)/.test(a.text());
   }]
 ];
 
