@@ -7,7 +7,7 @@ F-0005,R005,keyword,act,vert,Old healed L2 vertebral compression fracture.,1
 F-0006,R006,keyword,act,vert,Crush fracture of T12 with approximately 50% height loss;,1
 F-0007,R007,keyword,act,vert,"Incidentally, there is a wedge fracture of L1.",1
 F-0008,R008,keyword,act,vert,Exaggerated thoracic kyphosis with multiple mid-thoracic vertebral compression fractures.,1
-F-0009,R009,keyword,act,vert,"Superior endplate fracture of T9 with mild height loss, likely osteoporotic.",1
+F-0009,R009,keyword,review,vert,"Superior endplate fracture of T9 with mild height loss, likely osteoporotic.",1
 F-0010,R010,keyword,act,vert,Vertebral bodies: L3 is collapsed.,1
 F-0011,R011,keyword,act,vert,Acute-appearing compression fracture of L2 with 25% loss of anterior height.,1
 F-0012,R012,keyword,act,vert,Wedge fractures of T6 and T8.,1
@@ -111,6 +111,6 @@ F-0109,S09,keyword,act,vert,Acute osteoporotic VCF at L3 with marrow oedema.,1
 F-0110,S10,keyword,review,,History of NOF fracture 2023.,1
 F-0111,S11,keyword,no,,,1
 F-0112,S12,keyword,no,,,1
-F-0113,S13,keyword,act,vert,"Wedge-shaped T11, likely longstanding Scheuermann type change rather than fracture.",1
+F-0113,S13,keyword,no,,,1
 F-0114,S14,keyword,act,vert,"Multilevel thoracic vertebral height loss, worst at T7, appearance favours osteoporotic fractures.",1
 F-0115,S15,keyword,act,hip,Intertrochanteric fracture right femur.,1
