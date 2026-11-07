@@ -1,10 +1,10 @@
 /*
- * SpineLoop clinical rules — deterministic, each rule tagged with its source.
+ * OsteoLoop clinical rules — deterministic, each rule tagged with its source.
  * Sources:
  *   NICE   = NICE NG259, Osteoporosis: risk assessment (2026)
  *   MYCPG  = Malaysian CPG, Management of Postmenopausal Osteoporosis, 3rd ed. (2022)
  *   LOCAL  = local placeholder awaiting clinician sign-off
- * Works in the browser (window.SpineRules) and in Node (module.exports).
+ * Works in the browser (window.OsteoRules) and in Node (module.exports).
  *
  * Patient shape (all fields optional unless stated):
  *   age, sex ('F'|'M'), menopause ('post'|'pre'|'na'),
@@ -111,5 +111,5 @@
   }
 
   const api = { category, dxaIndication, fastTrack, labFlags, treatments, firstLine, scopeWarning, fractureSummary };
-  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.SpineRules = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.OsteoRules = api;
 })(typeof window !== 'undefined' ? window : globalThis);

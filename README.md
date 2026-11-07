@@ -1,8 +1,8 @@
-# SpineLoop
+# OsteoLoop
 
 Closing the screening-to-care loop for fragility-fracture risk.
 
-SpineLoop helps primary-care teams make sure every adult flagged at screening as high risk of fragility fracture reaches treatment. It uses the screening record, DXA and lab results, referral events and dispensing records. Every step has a named owner, a clock and a closure gate.
+OsteoLoop helps primary-care teams make sure every adult flagged at screening as high risk of fragility fracture reaches treatment. It uses the screening record, DXA and lab results, referral events and dispensing records. Every step has a named owner, a clock and a closure gate.
 
 Entry for the **Future Health Digital Innovation Challenge 2026** (Population Health → *Closing the Screening-to-Care Loop*).
 
@@ -21,6 +21,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | File | What it is |
 | --- | --- |
 | `index.html` | The main app: screening intake (rules run live), case board, 7-stage case loop with result entry, patient phone, specialist inbox, loop-health metrics, Reset button |
+| `src/checkin.js` | The patient check-in: question sets for the first clinic and treatment reviews (English and Arabic), and the deterministic rules that turn answers into clinician flags |
 | `src/rules.js` | The clinical rules engine. It is deterministic, every rule is tagged with its source, and the app and the benchmark share it |
 | `bench/` | The benchmark: synthetic clinical vignettes and headless loop scenarios (see below) |
 | `prototypes/assessment-mobile.html` | Clinical assessment flow: history → risk factors → fracture → DXA → FRAX → labs → treatment → follow-up |
@@ -39,6 +40,19 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | 6 Close | GP or programme lead | — | Evidence attached, or documented clinician decision |
 
 The loop also handles six exceptions: overdue (alert, then escalation), unassigned (pinned queue), referral rejected (reroute, GP keeps ownership), patient misunderstands (nurse call), patient declines (documented decision only), and transfer (handoff must be accepted).
+
+## Patient check-in
+
+Before every clinic visit the patient fills in a short check-in on their phone, one question per screen, in English or Arabic.
+- **Before the first clinic:** previous fractures, falls, and the FRAX risk factors (parent hip fracture, steroids, rheumatoid arthritis, smoking, alcohol, height and weight).
+- **On treatment:** how the medicine is being taken and why doses are missed, red-flag symptoms (jaw pain or a loose tooth, new thigh pain, heartburn), falls, new fractures, planned dental surgery, calcium and vitamin D.
+
+The answers become clinician flags. Urgent flags pin the case on the board until a clinician marks them reviewed:
+- a new fracture;
+- possible osteonecrosis of the jaw or atypical femoral fracture;
+- denosumab stopped, which carries a rebound fracture risk.
+
+An answer of "every dose" can be accepted as the 3-month adherence check. Patient-reported answers never change the risk category on their own; a clinician confirms first. The Arabic is written in the feminine form, because the CPG population is postmenopausal women.
 
 ## Clinical rules and sources
 
@@ -61,7 +75,8 @@ npm install && npm run bench
 | Very-high-risk recall | 13/13 |
 | False reassurance (at-risk patient labelled "low") | 0 |
 | Guideline-blocked drug offered | 0 |
-| Loop guarantees (18 headless scenarios on the real app) | 18/18 pass |
+| Patient check-in flags (27 answer sets) | 27/27 pass |
+| Loop guarantees (23 headless scenarios on the real app) | 23/23 pass |
 
 On its first run the benchmark found a real false-reassurance bug, which is now fixed: a patient with high FRAX but no DXA was being labelled "low". Details, method and limits are in [`bench/README.md`](bench/README.md). The expected answers are drafts until the clinical lead signs them off.
 

@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **18/18**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **23/23**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -22,3 +22,8 @@ Passed **18/18**. Each test drives the real app (index.html) headless and checks
 | L16 | Entered DXA result re-runs the category; a missing T-score is refused | Req 5 | PASS |
 | L17 | Patient outside the CPG population is flagged at intake | Req 5 | PASS |
 | L18 | Reset restores the seeded demo | Demo | PASS |
+| L19 | Patient check-in reporting a recent fracture reaches the clinician as urgent, and is pinned until reviewed | Req 3, 6 | PASS |
+| L20 | Stopping denosumab is flagged as a rebound risk, in Arabic, shown to the clinician in English | Req 3, 6 | PASS |
+| L21 | A seeded patient flag is pinned on the board at start | Req 2, 6 | PASS |
+| L22 | "Every dose" check-in can be accepted as the adherence check at follow-up | Req 5 | PASS |
+| L23 | Check-in cannot start before the patient has acknowledged the result | Req 3 | PASS |

@@ -1,13 +1,14 @@
-# SpineLoop benchmark
+# OsteoLoop benchmark
 
-Two suites, both run with `npm run bench` (needs Node 18+ and `npm install` once).
+Three suites, all run with `npm run bench` (needs Node 18+ and `npm install` once).
 
 | Suite | What it tests | Latest result |
 | --- | --- | --- |
 | `run-rules.js` | 57 synthetic vignettes against the clinical rules in `src/rules.js` | 57/57 cases, 102/102 checks |
-| `run-loop.js` | 18 scenarios that drive the real app headless and check the loop's guarantees, including new-patient intake | 18/18 |
+| `run-checkin.js` | 27 patient check-in answer sets against the flag rules in `src/checkin.js` | 27/27 |
+| `run-loop.js` | 23 scenarios that drive the real app headless and check the loop's guarantees, including new-patient intake and the patient check-in | 23/23 |
 
-Full results are in `results/rules.md` and `results/loop.md`.
+Full results are in `results/rules.md`, `results/checkin.md` and `results/loop.md`.
 
 ## Headline safety numbers
 

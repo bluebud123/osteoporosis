@@ -20,7 +20,8 @@ function boot() {
       const set = (s, v, ev) => { const e = q(s); if (!e) throw new Error('missing element ' + s); if (e.type === 'checkbox' || e.type === 'radio') e.checked = v; else e.value = v; e.dispatchEvent(new W.Event(ev || 'change', { bubbles: true })); };
       const text = () => q('#view').textContent.replace(/\s+/g, ' ');
       const open = id => { click('[data-tab="board"]'); click(`[data-open="${id}"]`); };
-      resolve({ q, click, set, text, open });
+      const ans = i => click(`[data-ans="${i}"]`);
+      resolve({ q, click, set, text, open, ans });
     });
   });
 }
@@ -148,6 +149,51 @@ const tests = [
     a.set('#in-name', 'Zainab T.', 'input'); a.set('#in-age', '72', 'input'); a.set('#in-site', 'hip'); a.set('#in-fxm', '5', 'input');
     a.click('[data-a="intake-issue"]'); a.click('#adv'); a.click('#reset');
     return !/Zainab/.test(a.text()) && /Day 0/.test(a.q('#day').textContent) && a.q('#view').querySelectorAll('.case-row').length === 8;
+  }],
+  ['L19', 'Patient check-in reporting a recent fracture reaches the clinician as urgent, and is pinned until reviewed', 'Req 3, 6', async () => {
+    const a = await boot(); a.open('C-1031');                        // Aisha, awaiting DXA, no treatment yet
+    const catBefore = a.q('.chip').textContent;
+    a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
+    a.ans(0); a.ans(0); a.ans(0);                                   // fracture: yes, wrist, last 12 months
+    [0, 1, 1, 1, 1, 1, 1].forEach(i => a.ans(i));                   // falls none, then no to the rest
+    a.click('[data-wnext]'); a.click('[data-wnext]');               // skip height/weight and question
+    const review = /Check your answers/.test(a.text());
+    a.click('[data-a="ci-send"]');
+    const urgentMsg = /emergency department/.test(a.text());
+    a.click('[data-tab="board"]');
+    const pinned = a.text().split('On track')[0];
+    a.click('[data-open="C-1031"]');
+    const card = /Patient-reported/.test(a.text()) && /fragility fracture in the last 12 months/.test(a.text());
+    const catSame = a.q('.chip').textContent === catBefore;          // patient report never changes category on its own
+    a.click('[data-a="ci-review"]');
+    return review && urgentMsg && /Aisha K\..*Patient flag/.test(pinned) && card && catSame && /Reviewed by Dr Tan/.test(a.text());
+  }],
+  ['L20', 'Stopping denosumab is flagged as a rebound risk, in Arabic, shown to the clinician in English', 'Req 3, 6', async () => {
+    const a = await boot(); a.open('C-1036');                        // Mei Ling, denosumab prescribed
+    a.click('[data-tab="patient"]'); a.click('[data-lang="ar"]'); a.click('[data-a="ci-start"]');
+    const arabic = /خلال الشهر الماضي/.test(a.text());
+    a.ans(2); a.ans(1); a.click('[data-wnext]');                    // stopped; reason cost
+    a.ans(3); a.click('[data-wnext]');                              // no symptoms
+    a.ans(0); a.ans(1); a.ans(1); a.ans(0); a.click('[data-wnext]'); a.click('[data-a="ci-send"]');
+    a.click('[data-tab="case"]');
+    return arabic && /Reports stopping denosumab: rebound/.test(a.text()) && /answered in Arabic, shown in English/.test(a.text());
+  }],
+  ['L21', 'A seeded patient flag is pinned on the board at start', 'Req 2, 6', async () => {
+    const a = await boot();
+    const pinned = a.text().split('On track')[0];
+    return /Salma R\..*Patient flag/.test(pinned);
+  }],
+  ['L22', '"Every dose" check-in can be accepted as the adherence check at follow-up', 'Req 5', async () => {
+    const a = await boot(); a.open('C-1018');                        // Salma, follow-up stage, alendronate
+    a.click('[data-tab="patient"]'); a.click('[data-a="ci-start"]');
+    a.ans(0); a.ans(3); a.click('[data-wnext]'); a.ans(0); a.ans(1); a.ans(1); a.ans(0); a.click('[data-wnext]'); a.click('[data-a="ci-send"]');
+    const calm = /Sent\. Your care team/.test(a.text());
+    a.click('[data-tab="case"]'); a.click('[data-a="ci-adh"]');
+    return calm && a.q('[data-f="adh"]').checked && /Adherence check accepted from patient check-in/.test(a.text());
+  }],
+  ['L23', 'Check-in cannot start before the patient has acknowledged the result', 'Req 3', async () => {
+    const a = await boot(); a.open('C-1042'); a.click('[data-tab="patient"]');
+    return !a.q('[data-a="ci-start"]') && !!a.q('[data-tb="0"]');
   }]
 ];
 

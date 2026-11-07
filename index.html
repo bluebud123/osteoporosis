@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<title>SpineLoop</title>
+<title>OsteoLoop</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500&display=swap">
 <style>
@@ -125,6 +125,19 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
 .bar .fill{height:100%;background:var(--accent);border-radius:4px}
 .bar .num{font-family:var(--f-mono);text-align:right}
 .empty{font-size:13.5px;color:var(--muted)}
+/* patient check-in */
+.b-pt{color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
+.prog{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.wq{font-size:16.5px;font-weight:600;line-height:1.4}
+.tb button{font-size:15px;padding:11px 12px}
+textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px;width:100%;min-height:84px;resize:vertical}
+.pcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:8px;background:var(--app)}
+.rev{display:grid;gap:6px;font-size:13.5px}
+.rev div{display:grid;gap:1px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.rev .qq{color:var(--muted);font-size:12px}
+details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
+.flagline{font-size:13px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 /* intake */
 .fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px}
 .fgrid .full{grid-column:1/-1}
@@ -140,7 +153,7 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
 <div class="app">
   <header class="top">
     <div class="hrow">
-      <div><h1>SpineLoop</h1><div class="small muted">Bone-health screening to treatment, closed loop</div></div>
+      <div><h1>OsteoLoop</h1><div class="small muted">Osteoporosis: fragility-fracture screening to treatment, closed loop</div></div>
       <div class="clock"><span class="day" id="day">Day 0</span><button class="act" id="adv">+7 days</button><button class="act" id="reset" title="Restore the seeded demo cases">Reset</button></div>
     </div>
     <div class="notice">Prototype · fictional patients · synthetic data · draft rules for clinician sign-off</div>
@@ -150,6 +163,7 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
 </div>
 
 <script src="src/rules.js"></script>
+<script src="src/checkin.js"></script>
 <script>
 (function(){
 const $ = id => document.getElementById(id);
@@ -170,7 +184,7 @@ const DROPS = ['Patient declined after counselling','Fear of medication side eff
 const REJECTS = ['Out of insurance network','Wrong service','Incomplete referral'];
 
 /* ---------- clinical rules: shared module src/rules.js (same code the benchmark tests) ---------- */
-const R = window.SpineRules;
+const R = window.OsteoRules;
 const CATNAME = {vhigh:'Very high', high:'High', low:'Low', incomplete:'Not classified'};
 function toPatient(c){
   const r0=c.res||{};
@@ -183,7 +197,7 @@ function toPatient(c){
   return {age:c.age, sex:'F', menopause:'post', fractures:fx, cvEvent:k.cvEvent,
     t:r.t??null, mof:k.mof, hip:k.hip, egfr:r.egfr??null, ca:r.ca??null, vd:r.vd??null};
 }
-function category(c){ const r=R.category(toPatient(c)); return {key:r.key, name:CATNAME[r.key], why:r.fired.map(f=>f[1].toLowerCase()), fired:r.fired}; }
+function category(c){ const r=R.category(toPatient(c)); return {key:r.key, name:CATNAME[r.key], why:r.fired.map(f=>f[1]), fired:r.fired}; }
 function labBlocks(c){ if(!c.res) return []; return R.labFlags(toPatient(c)).flags.map(f=>[f[1], f[2]+'.']); }
 function treatments(c){ return R.treatments(toPatient(c)).map(t=>({id:t.id, name:t.name, kind:t.kind, block:t.block?'Blocked: '+t.block:null, why:t.kind==='first'?'First line':'Alternative'})); }
 
@@ -191,7 +205,7 @@ function treatments(c){ return R.treatments(toPatient(c)).map(t=>({id:t.id, name
 function mk(o){
   const st = STAGES.map(s=>({start:null,end:null,alerted:false,skip:false}));
   (o.hist||[]).forEach(([i,s,e])=>{ st[i].start=s; st[i].end=e; });
-  return Object.assign({stages:st, ack:null, tbFirst:null, lang:'en', referral:{status:'none', clinic:null, reason:null, history:[]}, thread:[], rx:null, closed:null, log:[], res:null, ordered:false, follow:{adh:false, btm:false}}, o);
+  return Object.assign({stages:st, ack:null, tbFirst:null, lang:'en', referral:{status:'none', clinic:null, reason:null, history:[]}, thread:[], checkins:[], rx:null, closed:null, log:[], res:null, ordered:false, follow:{adh:false, btm:false}}, o);
 }
 function seedCases(){ const A = [
   mk({id:'C-1042', name:'Mariam A.', age:64, owner:ME, lang:'ar', urgent:true,
@@ -229,6 +243,9 @@ function seedCases(){ const A = [
 ];
 A.forEach(c=>{ c.log.push({d:c.stages[0].start, text:'Screened; actionable result issued.'}); });
 A[3].thread=[{who:ME, d:-9, text:'71F, two vertebral fractures on prednisolone, T −3.2. Very high risk; asking for anabolic initiation.'},{who:'Al Noor FLS', d:-2, text:'Rejected: patient\'s plan is outside our network.'}];
+{ const C=window.OsteoCheckin, ans={med:1, why:[0], sym:[0], rfall:0, rfx:1, dental:1, cad:0};
+  A[4].checkins=[{d:-2, visit:'review', lang:'en', answers:ans, flags:C.flags('review',ans,{rx:'obp'}), reviewed:null}];
+  A[4].log.unshift({d:-2, text:'Patient check-in received (treatment review, English): 2 flags.'}); }
 return A; }
 let CASES = seedCases();
 
@@ -257,13 +274,17 @@ function closeCase(c,kind,text,by,reason){
 function sev(c){
   if(c.closed) return c.closed.kind==='treated'?'ok':'mute';
   if(!c.owner) return 'crit';
+  const pf=pflag(c); if(pf && pf[1]==='crit') return 'crit';
   const i=curIdx(c); if(i>=0 && stageState(c,i)==='late') return 'crit';
+  if(pf) return 'warn';
   if(c.referral.status==='rejected') return 'warn';
   return 'acc';
 }
+function pflag(c){ const k=c.checkins&&c.checkins[0]; if(!k||k.reviewed) return null; return k.flags.find(f=>f[1]==='crit')||k.flags.find(f=>f[1]==='warn')||null; }
 function statusText(c){
   if(c.closed) return c.closed.kind==='treated'?'Closed · treated':'Closed · '+(c.closed.reason||'no treatment');
   if(!c.owner) return 'Unassigned';
+  const pf=pflag(c); if(pf) return 'Patient flag · '+pf[2].split(':')[0];
   const i=curIdx(c); const st=stageState(c,i);
   if(c.referral.status==='rejected' && i===3) return 'Referral rejected';
   return (st==='late'?'Overdue · ':'')+STAGES[i].t;
@@ -440,27 +461,83 @@ function vCase(){
     <dl class="kv"><dt>Why</dt><dd>${esc(cat.why.join('; '))} <span class="src">MY CPG 2022</span></dd><dt>History</dt><dd>${esc(c.clin.note)}</dd><dt>FRAX</dt><dd class="mono">${c.clin.mof==null&&c.clin.hip==null?'Not run':`major ${c.clin.mof??'–'}% · hip ${c.clin.hip??'–'}%`} <span class="badge b-rec">Recorded</span></dd>${res}</dl>${R.scopeWarning(toPatient(c))?callout('flag',esc(R.scopeWarning(toPatient(c))),'MY CPG 2022'):''}${closed}</div>
     ${assign}
     <div class="card"><div class="sec-label">Loop</div><ol class="timeline">${tl}</ol></div>
+    ${checkinCard(c)}
     ${thread}
     <div class="card"><div class="sec-label">Audit log</div><ul class="log">${c.log.map(e=>`<li><span class="d">Day ${e.d}</span><span class="${e.cls||''}">${esc(e.text)}</span></li>`).join('')}</ul></div>`;
 }
+const CI = window.OsteoCheckin;
+const SRCN = {MYCPG:'MY CPG 2022', NICE:'NICE NG259', FRAX:'FRAX input', LOCAL:'LOCAL', PATIENT:'Patient'};
+function ansText(q,v,L){
+  const T=q[L]||q.en;
+  if(v===undefined||v===null||v==='') return L==='ar'?'تم التخطي':'Skipped';
+  if(q.type==='single') return T.opts[v];
+  if(q.type==='multi') return v.map(i=>T.opts[i]).join(', ')||(L==='ar'?'تم التخطي':'Skipped');
+  if(q.type==='numbers') return q.fields.map(([k,u],j)=>v[k]?`${T.labels[j]} ${v[k]} ${u}`:'').filter(Boolean).join(', ')||(L==='ar'?'تم التخطي':'Skipped');
+  return String(v);
+}
+function checkinCard(c){
+  const k=c.checkins[0]; if(!k) return '';
+  const qs=CI.questions(k.visit,k.answers);
+  const fl=k.flags.map(f=>f[1]==='info'?`<div class="flagline"><span>${esc(f[2])}</span><span class="src">${SRCN[f[3]]||f[3]}</span></div>`:callout(f[1]==='crit'?'block':'flag',esc(f[2]),SRCN[f[3]]||f[3])).join('');
+  const accept = !k.reviewed && CI.adherent(k.answers) && curIdx(c)===5 && !c.follow.adh ? `<button class="act" data-a="ci-adh">Accept as 3-month adherence check</button>` : '';
+  return `<div class="card"><div class="hrow"><div class="sec-label">Patient check-in · Day ${k.d} · ${k.visit==='first'?'before first clinic':'treatment review'}</div><span class="badge b-pt">Patient-reported</span></div>
+    ${fl||'<span class="small muted">No flags. Nothing for the clinician to act on.</span>'}
+    <details class="ans"><summary>All answers (${qs.length}; answered in ${k.lang==='ar'?'Arabic':'English'}, shown in English)</summary><div class="rev" style="margin-top:6px">${qs.map(q=>`<div><span class="qq">${esc(q.en.q)}</span><span>${esc(ansText(q,k.answers[q.id],'en'))}</span></div>`).join('')}</div></details>
+    <span class="small muted">Patient-reported answers never change the risk category on their own. Confirm with the patient before acting.</span>
+    ${k.reviewed?`<span class="small">Reviewed by ${esc(k.reviewed.by)}, day ${k.reviewed.d}.</span>`:`<div class="actions"><button class="act primary" data-a="ci-review">Mark reviewed</button>${accept}</div>`}
+    ${c.checkins.length>1?`<span class="small muted">${c.checkins.length-1} earlier check-in${c.checkins.length>2?'s':''} in the audit log.</span>`:''}</div>`;
+}
 const PT = {
-  en:{hello:'Message from your clinic', body:'Your screening shows a high chance of weak bones (osteoporosis). This is common and can be treated, and treatment lowers the chance of another fracture.', next:'Next step: a bone density scan and blood tests at your clinic. Your care team will contact you within 7 days.', q:'Quick check: what is your next step?', opts:['A bone density scan and blood tests','An operation','Nothing is needed'], btn:'I understand my next step', ok:'Thank you. Your care team can see that you understood.', bad:'A nurse will call you to explain. You can also call your clinic.', status:'Your next step', none:'No new messages.'},
-  ar:{hello:'رسالة من عيادتك', body:'تُظهر نتيجة الفحص أنك أكثر عرضة لضعف العظام (هشاشة العظام). هذا أمر شائع ويمكن علاجه، والعلاج يقلل احتمال حدوث كسر آخر.', next:'الخطوة التالية: فحص كثافة العظام وتحاليل دم في عيادتك. سيتواصل معك فريق الرعاية خلال 7 أيام.', q:'سؤال سريع: ما هي خطوتك التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لك. يستطيع فريق الرعاية أن يرى أنك فهمت.', bad:'ستتصل بك ممرضة لتشرح لك. يمكنك أيضًا الاتصال بعيادتك.', status:'خطوتك التالية', none:'لا توجد رسائل جديدة.'}
+  en:{hello:'Message from your clinic', body:'Your screening shows a high chance of weak bones (osteoporosis). This is common and can be treated, and treatment lowers the chance of another fracture.', q:'Quick check: what is your next step?', opts:['A bone density scan and blood tests','An operation','Nothing is needed'], btn:'I understand my next step', ok:'Thank you. Your care team can see that you understood.', bad:'A nurse will call you to explain. You can also call your clinic.', status:'Your next step', none:'No new messages.',
+    next:{1:'A bone density scan and blood tests at your clinic. Your care team will contact you within 7 days.',2:'Have your bone density scan and blood tests. Your clinic has booked them.',3:'Your doctor is choosing the right treatment with you, using your scan and blood results.',4:'Collect your bone medicine from the pharmacy and start it as explained.',5:'Keep taking your medicine. Your care team will review you at 3 and 6 months.',6:'Your review is nearly complete. Your next bone density scan will be booked.',closed:'Your care plan for now is complete. Keep up your calcium, vitamin D and exercise.'},
+    ciT:'Before your clinic visit', ciD:'About 2 minutes. Your answers go to your care team before you arrive, so the visit is about you.', ciB:'Start check-in', ciAgain:'Fill in again', ciLast:'Last sent: day ', of:'of', back:'Back', next2:'Next', skip:'Skip', cancel:'Cancel', revT:'Check your answers', send:'Send to my care team', edit:'Change',
+    sent:'Sent. Your care team will see your answers before your visit.', urgent:'Some of your answers mean your care team should look at them soon. They will contact you within 2 working days. If you have severe pain, cannot walk, or think you have broken a bone, go to the emergency department now.', viewing:'Viewing as'},
+  ar:{hello:'رسالة من عيادتك', body:'تُظهر نتيجة الفحص أنك أكثر عرضة لضعف العظام (هشاشة العظام). هذا أمر شائع ويمكن علاجه، والعلاج يقلل احتمال حدوث كسر آخر.', q:'سؤال سريع: ما هي خطوتك التالية؟', opts:['فحص كثافة العظام وتحاليل دم','عملية جراحية','لا شيء مطلوب'], btn:'فهمتُ خطوتي التالية', ok:'شكرًا لك. يستطيع فريق الرعاية أن يرى أنك فهمت.', bad:'ستتصل بك ممرضة لتشرح لك. يمكنك أيضًا الاتصال بعيادتك.', status:'خطوتك التالية', none:'لا توجد رسائل جديدة.',
+    next:{1:'فحص كثافة العظام وتحاليل دم في عيادتك. سيتواصل معك فريق الرعاية خلال 7 أيام.',2:'أجري فحص كثافة العظام وتحاليل الدم. لقد حجزتها عيادتك.',3:'يختار طبيبك معك العلاج المناسب بناءً على نتائج الفحص والتحاليل.',4:'استلمي دواء العظام من الصيدلية وابدئي به كما شُرح لك.',5:'استمري في تناول دوائك. سيراجعك فريق الرعاية بعد 3 أشهر و6 أشهر.',6:'مراجعتك على وشك الاكتمال. سيتم حجز فحص كثافة العظام القادم.',closed:'اكتملت خطة رعايتك حاليًا. استمري في تناول الكالسيوم وفيتامين د وممارسة الرياضة.'},
+    ciT:'قبل زيارتك للعيادة', ciD:'حوالي دقيقتين. تصل إجاباتك إلى فريق الرعاية قبل وصولك، لتكون الزيارة مخصصة لك.', ciB:'ابدئي تسجيل الحضور', ciAgain:'املئي مرة أخرى', ciLast:'آخر إرسال: اليوم ', of:'من', back:'رجوع', next2:'التالي', skip:'تخطي', cancel:'إلغاء', revT:'راجعي إجاباتك', send:'أرسلي إلى فريق الرعاية', edit:'تغيير',
+    sent:'تم الإرسال. سيرى فريق الرعاية إجاباتك قبل زيارتك.', urgent:'بعض إجاباتك تعني أن فريق الرعاية يجب أن يطّلع عليها قريبًا. سيتواصلون معك خلال يومي عمل. إذا كان لديك ألم شديد، أو لا تستطيعين المشي، أو تظنين أن عظمة قد كُسرت، فتوجهي إلى قسم الطوارئ الآن.', viewing:'العرض باسم'}
 };
+let wiz=null, wizDone=null;
+function wizard(c,L,T,rtl){
+  const qs=CI.questions(wiz.visit,wiz.a), n=qs.length;
+  if(wiz.step>=n){
+    return `<div class="wq" dir="${rtl}">${T.revT}</div><div class="rev" dir="${rtl}">${qs.map((q,j)=>`<div><span class="qq">${esc((q[L]||q.en).q)}</span><span>${esc(ansText(q,wiz.a[q.id],L))} <button class="pill" data-wgo="${j}" style="font-size:11px;padding:1px 8px">${T.edit}</button></span></div>`).join('')}</div>
+      <div class="actions" dir="${rtl}"><button class="act primary" data-a="ci-send">${T.send}</button><button class="act" data-wgo="${n-1}">${T.back}</button></div>`;
+  }
+  const q=qs[wiz.step], Q=q[L]||q.en, v=wiz.a[q.id];
+  let body='';
+  if(q.type==='single') body=`<div class="tb" dir="${rtl}">${Q.opts.map((o,i)=>`<button data-ans="${i}" aria-pressed="${v===i}">${esc(o)}</button>`).join('')}</div>`;
+  if(q.type==='multi') body=`<div class="tb" dir="${rtl}">${Q.opts.map((o,i)=>`<button data-ans="${i}" aria-pressed="${Array.isArray(v)&&v.includes(i)}">${esc(o)}</button>`).join('')}</div>`;
+  if(q.type==='numbers') body=`<div class="fgrid" dir="${rtl}">${q.fields.map(([k,u],j)=>`<div class="field"><label class="small muted" for="wf-${k}">${Q.labels[j]} (${u})</label><input type="text" inputmode="decimal" id="wf-${k}" data-wf="${k}" value="${esc((v||{})[k]||'')}"></div>`).join('')}</div>`;
+  if(q.type==='text') body=`<textarea id="wf-text" data-wf="text" dir="${rtl}" placeholder="${esc(Q.ph)}">${esc(v||'')}</textarea>`;
+  const answered = q.type==='multi' ? Array.isArray(v)&&v.length>0 : q.type==='single' ? v!==undefined : true;
+  const nextBtn = q.type==='single' ? '' : `<button class="act primary" data-wnext="1" ${answered?'':'disabled'}>${q.optional&&!v?T.skip:T.next2}</button>`;
+  return `<div class="small muted" dir="${rtl}">${T.ciT} · ${wiz.step+1} ${T.of} ${n}</div><div class="prog" dir="${rtl}"><i style="width:${Math.round(100*(wiz.step+1)/(n+1))}%"></i></div>
+    <div class="wq" dir="${rtl}">${esc(Q.q)}</div>${body}
+    <div class="actions" dir="${rtl}">${nextBtn}${wiz.step>0?`<button class="act" data-wgo="${wiz.step-1}">${T.back}</button>`:''}<button class="act" data-a="ci-cancel">${T.cancel}</button></div>`;
+}
 function vPatient(){
   const c=CASES.find(x=>x.id===sel); const L=c?c.lang:'en'; const T=PT[L]; const rtl=L==='ar'?'rtl':'ltr';
   const langs=`<div class="lang"><button class="pill" data-lang="en" aria-pressed="${L==='en'}">English</button><button class="pill" data-lang="ar" aria-pressed="${L==='ar'}" style="font-family:var(--f-ar)">العربية</button></div>`;
+  const picker=`<label class="small muted" for="pt-sel">Demo: view the phone of</label><select id="pt-sel">${CASES.map(x=>`<option value="${x.id}" ${x.id===sel?'selected':''}>${esc(x.name)} · ${x.id}</option>`).join('')}</select>`;
   let inner='';
   if(!c) inner=`<div class="pmsg muted">${T.none}</div>`;
+  else if(wiz && wiz.id===c.id) inner=langs+wizard(c,L,T,rtl);
   else {
-    const ci=curIdx(c);
-    inner=`<div class="small muted" dir="${rtl}">${T.hello}</div><div class="pmsg" dir="${rtl}">${T.body} ${T.next}</div>`;
+    const ci=curIdx(c), last=c.checkins[0];
+    inner=langs+`<div class="small muted" dir="${rtl}">${T.hello}</div>`;
+    if(ci===1 && c.ack!==true) inner+=`<div class="pmsg" dir="${rtl}">${T.body} ${T.next[1]}</div>`;
     if(ci===1 && c.ack===null) inner+=`<div class="small" dir="${rtl}" style="font-weight:600">${T.q}</div><div class="tb" dir="${rtl}">${T.opts.map((o,i)=>`<button data-tb="${i}" aria-pressed="${tb===i}">${o}</button>`).join('')}</div><button class="act primary" data-a="ack" ${tb===null?'disabled':''} ${L==='ar'?'style="font-family:var(--f-ar)"':''}>${T.btn}</button>`;
     else if(c.ack===false && ci===1) inner+=`<div class="pmsg" dir="${rtl}" style="color:var(--warn)">${T.bad}</div>`;
-    else if(c.ack) inner+=`<div class="pmsg" dir="${rtl}" style="color:var(--ok)">${T.ok}</div>`;
+    else {
+      if(c.ack && ci===2 && c.stages[1].end===DAY) inner+=`<div class="pmsg" dir="${rtl}" style="color:var(--ok)">${T.ok}</div>`;
+      inner+=`<div class="pcard" dir="${rtl}"><div class="sec-label">${T.status}</div><div class="pmsg">${c.closed?T.next.closed:T.next[ci]||''}</div></div>`;
+    }
+    if(wizDone && wizDone.id===c.id) inner+=`<div class="callout ${wizDone.crit?'block':'ok'}" dir="${rtl}">${wizDone.crit?T.urgent:T.sent}</div>`;
+    if(!c.closed && !(ci===1 && c.ack!==true)) inner+=`<div class="pcard" dir="${rtl}"><div style="font-weight:600">${T.ciT}</div><div class="small muted">${T.ciD}</div>${last?`<div class="small muted">${T.ciLast}${last.d}</div>`:''}<div class="actions"><button class="act primary" data-a="ci-start">${last?T.ciAgain:T.ciB}</button></div></div>`;
   }
-  return `<div class="card" style="gap:4px"><h2>Patient's phone</h2><span class="small muted">${c?esc(c.name)+' · '+c.id:''} · reviewed message templates. Arabic needs native-speaker clinical review.</span></div>
-    <div class="phone"><div class="screen">${langs}${inner}</div></div>`;
+  return `<div class="card" style="gap:6px"><h2>Patient's phone</h2><span class="small muted">What the patient sees and fills in before every clinic visit. Arabic needs native-speaker clinical review.</span>${picker}</div>
+    <div class="phone"><div class="screen">${inner}</div></div>`;
 }
 function vSpecialist(){
   const inbox=CASES.filter(c=>['sent','rerouted'].includes(c.referral.status)&&!c.closed);
@@ -489,6 +566,9 @@ function vHealth(){
      <div class="metric"><div class="v" style="color:${unresolved?'var(--crit)':'inherit'}">${unresolved}</div><div class="k">Unresolved actionable results</div><div class="n">overdue or unassigned</div></div>
      ${m.map(([k,a])=>`<div class="metric"><div class="v">${a.length?median(a):'–'}</div><div class="k">${k} (median)</div><div class="n">n = ${a.length}</div></div>`).join('')}
    </div>
+   <div class="card"><div class="sec-label">Patient check-ins</div><div class="mgrid">
+     <div class="metric"><div class="v">${CASES.reduce((n,c)=>n+c.checkins.length,0)}</div><div class="k">Check-ins received</div></div>
+     <div class="metric"><div class="v" style="color:${CASES.some(c=>!c.closed&&pflag(c))?'var(--warn)':'inherit'}">${CASES.filter(c=>!c.closed&&pflag(c)).length}</div><div class="k">Cases with patient flags awaiting review</div></div></div></div>
    <div class="card"><div class="sec-label">Drop-off reasons</div>${bars(drops)}</div>
    <div class="card"><div class="sec-label">Referral rejections</div>${bars(rej)}</div>
    <div class="card"><div class="sec-label">Teach-back passed first time, by language</div>${tbL.map(([l,p,n])=>`<div class="bar"><span>${l}</span><span class="track"><span class="fill" style="width:${p||0}%;display:block"></span></span><span class="num">${p===null?'–':p+'%'}</span></div><div class="n small muted">n = ${n}</div>`).join('')}</div>`;
@@ -504,10 +584,19 @@ document.addEventListener('click', e=>{
   const b=e.target.closest('button'); if(!b) return;
   if(b.id==='adv'){ tick(7); return; }
   if(b.dataset.tab){ tab=b.dataset.tab; msg=null; render(); window.scrollTo(0,0); return; }
-  if(b.dataset.open){ sel=b.dataset.open; tab='case'; tb=null; msg=null; dropFor=null; render(); window.scrollTo(0,0); return; }
+  if(b.dataset.open){ sel=b.dataset.open; tab='case'; tb=null; wiz=null; wizDone=null; msg=null; dropFor=null; render(); window.scrollTo(0,0); return; }
   if(b.dataset.lang){ const c=CASES.find(x=>x.id===sel); if(c) c.lang=b.dataset.lang; render(); return; }
   if(b.dataset.tb!==undefined){ tb=+b.dataset.tb; render(); return; }
-  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
+  if(wiz && b.dataset.ans!==undefined){
+    const q=CI.questions(wiz.visit,wiz.a)[wiz.step], i=+b.dataset.ans;
+    if(q.type==='single'){ wiz.a[q.id]=i; wiz.step++; }
+    else { const none=q.id==='sym'?3:-1; let v=Array.isArray(wiz.a[q.id])?wiz.a[q.id].slice():[];
+      if(i===none) v=v.includes(i)?[]:[i]; else { v=v.filter(x=>x!==none); v=v.includes(i)?v.filter(x=>x!==i):v.concat(i).sort(); }
+      wiz.a[q.id]=v; }
+    render(); return; }
+  if(wiz && b.dataset.wnext){ wiz.step++; render(); return; }
+  if(wiz && b.dataset.wgo!==undefined){ wiz.step=+b.dataset.wgo; render(); return; }
+  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
   const a=b.dataset.a; if(!a) return;
   if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
   if(a==='intake-clear'){ IN=Object.assign({}, BLANK_IN); inDone=null; render(); return; }
@@ -519,6 +608,16 @@ document.addEventListener('click', e=>{
     case 'topatient': tab='patient'; break;
     case 'tospec': tab='specialist'; break;
     case 'sms': log(c,'Result resent by SMS.'); break;
+    case 'ci-start': wiz={id:c.id, visit:CI.visitFor(c), step:0, a:{}}; wizDone=null; break;
+    case 'ci-cancel': wiz=null; break;
+    case 'ci-send': {
+      const qs=CI.questions(wiz.visit,wiz.a), a={}; qs.forEach(q=>{ if(wiz.a[q.id]!==undefined) a[q.id]=wiz.a[q.id]; });
+      const fl=CI.flags(wiz.visit,a,{rx:c.rx&&c.rx.id}), crit=fl.some(f=>f[1]==='crit');
+      c.checkins.unshift({d:DAY, visit:wiz.visit, lang:c.lang, answers:a, flags:fl, reviewed:null});
+      log(c,`Patient check-in received (${wiz.visit==='first'?'before first clinic':'treatment review'}, ${c.lang==='ar'?'Arabic':'English'}): ${fl.length} flag${fl.length===1?'':'s'}${crit?', urgent':''}.`, crit?'alert':'');
+      wizDone={id:c.id, crit}; wiz=null; break; }
+    case 'ci-review': c.checkins[0].reviewed={by:ME, d:DAY}; log(c,`Patient check-in reviewed by ${ME}.`); break;
+    case 'ci-adh': c.follow.adh=true; c.checkins[0].reviewed={by:ME, d:DAY}; log(c,`Adherence check accepted from patient check-in (every dose) by ${ME}.`); break;
     case 'ack':
       if(!c.tbFirst) c.tbFirst={lang:c.lang, pass:tb===0};
       if(tb===0){ c.ack=true; complete(c,1,`Patient acknowledged in ${c.lang==='ar'?'Arabic':'English'}; teach-back correct.`); }
@@ -553,6 +652,7 @@ document.addEventListener('click', e=>{
 });
 function inVal(t){ return t.type==='checkbox'?t.checked:t.value; }
 document.addEventListener('change', e=>{
+  if(e.target.id==='pt-sel'){ sel=e.target.value; wiz=null; wizDone=null; tb=null; render(); return; }
   if(e.target.dataset.in){ IN[e.target.dataset.in]=inVal(e.target); if(e.target.tagName==='SELECT'||e.target.type==='checkbox'){ render(); } return; }
   const c=CASES.find(x=>x.id===sel); if(!c) return;
   if(e.target.name && e.target.name.startsWith('rx-')){ rxPick[c.id]=e.target.value; render(); }
@@ -560,6 +660,9 @@ document.addEventListener('change', e=>{
 });
 document.addEventListener('input', e=>{
   if(e.target.dataset.in && e.target.type==='text'){ IN[e.target.dataset.in]=e.target.value; const r=$('inres'); if(r) r.innerHTML=intakeResult(); return; }
+  if(wiz && e.target.dataset.wf){ const q=CI.questions(wiz.visit,wiz.a)[wiz.step];
+    if(q.type==='text') wiz.a[q.id]=e.target.value; else { wiz.a[q.id]=Object.assign({}, wiz.a[q.id]||{}, {[e.target.dataset.wf]:e.target.value}); }
+    const nb=document.querySelector('[data-wnext]'); if(nb) nb.textContent=(q.optional && !String(e.target.value).trim())?PT[(CASES.find(x=>x.id===sel)||{}).lang||'en'].skip:PT[(CASES.find(x=>x.id===sel)||{}).lang||'en'].next2; return; }
   if(e.target.dataset.r){ (resDraft[sel]=resDraft[sel]||{})[e.target.dataset.r]=e.target.value; return; }
   if(e.target.id==='sg'){ signer[sel]=e.target.value; const b=document.querySelector('[data-a="sign"]'); if(b) b.disabled=!(rxPick[sel] && e.target.value.trim().length>2); }
 });
