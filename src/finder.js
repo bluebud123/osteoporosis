@@ -19,8 +19,8 @@
   const FX_WEDGE = /\b(wedging|grade [123] deformity|deformity)\b/i;
   const FX_HEIGHT = /\b(loss of height|height loss|reduced height|loss of (anterior )?height)\b/i;
   const NEG_PRE = /\b(no|not|without|negative for|absence of|free of)\b/i;
-  const NEG_POST = /\b(is not (seen|identified)|not (seen|identified)|has been excluded|is excluded|ruled out)\b/i;
-  const UNCERTAIN = /(\bpossible\b|\bpossibly\b|\bquery\b|\?|cannot be excluded|cannot be confirmed|\bmay\b|suspicious for|\bsuggest|\buncertain\b|\bequivocal\b|\bsubtle\b|\bslight\b|correlate|\bearly compression\b|no definite)/i;
+  const NEG_POST = /\b(rather than (a |an )?(acute |new |recent )?(fractures?|collapse)|is not (seen|identified)|not (seen|identified)|has been excluded|is excluded|ruled out)\b/i;
+  const UNCERTAIN = /(\bpossible\b|\bpossibly\b|\blikely\b|\bprobabl[ey]\b|\bquery\b|\?|cannot be excluded|cannot be confirmed|\bmay\b|suspicious for|\bsuggest|\buncertain\b|\bequivocal\b|\bsubtle\b|\bslight\b|correlate|\bearly compression\b|no definite)/i;
   const TRAUMA = /(motor vehicle|road traffic|\brta\b|\bmva\b|motorcycle|pedestrian|high[- ]speed|high[- ]energy|fall from (a )?height|fall from (a )?(ladder|scaffold\w*|roof|stairs? of)|fell from (a )?(ladder|roof|height))/i;
   const PATHO = /(patholog\w*|metasta\w*|\blytic\b|myeloma|tumou?r|malignan\w*)/i;
   const OSTEOPENIA = /\b(osteopeni\w*|osteoporo\w*|reduction in bone density|reduced bone density)\b/i;

@@ -5,8 +5,8 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 ## Development set (100 reports; written alongside the baseline, so the baseline is tuned to it)
 
 - reports 100
-- exact 99%
-- act sensitivity 100% (48/48)
+- exact 98%
+- act sensitivity 98% (47/48)
 - act PPV 98%
 - fractures surfaced to a human 48/48
 - silently dismissed 0
@@ -16,7 +16,7 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 
 | label \ finder | act | review | no |
 | --- | --- | --- | --- |
-| act | 48 | 0 | 0 |
+| act | 47 | 1 | 0 |
 | review | 1 | 19 | 0 |
 | no | 0 | 0 | 32 |
 
@@ -24,6 +24,7 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 
 | ID | Label | Finder | Reason | Report |
 | --- | --- | --- | --- | --- |
+| R009 | act | review | Hedged language | No pulmonary embolism. Superior endplate fracture of T9 with mild height loss, likely osteoporotic. |
 | R035 | review | act | Fragility fracture documented (humerus) | Moderate medial compartment osteoarthritis. Incidental healed fracture of the proximal humerus noted on prior shoulder film referenced in history. |
 
 ## Stress set (15 reports; unfamiliar wording and clinical shorthand)
@@ -31,7 +32,7 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 - reports 15
 - exact 40%
 - act sensitivity 33% (4/12)
-- act PPV 80%
+- act PPV 100%
 - fractures surfaced to a human 8/12
 - silently dismissed 4
 - unverifiable outputs 0
@@ -41,7 +42,7 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 | label \ finder | act | review | no |
 | --- | --- | --- | --- |
 | act | 4 | 4 | 4 |
-| review | 1 | 0 | 0 |
+| review | 0 | 0 | 1 |
 | no | 0 | 0 | 2 |
 
 ### Disagreements
@@ -56,5 +57,5 @@ _Labels are drafts pending clinical lead sign-off. All reports are synthetic. A 
 | S07 | act | no | No fracture documented | Bilateral pubic rami #s. |
 | S08 | act | no | No fracture documented | Interval progression of L1 compression, now 50%. |
 | S10 | act | review | Fracture site unclear | Left hip hemiarthroplasty in situ. History of NOF fracture 2023. |
-| S13 | review | act | Fragility fracture documented (vert) | Wedge-shaped T11, likely longstanding Scheuermann type change rather than fracture. |
+| S13 | review | no | No fracture documented | Wedge-shaped T11, likely longstanding Scheuermann type change rather than fracture. |
 
