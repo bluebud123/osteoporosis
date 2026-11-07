@@ -71,7 +71,7 @@ The answers become clinician flags. Urgent flags pin the case on the board until
 - possible osteonecrosis of the jaw or atypical femoral fracture;
 - denosumab stopped, which carries a rebound fracture risk.
 
-An answer of "every dose" can be accepted as the 3-month adherence check. Patient-reported answers never change the risk category on their own; a clinician confirms first. The Arabic is written in the feminine form, because the CPG population is postmenopausal women.
+An answer of "every dose" can be accepted as the 3-month adherence check. Patient-reported answers never change the risk category on their own; a clinician confirms first. The wording is gender-neutral in English, Arabic and Malay; the Arabic and Malay need native clinical review.
 
 ## Clinical rules and sources
 
@@ -88,18 +88,23 @@ Every value on screen carries a provenance badge: **Recorded**, **Calculated** (
 npm install && npm run bench
 ```
 
+Every number below, with the first-run and tuned finder results side by side, is in [`docs/numbers.md`](docs/numbers.md). That file is the single source of truth.
+
 | Measure | Result |
 | --- | --- |
-| Clinical vignettes (57 cases, 102 checks) | 57/57 pass |
-| Very-high-risk recall | 13/13 |
+| Clinical vignettes (rules engine) | 91/91 cases, 268/268 checks |
+| Very-high-risk recall | 27/27 |
 | False reassurance (at-risk patient labelled "low") | 0 |
-| Guideline-blocked drug offered | 0 |
-| Patient check-in flags (27 answer sets) | 27/27 pass |
-| Case finder, keyword baseline: development set (100 reports) | 99% exact, 48/48 fractures caught, 0 silently dismissed |
-| Case finder, keyword baseline: stress set (15 reports, clinical shorthand) | 33% exact, 3/12 caught, **6 silently dismissed** |
-| Case finder verifier: adversarial checks (negated, non-fracture, pathological and not-in-report quotes rejected; real fracture quotes accepted) | 6/6 pass |
-| Loop guarantees (35 headless scenarios on the real app) | 35/35 pass |
-| FHIR R4 export of a case (`bench/run-fhir.js`): structure, references, value sets, synthetic tags, no real-looking identifiers; not the official HL7 validator | 58/58 pass |
+| Guideline-blocked drug offered, or signable while blocked | 0 |
+| Patient check-in (answer sets and checks) | 83/83 |
+| Case finder, development set (100 reports, tuned to it) | 98% exact, 48/48 surfaced, 0 silently dismissed |
+| Case finder, stress set (15 reports, shorthand), **first run** | 33% exact, 3/12 caught, **6 silently dismissed**; 87% and 0 after fixes (tuned, not blind) |
+| Case finder, clinician red-team probes (41 reports), **first run** | 49% exact, **12 of 20 fractures silently dismissed**; 98% and 0 after fixes (tuned, not blind) |
+| Verifier adversarial checks | 28/28 |
+| Loop guarantees (headless scenarios on the real app) | 68/68 |
+| Import routes and site profiles | 315/315 |
+| Datasheet referential integrity | 67/67 |
+| FHIR R4 export (structure and references; not the official HL7 validator) | 60/60 |
 
 On its first run the benchmark found a real false-reassurance bug, which is now fixed: a patient with high FRAX but no DXA was being labelled "low". Details, method and limits are in [`bench/README.md`](bench/README.md). The expected answers are drafts until the clinical lead signs them off.
 

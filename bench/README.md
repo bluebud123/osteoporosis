@@ -4,11 +4,11 @@ Five suites, all run with `npm run bench` (needs Node 18+ and `npm install` once
 
 | Suite | What it tests | Latest result |
 | --- | --- | --- |
-| `run-rules.js` | 57 synthetic vignettes against the clinical rules in `src/rules.js` | 57/57 cases, 102/102 checks |
-| `run-checkin.js` | 27 patient check-in answer sets against the flag rules in `src/checkin.js` | 27/27 |
-| `run-finder.js` | Case finder against 100 development reports and 15 stress reports (clinical shorthand), hand-labelled act, review or no; plus 6 adversarial checks on `verify()` | Baseline: dev 99% exact, 0 dismissed; stress 33% exact, 6 dismissed; verifier adversarial 6/6 |
+| `run-rules.js` | 91 synthetic vignettes against the clinical rules in `src/rules.js` (34 added after the clinician red team) | 91/91 cases, 268/268 checks |
+| `run-checkin.js` | patient check-in answer sets and checks against the flag rules in `src/checkin.js` | 83/83 |
+| `run-finder.js` | Case finder against 100 development reports and 15 stress reports (clinical shorthand), hand-labelled act, review or no; plus the clinician red-team probe set (41 reports) and 28 adversarial checks on `verify()` | First run: stress 33% exact, 6 dismissed; red-team probes 49%, 12 dismissed. After fixes (tuned to those sets): stress 87%, probes 98%, 0 dismissed. See `docs/numbers.md`; verifier adversarial 6/6 |
 | `run-readers.js` | Reader adapters (keyword, claude-sample, openai-compatible, mock) through one verifier gate (`readVerified` in `src/readers.js`); `deidentify()` cases and known limits; 15 Arabic and 12 real-format reports (reported, not gated) | 48/48 unit checks. Arabic 14/15 exact, 1 silently dismissed. Real-format 8/12 exact, 1 silently dismissed |
-| `run-loop.js` | 35 scenarios that drive the real app headless and check the loop's guarantees: intake, patient check-in, case finder (fracture age, pharmacy and palliative exclusions), vertebral-fracture SPEP, denosumab schedule, long-term follow-up on closure | 35/35 |
+| `run-loop.js` | 68 scenarios that drive the real app headless and check the loop's guarantees: intake, patient check-in, case finder (fracture age, pharmacy and palliative exclusions), vertebral-fracture SPEP, denosumab schedule, long-term follow-up on closure | 35/35 |
 
 Full results are in `results/rules.md`, `results/checkin.md`, `results/finder.md`, `results/readers.md`, `results/arabic.md`, `results/real-format.md` and `results/loop.md`.
 

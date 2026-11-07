@@ -147,10 +147,9 @@ const reportById = Object.fromEntries(reports.map(r => [r.report_id, r]));
 
 /* Patient mapping, same as index.html toPatient() (c.pt is never set in the seeds) */
 function toPatient(s) {
-  const k = s.clin, fx = [];
-  if (k.fxMonths !== null) fx.push({ site: k.hipVert ? 'hip' : 'wrist', months: k.fxMonths, onGc: k.fxOnGc });
-  else if (k.hipVert) fx.push({ site: 'vert', months: 60, onGc: k.fxOnGc });
-  if (k.multiFx) fx.push({ site: 'vert', months: k.fxMonths !== null ? k.fxMonths : 60, onGc: k.fxOnGc });
+  const k = s.clin, fx = [], st = k.sites || [];   // same as index.html clinFractures(): per-fracture site, unknown date stays null
+  if (k.fxMonths !== null || k.hipVert) fx.push({ site: st[0] || null, months: k.fxMonths ?? null, onGc: k.fxOnGc });
+  if (k.multiFx) fx.push({ site: st[1] || null, months: k.fxMonths ?? null, onGc: k.fxOnGc });
   const r = s.res || {};
   return { age: s.age, sex: 'F', menopause: 'post', fractures: fx, cvEvent: k.cvEvent,
     t: r.t ?? null, mof: k.mof, hip: k.hip, egfr: r.egfr ?? null, ca: r.ca ?? null, vd: r.vd ?? null, spep: null };

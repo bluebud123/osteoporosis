@@ -36,7 +36,7 @@ The project is static HTML with no build step, so it hosts free on GitHub Pages 
 | `bench/reports.js`, `bench/reports-stress.js` | Labelled synthetic reports (dev 100, stress 15), loaded by both Node and the page |
 | `src/checkin.js` | Patient check-in (`window.OsteoCheckin`). Question sets `first` and `review` in English and Arabic, plus `flags()` |
 | `prototypes/assessment-mobile.html` | Older standalone assessment flow. It has its own inline copy of the rules, and the I2 fix was applied there too |
-| `bench/` | `run-rules.js` (57 vignettes), `run-checkin.js` (27 answer sets), `run-finder.js` (115 reports; `--ai` with `ANTHROPIC_API_KEY`), `run-loop.js` (35 jsdom scenarios driving the real `index.html`) |
+| `bench/` | `run-rules.js` (91 vignettes), `run-checkin.js` (83 checks), `run-finder.js` (115 reports; `--ai` with `ANTHROPIC_API_KEY`), `run-loop.js` (68 jsdom scenarios driving the real `index.html`) |
 
 ## Commands
 
@@ -84,7 +84,7 @@ Done:
 Open items for the clinical lead:
 - Sign off the LOCAL rules added in this round: the SPEP treatment block for vertebral fractures, the denosumab 182-day interval with 14- and 28-day clocks, the fracture-age rule, and yearly follow-up after closure.
 - Sign off the expected answers in `bench/results/rules.md` and `bench/results/checkin.md`, and the `LOCAL` drug-safety flags (osteonecrosis of the jaw, atypical femoral fracture, denosumab rebound, GI side effects on oral bisphosphonates).
-- Native-speaker clinical review of the Arabic. It uses the feminine form, because the CPG population is postmenopausal women.
+- Native-speaker clinical review of the Arabic. It is gender-neutral (plural or first-person forms).
 - Institutional permission to submit; confirm the challenge's IP terms.
 - Make the repo public and enable GitHub Pages (main, root).
 

@@ -51,7 +51,7 @@ These were implemented as the brief for B1 asked. They are listed here because t
 
 - **Current behaviour:** a vertebral fracture with SPEP not recorded now blocks signing (`secondaryScreen().block` is true). A waiver lifts the block only if both `spepWaived` (a non-empty reason) and `spepWaivedBy` (a named clinician) are supplied. An abnormal SPEP cannot be waived.
 - **Sign-off decision needed:** whether a waiver is allowed at all, and what reasons count (for example, a patient refusing a blood test, or a documented prior result elsewhere). Whether the waiver should expire.
-- **Proposed test:** the S-group in `bench/cases.js`. Add a UI test once the waiver input exists in the app (it does not exist yet).
+- **Proposed test:** the S-group in `bench/cases.js`. The waiver input now exists in the app (reason and named clinician); loop scenarios L65 and L66 cover it.
 
 ## OI-6. Undated fracture (M1, partial)
 
