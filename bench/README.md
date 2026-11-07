@@ -1,15 +1,48 @@
 # OsteoLoop benchmark
 
-Four suites, all run with `npm run bench` (needs Node 18+ and `npm install` once).
+Five suites, all run with `npm run bench` (needs Node 18+ and `npm install` once).
 
 | Suite | What it tests | Latest result |
 | --- | --- | --- |
 | `run-rules.js` | 57 synthetic vignettes against the clinical rules in `src/rules.js` | 57/57 cases, 102/102 checks |
 | `run-checkin.js` | 27 patient check-in answer sets against the flag rules in `src/checkin.js` | 27/27 |
 | `run-finder.js` | Case finder against 100 development reports and 15 stress reports (clinical shorthand), hand-labelled act, review or no; plus 6 adversarial checks on `verify()` | Baseline: dev 99% exact, 0 dismissed; stress 33% exact, 6 dismissed; verifier adversarial 6/6 |
+| `run-readers.js` | Reader adapters (keyword, claude-sample, openai-compatible, mock) through one verifier gate (`readVerified` in `src/readers.js`); `deidentify()` cases and known limits; 15 Arabic and 12 real-format reports (reported, not gated) | 48/48 unit checks. Arabic 14/15 exact, 1 silently dismissed. Real-format 8/12 exact, 1 silently dismissed |
 | `run-loop.js` | 35 scenarios that drive the real app headless and check the loop's guarantees: intake, patient check-in, case finder (fracture age, pharmacy and palliative exclusions), vertebral-fracture SPEP, denosumab schedule, long-term follow-up on closure | 35/35 |
 
-Full results are in `results/rules.md`, `results/checkin.md`, `results/finder.md` and `results/loop.md`.
+Full results are in `results/rules.md`, `results/checkin.md`, `results/finder.md`, `results/readers.md`, `results/arabic.md`, `results/real-format.md` and `results/loop.md`.
+
+## Readers, Arabic and real-format (added)
+
+Every reader (keyword, claude-sample, openai-compatible, mock) goes through `readVerified()` in `src/readers.js`:
+1. Non-local readers receive de-identified text (`deidentify()`). A reader is local only if it says so: the keyword baseline, the mock, or an OpenAI-compatible endpoint on localhost.
+2. The reader's output is checked by `F.verify()` against the text the reader saw. Output that fails is downgraded to review.
+3. Keyword floor: a reader cannot turn a keyword act or review into no. That becomes review and goes to a person. Disable with `{floor: false}`, for measurement only.
+
+The Arabic and real-format reports were labelled before the Arabic lexicon was added, and were not changed after the first run. The lexicon is small and was designed knowing these reports' vocabulary, so the Arabic figure is an upper bound. The English results are unchanged (`results/finder.md` has no diff).
+
+| Set | Exact | Silently dismissed | What the baseline misses |
+| --- | --- | --- | --- |
+| Arabic (15) | 14/15 (93%) | 1: AR15 | "انهيار" (collapse) of a named vertebra. The lexicon has no collapse term; the English rule counts "collapse" next to a vertebra. Not fixed, so the labels stay untuned. |
+| Real-format (12) | 8/12 (67%) | 1: RF05 | The "FX" abbreviation for fracture in an all-caps wrist report. Also surfaced as review: RF06 (misspelt "compresion fracure") and RF12 ("VCF"). Over-called as act: RF03, where the findings describe compression deformity and the impression says no fracture (labelled review). |
+
+Known gaps not in these sets: Arabic osteopenia and height-loss wording. Plain سقوط (fall) is not trauma, matching English. رضح (injury) is deliberately not a trauma term, because "بدون رضح" (without injury) would then read as high-energy trauma.
+
+### What deidentify() cannot catch
+
+It removes e-mails, Emirates IDs, Malaysian NRIC numbers, labelled MRNs, phone numbers, dates (numeric and English month names), digit runs of 7 or more, and names after a title (Dr, Prof, Mr, Datuk, Encik, Puan, د., الدكتور) or after a Patient or Name cue. It cannot catch:
+- names with no title or cue, including Arabic names ("Ahmad bin Ali presented with pain");
+- street addresses, building names and employers;
+- quasi-identifiers such as an unusual occupation, a rare event, or an exact age plus place;
+- Arabic month names and relative dates ("last Tuesday");
+- identifiers with fewer than 7 digits, and identifiers written out as words;
+- Arabic names longer than three tokens after a title. In that case the next Arabic word is over-redacted (tested and documented);
+- all-caps names after a title. The name stops only at a clinical word, so other capitalised words can be removed;
+- images, OCR text, DICOM headers and signatures.
+
+It is a pre-step that reduces exposure. It does not make a report anonymous, and it is not a substitute for a data-protection review.
+
+## Headline safety numbers
 
 **Case finder caveat.** The development reports were written alongside the keyword baseline, so its 99% is tuned to them. The stress set was written afterwards with unfamiliar wording, and it shows how brittle keyword rules are. Neither set is blind. Before the finder's numbers are claimed, the next step is a blind set: clinicians who haven't seen the rules each write 10 to 20 de-identified, paraphrased reports and label them.
 

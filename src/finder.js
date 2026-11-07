@@ -5,13 +5,17 @@
  * An AI reader can replace find(); verify() checks any reader's output against the report text,
  * so a finding is only accepted when its quoted evidence is really in the report.
  *
+ * Arabic: a small lexicon (fracture, compression, vertebra, femur neck, wrist, humerus, pelvis, negation,
+ * uncertainty, trauma, tumour) is matched alongside the English terms. JS \b does not treat Arabic letters
+ * as word characters, so Arabic patterns use explicit boundaries (see arRe). English patterns are unchanged.
+ *
  * decision: 'act'    open a case (fragility fracture documented)
  *           'review' a human should look (hedged, borderline, minor site, osteopenia only)
  *           'no'     nothing to do (none, negated, high-energy trauma, pathological)
  * Works in the browser (window.OsteoFinder) and in Node (module.exports).
  */
 (function (root) {
-  const FX_DEF = /\b(fractures?|fractured|compression deformity|wedge deformity|wedge compression|biconcave deformity|crush|collapsed?|vertebroplasty|kyphoplasty)\b/i;
+  const FX_DEF = /\b(fractures?|fractured|compression deformity|wedge deformity|wedge compression|biconcave deformity|crush|collapsed?|vertebroplasty|kyphoplasty|fx|VCF|NO[FH])\b/i;
   const FX_WEDGE = /\b(wedging|grade [123] deformity|deformity)\b/i;
   const FX_HEIGHT = /\b(loss of height|height loss|reduced height|loss of (anterior )?height)\b/i;
   const NEG_PRE = /\b(no|not|without|negative for|absence of|free of)\b/i;
@@ -30,14 +34,55 @@
   ];
   const RANK = { act: 2, review: 1, no: 0 };
 
-  function sentences(t) { return String(t || '').split(/(?<=[.;])\s+|\s+however\s+/i).map(s => s.trim()).filter(Boolean); }
-  function siteOf(s) { for (const [k, re] of SITES) if (re.test(s)) return k; return null; }
-  function negated(s, m) {
-    if (NEG_POST.test(s)) return true;
-    const before = s.slice(0, m.index).split(/\s+/).slice(-8).join(' ');   // negation scope: up to 8 words before the term
-    return NEG_PRE.test(before) && !/\b(but|however|although)\b/i.test(before);
+  /* ---------- Arabic lexicon ----------
+     Principles: (1) only terms that are unambiguous in radiology reports; (2) no standalone negation particles
+     such as 'لا' or 'دون' (over-negation would silently dismiss a fracture); (3) 'رضح' (injury) is left out of the
+     trauma list because 'بدون رضح' (without injury) would then count as high-energy trauma; (4) plain 'سقوط' (fall)
+     is not trauma, matching the English rules. Known gaps are listed in bench/README.md. */
+  const AR_CH = '[ء-يـً-ْ]';                       // Arabic letters, tatweel, harakat
+  const AR_PRE = '(?:[وفبلك]?(?:ال|لل)|[وفبلك])?';                           // optional proclitics: و ف ب ل ك + ال / لل
+  /* Arabic term matcher with explicit boundaries (JS \b does not work for Arabic). prefixOnly allows a suffix
+     (e.g. 'فقر' matches فقرة and فقرات). */
+  function arRe(words, opts) {
+    const o = opts || {};
+    const alts = words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+    return new RegExp('(?<!' + AR_CH + ')' + AR_PRE + '(?:' + alts + ')' + (o.prefixOnly ? '' : '(?!' + AR_CH + ')'), o.flags || 'u');
   }
-  function patho(s) { const m = s.match(PATHO); if (!m) return false; const before = s.slice(0, m.index).split(/\s+/).slice(-4).join(' '); return !/\b(no|without)\b/i.test(before); }
+  const AR_FX_WORDS = ['كسر', 'كسور', 'مكسور', 'مكسورة', 'انضغاط', 'انضغاطي', 'انضغاطية', 'انهيار'];
+  const AR_FX = arRe(AR_FX_WORDS);
+  const AR_FX_G = arRe(AR_FX_WORDS, { flags: 'gu' });                         // for verify(): matchAll needs g
+  const AR_SITES = [
+    ['pelvis', arRe(['حوض', 'عانة', 'عظم العجز'])],
+    ['humerus', arRe(['عضد'])],
+    ['wrist', arRe(['كعبرة', 'رسغ'])],
+    ['hip', arRe(['عنق الفخذ', 'فخذ'])],
+    ['vert', arRe(['فقر'], { prefixOnly: true })],
+    ['other', arRe(['ضلع', 'ترقوة', 'كاحل'])]
+  ];
+  const AR_NEG_PRE = arRe(['لا يوجد', 'لا توجد', 'لا يظهر', 'لا تظهر', 'لم يتم', 'لم يظهر', 'لم تظهر', 'ليس', 'ليست', 'عدم', 'بدون', 'لا دليل']);
+  const AR_NEG_POST = arRe(['غير موجود', 'غير ظاهر', 'غير مرئي', 'لا يوجد', 'لا توجد', 'لا يظهر', 'لا تظهر']);
+  const AR_BUT = arRe(['لكن', 'إلا أن']);
+  const AR_UNCERTAIN = arRe(['محتمل', 'محتملة', 'ربما', 'يشتبه', 'مشتبه', 'مشكوك', 'شبهة', 'غير مؤكد', 'لا يمكن استبعاد', 'لا يمكن تأكيد', 'يحتمل', 'يرجح', '؟']);
+  const AR_TRAUMA = arRe(['حادث سير', 'حادث مروري', 'حوادث مرورية', 'دهس', 'سقوط من ارتفاع', 'سقوط من علو', 'إصابة عالية الطاقة']);
+  const AR_PATHO = arRe(['ورم', 'أورام', 'ورمي', 'نقيلي', 'نقيلية', 'نقائل', 'سرطان']);
+
+  function sentences(t) { return String(t || '').split(/(?<=[.;؛؟])\s+|\s+however\s+/i).map(s => s.trim()).filter(Boolean); }
+  function siteOf(s) {
+    for (const [k, re] of SITES) if (re.test(s)) return k;
+    for (const [k, re] of AR_SITES) if (re.test(s)) return k;
+    return null;
+  }
+  function negated(s, m) {
+    if (NEG_POST.test(s) || AR_NEG_POST.test(s)) return true;
+    const before = s.slice(0, m.index).split(/\s+/).slice(-8).join(' ');   // negation scope: up to 8 words before the term
+    return (NEG_PRE.test(before) || AR_NEG_PRE.test(before)) && !/\b(but|however|although)\b/i.test(before) && !AR_BUT.test(before);
+  }
+  function patho(s) {
+    const m = s.match(PATHO) || s.match(AR_PATHO);
+    if (!m) return false;
+    const before = s.slice(0, m.index).split(/\s+/).slice(-4).join(' ');
+    return !/\b(no|without)\b/i.test(before) && !AR_NEG_PRE.test(before);
+  }
 
   /* report: {text, age, ind}. Returns {decision, site, evidence:[sentence], reasons:[string]} */
   function find(r) {
@@ -51,20 +96,20 @@
       }
     };
     for (const s of sentences(text)) {
-      const mDef = s.match(FX_DEF), mWedge = s.match(FX_WEDGE), mHt = s.match(FX_HEIGHT);
+      const mDef = s.match(FX_DEF) || s.match(AR_FX), mWedge = s.match(FX_WEDGE), mHt = s.match(FX_HEIGHT);
       const m = mDef || mWedge || mHt;
       if (!m) continue;
       if (negated(s, m)) continue;
       sawFx = true;
       const site = siteOf(s);
       if (patho(s)) { pathoSeen = true; continue; }
-      if (UNCERTAIN.test(s)) { take('review', site, s, 'Hedged language'); continue; }
+      if (UNCERTAIN.test(s) || AR_UNCERTAIN.test(s)) { take('review', site, s, 'Hedged language'); continue; }
       if (!mDef) { take('review', site, s, mHt ? 'Height loss without a stated fracture' : 'Wedging or deformity without a stated fracture'); continue; }
       if (!site) { take('review', site, s, 'Fracture site unclear'); continue; }
       if (site === 'other') { take('review', site, s, 'Fracture at a minor site'); continue; }
       take('act', site, s, 'Fragility fracture documented (' + site + ')');
     }
-    if (best.decision !== 'no' && TRAUMA.test(ctx)) return { decision: 'no', site: best.site, evidence: best.evidence, reasons: ['High-energy trauma: not a fragility fracture'] };
+    if (best.decision !== 'no' && (TRAUMA.test(ctx) || AR_TRAUMA.test(ctx))) return { decision: 'no', site: best.site, evidence: best.evidence, reasons: ['High-energy trauma: not a fragility fracture'] };
     if (best.decision === 'no' && pathoSeen) return { decision: 'no', site: null, evidence: [], reasons: ['Pathological fracture (tumour): not osteoporotic'] };
     if (best.decision === 'act' && r.age != null && r.age < 50) return Object.assign(best, { decision: 'review', reasons: ['Fracture under age 50 without trauma: needs review'] });
     if (best.decision === 'no' && !sawFx) {
@@ -81,7 +126,7 @@
   /* Does one sentence support the decision? act: an un-negated fracture term that is not pathological.
      review: an un-negated fracture, deformity, height-loss or bone-density term. */
   function supports(s, decision) {
-    const pa = patho(s), terms = decision === 'act' ? [V_FX] : [V_FX, V_HT, V_BD];
+    const pa = patho(s), terms = decision === 'act' ? [V_FX, AR_FX_G] : [V_FX, AR_FX_G, V_HT, V_BD];
     for (const re of terms) for (const m of s.matchAll(re)) {
       // 'collapse' only counts next to a vertebral level or the word vertebra (not lung collapse)
       if (/^collapsed?$/i.test(m[0]) && !/(\b[TL]\d{1,2}\b|vertebra)/i.test(s)) continue;
