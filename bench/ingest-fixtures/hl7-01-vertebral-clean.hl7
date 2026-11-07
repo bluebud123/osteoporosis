@@ -1,0 +1,4 @@
+MSH|^~\&|RIS|OSTEO-TEST|OSTEOLOOP|SYNTH|20260421093000||ORU^R01|MSG-0001|P|2.5.1||||||UNICODE UTF-8
+PID|1||P-100234^^^LOCAL^MR||SYNTH^PATIENT||19550314|F
+OBR|1|ORD-7781|RPT-7781|XR^XR THORACIC SPINE^L|||20260421093000||||||||||||||||||||||||Fall at home
+OBX|1|TX|REPORT^Report||Lungs are clear. Wedge compression fracture of T8 with approximately 30% anterior height loss.||||||F

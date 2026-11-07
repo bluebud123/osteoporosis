@@ -1,0 +1,45 @@
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "entry": [
+    {
+      "fullUrl": "urn:uuid:pt-9",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "pt-9",
+        "birthDate": "1944-10-10",
+        "gender": "female"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "DR-FHIR-0009A",
+        "status": "final",
+        "subject": {
+          "reference": "Patient/pt-9"
+        },
+        "effectiveDateTime": "2026-02-01",
+        "code": {
+          "text": "XR HIP"
+        },
+        "conclusion": "Displaced intracapsular fracture of the left neck of femur."
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "DiagnosticReport",
+        "id": "DR-FHIR-0009B",
+        "status": "final",
+        "subject": {
+          "reference": "Patient/pt-9"
+        },
+        "effectiveDateTime": "2026-02-01",
+        "code": {
+          "text": "DXA SPINE"
+        },
+        "conclusion": "No acute fracture. Osteopenia."
+      }
+    }
+  ]
+}

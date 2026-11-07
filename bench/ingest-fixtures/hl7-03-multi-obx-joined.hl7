@@ -1,0 +1,6 @@
+MSH|^~\&|RIS|OSTEO-TEST|OSTEOLOOP|SYNTH|20260421093000||ORU^R01|MSG-0001|P|2.5.1||||||UNICODE UTF-8
+PID|1||P-100251^^^LOCAL^MR||SYNTH^PATIENT||19511130|M
+OBR|1|ORD-7802|RPT-7802|XR^XR LUMBAR SPINE^L|||20260505||||||||||||||||||||||||Lower back pain
+OBX|1|TX|REPORT^Report||Alignment is maintained.||||||F
+OBX|2|TX|REPORT^Report||No acute osseous abnormality.||||||F
+OBX|3|TX|REPORT^Report||Old healed L2 compression fracture.||||||F
