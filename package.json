@@ -4,11 +4,13 @@
   "private": true,
   "description": "Closing the screening-to-care loop for fragility-fracture risk (prototype).",
   "scripts": {
-    "bench": "node bench/run-rules.js && node bench/run-checkin.js && node bench/run-loop.js",
+    "bench": "node bench/run-rules.js && node bench/run-checkin.js && node bench/run-finder.js && node bench/run-loop.js",
     "bench:rules": "node bench/run-rules.js",
     "bench:loop": "node bench/run-loop.js",
     "serve": "python3 -m http.server 8000",
-    "bench:checkin": "node bench/run-checkin.js"
+    "bench:checkin": "node bench/run-checkin.js",
+    "bench:finder": "node bench/run-finder.js",
+    "bench:finder-ai": "node bench/run-finder.js --ai"
   },
   "devDependencies": {
     "jsdom": "24.1.3"

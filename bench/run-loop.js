@@ -194,6 +194,27 @@ const tests = [
   ['L23', 'Check-in cannot start before the patient has acknowledged the result', 'Req 3', async () => {
     const a = await boot(); a.open('C-1042'); a.click('[data-tab="patient"]');
     return !a.q('[data-a="ci-start"]') && !!a.q('[data-tb="0"]');
+  }],
+  ['L24', 'Case finder turns an incidental vertebral fracture in a chest X-ray report into a very-high-risk case', 'Req 1, 2', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    const marked = /<mark>Incidental moderate wedge compression fracture of T8/.test(a.q('#view').innerHTML);
+    const btn = [...a.q('#view').querySelectorAll('[data-a="find-open"]')].find(b => /R001/.test(b.closest('.card').textContent));
+    btn.dispatchEvent(new (a.q('body').ownerDocument.defaultView.MouseEvent)('click', { bubbles: true }));
+    const opened = /Loop opened as C-2001/.test(a.text());
+    a.click('[data-open="C-2001"]');
+    return marked && opened && /Khadija M\./.test(a.text()) && /Very high risk/.test(a.text()) && /Found by case finder \(Rules\) in CXR lateral report R001/.test(a.text());
+  }],
+  ['L25', 'Trauma and tumour reports are not offered as cases; AI controls are hidden outside claude.ai', 'Req 1', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    const cardOf = id => [...a.q('#view').querySelectorAll('.card')].find(c => c.textContent.includes(id));
+    return !cardOf('R071').querySelector('[data-a="find-open"]') && !cardOf('R077').querySelector('[data-a="find-open"]')
+      && !a.q('[data-a="find-ai"]') && /This copy shows the keyword rules only/.test(a.text());
+  }],
+  ['L26', 'Benchmark table shows the rules\' honest stress-set result, and Health shows the proposed indicator', 'Req 6', async () => {
+    const a = await boot(); a.click('[data-tab="find"]');
+    const t = a.text();
+    a.click('[data-tab="health"]');
+    return /Rules · Stress: unfamiliar wording \(15\)\s*33%\s*3\/12\s*6/.test(t) && /started on treatment within 6 months/.test(a.text()) && /None measures osteoporosis treatment/.test(a.text());
   }]
 ];
 

@@ -1,0 +1,124 @@
+/*
+ * OsteoLoop case finder: reads radiology report text and finds documented fragility fractures that
+ * may never have been acted on. This file is the transparent, deterministic BASELINE (no AI):
+ * sentence-level fracture detection with negation, uncertainty, trauma and pathology handling.
+ * An AI reader can replace find(); verify() checks any reader's output against the report text,
+ * so a finding is only accepted when its quoted evidence is really in the report.
+ *
+ * decision: 'act'    open a case (fragility fracture documented)
+ *           'review' a human should look (hedged, borderline, minor site, osteopenia only)
+ *           'no'     nothing to do (none, negated, high-energy trauma, pathological)
+ * Works in the browser (window.OsteoFinder) and in Node (module.exports).
+ */
+(function (root) {
+  const FX_DEF = /\b(fractures?|fractured|compression deformity|wedge deformity|wedge compression|biconcave deformity|crush|collapsed?|vertebroplasty|kyphoplasty)\b/i;
+  const FX_WEDGE = /\b(wedging|grade [123] deformity|deformity)\b/i;
+  const FX_HEIGHT = /\b(loss of height|height loss|reduced height|loss of (anterior )?height)\b/i;
+  const NEG_PRE = /\b(no|not|without|negative for|absence of|free of)\b/i;
+  const NEG_POST = /\b(is not (seen|identified)|not (seen|identified)|has been excluded|is excluded|ruled out)\b/i;
+  const UNCERTAIN = /(\bpossible\b|\bpossibly\b|\bquery\b|\?|cannot be excluded|cannot be confirmed|\bmay\b|suspicious for|\bsuggest|\buncertain\b|\bequivocal\b|\bsubtle\b|\bslight\b|correlate|\bearly compression\b|no definite)/i;
+  const TRAUMA = /(motor vehicle|road traffic|\brta\b|\bmva\b|motorcycle|pedestrian|high[- ]speed|high[- ]energy|fall from (a )?height|fall from (a )?(ladder|scaffold\w*|roof|stairs? of)|fell from (a )?(ladder|roof|height))/i;
+  const PATHO = /(patholog\w*|metasta\w*|\blytic\b|myeloma|tumou?r|malignan\w*)/i;
+  const OSTEOPENIA = /\b(osteopeni\w*|osteoporo\w*|reduction in bone density|reduced bone density)\b/i;
+  const SITES = [
+    ['pelvis', /(pubic ram\w*|sacr(al|um)|pelvi\w*|acetabul\w*|insufficiency fracture)/i],
+    ['humerus', /(humer\w*|greater tuberosity|surgical neck)/i],
+    ['wrist', /(distal radi\w*|radial metaphysis|colles|\bradius\b)/i],
+    ['hip', /(neck of femur|femoral neck|subcapital|intertrochanteric\w*|trochanter\w*|proximal femur|\bhip\b|\bfemur\b)/i],
+    ['vert', /(\b[TL]\d{1,2}\b|vertebra\w*|thoracic|lumbar|endplate|kyphoplasty|vertebroplasty|\bspine\b)/],
+    ['other', /(\brib|clavic\w*|scaphoid|malleol\w*|metatars\w*|ankle|skull|finger|\btoe|tibia\w*|fibula\w*|calcane\w*)/i]
+  ];
+  const RANK = { act: 2, review: 1, no: 0 };
+
+  function sentences(t) { return String(t || '').split(/(?<=[.;])\s+|\s+however\s+/i).map(s => s.trim()).filter(Boolean); }
+  function siteOf(s) { for (const [k, re] of SITES) if (re.test(s)) return k; return null; }
+  function negated(s, m) {
+    if (NEG_POST.test(s)) return true;
+    const before = s.slice(0, m.index).split(/\s+/).slice(-8).join(' ');   // negation scope: up to 8 words before the term
+    return NEG_PRE.test(before) && !/\b(but|however|although)\b/i.test(before);
+  }
+  function patho(s) { const m = s.match(PATHO); if (!m) return false; const before = s.slice(0, m.index).split(/\s+/).slice(-4).join(' '); return !/\b(no|without)\b/i.test(before); }
+
+  /* report: {text, age, ind}. Returns {decision, site, evidence:[sentence], reasons:[string]} */
+  function find(r) {
+    const text = r.text || '', ctx = (r.ind || '') + ' ' + text;
+    let best = { decision: 'no', site: null, evidence: [], reasons: ['No fracture documented'] };
+    let pathoSeen = false, sawFx = false;
+    const take = (d, site, s, why) => {
+      if (RANK[d] > RANK[best.decision] || (RANK[d] === RANK[best.decision] && best.evidence.length && d !== 'no')) {
+        if (RANK[d] > RANK[best.decision]) best = { decision: d, site, evidence: [s], reasons: [why] };
+        else if (!best.evidence.includes(s)) best.evidence.push(s);
+      }
+    };
+    for (const s of sentences(text)) {
+      const mDef = s.match(FX_DEF), mWedge = s.match(FX_WEDGE), mHt = s.match(FX_HEIGHT);
+      const m = mDef || mWedge || mHt;
+      if (!m) continue;
+      if (negated(s, m)) continue;
+      sawFx = true;
+      const site = siteOf(s);
+      if (patho(s)) { pathoSeen = true; continue; }
+      if (UNCERTAIN.test(s)) { take('review', site, s, 'Hedged language'); continue; }
+      if (!mDef) { take('review', site, s, mHt ? 'Height loss without a stated fracture' : 'Wedging or deformity without a stated fracture'); continue; }
+      if (!site) { take('review', site, s, 'Fracture site unclear'); continue; }
+      if (site === 'other') { take('review', site, s, 'Fracture at a minor site'); continue; }
+      take('act', site, s, 'Fragility fracture documented (' + site + ')');
+    }
+    if (best.decision !== 'no' && TRAUMA.test(ctx)) return { decision: 'no', site: best.site, evidence: best.evidence, reasons: ['High-energy trauma: not a fragility fracture'] };
+    if (best.decision === 'no' && pathoSeen) return { decision: 'no', site: null, evidence: [], reasons: ['Pathological fracture (tumour): not osteoporotic'] };
+    if (best.decision === 'act' && r.age != null && r.age < 50) return Object.assign(best, { decision: 'review', reasons: ['Fracture under age 50 without trauma: needs review'] });
+    if (best.decision === 'no' && !sawFx) {
+      const op = sentences(text).find(s => OSTEOPENIA.test(s));
+      if (op) return { decision: 'review', site: null, evidence: [op], reasons: ['Bone-density wording but no recognised fracture term'] };
+    }
+    return best;
+  }
+
+  /* Checks any reader's output (baseline or AI) against the report: evidence must be quoted verbatim. */
+  function verify(r, out) {
+    const problems = [];
+    if (!out || !['act', 'review', 'no'].includes(out.decision)) problems.push('invalid decision');
+    if (out && out.decision !== 'no') {
+      if (!out.evidence || !out.evidence.length) problems.push('no evidence quoted');
+      else out.evidence.forEach(e => { if (!String(r.text).includes(e)) problems.push('evidence not found in report: "' + String(e).slice(0, 60) + '"'); });
+    }
+    return { ok: problems.length === 0, problems };
+  }
+
+  /* Prompt for an AI reader. Output must pass verify(); the same benchmark scores it. */
+  const AI_PROMPT = 'You read one radiology report and decide whether it documents a fragility fracture that should open an osteoporosis care pathway. ' +
+    'Return JSON only: {"decision":"act"|"review"|"no","site":"vert"|"hip"|"wrist"|"humerus"|"pelvis"|"other"|null,"evidence":["exact sentence copied from the report"],"reason":"short"}. ' +
+    'act = a definite fracture of spine, hip, distal radius, proximal humerus or pelvis/sacrum, age 50+, low or unstated trauma, not caused by tumour; old or healed fractures and evidence of past fracture surgery count. ' +
+    'review = hedged or borderline wording, osteopenia only, minor-site fracture, under 50 without trauma. ' +
+    'no = no fracture, negated, high-energy trauma, or pathological fracture. Copy evidence sentences exactly.';
+
+  /* Batch prompt: one call reads many reports and returns a JSON array (fewer calls, same instructions). */
+  function aiBatchPrompt(reports) {
+    return AI_PROMPT + '\n\nReports (one JSON object per line):\n' +
+      reports.map(r => JSON.stringify({ id: r.id, age: r.age, sex: r.sex, study: r.mod, indication: r.ind, report: r.text })).join('\n') +
+      '\n\nReply with only a JSON array with one object per report, in the same order: ' +
+      '[{"id":"R001","decision":"act","site":"vert","evidence":["exact sentence"],"reason":"short"}]';
+  }
+
+  /* Shared scoring, used by the command-line benchmark and the in-app benchmark.
+     outs[i] is the reader's output for reports[i]; unverifiable output is downgraded to 'review'
+     (never trusted to open a case or to dismiss one). */
+  function score(reports, outs) {
+    const L = ['act', 'review', 'no'], conf = {}; L.forEach(a => { conf[a] = {}; L.forEach(b => conf[a][b] = 0); });
+    let verifyFails = 0; const rows = [];
+    reports.forEach((r, i) => {
+      const out = outs[i] || { decision: 'invalid', evidence: [] };
+      const v = verify(r, out); if (!v.ok) verifyFails++;
+      const got = v.ok ? out.decision : 'review';
+      conf[r.label][got]++;
+      rows.push({ r, out, got, ok: got === r.label, v });
+    });
+    const tp = conf.act.act, fn = conf.act.review + conf.act.no, fp = conf.review.act + conf.no.act;
+    return { n: reports.length, conf, rows, verifyFails, tp, fn, fp,
+      acc: rows.filter(x => x.ok).length / (rows.length || 1), sens: tp / ((tp + fn) || 1), ppv: tp / ((tp + fp) || 1),
+      surfaced: conf.act.act + conf.act.review, dismissed: conf.act.no };
+  }
+
+  const api = { find, verify, sentences, AI_PROMPT, aiBatchPrompt, score };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.OsteoFinder = api;
+})(typeof window !== 'undefined' ? window : globalThis);

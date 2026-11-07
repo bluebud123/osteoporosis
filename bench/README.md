@@ -1,14 +1,17 @@
 # OsteoLoop benchmark
 
-Three suites, all run with `npm run bench` (needs Node 18+ and `npm install` once).
+Four suites, all run with `npm run bench` (needs Node 18+ and `npm install` once).
 
 | Suite | What it tests | Latest result |
 | --- | --- | --- |
 | `run-rules.js` | 57 synthetic vignettes against the clinical rules in `src/rules.js` | 57/57 cases, 102/102 checks |
 | `run-checkin.js` | 27 patient check-in answer sets against the flag rules in `src/checkin.js` | 27/27 |
-| `run-loop.js` | 23 scenarios that drive the real app headless and check the loop's guarantees, including new-patient intake and the patient check-in | 23/23 |
+| `run-finder.js` | Case finder against 100 development reports and 15 stress reports (clinical shorthand), hand-labelled act, review or no | Baseline: dev 99% exact, 0 dismissed; stress 33% exact, 6 dismissed |
+| `run-loop.js` | 26 scenarios that drive the real app headless and check the loop's guarantees, including intake, the patient check-in and the case finder | 26/26 |
 
-Full results are in `results/rules.md`, `results/checkin.md` and `results/loop.md`.
+Full results are in `results/rules.md`, `results/checkin.md`, `results/finder.md` and `results/loop.md`.
+
+**Case finder caveat.** The development reports were written alongside the keyword baseline, so its 99% is tuned to them. The stress set was written afterwards with unfamiliar wording, and it shows how brittle keyword rules are. Neither set is blind. Before the finder's numbers are claimed, the next step is a blind set: clinicians who haven't seen the rules each write 10 to 20 de-identified, paraphrased reports and label them.
 
 ## Headline safety numbers
 

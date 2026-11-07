@@ -125,6 +125,16 @@ select,input[type=text]{font:inherit;font-size:14px;color:var(--ink);background:
 .bar .fill{height:100%;background:var(--accent);border-radius:4px}
 .bar .num{font-family:var(--f-mono);text-align:right}
 .empty{font-size:13.5px;color:var(--muted)}
+/* case finder */
+.rep{font-size:13.5px;line-height:1.55;background:var(--sunk);border-radius:8px;padding:8px 10px}
+.rep mark{background:var(--warn-soft);color:inherit;border-bottom:2px solid var(--warn);padding:0 1px}
+.rep[data-d="act"] mark{background:var(--crit-soft);border-bottom-color:var(--crit)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btab{width:100%;border-collapse:collapse;font-size:12.5px}
+.btab th,.btab td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line)}
+.btab td.n{font-family:var(--f-mono);text-align:right}
+.tblwrap{overflow-x:auto}
+.missed{font-size:12.5px;color:var(--crit);font-weight:600}
 /* patient check-in */
 .b-pt{color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent)}
 .prog{height:6px;background:var(--sunk);border-radius:3px;overflow:hidden}
@@ -164,6 +174,9 @@ details.ans summary{cursor:pointer;font-size:12.5px;color:var(--accent)}
 
 <script src="src/rules.js"></script>
 <script src="src/checkin.js"></script>
+<script src="src/finder.js"></script>
+<script src="bench/reports.js"></script>
+<script src="bench/reports-stress.js"></script>
 <script>
 (function(){
 const $ = id => document.getElementById(id);
@@ -305,7 +318,7 @@ function counts(){
 }
 function renderTabs(){
   const k=counts();
-  const T=[['board','Board',k.needs],['case','Case',0],['patient','Patient',0],['specialist','Specialist',k.inbox],['health','Loop health',0]];
+  const T=[['find','Find',FEED.filter(f=>f.status==='new'&&decide(f).d!=='no').length],['board','Board',k.needs],['case','Case',0],['patient','Patient',0],['specialist','Specialist',k.inbox],['health','Health',0]];
   $('tabs').innerHTML=T.map(([id,l,n])=>`<button data-tab="${id}" aria-current="${tab===id||(tab==='intake'&&id==='board')?'page':'false'}">${l}${n?`<span class="cnt">${n}</span>`:''}</button>`).join('');
 }
 function stagebar(c){ return `<span class="stagebar">${[1,2,3,4,5,6].map(i=>{const s=stageState(c,i);return `<i data-s="${s==='done'?'done':s==='late'?'late':s==='cur'?'cur':''}"></i>`}).join('')}</span>`; }
@@ -549,6 +562,103 @@ function vSpecialist(){
      <div class="actions"><button class="act primary" data-a="accept" data-c="${c.id}">Accept</button><button class="act danger" data-a="reject" data-c="${c.id}">Reject</button></div></div>`}).join('') || '<div class="card empty">Inbox empty. Send an e-consult from a case at Stage 3.</div>'}`;
 }
 function median(a){ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y), m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+/* ---------- case finder: radiology reports in, cases out ---------- */
+const FD = window.OsteoFinder, RS = window.OsteoReports || {dev:[], stress:[]};
+const ALLREP = {}; [...RS.dev, ...RS.stress].forEach(r=>ALLREP[r.id]=r);
+const FEED_SEED = [['R001','Khadija M.'],['S01','Amna R.'],['R020','Shamsa K.'],['R036','Noor A.'],['S09','Hessa B.'],['R071','Rashid T.'],['R005','Latifa S.'],['S05','Moza H.'],['R053','Maryam J.'],['R077','Sara D.'],['R029','Alia F.'],['S13','Reem N.']];
+function seedFeed(){ return FEED_SEED.filter(([id])=>ALLREP[id]).map(([id,name])=>{ const r=ALLREP[id]; return {r, name, status:'new', rules:FD.find(r), ai:null, caseId:null}; }); }
+let FEED = seedFeed(), SAMPLE = null, aiBusy = false, aiMsg = '', bench = null;
+const DN = {act:'Open loop', review:'Needs review', no:'No action'};
+function decide(f){
+  // Union for safety: whichever reader ranks higher wins; AI output only counts if its evidence verifies.
+  const R={act:2,review:1,no:0}, a=f.ai && f.ai.ok ? f.ai : null;
+  if(a && R[a.decision]>R[f.rules.decision]) return {d:a.decision, by:'AI', ev:a.evidence, site:a.site, why:a.reason||''};
+  return {d:f.rules.decision, by:'Rules', ev:f.rules.evidence, site:f.rules.site, why:f.rules.reasons.join('; ')};
+}
+function markText(text, ev){ let h=esc(text); (ev||[]).forEach(e=>{ const x=esc(e); if(x && h.includes(x)) h=h.replace(x,'<mark>'+x+'</mark>'); }); return h; }
+function chip(label,d){ return `<span class="chip ${d==='act'?'c-crit':d==='review'?'c-warn':'c-mute'}">${label}: ${d==='act'?'Act':d==='review'?'Review':'No'}</span>`; }
+function feedCard(f,i){
+  const D=decide(f), r=f.r;
+  const aiChip = f.ai ? (f.ai.ok ? chip('AI',f.ai.decision) : `<span class="chip c-warn">AI: unverified</span>`) : '';
+  const missed = f.ai && f.ai.ok && f.rules.decision==='no' && f.ai.decision!=='no' ? `<div class="missed">AI found what the keyword rules missed.</div>` : '';
+  let act='';
+  if(f.status==='opened') act=`<span class="small">Loop opened as ${f.caseId}.</span><div class="actions"><button class="act" data-open="${f.caseId}">Open case</button></div>`;
+  else if(f.status==='dismissed') act=`<span class="small muted">Dismissed by ${esc(ME)}, day ${f.dDay}.</span>`;
+  else if(D.d!=='no') act=`<div class="actions"><button class="act primary" data-a="find-open" data-c="*" data-i="${i}">${D.d==='act'?'Open loop':'Open loop after review'}</button>${D.d==='review'?`<button class="act" data-a="find-dismiss" data-c="*" data-i="${i}">Dismiss</button>`:''}</div>`;
+  return `<div class="card" style="gap:6px"><div class="hrow"><div><b>${esc(f.name)}</b> <span class="small muted">${r.age}${r.sex} · ${esc(r.mod)} · ${esc(r.ind)}</span></div><span class="small muted mono">${r.id}</span></div>
+    <div class="rep" data-d="${D.d}">${markText(r.text, D.ev)}</div>
+    <div class="chips">${chip('Rules',f.rules.decision)}${aiChip}<span class="small muted">${esc(D.why)}</span></div>${missed}${act}</div>`;
+}
+function benchTable(){
+  const sets=[['Development (100)',RS.dev],['Stress: unfamiliar wording (15)',RS.stress]];
+  const rowsFor=(name,S)=>`<tr><td>${name}</td><td class="n">${Math.round(100*S.acc)}%</td><td class="n">${S.tp}/${S.tp+S.fn}</td><td class="n" style="${S.dismissed?'color:var(--crit);font-weight:600':''}">${S.dismissed}</td><td class="n">${S.verifyFails}</td></tr>`;
+  let body='';
+  sets.forEach(([name,R])=>{ body+=rowsFor('Rules · '+name, FD.score(R, R.map(FD.find)));
+    if(bench && bench.res && bench.res[name]) body+=rowsFor('<b>AI</b> · '+name, bench.res[name]); });
+  return `<div class="tblwrap"><table class="btab"><thead><tr><th>Reader · set</th><th>Exact</th><th>Fractures caught</th><th>Silently dismissed</th><th>Unverified</th></tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function vFind(){
+  const pending=FEED.filter(f=>f.status==='new'&&decide(f).d!=='no');
+  const quiet=FEED.filter(f=>f.status==='new'&&decide(f).d==='no');
+  const done=FEED.filter(f=>f.status!=='new');
+  const aiCtl = SAMPLE ? `<div class="actions"><button class="act primary" data-a="find-ai" data-c="*" ${aiBusy?'disabled':''}>${FEED.some(f=>f.ai)?'Read again with AI':'Read with AI'}</button></div>`
+    : `<span class="small muted">AI reader runs when this page is opened inside claude.ai. This copy shows the keyword rules only.</span>`;
+  return `<div class="card" style="gap:6px"><h2>Case finder</h2><span class="small muted">Today's radiology reports from across the network. Fractures that were written down but never acted on become cases, with the sentence that proves it. No extra typing for clinicians.</span>${aiCtl}${aiMsg?`<span class="small">${esc(aiMsg)}</span>`:''}</div>
+    <div class="sec-label">Needs action (${pending.length})</div>${pending.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">Nothing waiting.</div>'}
+    <div class="sec-label">Opened or dismissed (${done.length})</div>${done.map(f=>feedCard(f,FEED.indexOf(f))).join('')||'<div class="empty">None yet.</div>'}
+    <div class="sec-label">No action (${quiet.length})</div>${quiet.map(f=>feedCard(f,FEED.indexOf(f))).join('')}
+    <div class="card"><div class="sec-label">Benchmark: keyword rules vs AI on labelled reports</div>
+      <span class="small muted">Synthetic reports, labels drafted by the clinical lead (pending sign-off). An AI answer only counts if the sentence it quotes is really in the report; anything else is sent for human review.</span>
+      ${benchTable()}
+      ${SAMPLE?`<div class="actions"><button class="act" data-a="bench-ai" data-c="*" ${aiBusy?'disabled':''}>Run AI benchmark (about 9 calls)</button>${bench&&bench.res?`<button class="act" data-a="bench-copy" data-c="*">Copy results</button>`:''}</div>`:''}
+      ${bench&&bench.msg?`<span class="small">${esc(bench.msg)}</span>`:''}</div>`;
+}
+async function aiReadBatch(reports){
+  const out = await SAMPLE.json(FD.aiBatchPrompt(reports), {modelTier:'default'});
+  const byId={}; (Array.isArray(out)?out:[]).forEach(o=>{ if(o&&o.id) byId[o.id]=o; });
+  return reports.map(r=>{ const o=byId[r.id]||{decision:'invalid',evidence:[]}; if(o.evidence&&!Array.isArray(o.evidence)) o.evidence=[String(o.evidence)]; return o; });
+}
+function aiErr(e){ return {not_granted:'Claude access was not allowed for this page.', rate_limited:'Too many requests just now. Try again in a minute.', sampling_disabled:'Claude is not available for this account.'}[e&&e.code] || 'The AI reader could not finish ('+((e&&e.code)||'error')+'). Try again.'; }
+async function runFeedAI(){
+  aiBusy=true; aiMsg='AI is reading '+FEED.length+' reports…'; render();
+  try { const outs=await aiReadBatch(FEED.map(f=>f.r)); FEED.forEach((f,i)=>{ const o=outs[i]; f.ai=Object.assign({}, o, {ok:FD.verify(f.r,o).ok}); });
+    const caught=FEED.filter(f=>f.ai.ok&&f.rules.decision==='no'&&f.ai.decision!=='no').length;
+    aiMsg=`AI read ${FEED.length} reports. ${caught} found that the keyword rules missed. ${FEED.filter(f=>!f.ai.ok).length} answers failed verification and go to human review.`; }
+  catch(e){ aiMsg=aiErr(e); }
+  aiBusy=false; render();
+}
+async function runBenchAI(){
+  aiBusy=true; bench={res:{}, msg:'Running…'}; render();
+  const sets=[['Development (100)',RS.dev],['Stress: unfamiliar wording (15)',RS.stress]];
+  try {
+    for(const [name,R] of sets){ const outs=[];
+      for(let i=0;i<R.length;i+=15){ bench.msg=`${name}: reports ${i+1}–${Math.min(i+15,R.length)} of ${R.length}…`; render(); outs.push(...await aiReadBatch(R.slice(i,i+15))); }
+      bench.res[name]=FD.score(R,outs); }
+    bench.msg='Done. AI answers were checked against the report text; unverifiable ones count as human review.';
+  } catch(e){ bench.msg=aiErr(e); }
+  aiBusy=false; render();
+}
+function benchText(){
+  const L=['Case finder benchmark (in-app, AI reader vs keyword rules)'];
+  [['Development (100)',RS.dev],['Stress: unfamiliar wording (15)',RS.stress]].forEach(([name,R])=>{
+    const B=FD.score(R,R.map(FD.find)), A=bench.res[name];
+    L.push(`${name}: rules exact ${Math.round(100*B.acc)}%, caught ${B.tp}/${B.tp+B.fn}, silently dismissed ${B.dismissed}`+(A?` | AI exact ${Math.round(100*A.acc)}%, caught ${A.tp}/${A.tp+A.fn}, silently dismissed ${A.dismissed}, unverified ${A.verifyFails}`:''));
+    if(A) A.rows.filter(x=>!x.ok).forEach(x=>L.push(`  ${x.r.id} label ${x.r.label} AI ${x.got}: ${x.out.reason||''}`));
+  });
+  return L.join('\n');
+}
+function openFromFeed(f){
+  const D=decide(f), r=f.r, ev=(D.ev||[]).join(' ');
+  const old=/\b(old|healed|healing|chronic|previous|previously|prior|stable|united|status post|again noted|known|history of|in situ|unchanged)\b/i.test(ev);
+  const site=D.site&&D.site!=='other'?D.site:null;
+  const pt={age:r.age, sex:r.sex, menopause:r.sex==='F'&&r.age>=50?'post':'na', fractures:site?[{site, months:old?null:0}]:[], t:null, mof:null, hip:null};
+  const id='C-'+(nextId++), c=mk({id, name:f.name, age:r.age, sex:r.sex, owner:ME, lang:'en', urgent:R.fastTrack(pt), pt, demo:null, source:'finder',
+    clin:{mof:null, hip:null, cvEvent:false, note:`Found in ${r.mod} report ${r.id}: "${ev}"`}, hist:[[0,DAY,DAY],[1,DAY,null]]});
+  c.log.push({d:DAY, text:`Found by case finder (${D.by}) in ${r.mod} report ${r.id}. ${CATNAME[R.category(pt).key]}${R.category(pt).key==='incomplete'?' (DXA needed)':' risk'}. Loop opened; owner ${ME}.${pt.menopause==='post'?' Menopausal status assumed from age; confirm.':''}`});
+  CASES.unshift(c); f.status='opened'; f.caseId=id;
+}
+window.claude && window.claude.use && window.claude.use('sample').then(s=>{ SAMPLE=s; if(tab==='find') render(); }).catch(()=>{});
+
 function vHealth(){
   const issued=c=>c.stages[0].end;
   const span=(i)=>CASES.map(c=>c.stages[i].end!==null&&issued(c)!==null?c.stages[i].end-issued(c):null).filter(x=>x!==null);
@@ -566,6 +676,13 @@ function vHealth(){
      <div class="metric"><div class="v" style="color:${unresolved?'var(--crit)':'inherit'}">${unresolved}</div><div class="k">Unresolved actionable results</div><div class="n">overdue or unassigned</div></div>
      ${m.map(([k,a])=>`<div class="metric"><div class="v">${a.length?median(a):'–'}</div><div class="k">${k} (median)</div><div class="n">n = ${a.length}</div></div>`).join('')}
    </div>
+   ${(()=>{ const fx=CASES.filter(c=>{ const p=toPatient(c); return (p.fractures||[]).length>0; });
+     const ok=fx.filter(c=>c.stages[4].end!==null && c.stages[0].end!==null && c.stages[4].end-c.stages[0].end<=180).length;
+     const found=CASES.filter(c=>c.source==='finder').length;
+     return `<div class="card"><div class="sec-label">Proposed indicator</div><div class="mgrid">
+       <div class="metric"><div class="v">${fx.length?Math.round(100*ok/fx.length)+'%':'–'}</div><div class="k">Fragility-fracture patients started on treatment within 6 months</div><div class="n">${ok} of ${fx.length}</div></div>
+       <div class="metric"><div class="v">${found}</div><div class="k">Cases found by the case finder</div><div class="n">from radiology reports</div></div></div>
+       <span class="small muted">DoH Abu Dhabi's 2025 orthopaedic Jawda indicators (OS001–OS009) cover infection, readmission, return to theatre, mortality and transfusion. None measures osteoporosis treatment after a fragility fracture. OsteoLoop computes this one from stage timestamps.</span></div>`; })()}
    <div class="card"><div class="sec-label">Patient check-ins</div><div class="mgrid">
      <div class="metric"><div class="v">${CASES.reduce((n,c)=>n+c.checkins.length,0)}</div><div class="k">Check-ins received</div></div>
      <div class="metric"><div class="v" style="color:${CASES.some(c=>!c.closed&&pflag(c))?'var(--warn)':'inherit'}">${CASES.filter(c=>!c.closed&&pflag(c)).length}</div><div class="k">Cases with patient flags awaiting review</div></div></div></div>
@@ -576,7 +693,7 @@ function vHealth(){
 function render(){
   $('day').textContent='Day '+DAY;
   renderTabs();
-  $('view').innerHTML = tab==='intake'?vIntake():tab==='board'?vBoard():tab==='case'?vCase():tab==='patient'?vPatient():tab==='specialist'?vSpecialist():vHealth();
+  $('view').innerHTML = tab==='find'?vFind():tab==='intake'?vIntake():tab==='board'?vBoard():tab==='case'?vCase():tab==='patient'?vPatient():tab==='specialist'?vSpecialist():vHealth();
 }
 
 /* ---------- actions ---------- */
@@ -596,9 +713,14 @@ document.addEventListener('click', e=>{
     render(); return; }
   if(wiz && b.dataset.wnext){ wiz.step++; render(); return; }
   if(wiz && b.dataset.wgo!==undefined){ wiz.step=+b.dataset.wgo; render(); return; }
-  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
+  if(b.id==='reset'){ CASES=seedCases(); DAY=0; tab='board'; sel='C-1042'; tb=null; msg=null; dropFor=null; rxPick={}; signer={}; resDraft={}; nextId=2001; wiz=null; wizDone=null; FEED=seedFeed(); aiMsg=''; bench=null; IN=Object.assign({}, BLANK_IN); inDone=null; tick(0); window.scrollTo(0,0); return; }
   const a=b.dataset.a; if(!a) return;
   if(a==='intake'){ tab='intake'; inDone=null; render(); window.scrollTo(0,0); return; }
+  if(a==='find-open'){ openFromFeed(FEED[+b.dataset.i]); render(); return; }
+  if(a==='find-dismiss'){ const f=FEED[+b.dataset.i]; f.status='dismissed'; f.dDay=DAY; render(); return; }
+  if(a==='find-ai'){ if(!aiBusy) runFeedAI(); return; }
+  if(a==='bench-ai'){ if(!aiBusy) runBenchAI(); return; }
+  if(a==='bench-copy'){ const t=benchText(); navigator.clipboard&&navigator.clipboard.writeText(t).then(()=>{bench.msg='Copied. Paste it into the chat.'; render();}).catch(()=>{bench.msg=t; render();}); return; }
   if(a==='intake-clear'){ IN=Object.assign({}, BLANK_IN); inDone=null; render(); return; }
   if(a==='intake-issue'){ issueIntake(); render(); window.scrollTo(0,0); return; }
   const c=CASES.find(x=>x.id===(b.dataset.c||sel)); if(!c) return;

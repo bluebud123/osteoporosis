@@ -1,6 +1,6 @@
 # Loop scenario results
 
-Passed **23/23**. Each test drives the real app (index.html) headless and checks one guarantee.
+Passed **26/26**. Each test drives the real app (index.html) headless and checks one guarantee.
 
 | ID | Guarantee | Official requirement | Result |
 | --- | --- | --- | --- |
@@ -27,3 +27,6 @@ Passed **23/23**. Each test drives the real app (index.html) headless and checks
 | L21 | A seeded patient flag is pinned on the board at start | Req 2, 6 | PASS |
 | L22 | "Every dose" check-in can be accepted as the adherence check at follow-up | Req 5 | PASS |
 | L23 | Check-in cannot start before the patient has acknowledged the result | Req 3 | PASS |
+| L24 | Case finder turns an incidental vertebral fracture in a chest X-ray report into a very-high-risk case | Req 1, 2 | PASS |
+| L25 | Trauma and tumour reports are not offered as cases; AI controls are hidden outside claude.ai | Req 1 | PASS |
+| L26 | Benchmark table shows the rules' honest stress-set result, and Health shows the proposed indicator | Req 6 | PASS |

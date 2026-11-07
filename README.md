@@ -1,6 +1,6 @@
 # OsteoLoop
 
-Closing the screening-to-care loop for fragility-fracture risk.
+Finds the fragility fractures already documented in radiology reports but never treated, and closes the loop from screening to treatment.
 
 OsteoLoop helps primary-care teams make sure every adult flagged at screening as high risk of fragility fracture reaches treatment. It uses the screening record, DXA and lab results, referral events and dispensing records. Every step has a named owner, a clock and a closure gate.
 
@@ -21,6 +21,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | File | What it is |
 | --- | --- |
 | `index.html` | The main app: screening intake (rules run live), case board, 7-stage case loop with result entry, patient phone, specialist inbox, loop-health metrics, Reset button |
+| `src/finder.js` | The case finder: reads radiology report text and finds documented fragility fractures. It has a deterministic keyword baseline, a prompt for an AI reader, and a verifier that rejects any finding whose quoted evidence isn't in the report |
 | `src/checkin.js` | The patient check-in: question sets for the first clinic and treatment reviews (English and Arabic), and the deterministic rules that turn answers into clinician flags |
 | `src/rules.js` | The clinical rules engine. It is deterministic, every rule is tagged with its source, and the app and the benchmark share it |
 | `bench/` | The benchmark: synthetic clinical vignettes and headless loop scenarios (see below) |
@@ -40,6 +41,20 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | 6 Close | GP or programme lead | — | Evidence attached, or documented clinician decision |
 
 The loop also handles six exceptions: overdue (alert, then escalation), unassigned (pinned queue), referral rejected (reroute, GP keeps ownership), patient misunderstands (nurse call), patient declines (documented decision only), and transfer (handoff must be accepted).
+
+## Case finder
+
+Most fragility fractures that never get treated are not hidden. They are written down: an "incidental T8 wedge compression fracture" in a chest X-ray report, or a hemiarthroplasty "for previous neck of femur fracture". Then nobody acts. The case finder reads report text, opens a case with the quoted sentence as evidence, and highlights that sentence. Clinicians type nothing extra.
+
+There are two readers, and the final decision is whichever ranks higher:
+- **Keyword baseline** (`src/finder.js`): transparent and offline, with negation, hedging, trauma and tumour handling. It scores near-perfect on its own development set but breaks on clinical shorthand ("# NOF", "VCF", "vertebra plana"), and silently dismissed 6 of 12 real fractures in the stress set. That limit is the reason for the AI reader.
+- **AI reader:** Claude reads the same reports, called from the page inside claude.ai. Every AI finding must quote a sentence that `verify()` finds verbatim in the report. Anything unverifiable goes to human review and never opens or closes a case on its own. Run it from the Find tab ("Run AI benchmark"), or with `ANTHROPIC_API_KEY=… npm run bench:finder-ai`.
+
+The finder never auto-dismisses a report: "No action" items stay listed for audit. A blind report set written by clinicians who haven't seen the rules is still needed before the numbers count.
+
+## Proposed indicator
+
+DoH Abu Dhabi's 2025 orthopaedic Jawda indicators (OS001–OS009) cover surgical-site infection, readmission, return to theatre, ER visits, mortality and transfusion. None measures osteoporosis treatment after a fragility fracture. OsteoLoop computes "fragility-fracture patients started on treatment within 6 months" directly from stage timestamps.
 
 ## Patient check-in
 
@@ -76,7 +91,9 @@ npm install && npm run bench
 | False reassurance (at-risk patient labelled "low") | 0 |
 | Guideline-blocked drug offered | 0 |
 | Patient check-in flags (27 answer sets) | 27/27 pass |
-| Loop guarantees (23 headless scenarios on the real app) | 23/23 pass |
+| Case finder, keyword baseline: development set (100 reports) | 99% exact, 48/48 fractures caught, 0 silently dismissed |
+| Case finder, keyword baseline: stress set (15 reports, clinical shorthand) | 33% exact, 3/12 caught, **6 silently dismissed** |
+| Loop guarantees (26 headless scenarios on the real app) | 26/26 pass |
 
 On its first run the benchmark found a real false-reassurance bug, which is now fixed: a patient with high FRAX but no DXA was being labelled "low". Details, method and limits are in [`bench/README.md`](bench/README.md). The expected answers are drafts until the clinical lead signs them off.
 
