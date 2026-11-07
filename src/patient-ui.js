@@ -444,7 +444,7 @@
       S.urgent = true; S.gate = true;
       S.urgentWritten = writeOutbox(true);
       saveDraft();
-      renderGate();
+      render();
     }
     function writeOutbox(urgent) {
       const rec = buildRecord({ code: S.code, caseId: S.caseId, set: S.set, lang: S.lang, answers: S.answers, skipped: S.skipped,
@@ -741,7 +741,7 @@
           el('h2', { id: 'cx-h', text: L.cancelH }),
           el('p', { text: L.cancelB }),
           el('button', { type: 'button', class: 'btn primary', id: 'leave-keep', text: L.leaveKeep, onclick: () => {
-            close(); S.before = { screen: S.screen, cur: S.cur }; S.screen = 'paused'; saveDraft(); pushNav(); render();
+            close(); S.before = { screen: S.screen, cur: S.cur }; S.screen = 'paused'; saveDraft(); replaceNav(); render();
           } }),
           el('button', { type: 'button', class: 'btn', id: 'leave-del', text: L.leaveDel, onclick: () => {
             close(); clearDraft();

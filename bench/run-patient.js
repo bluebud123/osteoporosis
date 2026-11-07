@@ -111,6 +111,7 @@ function serve() {
 
 const VISITS = { 'C-1031': { caseId: 'C-1031', rx: null, rxName: null }, 'C-1018': { caseId: 'C-1018', rx: 'obp', rxName: 'alendronate' } };
 
+const tick = (page, sel) => page.evaluate(q => { const e = document.querySelector(q); if (!e) throw new Error('missing ' + q); if (!e.checked) e.click(); }, sel);
 const TEXT_IDS = ['cc', 'curmeds', 'allergy', 'worry', 'ask'];
 const DEF_FIRST = { fx: 1, falls: 0, parent: 1, steroid: 1, ra: 1, smoke: 1, alcohol: 1, shrink: 1, body: 'skip',
   cc: 'Back pain when standing', loc: 2, dur: 1, pnow: 4, pworst: 5, night: 1, walk: 0, redf: [6], curmeds: 'Calcium', allergy: 'none', worry: 'skip', ask: 'skip' };
@@ -150,13 +151,13 @@ function fail(msg) { throw new Error(msg); }
 
   async function ans(page, id, v) {
     if (v === 'skip') return page.click('#skip');
-    if (v === 'none') return page.check('#none-' + id, { force: true });
+    if (v === 'none') return tick(page, '#none-' + id, { force: true });
     if (v && typeof v === 'object' && !Array.isArray(v) && 'text' in v) return page.fill('#f-' + id, v.text);
     if (v && typeof v === 'object' && !Array.isArray(v) && 'height' in v) { await page.fill('#n-height', v.height); return page.fill('#n-weight', v.weight); }
-    if (Array.isArray(v)) { for (const i of v) await page.check('input[name="' + id + '"][value="' + i + '"]', { force: true }); return; }
+    if (Array.isArray(v)) { for (const i of v) await tick(page, 'input[name="' + id + '"][value="' + i + '"]', { force: true }); return; }
     if (typeof v === 'string' && TEXT_IDS.includes(id)) return page.fill('#f-' + id, v);
-    if (typeof v === 'string') return page.check('input[name="' + id + '"][value="' + v + '"]', { force: true });
-    return page.check('input[name="' + id + '"][value="' + v + '"]', { force: true });
+    if (typeof v === 'string') return tick(page, 'input[name="' + id + '"][value="' + v + '"]', { force: true });
+    return tick(page, 'input[name="' + id + '"][value="' + v + '"]', { force: true });
   }
   // Walk the questionnaire, answering each question. Stops at review. Handles the urgent gate.
   async function walk(page, over, opts) {
@@ -179,7 +180,7 @@ function fail(msg) { throw new Error(msg); }
   async function startFlow(page, o) {
     o = o || {};
     await page.click('#start');
-    await page.check('input[name="who"][value="' + (o.who || 'me') + '"]', { force: true });
+    await tick(page, 'input[name="who"][value="' + (o.who || 'me') + '"]', { force: true });
     await page.click('#next');
     return walk(page, o.over, o);
   }
@@ -217,7 +218,7 @@ function fail(msg) { throw new Error(msg); }
       if (await wide() > 0) fail('consent scrolls sideways');
       await checkTargets('consent');
       await page.click('#start');
-      await page.check('input[name="who"][value="me"]', { force: true });
+      await tick(page, 'input[name="who"][value="me"]', { force: true });
       await page.click('#next');
       if (await wide() > 0) fail('question scrolls sideways');
       await checkTargets('question');
@@ -246,11 +247,11 @@ function fail(msg) { throw new Error(msg); }
     const { page, ctx } = await open();
     try {
       await page.click('#start');
-      await page.check('input[name="who"][value="family"]', { force: true });
+      await tick(page, 'input[name="who"][value="family"]', { force: true });
       await page.click('#next');
-      await page.check('input[name="fx"][value="1"]', { force: true });
+      await tick(page, 'input[name="fx"][value="1"]', { force: true });
       await page.click('#next');
-      await page.check('input[name="falls"][value="1"]', { force: true });
+      await tick(page, 'input[name="falls"][value="1"]', { force: true });
       await page.click('#next');
       const before = await curId(page);
       await page.reload();
@@ -271,9 +272,9 @@ function fail(msg) { throw new Error(msg); }
     const { page, ctx } = await open();
     try {
       await page.click('#start');
-      await page.check('input[name="who"][value="me"]', { force: true });
+      await tick(page, 'input[name="who"][value="me"]', { force: true });
       await page.click('#next');
-      await page.check('input[name="fx"][value="1"]', { force: true });
+      await tick(page, 'input[name="fx"][value="1"]', { force: true });
       await page.click('#next');
       if (await curId(page) !== 'falls') fail('not at falls: ' + await curId(page));
       await page.goBack();
@@ -290,9 +291,9 @@ function fail(msg) { throw new Error(msg); }
     const { page, ctx } = await open();
     try {
       await page.click('#start');
-      await page.check('input[name="who"][value="me"]', { force: true });
+      await tick(page, 'input[name="who"][value="me"]', { force: true });
       await page.click('#next');
-      await page.check('input[name="fx"][value="1"]', { force: true });
+      await tick(page, 'input[name="fx"][value="1"]', { force: true });
       await page.click('#next');
       await page.click('#cancel');
       const dialog = await page.textContent('.dialog');
@@ -340,10 +341,10 @@ function fail(msg) { throw new Error(msg); }
     try {
       await startFlow(page, { stopBefore: 'redf' });
       if (await curId(page) !== 'redf') fail('not at redf: ' + await curId(page));
-      await page.check('input[name="redf"][value="4"]', { force: true });
-      await page.check('input[name="redf"][value="6"]', { force: true });
+      await tick(page, 'input[name="redf"][value="4"]', { force: true });
+      await tick(page, 'input[name="redf"][value="6"]', { force: true });
       if (await page.isChecked('input[name="redf"][value="4"]')) fail('none did not clear weight loss');
-      await page.check('input[name="redf"][value="4"]', { force: true });
+      await tick(page, 'input[name="redf"][value="4"]', { force: true });
       if (await page.isChecked('input[name="redf"][value="6"]')) fail('weight loss did not clear none');
       // the same rule on the review-set symptom list (none index 3)
     } finally { await ctx.close(); }
@@ -354,7 +355,7 @@ function fail(msg) { throw new Error(msg); }
     try {
       await startFlow(page, { who: 'family', stopBefore: 'redf' });
       if (await curId(page) !== 'redf') fail('not at redf');
-      await page.check('input[name="redf"][value="1"]', { force: true });
+      await tick(page, 'input[name="redf"][value="1"]', { force: true });
       if (await screen(page) !== 'gate') fail('no stop after tick, screen ' + await screen(page));
       const text = await page.textContent('[role="alert"]');
       if (!text.includes('Please tell a nurse or the front desk now.')) fail('stop text missing');
@@ -402,8 +403,7 @@ function fail(msg) { throw new Error(msg); }
     const { page, ctx, errors } = await open({ hash: '#v=C-1031&set=first&lang=ar', locale: 'ar-SA' });
     try {
       if ((await page.evaluate(() => document.documentElement.dir)) !== 'rtl') fail('not rtl');
-      await page.click('#start');
-      await walk(page, { cc: { text: 'ألم في أسفل الظهر' } });
+      await startFlow(page, { over: { cc: { text: 'ألم في أسفل الظهر' } } });
       if (await screen(page) !== 'review') fail('no review in Arabic');
       await page.click('#send');
       await page.waitForSelector('body[data-screen="done"]');
@@ -463,7 +463,7 @@ function fail(msg) { throw new Error(msg); }
     const { page, ctx } = await open({ hash: '#v=C-1031&set=first&lang=ar', locale: 'ar-SA' });
     try {
       await page.click('#start');
-      await page.check('input[name="who"][value="me"]', { force: true });
+      await tick(page, 'input[name="who"][value="me"]', { force: true });
       await page.click('#next');
       await walk(page, {}, { stopAfter: 'pnow' });
       const r = await page.evaluate(() => {
@@ -498,7 +498,7 @@ function fail(msg) { throw new Error(msg); }
       if (await screen(page) !== 'review') fail('not review');
       await page.click('#change-fx');
       if (await curId(page) !== 'fx') fail('change did not open fx');
-      await page.check('input[name="fx"][value="0"]', { force: true });
+      await tick(page, 'input[name="fx"][value="0"]', { force: true });
       await page.click('#next');
       // fxsite and fxwhen are now shown and unanswered: the patient answers them, then review
       let guard = 0;
@@ -513,12 +513,12 @@ function fail(msg) { throw new Error(msg); }
       await page.click('#start');
       const focused = await page.evaluate(() => document.activeElement && document.activeElement.tagName);
       if (focused !== 'H1') fail('focus after Start is ' + focused);
-      await page.check('input[name="who"][value="me"]', { force: true });
+      await tick(page, 'input[name="who"][value="me"]', { force: true });
       await page.click('#next');
       const live = await page.textContent('#live');
       if (!/Question 2 of/.test(live)) fail('live region says ' + live);
       if (await page.evaluate(() => document.activeElement.tagName) !== 'H1') fail('focus not on heading');
-      await page.check('input[name="fx"][value="1"]', { force: true });
+      await tick(page, 'input[name="fx"][value="1"]', { force: true });
       if (await curId(page) !== 'fx') fail('single choice auto-advanced');
       const sel = await page.textContent('.opt:has(input[value="1"]:checked) .sel');
       if (!/Selected/.test(sel)) fail('selected state not shown in text');
@@ -536,9 +536,9 @@ function fail(msg) { throw new Error(msg); }
     const { page, ctx, errors } = await open({ initScript: init });
     try {
       await page.click('#start');
-      await page.check('input[name="who"][value="me"]', { force: true });
+      await tick(page, 'input[name="who"][value="me"]', { force: true });
       await page.click('#next');
-      await page.check('input[name="fx"][value="1"]', { force: true });
+      await tick(page, 'input[name="fx"][value="1"]', { force: true });
       await page.click('#next');
       if (await curId(page) !== 'falls') fail('did not advance without history: ' + await curId(page));
       await page.click('#back');
@@ -550,9 +550,7 @@ function fail(msg) { throw new Error(msg); }
   t('P21', 'language switch keeps what the patient has typed', async () => {
     const { page, ctx } = await open();
     try {
-      await page.click('#start');
-      await page.check('input[name="who"][value="me"]', { force: true });
-      await page.click('#next');
+      await startFlow(page, { stopBefore: 'cc' });
       await page.fill('#f-cc', 'Pain in the knee');
       await page.click('[data-lang="ar"]');
       const v = await page.inputValue('#f-cc');
