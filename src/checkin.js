@@ -113,6 +113,7 @@
     }
     if (q.type === 'text') {
       if (v === NONE) return NONE;
+      if (v === UNKNOWN) return undefined;
       return typeof v === 'string' || typeof v === 'number' ? cleanText(v) : undefined;
     }
     return undefined;
