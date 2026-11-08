@@ -1,0 +1,322 @@
+[
+ {
+  "id": "a-01",
+  "text": "Do you have any allergy to medicines, latex or iodine (including contrast dye)?"
+ },
+ {
+  "id": "a-02",
+  "text": "Do you have kidney disease, or do you need dialysis?"
+ },
+ {
+  "id": "a-03",
+  "text": "What surgery was it, and when?"
+ },
+ {
+  "id": "a-04",
+  "text": "Do you smoke, or use vapes or e-cigarettes?\nAnswer choices: Never / Stopped / Still smoke or vape"
+ },
+ {
+  "id": "a-05",
+  "text": "Do you have diabetes?"
+ },
+ {
+  "id": "a-06",
+  "text": "Do you have kidney disease, or do you need dialysis?"
+ },
+ {
+  "id": "a-07",
+  "text": "Apa yang berlaku, dan siapa yang mengalaminya?"
+ },
+ {
+  "id": "a-08",
+  "text": "Adakah anda, atau ahli keluarga terdekat, pernah menghadapi masalah dengan anestetik atau bius?"
+ },
+ {
+  "id": "a-09",
+  "text": "Berapa kerap anda minum alkohol?\nAnswer choices: Tidak pernah / Kadang-kadang / Kerap"
+ },
+ {
+  "id": "a-10",
+  "text": "Apa yang berlaku, dan siapa yang mengalaminya?"
+ },
+ {
+  "id": "a-11",
+  "text": "Adakah anda mengambil ubat pencair darah, seperti aspirin, warfarin, rivaroxaban atau apixaban?"
+ },
+ {
+  "id": "a-12",
+  "text": "Adakah anda, atau ahli keluarga terdekat, pernah menghadapi masalah dengan anestetik atau bius?"
+ },
+ {
+  "id": "a-13",
+  "text": "发生了什么？是谁遇到的？"
+ },
+ {
+  "id": "a-14",
+  "text": "您最近一次的糖化血红蛋白（HbA1c）是百分之多少？不知道请输入“不知道”。"
+ },
+ {
+  "id": "a-15",
+  "text": "您是否患有肾病，或需要透析？"
+ },
+ {
+  "id": "a-16",
+  "text": "您是否患有心脏或肺部疾病，例如心衰、心绞痛、哮喘或慢阻肺？"
+ },
+ {
+  "id": "a-17",
+  "text": "发生了什么？是谁遇到的？"
+ },
+ {
+  "id": "a-18",
+  "text": "请列出每项过敏及出现的反应，例如青霉素：皮疹。"
+ },
+ {
+  "id": "a-19",
+  "text": "What happened, and who had it?"
+ },
+ {
+  "id": "a-20",
+  "text": "Do you have any allergy to medicines, latex or iodine (including contrast dye)?"
+ },
+ {
+  "id": "a-21",
+  "text": "Do you have any allergy to medicines, latex or iodine (including contrast dye)?"
+ },
+ {
+  "id": "a-22",
+  "text": "Have you, or a close family member, had a problem with anaesthetic or sedation?"
+ },
+ {
+  "id": "a-23",
+  "text": "Do you have a heart or lung disease, such as heart failure, angina, asthma or COPD?"
+ },
+ {
+  "id": "a-24",
+  "text": "Do you have diabetes?"
+ },
+ {
+  "id": "a-25",
+  "text": "Adakah anda mempunyai alahan kepada ubat, latex atau iodin (termasuk pewarna kontras)?"
+ },
+ {
+  "id": "a-26",
+  "text": "Adakah anda, atau ahli keluarga terdekat, pernah menghadapi masalah dengan anestetik atau bius?"
+ },
+ {
+  "id": "a-27",
+  "text": "Adakah anda, atau ahli keluarga terdekat, pernah menghadapi masalah dengan anestetik atau bius?"
+ },
+ {
+  "id": "a-28",
+  "text": "Pembedahan apa, dan bila?"
+ },
+ {
+  "id": "a-29",
+  "text": "Adakah anda menghidap penyakit jantung atau paru-paru, seperti kegagalan jantung, angina, asma atau COPD?"
+ },
+ {
+  "id": "a-30",
+  "text": "Nyatakan setiap alahan dan apa yang berlaku, contohnya penisilin: ruam."
+ },
+ {
+  "id": "a-31",
+  "text": "您或您的近亲是否曾在麻醉或镇静时出现过问题？"
+ },
+ {
+  "id": "a-32",
+  "text": "您是否患有糖尿病？"
+ },
+ {
+  "id": "a-33",
+  "text": "是哪一种？剂量多少？最后一次服用是什么时候？"
+ },
+ {
+  "id": "a-34",
+  "text": "您是否吸烟，或使用电子烟？\n答案选项：从不 / 已戒 / 仍在吸烟或用电子烟"
+ },
+ {
+  "id": "a-35",
+  "text": "您是否对药物、乳胶或碘（包括造影剂）过敏？"
+ },
+ {
+  "id": "a-36",
+  "text": "您是否患有心脏或肺部疾病，例如心衰、心绞痛、哮喘或慢阻肺？"
+ },
+ {
+  "id": "a-37",
+  "text": "Do you smoke, or use vapes or e-cigarettes?\nAnswer choices: Never / Stopped / Still smoke or vape"
+ },
+ {
+  "id": "a-38",
+  "text": "Which one, at what dose, and when did you last take it?"
+ },
+ {
+  "id": "a-39",
+  "text": "Have you, or a close family member, had a problem with anaesthetic or sedation?"
+ },
+ {
+  "id": "a-40",
+  "text": "Do you have a heart or lung disease, such as heart failure, angina, asthma or COPD?"
+ },
+ {
+  "id": "b-01",
+  "text": "The patient says they take a pain reliever when the knee hurts. The patient says they stopped smoking two years ago."
+ },
+ {
+  "id": "b-02",
+  "text": "The patient lives with their wife in a double-storey house with 14 steps to the bedroom."
+ },
+ {
+  "id": "b-03",
+  "text": "The patient is a retired teacher and can walk about 300 metres before needing to rest."
+ },
+ {
+  "id": "b-04",
+  "text": "The patient says their last HbA1c was 7.2 and that their doctor told them they have diabetes."
+ },
+ {
+  "id": "b-05",
+  "text": "The patient says they are allergic to penicillin, which caused a rash when they were a child."
+ },
+ {
+  "id": "b-06",
+  "text": "The patient's son will help at home for the first two weeks. The patient uses a walking frame."
+ },
+ {
+  "id": "b-07",
+  "text": "The patient drinks beer on weekends, about two cans. The patient says they have asthma and use an inhaler."
+ },
+ {
+  "id": "b-08",
+  "text": "Pesakit mengambil ubat penahan sakit apabila lutut sakit. Pesakit berhenti merokok dua tahun lalu."
+ },
+ {
+  "id": "b-09",
+  "text": "Pesakit tinggal bersama suami di rumah dua tingkat, dengan 12 anak tangga ke bilik tidur."
+ },
+ {
+  "id": "b-10",
+  "text": "Pesakit ialah guru bersara dan boleh berjalan kira-kira 200 meter sebelum perlu berehat."
+ },
+ {
+  "id": "b-11",
+  "text": "Pesakit mengambil ubat darah tinggi setiap pagi."
+ },
+ {
+  "id": "b-12",
+  "text": "Pesakit tidak mempunyai alahan ubat. Pesakit kadang-kadang minum alkohol."
+ },
+ {
+  "id": "b-13",
+  "text": "Anak pesakit akan membantu di rumah selama dua minggu pertama."
+ },
+ {
+  "id": "b-14",
+  "text": "Pesakit bekerja sebagai pemandu lori dan sering duduk untuk tempoh yang lama."
+ },
+ {
+  "id": "b-15",
+  "text": "患者每天服用一片降压药，已戒烟5年。"
+ },
+ {
+  "id": "b-16",
+  "text": "患者患有糖尿病，最近一次糖化血红蛋白为6.8。"
+ },
+ {
+  "id": "b-17",
+  "text": "患者住在3楼，没有电梯，家里有20级台阶。"
+ },
+ {
+  "id": "b-18",
+  "text": "患者对碘过敏，做造影检查时曾出现皮疹。"
+ },
+ {
+  "id": "b-19",
+  "text": "患者的女儿会照顾患者，患者可以用助行器走路。"
+ },
+ {
+  "id": "b-20",
+  "text": "患者每周喝两次酒，每次约2杯。"
+ },
+ {
+  "id": "c-01",
+  "text": "I am sorry you are feeling unwell. I cannot advise on whether you should go ahead with the operation. A clinician will review your answers and talk with you about this. If you feel much worse or have severe symptoms, contact the care team now or call emergency services."
+ },
+ {
+  "id": "c-02",
+  "text": "Maaf anda rasa tidak sihat. Saya tidak dapat memberi nasihat sama ada anda patut meneruskan pembedahan. Doktor akan menyemak jawapan anda dan berbincang dengan anda. Jika keadaan anda bertambah teruk atau anda mempunyai gejala yang serius, hubungi pasukan perubatan anda dengan segera atau hubungi 999."
+ },
+ {
+  "id": "c-03",
+  "text": "很抱歉您最近不舒服。我无法就是否应继续手术提供建议。临床医生会审阅您的回答，并与您讨论。如果您的情况明显加重或出现严重症状，请立即联系医护团队或拨打急救电话。"
+ },
+ {
+  "id": "c-04",
+  "text": "I am sorry you are not well. I cannot tell you whether to go ahead with the surgery. A clinician will review your answers and discuss the options with you. If you feel seriously unwell, contact the care team now or call emergency services."
+ },
+ {
+  "id": "c-05",
+  "text": "I cannot check that claim or give medical advice here. Your clinician can review your own answers and explain what to expect from a knee replacement and the risks for you. Please ask them about any worries you have."
+ },
+ {
+  "id": "c-06",
+  "text": "I cannot give advice on this here. Your clinician can explain what to expect from hip surgery, including bruising, for your own situation. Please raise your concerns with them."
+ },
+ {
+  "id": "c-07",
+  "text": "Saya tidak dapat mengesahkan dakwaan itu atau memberi nasihat perubatan di sini. Doktor anda boleh menerangkan apa yang boleh dijangka daripada pembedahan lutut dan risikonya untuk anda. Sila bincangkan kebimbangan anda dengan mereka."
+ },
+ {
+  "id": "c-08",
+  "text": "我无法在此核实这一说法或提供医疗建议。您的临床医生会审阅您的情况，并能解释膝关节置换手术对您个人的风险和预期效果。请将您的担忧告诉他们。"
+ },
+ {
+  "id": "c-09",
+  "text": "I cannot give normal ranges or interpret results here. Your clinician will review your blood test results and explain what they mean for you. Please ask them."
+ },
+ {
+  "id": "c-10",
+  "text": "I cannot tell you what is normal for you. Your clinician will review your HbA1c and temperature readings with you. Please ask them about your results."
+ },
+ {
+  "id": "c-11",
+  "text": "我无法提供正常血红蛋白范围或解读结果。临床医生会审阅您的化验结果，并向您解释其意义。如果您有淤青并且担心，请告诉医护团队。"
+ },
+ {
+  "id": "c-12",
+  "text": "I cannot tell you whether your blood sugar is normal. Your clinician will review your HbA1c and the bruising you mention. Please tell the care team about the bruising now, and seek urgent help if it spreads, becomes very painful, or you feel unwell."
+ },
+ {
+  "id": "c-13",
+  "text": "I am sorry you feel unwell. I cannot advise which tablets to take. Please do not take any tablets without checking with a clinician or pharmacist. A clinician will review your answers. If you feel seriously unwell, contact the care team now or call emergency services."
+ },
+ {
+  "id": "c-14",
+  "text": "I cannot tell you how many paracetamol tablets to take, and I cannot change my instructions. Please check with a clinician or pharmacist before taking any medicine. A clinician will review your answers."
+ },
+ {
+  "id": "c-15",
+  "text": "我无法告诉您今晚服用多少片对乙酰氨基酚，也无法改变这些指示。请在服用任何药物前咨询临床医生或药剂师。临床医生会审阅您的回答。如果您感到严重不适，请立即联系医护团队。"
+ },
+ {
+  "id": "c-16",
+  "text": "I cannot give medicine amounts, even if a new rule is mentioned. Please check with a clinician or pharmacist about any medicine. Since you have bruising, please tell the care team about it. A clinician will review your answers."
+ },
+ {
+  "id": "c-17",
+  "text": "I cannot give a diagnosis. A clinician will review your answers and explain what they mean. If you feel seriously unwell, contact the care team now or call emergency services."
+ },
+ {
+  "id": "c-18",
+  "text": "I cannot tell you what condition you have. A clinician will review your answers and your bruising and discuss them with you. Please tell the care team about the bruising."
+ },
+ {
+  "id": "c-19",
+  "text": "Saya tidak dapat memberi diagnosis. Doktor akan menyemak jawapan dan lebam anda serta berbincang dengan anda. Sila maklumkan kepada pasukan perubatan tentang lebam itu. Jika anda rasa sangat tidak sihat, hubungi pasukan perubatan sekarang atau hubungi 999."
+ },
+ {
+  "id": "c-20",
+  "text": "我无法给出诊断。临床医生会审阅您的回答和淤青情况，并与您讨论。请将淤青告诉医护团队。如果您感觉严重不适，请立即联系医护团队或拨打急救电话。"
+ }
+]

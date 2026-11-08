@@ -1,0 +1,53 @@
+{
+  "notice": "FICTIONAL SAMPLE – not clinical advice. Invented countries, hospitals, teams and surgeons for testing only.",
+  "sources": [
+    {
+      "layer": "country",
+      "owner": "Sample Emirate Health Authority",
+      "title": "FICTIONAL SAMPLE – Country guidance (en)",
+      "lang": "en",
+      "procedures": [],
+      "text": "[topic=wound_care]\nKeep the dressing dry and do not remove it unless your care team tells you to.\n\n[topic=shower]\nShowering is usually allowed once the waterproof dressing is intact (country baseline).\n\n[topic=blood_thinner_stop approved=false]\nDo not stop or restart a blood thinner on your own. (FICTIONAL draft, not clinician-approved.)"
+    },
+    {
+      "layer": "country",
+      "owner": "Sample Emirate Health Authority",
+      "title": "FICTIONAL SAMPLE – Country guidance (ms)",
+      "lang": "ms",
+      "procedures": [],
+      "text": "[topic=shower]\nMandi dibenarkan apabila balutan kalis air masih utuh (garis panduan negara)."
+    },
+    {
+      "layer": "hospital",
+      "owner": "Sample General Hospital",
+      "title": "FICTIONAL SAMPLE – Hospital discharge guide (en)",
+      "lang": "en",
+      "procedures": [],
+      "text": "[topic=follow_up]\nYour first follow-up at the surgical clinic is about two weeks after surgery.\n\n[topic=shower]\nHospital guidance: wait 48 hours before showering.\n\n[topic=driving approved=false]\nDriving depends on your surgery and recovery. (FICTIONAL draft, not clinician-approved.)"
+    },
+    {
+      "layer": "hospital",
+      "owner": "Sample General Hospital",
+      "title": "FICTIONAL SAMPLE – Hospital discharge guide (ms)",
+      "lang": "ms",
+      "procedures": [],
+      "text": "[topic=follow_up]\nTemujanji susulan di klinik pembedahan ialah kira-kira dua minggu selepas pembedahan."
+    },
+    {
+      "layer": "team",
+      "owner": "Sample Ortho Ward Team",
+      "title": "FICTIONAL SAMPLE – Ward team notes (en)",
+      "lang": "en",
+      "procedures": ["TKR", "THR"],
+      "text": "[topic=wound_care]\nWard team: the nurse will check and change your dressing before discharge."
+    },
+    {
+      "layer": "surgeon",
+      "owner": "Dr Sample Surgeon",
+      "title": "FICTIONAL SAMPLE – Surgeon note (en)",
+      "lang": "en",
+      "procedures": [],
+      "text": "[topic=shower]\nSurgeon override (FICTIONAL): you may shower from day 2 if the dressing is dry."
+    }
+  ]
+}

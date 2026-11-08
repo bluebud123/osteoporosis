@@ -1,0 +1,41 @@
+verdicts 150 distinct reasons 150
+
+rules only
+  urgent caught                              42/75 56.0% CI 44.7-66.7
+    urgent en                                12/25 48.0% CI 30.0-66.5
+    urgent ms                                14/25 56.0% CI 37.1-73.3
+    urgent zh                                16/25 64.0% CI 44.5-79.8
+  normal falsely escalated                   8/75 10.7% CI 5.5-19.7
+    normal en                                2/25 8.0% CI 2.2-25.0
+    normal ms                                6/25 24.0% CI 11.5-43.4
+    normal zh                                0/25 0.0% CI 0.0-13.3
+
+Haiku second check only
+  urgent caught                              75/75 100.0% CI 95.1-100.0
+    urgent en                                25/25 100.0% CI 86.7-100.0
+    urgent ms                                25/25 100.0% CI 86.7-100.0
+    urgent zh                                25/25 100.0% CI 86.7-100.0
+  normal falsely escalated                   6/75 8.0% CI 3.7-16.4
+    normal en                                3/25 12.0% CI 4.2-30.0
+    normal ms                                1/25 4.0% CI 0.7-19.5
+    normal zh                                2/25 8.0% CI 2.2-25.0
+
+rules OR Haiku (raise-only)
+  urgent caught                              75/75 100.0% CI 95.1-100.0
+    urgent en                                25/25 100.0% CI 86.7-100.0
+    urgent ms                                25/25 100.0% CI 86.7-100.0
+    urgent zh                                25/25 100.0% CI 86.7-100.0
+  normal falsely escalated                   14/75 18.7% CI 11.5-28.9
+    normal en                                5/25 20.0% CI 8.9-39.1
+    normal ms                                7/25 28.0% CI 14.3-47.6
+    normal zh                                2/25 8.0% CI 2.2-25.0
+
+STILL MISSED by rules OR Haiku:
+
+FALSE ALARMS by Haiku only (not rules):
+U4-031 zh | 吃中药可以吗？会不会跟止血药冲突？ | haiku: Herbal medicine with bleeding medication; interaction needs review.
+U4-035 en | my calf muscle a bit tight after walking, no chest pain no shortness of breath, just muscle ache, normal? | haiku: Calf tightness after knee surgery; DVT must be excluded.
+U4-061 zh | 我朋友上次手术后呼吸有问题，但我没事啦。想问下复诊是几号？ | haiku: Reports friend with post-surgery breathing problem; patient status unclear.
+U4-071 en | Is it okay to take turmeric capsules with the blood thinner? Not sure if they clash. | haiku: Turmeric with blood thinner; possible bleeding interaction, needs prompt review.
+U4-101 en | Constipated since the tablets. Any laxative safe? Not in pain, just no poo for 3 days | haiku: Three days no bowel movement after lumbar surgery; rule out cauda equina
+U4-135 ms | sy sembelit 3 hari, kena makan laxative apa? tak sakit pun | haiku: Three days constipated after lumbar surgery; rule out cauda equina

@@ -1,0 +1,417 @@
+/* PeriLoop pre-operative intake interview: a deterministic question tree.
+ * No model calls, no network at import. Fictional content only.
+ * Questions ask; they never advise. Every typed or spoken answer passes through engine.classify() first.
+ * All ms and zh strings are machine drafts (reviewed:false) pending native clinician review.
+ */
+(function (root) {
+  'use strict';
+
+  const engine = (typeof require === 'function') ? require('../engine.js') : root.PeriLoop;
+  const IDMAP = (typeof require === 'function') ? require('./idmap.js') : root.PL_IDMAP;
+  const LANGS = ['en', 'ms', 'zh'];
+  const PROCEDURES = ['TKR', 'THR', 'ACL', 'LUMBAR', 'SHOULDER', 'FOOTANKLE'];
+  const LEVEL_RANK = { 'SAME-DAY': 2, EMERGENCY: 3 };
+  // Canonical phrases used only to obtain the engine's own reply text for question-level red flags.
+  const CANON = {
+    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛' },
+    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧' }
+  };
+  const YES_RE = /^\s*(yes|yeah|yep|ya|ada|y|是的?|有|对)(?![a-z])/i;
+  const NO_RE = /^\s*(no|nope|tidak|tak|tiada|takde|否|不是|不|没有|没|无)(?![a-z])/i;
+  const UNK_RE = /unknown|don'?t know|not sure|tidak tahu|tak tahu|不知道|不清楚|不确定/i;
+  // round 6 (review3 M3): on a number question a typed 'no' means no value to give. It is recorded as unknown (a gap), never as a number.
+  const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇)\s*[.!。]?\s*$/i;
+
+  /* ---------- builders ---------- */
+  function O(value, en, ms, zh) { return { value, label: { en, ms, zh } }; }
+  function Q(id, type, en, ms, zh, extra) {
+    return Object.assign({ id, type, text: { en, ms, zh }, reviewed: false }, extra || {});
+  }
+  function YN(id, en, ms, zh, extra) { return Q(id, 'yesno', en, ms, zh, extra); }
+  function CH(id, en, ms, zh, options, extra) { return Q(id, 'choice', en, ms, zh, Object.assign({ options }, extra)); }
+  function TX(id, en, ms, zh, extra) { return Q(id, 'text', en, ms, zh, extra); }
+  function NU(id, en, ms, zh, min, max, extra) { return Q(id, 'number', en, ms, zh, Object.assign({ min, max }, extra)); }
+
+  /* ---------- COMMON: asked for every patient ---------- */
+  const COMMON = [
+    CH('sex', 'What is your sex?', 'Apakah jantina anda?', '您的性别是？', [
+      O('female', 'Female', 'Perempuan', '女'),
+      O('male', 'Male', 'Lelaki', '男'),
+      O('prefer_not', 'Prefer not to say', 'Tidak mahu dinyatakan', '不便透露')
+    ]),
+    TX('medicines', 'List every medicine you take now, including vitamins and herbal products. Include doses if you know them.',
+      'Senaraikan semua ubat yang anda ambil sekarang, termasuk vitamin dan produk herba. Sertakan dos jika anda tahu.',
+      '请列出您目前服用的所有药物，包括维生素和草药产品。如果知道剂量，请一并写明。'),
+    YN('blood_thinners', 'Do you take a blood thinner, such as aspirin, warfarin, rivaroxaban or apixaban?',
+      'Adakah anda mengambil ubat pencair darah, seperti aspirin, warfarin, rivaroxaban atau apixaban?',
+      '您是否服用抗凝血药，例如阿司匹林、华法林、利伐沙班或阿哌沙班？',
+      { followUp: { yes: ['blood_thinner_detail'] } }),
+    TX('blood_thinner_detail', 'Which one, at what dose, and when did you last take it?',
+      'Yang mana, pada dos berapa, dan bila kali terakhir anda mengambilnya?',
+      '是哪一种？剂量多少？最后一次服用是什么时候？'),
+    YN('allergies', 'Do you have any allergy to medicines, latex or iodine (including contrast dye)?',
+      'Adakah anda mempunyai alahan kepada ubat, latex atau iodin (termasuk pewarna kontras)?',
+      '您是否对药物、乳胶或碘（包括造影剂）过敏？',
+      { followUp: { yes: ['allergy_detail'] } }),
+    TX('allergy_detail', 'Name each allergy and what happened, for example penicillin: rash.',
+      'Nyatakan setiap alahan dan apa yang berlaku, contohnya penisilin: ruam.',
+      '请列出每项过敏及出现的反应，例如青霉素：皮疹。'),
+    YN('diabetes', 'Do you have diabetes?', 'Adakah anda menghidap diabetes?', '您是否患有糖尿病？',
+      { followUp: { yes: ['hba1c'] } }),
+    NU('hba1c', 'What was your last HbA1c (%)? Type unknown if you do not know.',
+      'Berapakah HbA1c terakhir anda (%)? Taip tidak tahu jika anda tidak pasti.',
+      '您最近一次的糖化血红蛋白（HbA1c）是百分之多少？不知道请输入“不知道”。', 3, 20),
+    YN('heart_lung', 'Do you have a heart or lung disease, such as heart failure, angina, asthma or COPD?',
+      'Adakah anda menghidap penyakit jantung atau paru-paru, seperti kegagalan jantung, angina, asma atau COPD?',
+      '您是否患有心脏或肺部疾病，例如心衰、心绞痛、哮喘或慢阻肺？'),
+    YN('kidney', 'Do you have kidney disease, or do you need dialysis?',
+      'Adakah anda menghidap penyakit buah pinggang, atau memerlukan dialisis?',
+      '您是否患有肾病，或需要透析？'),
+    YN('anaesthetic', 'Have you, or a close family member, had a problem with anaesthetic or sedation?',
+      'Adakah anda, atau ahli keluarga terdekat, pernah menghadapi masalah dengan anestetik atau bius?',
+      '您或您的近亲是否曾在麻醉或镇静时出现过问题？',
+      { followUp: { yes: ['anaesthetic_detail'] } }),
+    TX('anaesthetic_detail', 'What happened, and who had it?',
+      'Apa yang berlaku, dan siapa yang mengalaminya?', '发生了什么？是谁遇到的？'),
+    CH('smoking', 'Do you smoke, or use vapes or e-cigarettes?',
+      'Adakah anda merokok, atau menggunakan vape atau rokok elektronik?',
+      '您是否吸烟，或使用电子烟？', [
+        O('never', 'Never', 'Tidak pernah', '从不'),
+        O('former', 'Stopped', 'Sudah berhenti', '已戒'),
+        O('current', 'Still smoke or vape', 'Masih merokok atau vape', '仍在吸烟或用电子烟')
+      ]),
+    CH('alcohol', 'How often do you drink alcohol?', 'Berapa kerap anda minum alkohol?', '您多久饮酒一次？', [
+      O('none', 'Never', 'Tidak pernah', '不饮酒'),
+      O('occasional', 'Occasionally', 'Kadang-kadang', '偶尔'),
+      O('regular', 'Regularly', 'Kerap', '经常')
+    ]),
+    YN('same_joint', 'Have you had any earlier surgery on this same joint or area?',
+      'Adakah anda pernah menjalani pembedahan terdahulu pada sendi atau kawasan yang sama?',
+      '这个部位以前是否做过手术？',
+      { followUp: { yes: ['same_joint_detail'] } }),
+    TX('same_joint_detail', 'What surgery was it, and when?', 'Pembedahan apa, dan bila?', '做的是什么手术？是什么时候？'),
+    YN('hospital_mrsa', 'In the past year, were you admitted to hospital, or have you been told you carry MRSA?',
+      'Dalam setahun yang lalu, adakah anda dimasukkan ke hospital, atau pernah diberitahu anda membawa MRSA?',
+      '过去一年内您是否住过院，或被告知携带过MRSA（耐甲氧西林金黄色葡萄球菌）？'),
+    YN('pregnancy', 'Are you pregnant, or could you be pregnant?', 'Adakah anda hamil, atau mungkin hamil?',
+      '您是否怀孕，或有可能怀孕？', { skipIf: a => a.sex === 'male' }),
+    YN('symptoms_now', 'Right now, do you have chest pain, trouble breathing, or confusion?',
+      'Sekarang ini, adakah anda sakit dada, sesak nafas, atau keliru?',
+      '您现在是否有胸痛、呼吸困难或意识混乱？',
+      { redFlagIf: 'yes', redLevel: 'EMERGENCY' }),
+    CH('home_help', 'Who will help you at home in the first two weeks after surgery?',
+      'Siapa yang akan membantu anda di rumah dalam dua minggu pertama selepas pembedahan?',
+      '术后头两周，谁会在家里帮助您？', [
+        O('family', 'Family', 'Ahli keluarga', '家人'),
+        O('alone', 'I will be on my own', 'Saya akan seorang diri', '我会独自一人'),
+        O('helper', 'A hired helper', 'Pembantu upahan', '雇用的帮手'),
+        O('unsure', 'Not sure yet', 'Belum pasti', '还不确定')
+      ]),
+    YN('lives_alone', 'Do you live alone?', 'Adakah anda tinggal seorang diri?', '您是否独居？'),
+    NU('stairs', 'How many steps are inside your home, for example to the bedroom or toilet? Enter 0 if none.',
+      'Berapa anak tangga di dalam rumah anda, contohnya ke bilik tidur atau tandas? Masukkan 0 jika tiada.',
+      '您家中有多少级台阶，例如通往卧室或厕所的台阶？没有请填0。', 0, 500),
+    CH('mobility_aid', 'Do you use anything to help you walk?', 'Adakah anda menggunakan sebarang alat bantu untuk berjalan?',
+      '您走路时是否使用任何助行工具？', [
+        O('none', 'No aid', 'Tiada', '不用'),
+        O('stick', 'Walking stick', 'Tongkat', '手杖'),
+        O('frame', 'Walking frame', 'Alat bantu berjalan', '助行架'),
+        O('crutches', 'Crutches', 'Tongkat ketiak', '拐杖'),
+        O('wheelchair', 'Wheelchair', 'Kerusi roda', '轮椅')
+      ]),
+    CH('payer', 'How will this treatment be paid for?', 'Bagaimanakah rawatan ini akan dibayar?', '这次治疗的费用由谁支付？', [
+      O('self', 'Self-paid', 'Bayar sendiri', '自费'),
+      O('employer', 'Employer or company scheme', 'Skim syarikat majikan', '雇主或公司计划'),
+      O('insurance', 'Private insurance', 'Insurans swasta', '私人保险'),
+      O('government', 'Government scheme', 'Skim kerajaan', '政府计划'),
+      O('other', 'Other', 'Lain-lain', '其他')
+    ]),
+    CH('contact_language', 'Which language would you like us to use when we contact you?',
+      'Bahasa apakah yang anda mahu kami gunakan apabila menghubungi anda?', '我们联络您时，希望使用哪种语言？', [
+        O('en', 'English', 'Bahasa Inggeris', '英文'),
+        O('ms', 'Bahasa Malaysia', 'Bahasa Malaysia', '马来文'),
+        O('zh', 'Chinese', 'Bahasa Cina', '中文')
+      ]),
+    TX('final_note', 'Is there anything else you want the team to know, or any symptom you are worried about?',
+      'Adakah ada apa-apa lagi yang ingin anda beritahu pasukan, atau sebarang gejala yang anda bimbangkan?',
+      '还有什么您希望团队了解的，或您担心的任何症状吗？')
+  ];
+
+  /* ---------- procedure-specific questions ---------- */
+  const BY_PROC = {
+    TKR: [
+      CH('tkr_walk', 'How far can you walk before your knee makes you stop?',
+        'Berapa jauh anda boleh berjalan sebelum lutut memaksa anda berhenti?', '走多远时膝盖会让您不得不停下来？', [
+          O('under_100', 'Under 100 metres', 'Kurang 100 meter', '不到100米'),
+          O('100_500', '100 to 500 metres', '100 hingga 500 meter', '100至500米'),
+          O('over_500', 'More than 500 metres', 'Lebih 500 meter', '超过500米'),
+          O('cannot', 'I cannot walk', 'Saya tidak boleh berjalan', '无法行走')
+        ]),
+      YN('tkr_night', 'Does knee pain wake you at night?', 'Adakah sakit lutut menjaga anda pada waktu malam?', '膝盖疼痛是否会在夜间把您痛醒？'),
+      YN('tkr_injection', 'Have you had a steroid or other injection into the knee in the past six months?',
+        'Adakah anda menerima suntikan steroid atau suntikan lain ke dalam lutut dalam enam bulan lalu?',
+        '过去六个月内，您是否在膝盖内注射过类固醇或其他药物？'),
+      YN('tkr_calf', 'Do you have calf pain or swelling in the leg to be operated on right now?',
+        'Sekarang ini, adakah anda mengalami sakit atau bengkak betis pada kaki yang akan dibedah?',
+        '您现在是否在计划手术的那条腿上出现小腿疼痛或肿胀？',
+        { redFlagIf: 'yes', redLevel: 'SAME-DAY' })
+    ],
+    THR: [
+      CH('thr_socks', 'Can you put on socks and shoes by yourself?', 'Bolehkah anda memakai stoking dan kasut sendiri?',
+        '您能否自己穿袜子和鞋子？', [
+          O('independent', 'Yes, by myself', 'Ya, sendiri', '可以，自己完成'),
+          O('with_help', 'Only with help', 'Hanya dengan bantuan', '需要别人帮忙'),
+          O('cannot', 'No, I cannot', 'Tidak, saya tidak boleh', '不能')
+        ]),
+      YN('thr_limp', 'Do you limp when you walk?', 'Adakah anda tempang apabila berjalan?', '走路时您是否一瘸一拐？'),
+      YN('thr_injection', 'Have you had an injection into the hip in the past six months?',
+        'Adakah anda menerima suntikan ke dalam pinggul dalam enam bulan lalu?', '过去六个月内，您是否在髋关节内注射过药物？'),
+      YN('thr_leg_length', 'Have you noticed that one leg looks shorter than the other?',
+        'Adakah anda perasan salah satu kaki kelihatan lebih pendek daripada yang lain?', '您是否注意到一条腿看起来比另一条短？')
+    ],
+    ACL: [
+      YN('acl_giving_way', 'Does the knee give way when you pivot, twist or go down stairs?',
+        'Adakah lutut anda longgar atau hilang kekuatan apabila anda berpusing, memulas atau menuruni tangga?',
+        '膝盖在转身、扭转或下楼梯时是否会突然发软或失去支撑？'),
+      NU('acl_weeks', 'How many weeks ago did the injury happen? Type unknown if you are not sure.',
+        'Berapa minggu lalu kecederaan berlaku? Taip tidak tahu jika anda tidak pasti.',
+        '受伤距今多少周？不确定请输入“不知道”。', 0, 1040),
+      YN('acl_other', 'Have you had any other knee injury, such as a meniscus or cartilage tear?',
+        'Adakah anda pernah mengalami kecederaan lutut lain, seperti koyakan meniskus atau tulang rawan?',
+        '您的膝盖是否还有其他损伤，例如半月板或软骨撕裂？'),
+      TX('acl_sport', 'Which sport or activity do you want to return to?',
+        'Sukan atau aktiviti apakah yang ingin anda kembali lakukan?', '您希望恢复哪项运动或活动？')
+    ],
+    LUMBAR: [
+      YN('lum_leg_weak', 'Have you noticed new or worsening weakness in one or both legs?',
+        'Adakah anda perasan kelemahan baharu atau semakin teruk pada satu atau kedua-dua kaki?',
+        '您是否注意到一条或两条腿出现新的或加重的无力？',
+        { redFlagIf: 'yes', redLevel: 'SAME-DAY' }),
+      YN('lum_bladder', 'Have you had any new change in passing urine, controlling urine, or controlling your bowels?',
+        'Adakah anda mengalami sebarang perubahan baharu dalam membuang air kecil, mengawal air kencing, atau mengawal najis?',
+        '您是否出现了新的小便困难、小便失禁或大便失禁？',
+        { redFlagIf: 'yes', redLevel: 'EMERGENCY' }),
+      YN('lum_saddle', 'Have you noticed numbness around the back passage, groin, or inner thighs?',
+        'Adakah anda perasan kebas di sekitar dubur, pangkal paha, atau paha dalam?',
+        '您是否注意到肛门周围、会阴或大腿内侧麻木？',
+        { redFlagIf: 'yes', redLevel: 'EMERGENCY' }),
+      CH('lum_distance', 'Where does your leg pain go?', 'Ke mana sakit kaki anda merebak?', '您的腿痛会延伸到哪里？', [
+        O('back_only', 'Back only, no leg pain', 'Belakang sahaja, tiada sakit kaki', '只有背痛，腿不痛'),
+        O('buttock', 'Buttock', 'Punggung', '臀部'),
+        O('thigh', 'Thigh', 'Paha', '大腿'),
+        O('below_knee', 'Below the knee', 'Di bawah lutut', '膝盖以下')
+      ]),
+      YN('lum_claudication', 'Does walking bring on leg pain that eases when you sit or lean forward?',
+        'Adakah berjalan menyebabkan sakit kaki yang reda apabila anda duduk atau membongkok ke hadapan?',
+        '走路时是否会引起腿痛，并在坐下或身体前倾后缓解？')
+    ],
+    SHOULDER: [
+      YN('sh_night', 'Does shoulder pain keep you awake, especially when lying on that side?',
+        'Adakah sakit bahu menjaga anda terjaga, terutamanya apabila berbaring di sebelah itu?',
+        '肩部疼痛是否会让您睡不好，尤其是侧躺在患侧时？'),
+      CH('sh_overhead', 'How well can you lift the operated arm above your head?',
+        'Sejauh mana anda boleh mengangkat lengan yang akan dibedah ke atas kepala?',
+        '您能把要手术的那条手臂举过头顶到什么程度？', [
+          O('full', 'Fully, without help', 'Sepenuhnya, tanpa bantuan', '完全可以，不需要帮忙'),
+          O('partial', 'Partly', 'Sebahagian', '部分可以'),
+          O('none', 'Not at all', 'Langsung tidak boleh', '完全不能')
+        ]),
+      CH('sh_dominant', 'Which hand do you write with?', 'Tangan manakah yang anda gunakan untuk menulis?', '您用哪只手写字？', [
+        O('right', 'Right', 'Kanan', '右手'),
+        O('left', 'Left', 'Kiri', '左手')
+      ]),
+      YN('sh_fingers', 'Are the fingers on the operated arm numb, cold or pale right now?',
+        'Sekarang ini, adakah jari pada lengan yang akan dibedah kebas, sejuk atau pucat?',
+        '您现在要手术那条手臂的手指是否麻木、发冷或发白？',
+        { redFlagIf: 'yes', redLevel: 'SAME-DAY' })
+    ],
+    FOOTANKLE: [
+      CH('fa_shoes', 'What shoes can you wear now?', 'Kasut jenis apakah yang boleh anda pakai sekarang?', '您现在能穿哪种鞋？', [
+        O('normal', 'My normal shoes', 'Kasut biasa saya', '我平时穿的鞋'),
+        O('wide', 'Only wide or special shoes', 'Hanya kasut lebar atau khas', '只能穿宽鞋或特制鞋'),
+        O('none', 'I cannot wear shoes', 'Saya tidak boleh pakai kasut', '无法穿鞋')
+      ]),
+      YN('fa_sore', 'Is there an open sore, blister or ulcer on the foot or ankle to be operated on?',
+        'Adakah terdapat luka terbuka, lepuh atau ulser pada kaki atau buku lali yang akan dibedah?',
+        '要手术的脚或踝部是否有开放性伤口、水疱或溃疡？',
+        { redFlagIf: 'yes', redLevel: 'SAME-DAY' }),
+      YN('fa_toes', 'Are your toes on that foot cold, pale, blue or purple?',
+        'Adakah jari kaki pada kaki itu sejuk, pucat, biru atau ungu?', '该脚的脚趾是否发冷、苍白、发蓝或发紫？',
+        { redFlagIf: 'yes', redLevel: 'SAME-DAY' }),
+      YN('fa_falls', 'Have you fallen in the past six months?', 'Adakah anda pernah jatuh dalam enam bulan lalu?', '过去六个月内您是否曾经跌倒？')
+    ]
+  };
+
+  /* ---------- lookup ---------- */
+  const BANK = {};
+  COMMON.concat(...PROCEDURES.map(p => BY_PROC[p])).forEach(q => { BANK[q.id] = q; });
+
+  /* ---------- helpers ---------- */
+  function clone(x) { return JSON.parse(JSON.stringify(x)); }
+  function reprompt(s, why) { s.reprompt = true; s.lastError = why; return s; }
+  function rank(level) { return LEVEL_RANK[level] || 0; }
+  function canonReply(level, lang, procedure) {
+    const order = [CANON[level][lang], CANON[level].en];
+    for (const phrase of order) {
+      const r = engine.classify(phrase, { procedure, mode: 'intake' });
+      if (r.cls === level && r.reply) return r.reply;
+    }
+    return '';
+  }
+  function applyRed(s, hit) {
+    hit.flags.forEach(f => { if (!s.flags.includes(f)) s.flags.push(f); });
+    if (!s.red || rank(hit.level) > rank(s.red.level)) {
+      s.red = { level: hit.level, reply: hit.reply, flags: hit.flags.slice(), source: hit.source, qid: hit.qid };
+    }
+  }
+  function isClinicalRoute(r) { return (r.flags || []).some(f => /clinical judgement|worsening/.test(f)); }
+  function recordRoute(s, qid, r, text) { s.routeFlags.push({ qid, cls: r.cls, flags: r.flags.slice(), text, reply: r.reply || '' }); }
+  function matchesRed(q, value) {
+    const rf = q.redFlagIf;
+    if (rf === undefined) return false;
+    if (typeof rf === 'function') return !!rf(value);
+    if (Array.isArray(rf)) return rf.includes(value);
+    return value === rf;
+  }
+  function matchOption(q, raw) {
+    const s = raw.trim().toLowerCase();
+    for (const o of q.options) {
+      const exact = [o.value, o.label.en, o.label.ms, o.label.zh].map(x => String(x).toLowerCase());
+      if (exact.includes(s)) return o.value;
+    }
+    for (const o of q.options) {
+      const inside = [o.label.en, o.label.ms, o.label.zh].map(x => x.toLowerCase())
+        .filter(l => l.length >= 2 || /[一-鿿]/.test(l));
+      if (inside.some(l => s.includes(l))) return o.value;
+    }
+    return null;
+  }
+  function parseNumber(raw) {
+    if (UNK_RE.test(raw)) return 'unknown';
+    const m = String(raw).match(/-?\d+(?:\.\d+)?/);
+    return m ? parseFloat(m[0]) : null;
+  }
+  function parseYesNo(raw, original) {
+    if (typeof original === 'boolean') return original ? 'yes' : 'no';
+    if (YES_RE.test(raw)) return 'yes';
+    if (NO_RE.test(raw)) return 'no';
+    return null;
+  }
+  function pruneSkipped(s) {
+    s.queue = s.queue.filter(id => !(id in s.answers) && !(BANK[id].skipIf && BANK[id].skipIf(s.answers)));
+    s.current = s.queue[0] || null;
+    s.done = s.queue.length === 0;
+  }
+
+  /* ---------- public API ---------- */
+  function build(procedure, lang, pid) {
+    if (!BY_PROC[procedure]) throw new Error('unknown procedure: ' + procedure);
+    if (!LANGS.includes(lang)) throw new Error('unsupported language: ' + lang);
+    const s = {
+      pid: pid || null, procedure, lang, answers: {}, freeText: [], flags: [], red: null, routeFlags: [],
+      queue: COMMON.concat(BY_PROC[procedure]).map(q => q.id), current: null, done: false, reprompt: false, lastError: null
+    };
+    pruneSkipped(s);
+    return s;
+  }
+
+  function next(state, answerValue) {
+    if (!state || state.done) return state;
+    const s = clone(state);
+    s.reprompt = false; s.lastError = null;
+    const qid = s.current; const q = BANK[qid];
+    if (answerValue === undefined || answerValue === null) return reprompt(s, 'no answer');
+
+    // 1. Safety first: any typed or spoken text goes through the engine classifier before interpretation.
+    const raw = String(answerValue);
+    const text = raw.trim();
+    let redHit = null; let routeR = null;
+    if (text) {
+      const r = engine.classify(text, { procedure: s.procedure, mode: 'intake' });
+      if (r.cls === 'EMERGENCY' || r.cls === 'SAME-DAY') {
+        redHit = { level: r.cls, flags: r.flags.slice(), reply: r.reply, source: 'free_text', qid };
+      } else if (r.noAnswer) {
+        routeR = r;
+      }
+    }
+
+    // 2. Interpret the answer for this question.
+    let value = null; let parsed = true;
+    if (typeof answerValue === 'boolean' && q.type === 'yesno') value = parseYesNo(text, answerValue);
+    else if (q.type === 'yesno') value = UNK_RE.test(text) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
+    else if (q.type === 'choice') value = text ? matchOption(q, text) : null;
+    else if (q.type === 'number') {
+      const n = parseNumber(text);
+      if (n === 'unknown' || (n === null && NUM_NONE_RE.test(text))) value = 'unknown';
+      else if (typeof n === 'number' && n >= q.min && n <= q.max) value = n;
+    } else if (q.type === 'text') value = text || null;
+
+    if (value === null) {
+      if (!redHit) {
+        // review2 M2 (round 4): a clinical question typed at a choice or yes/no prompt is kept, not dropped.
+        if (routeR && isClinicalRoute(routeR)) recordRoute(s, qid, routeR, text);
+        return reprompt(s, routeR && isClinicalRoute(routeR) ? 'route' : 'unrecognised');
+      }
+      value = text; parsed = false; // advance on the raw text; the red flag stands
+    }
+
+    // 3. Record the answer and any red flag.
+    if (redHit) applyRed(s, redHit);
+    if (routeR && (q.type === 'text' || !parsed || isClinicalRoute(routeR))) recordRoute(s, qid, routeR, text);
+    s.answers[qid] = value;
+    if (q.type === 'text' || !parsed) s.freeText.push(text);
+    if (q.redFlagIf !== undefined && matchesRed(q, value)) {
+      applyRed(s, { level: q.redLevel, flags: [qid], reply: canonReply(q.redLevel, s.lang, s.procedure), source: 'question', qid });
+    }
+
+    // 4. Advance: follow-ups go next, then drop skipped questions.
+    s.queue.shift();
+    const follow = (q.followUp && q.followUp[String(value)]) || [];
+    s.queue = follow.concat(s.queue);
+    pruneSkipped(s);
+    return s;
+  }
+
+  function prompt(state) {
+    if (!state || state.done || !state.current) return null;
+    const q = BANK[state.current];
+    return {
+      id: q.id, type: q.type, text: q.text[state.lang], draft: state.lang !== 'en',
+      options: q.options ? q.options.map(o => ({ value: o.value, label: o.label[state.lang] })) : undefined,
+      min: q.min, max: q.max
+    };
+  }
+
+  function isComplete(state) { return !!(state && state.done === true); }
+
+  // Round 3 (open problem A): one mapping table, mod/idmap.js, covers every question id and value normalisation.
+  // The summary reads intake ids; every interview answer is also kept under its question text (questions) so the
+  // summary can list anything that has no summary line under "Recorded, not summarised".
+  function shownOf(q, v, lang) {
+    if (q.type === 'choice') { const o = q.options.find(x => x.value === v); return o ? o.label[lang] : String(v); }
+    if (q.type === 'yesno') {
+      const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' } }[lang];
+      return w[v] || String(v);
+    }
+    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道' }[lang];
+    return String(v);
+  }
+  function toAnswers(state) {
+    const questions = {};
+    Object.keys(state.answers).forEach(qid => {
+      const q = BANK[qid];
+      if (q) questions[qid] = { text: q.text[state.lang], shown: shownOf(q, state.answers[qid], state.lang) };
+    });
+    return {
+      pid: state.pid, procedure: state.procedure, lang: state.lang,
+      answers: IDMAP.toIntake(state.answers, state.procedure),
+      freeText: state.freeText.slice(),
+      interviewAnswers: clone(state.answers),
+      questions,
+      routes: clone(state.routeFlags || [])
+    };
+  }
+
+  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTERVIEW = api;
+})(this);

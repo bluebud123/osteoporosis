@@ -1,40 +1,41 @@
 # PeriLoop demo video: 2-minute screen recording script
 
-Target: about 260 spoken words at about 130 words per minute, first person, calm.
-All patients shown are fictional (Mdm Aisha 62 knee, Mr Wong 59 lumbar, Mr Farid 70 hip).
-Button and tab labels other than the named tabs are not in the facts file; confirm them on the live page before recording.
+Target: about 280 spoken words, about 2 minutes, first person, calm.
+Walks the Intake tab, then the Staff board. The demo runs scripted, with no AI model, so the second check is not in this recording.
+All patients shown are fictional. Do not describe the demo as clinically validated.
+
+Before recording, confirm every button label, the OT date field and the sample patient on the live page. The steps below use labels from the current page: Intake, Load a sample patient, Send to staff board, Staff board, Settings.
 
 | Time | What is on screen | What to say | What to click |
 |---|---|---|---|
-| 0:00 to 0:12 | Overview tab, title and "fictional patients" note | "Before surgery, an abnormal result can sit with no owner until someone chases it. PeriLoop is my attempt to close that loop. All patients in this demo are fictional." | Open the Overview tab. |
-| 0:12 to 0:30 | Guided story, scenes 1 and 2. Checklist shows a HOLD with an owner and due time. | "Scene one: a low blood result has no owner. It becomes a HOLD, with a named owner and a due time. Scene two: an echo is missed, so it shows as late." | Click Next scene. |
-| 0:30 to 0:42 | Scene 3. Owner re-pinged, patient nudged, escalation marker. | "Scene three: a day passes. The owner is re-pinged, and the patient gets a nudge. After three tries, the item escalates." | Click Next scene. |
-| 0:42 to 1:00 | Patient phone tab, emergency message from the back-surgery patient, fixed red-flag reply. | "Scene four: a back-surgery patient sends an emergency message. Fixed rules catch it before anything else, in English, Bahasa Malaysia and Chinese. Version one uses no AI model." | Click Patient phone, then send the emergency message. |
-| 1:00 to 1:15 | Malay swollen-calf message, no reply, then on-call fallback on the Staff board. | "Scene five: a swollen-calf message, in Malay. Nobody answers. After three re-pages, the on-call fallback takes it." | Click Staff board. |
-| 1:15 to 1:27 | Someone types "ok" to close a task. The system refuses it. | "Scene six: someone types 'ok' to close a task. It is refused. Closing needs attached evidence and a clinician, or a documented reason." | Enter "ok" in the close field and submit. |
-| 1:27 to 1:35 | Clinician attaches the repeat result; task closes. | "Scene seven: the clinician attaches the repeat result and closes the task." | Attach the repeat result, then click Close. |
-| 1:35 to 1:50 | 30-case test tab with results. | "The 30-case test has 30 fictional cases, and all 30 pass. But I wrote the cases and the engine together, so that proves little. An AI model, not a clinician, labelled them blind and agreed on 24 of 30." | Click the 30-case test tab, then Run. |
-| 1:50 to 2:03 | Honest numbers on unseen messages. | "On unseen messages written by an AI model, not patients, 26 of 30 urgent ones escalated at first pass. 3 of 30 normal ones were falsely escalated. Both sets were tuned on, so only a new set counts." | Stay on the test results; scroll to the numbers. |
-| 2:03 to 2:20 | Limits, then next step. | "Not done: second clinician labelling, testing on real patient messages, any measured drop in missed steps, and a real database or login. Next, I want a clinician to label the cases and a fresh message set." | Click How it works, or show the limits text. |
+| 0:00 to 0:15 | Intake tab open, title visible. | "Before surgery, a finding can sit with no owner until someone chases it. PeriLoop is a prototype for that gap. Every patient in this demo is fictional." | Click the Intake tab, then Load a sample patient. |
+| 0:15 to 0:35 | Interview, first few questions answered. OT date field visible. | "The interview covers six procedure types. This one is a knee replacement. Answers can be given in English, Bahasa Malaysia or Chinese, and the Malay and Chinese wording is a machine draft pending native review. The OT date is here too. Critical items open within seven days of surgery flag it at risk." | Answer two or three questions with the on-screen choices. Point to the OT date. |
+| 0:35 to 0:55 | Doctor summary with a flagged item and the Settings card reading "scripted, no AI". | "Each answer goes into a doctor summary. The summary is rule-based, with no AI model, and the Settings card says so. It flags contradictions, such as an allergy named in free text while the box says no, and unanswered questions. A red flag stops the interview and creates an urgent task." | Scroll the summary. Open Settings to show the note, then close it. |
+| 0:55 to 1:08 | To-do list under the summary. | "The to-do list is built from that summary, and can be sent to the staff board in one step." | Scroll to the to-do list. |
+| 1:08 to 1:25 | Ask box with an answer and its source line. | "The Ask box answers from layered sources: country, hospital, team and surgeon. Each answer shows its source and owner. A clinical question, like a blood thinner, goes to a clinician instead." | Type "When can I shower?" in the Ask box and press Ask. Then type a blood thinner question and press Ask. |
+| 1:25 to 1:38 | Confirmation line after sending. | "I press Send to staff board. The to-dos become tasks. A second press adds nothing new." | Click Send to staff board, then press it again. |
+| 1:38 to 1:50 | Staff board with tasks, owners and due times. | "On the Staff board, each task has an owner and a due time. Unanswered alerts are re-paged, then passed to an on-call fallback." | Click Staff board. Point to one task's owner and due time. |
+| 1:50 to 2:00 | Limits text, or the How it works tab. | "Rules alone caught 42 of 75 urgent test messages written by AI. So a second check is needed in production, and it is not yet validated by clinicians. Not done: clinician labelling, surgeon sign-off, a real channel, database or login, and any measure of missed steps." | Click How it works and scroll to the limits. |
 
 ## Shot list
 
-1. Overview tab with title and fictional-patient note (0:00).
-2. Checklist close-up showing the HOLD and its owner (0:12).
-3. Escalation marker after the third re-page (0:30).
-4. Patient phone with the emergency reply (0:42).
-5. Staff board showing the on-call fallback (1:00).
-6. "ok" refused, then the closed task with attached evidence (1:15 to 1:27).
-7. 30-case test results (1:35).
-8. Numbers and limits text (1:50 to 2:20).
+1. Intake tab with title and fictional-patient note (0:00).
+2. Interview, first answers, and the OT date (0:15).
+3. Doctor summary with a flagged item and the Settings note (0:35).
+4. To-do list (0:55).
+5. Ask box answer with source line, then the clinical question routed to a clinician (1:08).
+6. Send to staff board, then the second press (1:25).
+7. Staff board task with owner and due time (1:38).
+8. Limits text (1:50).
 
 ## Recording checklist
 
-- Record once at phone width and once at desktop width.
+- Record once at phone width and once at desktop width. Use the desktop recording for the video.
 - Use the light theme.
 - Hide the browser bookmarks bar before recording.
 - Close other tabs and turn off notifications.
-- Run the 30-case test once before recording, so the numbers on screen match the facts file.
+- Load the page fresh before recording, so the Intake and Staff board start empty.
 - Say on camera, and show on screen, that all patients are fictional.
 - Show no real patient data, names or records.
-- Do not describe any AI model as part of the product. Version one uses no AI model.
+- Do not describe any AI model as part of the demo. The demo runs scripted.
+- If the flagged example does not appear on the chosen sample, pick another sample or edit the words to match what is on screen before recording.

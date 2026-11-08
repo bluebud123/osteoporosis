@@ -1,0 +1,41 @@
+periloop unseen3 first-pass (mode default, no rule changes, single run)
+items: 90 (urgent 45, normal 45)
+
+Urgent escalated at first pass (EMERGENCY or SAME-DAY): 28/45 (62.2%, Wilson 95% CI 47.6-74.9%)
+Normal falsely escalated: 1/45 (2.2%, Wilson 95% CI 0.4-11.6%)
+Urgent ANSWERED by bot (must be 0): 0/45 (0.0%, Wilson 95% CI 0.0-7.9%)
+
+Per language:
+  en:
+    urgent escalated: 11/15 (73.3%, Wilson 95% CI 48.0-89.1%)
+    normal falsely escalated: 0/15 (0.0%, Wilson 95% CI 0.0-20.4%)
+    urgent answered by bot: 0/15 (0.0%, Wilson 95% CI 0.0-20.4%)
+  ms:
+    urgent escalated: 9/15 (60.0%, Wilson 95% CI 35.7-80.2%)
+    normal falsely escalated: 1/15 (6.7%, Wilson 95% CI 1.2-29.8%)
+    urgent answered by bot: 0/15 (0.0%, Wilson 95% CI 0.0-20.4%)
+  zh:
+    urgent escalated: 8/15 (53.3%, Wilson 95% CI 30.1-75.2%)
+    normal falsely escalated: 0/15 (0.0%, Wilson 95% CI 0.0-20.4%)
+    urgent answered by bot: 0/15 (0.0%, Wilson 95% CI 0.0-20.4%)
+
+Urgent items NOT escalated at first pass:
+  EN-U02  cls=ROUTE  answered=false
+  EN-U07  cls=ROUTE  answered=false
+  EN-U13  cls=ROUTE  answered=false
+  EN-U14  cls=ROUTE  answered=false
+  MS-U03  cls=ROUTE  answered=false
+  MS-U06  cls=ROUTE  answered=false
+  MS-U07  cls=ROUTE  answered=false
+  MS-U08  cls=ROUTE  answered=false
+  MS-U12  cls=ROUTE  answered=false
+  MS-U15  cls=ROUTE  answered=false
+  ZH-U04  cls=ROUTE  answered=false
+  ZH-U05  cls=ROUTE  answered=false
+  ZH-U08  cls=ROUTE  answered=false
+  ZH-U10  cls=ROUTE  answered=false
+  ZH-U12  cls=ROUTE  answered=false
+  ZH-U13  cls=ROUTE  answered=false
+  ZH-U14  cls=ROUTE  answered=false
+Normal items escalated at first pass:
+  MS-N05  cls=SAME-DAY
