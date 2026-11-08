@@ -35,6 +35,81 @@
   // round 6 (review3 M3): on a number question a typed 'no' means no value to give. It is recorded as unknown (a gap), never as a number.
   const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇|لا|لا يوجد|ما فيه|مافي|ما في|لاشي)\s*[.!。]?\s*$/i;
 
+  /* ---------- typed-text masking (polish round 8, item 1). Demo only. ----------
+   * Phone-number-shaped and IC-shaped digit runs become MASK before typed text is stored, shown on the Staff board or
+   * sent to a model. next() still classifies the ORIGINAL text, so the red-flag rules see what was typed.
+   * A run is an optional leading +, then digit groups joined by one space or dash. It is masked when it has 8 to 15 digits,
+   * at least one group of 3 or more digits (so "1 2 3 4 5 6 7 8" stays), is not a date such as 2026-11-08 or 08-11-2026,
+   * and is not part of a decimal such as 9.12345678. Arabic-Indic and full-width digits count as digits. IC numbers
+   * (######-##-####) fall under the same rule. */
+  const MASK = '[number removed]';
+  // dd-mm-yyyy, yyyy-mm-dd, dotted and slashed forms are dates, never masked
+  const DATE_SHAPE = /^(\d{4}[ .\/-]{1,3}\d{1,2}[ .\/-]{1,3}\d{1,2}|\d{1,2}[ .\/-]{1,3}\d{1,2}[ .\/-]{1,3}\d{4})$/; // judge round 1: slashes and spaced dashes count as date separators too
+  // an RN label just before the digits keeps them: "RN 12345678", "MRN: 12345678" are record numbers, not phone numbers
+  const RN_BEFORE = /(?:^|[^A-Za-z])(?:RN|MRN)[ :#.\-]*$/i;
+  // Each character maps to one ASCII character, so an offset in the converted text is the same offset in the original.
+  function digitsAscii(s) {
+    return s.replace(/[٠-٩]/g, c => String(c.charCodeAt(0) - 0x0660))
+      .replace(/[０-９]/g, c => String(c.charCodeAt(0) - 0xFF10))
+      .replace(/[\u2010-\u2015\u2212]/g, '-');   // en dash, em dash and minus count as dashes
+  }
+  // judge round 1 (P1-3): digits spelled out as words ("zero one two ...", "kosong satu dua ...", Chinese numerals), eight or more in a row.
+  const DIGIT_WORDS_RE = new RegExp('\\b(?:(?:zero|one|two|three|four|five|six|seven|eight|nine|kosong|satu|dua|tiga|empat|lima|enam|tujuh|lapan|sembilan)[\\s,.\\-]+){7,}(?:zero|one|two|three|four|five|six|seven|eight|nine|kosong|satu|dua|tiga|empat|lima|enam|tujuh|lapan|sembilan)\\b|[零〇一二三四五六七八九](?:[\\s,.\\-]*[零〇一二三四五六七八九]){7,}', 'gi');
+  function maskTyped(text) {
+    const m1 = maskDigits(text);
+    return typeof m1 === 'string' && m1 ? m1.replace(DIGIT_WORDS_RE, MASK) : m1;
+  }
+  function maskDigits(text) {
+    if (text === undefined || text === null) return '';
+    const s = String(text);
+    if (!s) return s;
+    const probe = digitsAscii(s);
+    const re = /[+(]*\d+(?:[ .\-\/_()]{1,3}\d+)*/g;
+    let out = '', last = 0, m;
+    while ((m = re.exec(probe))) {
+      const run = m[0], body = run.replace(/^[+(]+/, '');
+      const count = body.replace(/\D/g, '').length;
+      const groups = body.split(/[ .\-\/_()]+/);
+      const dots = (body.match(/\./g) || []).length;
+      const startsZeroOrPlus = run.indexOf('+') >= 0 && run.indexOf('+') < 2 || body.charAt(0) === '0';
+      // a group of 3 or more digits, or ten or more single digits starting with 0 or + ("0 1 2 3 4 5 6 7 8 9")
+      const groupRule = groups.some(g => g.length >= 3) || (count >= 10 && startsZeroOrPlus) || (count >= 10 && groups.length >= 5 && groups.every(g => g.length === 2)) || (groups.length >= 10 && groups.length <= 12 && groups.every(g => g.length === 1)); // five or more pairs in a row ("12 34 56 78 90"), or ten to twelve single digits in a row ("1 2 3 4 5 6 7 8 9 0", judge round 2). Short clinical lists ("1 2 3 4 5", "BP 120 80", a 1 to 10 pain scale with its two-digit 10) stay unmasked.
+      const before = probe.charAt(m.index - 1), after = probe.charAt(m.index + run.length + 1);
+      const inDecimal = (before === '.' && /\d/.test(probe.charAt(m.index - 2))) || (probe.charAt(m.index + run.length) === '.' && /\d/.test(after));
+      const rn = RN_BEFORE.test(probe.slice(Math.max(0, m.index - 12), m.index));
+      // one dot is a decimal (1.2345678, 7.2); phone-style dots need two or more
+      const hit = count >= 8 && count <= 15 && groupRule && dots !== 1 && !DATE_SHAPE.test(body) && !inDecimal && !rn;
+      if (hit) { out += s.slice(last, m.index) + MASK; last = m.index + run.length; }
+    }
+    return out + s.slice(last);
+  }
+  // Masks every string in a plain object or array (used for sample histories before they are shown or summarised).
+  function maskDeep(v) {
+    if (typeof v === 'string') return maskTyped(v);
+    if (Array.isArray(v)) return v.map(maskDeep);
+    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach(k => { o[k] = maskDeep(v[k]); }); return o; }
+    return v;
+  }
+
+  /* ---------- out-of-range numbers (polish round 8, item 3). A value outside the allowed range is named as wrong, never a generic reprompt. ---------- */
+  const NUM_NAME = {
+    hba1c: { en: 'HbA1c', ms: 'HbA1c', zh: 'HbA1c（糖化血红蛋白）', ar: 'HbA1c' },
+    stairs: { en: 'The number of steps', ms: 'Bilangan anak tangga', zh: '台阶数', ar: 'عدد الدرجات' },
+    acl_weeks: { en: 'The number of weeks', ms: 'Bilangan minggu', zh: '周数', ar: 'عدد الأسابيع' }
+  };
+  const NUM_NAME_DEFAULT = { en: 'This value', ms: 'Nilai ini', zh: '该数值', ar: 'هذه القيمة' };
+  // Machine drafts for ms and zh (reviewed:false). The Arabic line is also a draft.
+  const RANGE_TEXT = {
+    en: (name, v, min, max) => `${name} ${v} looks wrong. The usual range is ${min} to ${max}. Please re-check it with your care team, then type the value again. If you do not know it, type unknown.`,
+    ms: (name, v, min, max) => `${name} ${v} nampak tidak betul. Julat biasa ialah ${min} hingga ${max}. Sila semak semula dengan pasukan penjagaan anda, kemudian taip nilai itu semula. Jika anda tidak tahu, taip tidak tahu. (draf mesin)`,
+    zh: (name, v, min, max) => `${name} ${v} 看起来不正确。常见范围是 ${min} 至 ${max}。请与您的护理团队重新核对，然后再输入一次该数值。如果不知道，请输入“不知道”。（机器草稿）`,
+    ar: (name, v, min, max) => `يبدو أن ${name} ${v} غير صحيح. النطاق المعتاد من ${min} إلى ${max}. يرجى إعادة التحقق منه مع فريق الرعاية، ثم اكتب القيمة مرة أخرى. إذا لم تكن تعرفها، اكتب "لا أعرف". (مسودة آلية، تحتاج مراجعة)`
+  };
+  function rangeText(lang, qid, n, q) {
+    const name = (NUM_NAME[qid] && NUM_NAME[qid][lang]) || NUM_NAME_DEFAULT[lang] || NUM_NAME_DEFAULT.en;
+    return (RANGE_TEXT[lang] || RANGE_TEXT.en)(name, n, q.min, q.max);
+  }
+
   /* ---------- builders ---------- */
   function O(value, en, ms, zh) { return { value, label: { en, ms, zh } }; }
   function Q(id, type, en, ms, zh, extra) {
@@ -356,6 +431,15 @@
     if (Array.isArray(rf)) return rf.includes(value);
     return value === rf;
   }
+  // polish item 2: an option matched exactly (value or any label), so "Not sure yet" stays the option, not the unknown answer.
+  function exactOption(q, raw) {
+    const s = arNorm(raw).trim().toLowerCase();
+    const L = x => arNorm(x).toLowerCase();
+    for (const o of q.options) {
+      if ([o.value, o.label.en, o.label.ms, o.label.zh, o.label.ar].map(x => L(x)).includes(s)) return o.value;
+    }
+    return null;
+  }
   function matchOption(q, raw) {
     const s = arNorm(raw).trim().toLowerCase();
     const L = x => arNorm(x).toLowerCase();
@@ -395,7 +479,8 @@
     if (!LANGS.includes(lang)) throw new Error('unsupported language: ' + lang);
     const s = {
       pid: pid || null, procedure, lang, answers: {}, freeText: [], flags: [], red: null, routeFlags: [],
-      queue: COMMON.concat(BY_PROC[procedure]).map(q => q.id), current: null, done: false, reprompt: false, lastError: null
+      queue: COMMON.concat(BY_PROC[procedure]).map(q => q.id), current: null, done: false, reprompt: false, lastError: null,
+      rangeMsg: null
     };
     pruneSkipped(s);
     return s;
@@ -404,13 +489,15 @@
   function next(state, answerValue) {
     if (!state || state.done) return state;
     const s = clone(state);
-    s.reprompt = false; s.lastError = null;
+    s.reprompt = false; s.lastError = null; s.rangeMsg = null;
     const qid = s.current; const q = BANK[qid];
     if (answerValue === undefined || answerValue === null) return reprompt(s, 'no answer');
 
     // 1. Safety first: any typed or spoken text goes through the engine classifier before interpretation.
+    // The classifier reads the ORIGINAL text. Only `safe` (phone and IC-shaped runs masked) is stored or kept.
     const raw = String(answerValue);
     const text = raw.trim();
+    const safe = maskTyped(text);
     let redHit = null; let routeR = null;
     if (text) {
       const r = engine.classify(text, { procedure: s.procedure, mode: 'intake' });
@@ -422,30 +509,35 @@
     }
 
     // 2. Interpret the answer for this question.
-    let value = null; let parsed = true;
+    let value = null; let parsed = true; let rangeN = null;
     if (typeof answerValue === 'boolean' && q.type === 'yesno') value = parseYesNo(text, answerValue);
     else if (q.type === 'yesno') value = UNK_RE.test(arNorm(text)) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
-    else if (q.type === 'choice') value = text ? matchOption(q, text) : null;
-    else if (q.type === 'number') {
+    else if (q.type === 'choice') {
+      // polish item 2: "I don't know" is a recorded answer on a choice question, never a forced pick. An exact option wins over the unknown words.
+      value = text ? (exactOption(q, text) || (UNK_RE.test(arNorm(text)) ? 'unknown' : matchOption(q, text))) : null;
+    } else if (q.type === 'number') {
       const n = parseNumber(text);
       if (n === 'unknown' || (n === null && NUM_NONE_RE.test(arNorm(text)))) value = 'unknown';
       else if (typeof n === 'number' && n >= q.min && n <= q.max) value = n;
-    } else if (q.type === 'text') value = text || null;
+      else if (typeof n === 'number') rangeN = n; // polish item 3: named as wrong, with a re-check request
+    } else if (q.type === 'text') value = text ? safe : null;
 
     if (value === null) {
       if (!redHit) {
         // review2 M2 (round 4): a clinical question typed at a choice or yes/no prompt is kept, not dropped.
-        if (routeR && isClinicalRoute(routeR)) recordRoute(s, qid, routeR, text);
-        return reprompt(s, routeR && isClinicalRoute(routeR) ? 'route' : 'unrecognised');
+        if (routeR && isClinicalRoute(routeR)) recordRoute(s, qid, routeR, safe);
+        const rp = reprompt(s, routeR && isClinicalRoute(routeR) ? 'route' : (rangeN !== null ? 'range' : 'unrecognised'));
+        if (rangeN !== null) rp.rangeMsg = rangeText(s.lang, qid, rangeN, q);
+        return rp;
       }
-      value = text; parsed = false; // advance on the raw text; the red flag stands
+      value = safe; parsed = false; // advance on the masked text; the red flag stands
     }
 
     // 3. Record the answer and any red flag.
     if (redHit) applyRed(s, redHit);
-    if (routeR && (q.type === 'text' || !parsed || isClinicalRoute(routeR))) recordRoute(s, qid, routeR, text);
+    if (routeR && (q.type === 'text' || !parsed || isClinicalRoute(routeR))) recordRoute(s, qid, routeR, safe);
     s.answers[qid] = value;
-    if (q.type === 'text' || !parsed) s.freeText.push(text);
+    if (q.type === 'text' || !parsed) s.freeText.push(safe);
     if (q.redFlagIf !== undefined && matchesRed(q, value)) {
       applyRed(s, { level: q.redLevel, flags: [qid], reply: canonReply(q.redLevel, s.lang, s.procedure), source: 'question', qid });
     }
@@ -474,12 +566,12 @@
   // The summary reads intake ids; every interview answer is also kept under its question text (questions) so the
   // summary can list anything that has no summary line under "Recorded, not summarised".
   function shownOf(q, v, lang) {
+    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道', ar: 'لا أعرف' }[lang];
     if (q.type === 'choice') { const o = q.options.find(x => x.value === v); return o ? o.label[lang] : String(v); }
     if (q.type === 'yesno') {
       const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' }, ar: { yes: 'نعم', no: 'لا' } }[lang];
       return w[v] || String(v);
     }
-    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道', ar: 'لا أعرف' }[lang];
     return String(v);
   }
   function toAnswers(state) {
@@ -531,6 +623,7 @@
   }
   const AR_SAMPLE_COUNT = AR_SAMPLES.length;
 
-  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK, arSample, AR_SAMPLE_COUNT, arNorm };
+  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK, arSample, AR_SAMPLE_COUNT, arNorm,
+    maskTyped, maskDeep, MASK, rangeText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTERVIEW = api;
 })(this);

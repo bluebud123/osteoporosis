@@ -83,7 +83,8 @@ const bullet = h('HbA1c: 9.1 [hba1c]', 'ar');
 check('Arabic: a Latin-leading value is wrapped as an LTR isolate', /<bdi dir="ltr">HbA1c: 9\.1<\/bdi>/.test(bullet), bullet);
 const bullet2 = h('تم الإبلاغ عن مميّع للدم: Aspirin 75 mg [blood_thinner]', 'ar');
 check('Arabic: a Latin drug name in an Arabic line is isolated', /<bdi dir="ltr">Aspirin 75 mg<\/bdi>/.test(bullet2), bullet2);
-check('Arabic: the source tag is wrapped in the hidden srcx span', /<span class="srcx">\[blood_thinner\]<\/span>/.test(bullet2), bullet2);
+// polish item 5 (round 8): the tag shows a friendly label; the raw id moves to the title attribute (this test has no IN module, so the label falls back to the id with underscores as spaces)
+check('Arabic: the source tag is a hidden srcx span with a friendly label and the raw id in title', /<span class="srcx" title="blood_thinner">\[blood thinner\]<\/span>/.test(bullet2), bullet2);
 const en = h('HbA1c: 9.1 [hba1c]', 'en');
 check('English output is unchanged (no isolate wrapper)', en.indexOf('<bdi') < 0, en);
 

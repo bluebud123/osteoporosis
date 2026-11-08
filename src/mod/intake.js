@@ -72,22 +72,34 @@
     en: {
       tkr_calf: 'Calf pain or swelling in the operated leg', sh_fingers: 'Numb, cold or pale fingers on the operated arm',
       fa_sore: 'Open sore, blister or ulcer on the operated foot or ankle', fa_toes: 'Cold, pale, blue or purple toes',
-      symptoms_now: 'Chest pain, trouble breathing or confusion now'
+      symptoms_now: 'Chest pain, trouble breathing or confusion now',
+      lumbar_leg_weakness: 'New or worsening weakness in one or both legs',
+      lumbar_bladder_bowel_change: 'New change in passing urine or controlling bladder or bowels',
+      lumbar_saddle_numbness: 'Numbness around the back passage, groin or inner thighs'
     },
     ms: {
       tkr_calf: 'Sakit atau bengkak betis pada kaki yang dibedah', sh_fingers: 'Jari kebas, sejuk atau pucat pada lengan yang dibedah',
       fa_sore: 'Luka terbuka, lepuh atau ulser pada kaki atau buku lali yang dibedah', fa_toes: 'Jari kaki sejuk, pucat, biru atau ungu',
-      symptoms_now: 'Sakit dada, sesak nafas atau keliru sekarang'
+      symptoms_now: 'Sakit dada, sesak nafas atau keliru sekarang',
+      lumbar_leg_weakness: 'Kelemahan baharu atau semakin teruk pada satu atau kedua-dua kaki (draf mesin)',
+      lumbar_bladder_bowel_change: 'Perubahan baharu dalam membuang air kecil atau mengawal pundi kencing dan usus (draf mesin)',
+      lumbar_saddle_numbness: 'Kebas di sekitar dubur, pangkal paha atau paha dalam (draf mesin)'
     },
     zh: {
       tkr_calf: '手术腿的小腿疼痛或肿胀', sh_fingers: '手术手臂的手指麻木、发冷或发白',
       fa_sore: '手术脚或踝部的开放性伤口、水疱或溃疡', fa_toes: '脚趾发冷、苍白、发蓝或发紫',
-      symptoms_now: '现在有胸痛、呼吸困难或意识混乱'
+      symptoms_now: '现在有胸痛、呼吸困难或意识混乱',
+      lumbar_leg_weakness: '一条或两条腿新出现或加重的无力（机器草稿）',
+      lumbar_bladder_bowel_change: '小便或大小便控制的新变化（机器草稿）',
+      lumbar_saddle_numbness: '肛门周围、会阴或大腿内侧麻木（机器草稿）'
     },
     ar: {
       tkr_calf: 'ألم أو تورم في ساق العملية', sh_fingers: 'أصابع مخدرة أو باردة أو شاحبة في ذراع العملية',
       fa_sore: 'جرح مفتوح أو بثرة أو قرحة في القدم أو الكاحل المقرر إجراء العملية عليه', fa_toes: 'أصابع قدم باردة أو شاحبة أو زرقاء أو بنفسجية',
-      symptoms_now: 'ألم في الصدر أو ضيق في التنفس أو تشوش الآن'
+      symptoms_now: 'ألم في الصدر أو ضيق في التنفس أو تشوش الآن',
+      lumbar_leg_weakness: 'ضعف جديد أو يزداد سوءا في رجل واحدة أو في الرجلين (مسودة آلية)',
+      lumbar_bladder_bowel_change: 'تغير جديد في التبول أو في التحكم في المثانة أو الأمعاء (مسودة آلية)',
+      lumbar_saddle_numbness: 'تنميل حول فتحة الشرج أو منطقة الأعضاء التناسلية أو داخل الفخذين (مسودة آلية)'
     }
   };
   // Canonical phrases, used only to obtain the engine's own reply text for a question-level red flag.
@@ -197,6 +209,9 @@
     // round 6 (review3 B7): an impossible value is an AMBER reason, never NONE. The English wording is fixed by the review.
     implausible: (l, what) => pick(l, { en: `implausible value: clinician to verify (${what})`, ms: `nilai tidak munasabah: klinik perlu sahkan (${what}) (draf mesin)`, zh: `数值不合理：需临床人员核实（${what}）（机器草稿）` }),
     gapUnclear: (l, label, id) => pick(l, { en: `Unclear answer: ${label} (${id})`, ms: `Jawapan tidak jelas: ${label} (${id})`, zh: `回答不清楚：${label}（${id}）` }),
+    gapUnknown: (l, label, id) => pick(l, { en: `Patient does not know: ${label} (${id})`, ms: `Pesakit tidak tahu: ${label} (${id}) (draf mesin)`, zh: `患者不知道：${label}（${id}）（机器草稿）` }),
+    redUnknown: (l, id) => pick(l, { en: `Red-flag question not answered: clinician to confirm [${id}]`, ms: `Soalan tanda bahaya tidak dijawab: doktor perlu sahkan [${id}] (draf mesin)`, zh: `危险信号问题未回答：需临床医生确认 [${id}]（机器草稿）` }),
+    todoRedUnknown: (l, label) => pick(l, { en: `Confirm red-flag answer (patient does not know): ${label}`, ms: `Sahkan jawapan tanda bahaya (pesakit tidak tahu): ${label} (draf mesin)`, zh: `核实危险信号回答（患者不知道）：${label}（机器草稿）` }),
     gapBtNoName: l => pick(l, { en: 'Blood thinner named? No name given (blood_thinner)', ms: 'Pencair darah dinamakan? Tiada nama diberi (blood_thinner)', zh: '抗凝血药的名称？未提供药名（blood_thinner）' }),
     gapBtCheck: l => pick(l, { en: 'Check: meds_text names an anticoagulant but blood_thinner is no (blood_thinner, meds_text)',
       ms: 'Semak: meds_text menyebut antikoagulan tetapi blood_thinner ialah tidak (blood_thinner, meds_text)', zh: '请核对：meds_text 提到抗凝药，但 blood_thinner 为“否”（blood_thinner, meds_text）' }),
@@ -241,6 +256,9 @@
     gapNotAnswered: (label, id) => `لم تتم الإجابة: ${label} (${id})`,
     implausible: what => `قيمة غير معقولة: يتحقق منها الطبيب (${what}) (مسودة آلية)`,
     gapUnclear: (label, id) => `إجابة غير واضحة: ${label} (${id})`,
+    gapUnknown: (label, id) => `المريض لا يعرف: ${label} (${id}) (مسودة آلية)`,
+    redUnknown: id => `لم يُجب عن سؤال مؤشر خطر: يحتاج الطبيب إلى تأكيده [${id}] (مسودة آلية)`,
+    todoRedUnknown: label => `تأكيد إجابة مؤشر الخطر (المريض لا يعرف): ${label} (مسودة آلية)`,
     gapBtNoName: () => 'هل تم تحديد اسم مميّع الدم؟ لم يُذكر اسم (blood_thinner)',
     gapBtCheck: () => 'تحقق: قائمة الأدوية تذكر مميّعا للدم لكن الإجابة عن مميّع الدم "لا" (blood_thinner, meds_text)',
     gapDmCheck: v => `تحقق: الإجابة عن السكري "لا" لكن HbA1c هو ${v} (diabetes, hba1c)`,
@@ -309,6 +327,7 @@
   }
   // The text shown for an answer. English shows the stored value as it is; ms and zh translate yes/no and the fixed values.
   function valueText(id, v, lang) {
+    if (display(v).toLowerCase() === 'unknown') return YNW[lang].unknown; // polish item 2: a recorded "I don't know", in every language
     if (id === 'blood_thinner') {
       const b = bt(v);
       if (b.ans === null) return b.raw;
@@ -400,6 +419,15 @@
     return { level: top.level, flags, refs, reasons: hits.map(h => h.text), reply: top.reply || canonReply(top.level, lang, x.procedure) };
   }
 
+  /* ---------- unknown answers (round 8, judge items 1 and 2) ---------- */
+  // A red-flag question answered "I don't know". Never a no, never an emergency: it is a clinician check (amber, a gap, a same-day to-do).
+  function redUnknownOf(a, proc) {
+    return Object.keys(RED_QIDS).filter(id => {
+      if (LUMBAR_IDS.includes(id) && proc !== 'LUMBAR') return false;
+      return display(a[id]).toLowerCase() === 'unknown';
+    });
+  }
+
   /* ---------- summary ---------- */
   // Interview mode: the answers came from the interview (toAnswers), so only the fields this procedure's interview asks
   // are gaps. Anything the interview answered without a summary line is listed under "Recorded, not summarised".
@@ -439,9 +467,11 @@
 
     SECTIONS.forEach((s, si) => s.ids.forEach(id => {
       if (isMissing(a[id])) return;
-      const r = shown(id, a[id]);
       const text = valueText(id, a[id], lang);
       if (text !== '') sections[si].lines.push(`${labelOf(id, lang)}: ${text} [${id}]`);
+      // polish item 2: "I don't know" is a gap to clarify, never read as yes or no
+      if (display(a[id]).toLowerCase() === 'unknown') { if (!RED_QIDS[id]) gaps.push(M.gapUnknown(lang, labelOf(id, lang), id)); return; }
+      const r = shown(id, a[id]);
       if (!r.ok) gaps.push(M.gapUnclear(lang, labelOf(id, lang), id));
     }));
 
@@ -499,6 +529,23 @@
     if (b.ans === 'no' && ANTICOAG_NAME.test(arNorm(display(a.meds_text)))) gaps.push(M.gapBtCheck(lang));
     if (yn(a.diabetes) === 'no' && isFinite(n) && n >= 6.5) { gaps.push(M.gapDmCheck(lang, display(a.hba1c))); ambers.push(M.dmConflict(lang, display(a.hba1c)) + ' [diabetes, hba1c]'); }
     if (yn(a.penicillin_allergy) === 'no' && PENICILLIN_TEXT.test(arNorm(display(a.allergy_text)))) gaps.push(M.gapPenCheck(lang));
+
+    // round 8 (judge item 1): a red-flag question answered unknown is an AMBER reason, a gap line and (in todosOf) a to-do
+    redUnknownOf(a, proc).forEach(id => {
+      ambers.push(M.redUnknown(lang, id));
+      gaps.push(M.gapUnknown(lang, redLabel(id, lang), id));
+    });
+    // round 8 (judge item 2): an unknown answer to a question with no summary row is still a gap to clarify (question text as label)
+    if (interviewMode) {
+      const rows = new Set(SECTIONS.reduce((acc, sec) => acc.concat(sec.ids), []));
+      Object.keys(input.interviewAnswers || {}).forEach(qid => {
+        if (input.interviewAnswers[qid] !== 'unknown') return;
+        const t = IDMAP.targetsOf(qid).filter(x => x !== 'freeText');
+        if (t.some(id => RED_QIDS[id]) || t.some(id => rows.has(id))) return;
+        const qt = input.questions && input.questions[qid] ? input.questions[qid].text : qid;
+        gaps.push(M.gapUnknown(lang, qt, qid));
+      });
+    }
 
     // NONE is only possible when every answer is in and no blood-thinner question is open. More than 6 gaps is INCOMPLETE, never NONE.
     const allergyUnresolved = yn(x.answers.penicillin_allergy) === null && eff.names.length === 0;
@@ -560,6 +607,8 @@
     // review1 item 9: one urgent red-flag task per patient, whichever path raised it
     const red = redOf(input);
     if (red) out.push(redTodo(red, lang));
+    // round 8 (judge item 1): an unknown red-flag answer needs a same-day staff check (not an emergency alert)
+    redUnknownOf(a, x.procedure).forEach(id => out.push({ key: 'red_unknown_' + id, title: M.todoRedUnknown(lang, redLabel(id, lang)), owner: 'clinician', dueDays: 0, dueHours: 0, urgent: true, kind: 'call', reason: id, needsClinician: true })); // judge round 2 (P1-D): same owner and deadline as the Staff board task made when the patient answers Unknown
     // review1 item 10: patient's own words that need a clinician, due within 48 h
     const worse = freeTextFlags(x).filter(isWorsening);
     if (worse.length) out.push({ key: 'clinician_review_worsening', title: M.todoWorsening(lang), owner: 'clinician', dueDays: 0, dueHours: 48, kind: 'review', reason: worse.map(f => `freeText.${f.i}`).join(', '), needsClinician: true });

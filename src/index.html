@@ -21,7 +21,7 @@ h2{font-size:15px;margin:0 0 8px}.mut{color:var(--mut);font-size:13px}
 .b{max-width:85%;padding:7px 10px;border-radius:12px;font-size:14px}.b.bot{background:var(--card);border:1px solid var(--line);align-self:flex-start}.b.me{background:var(--acc);color:#fff;align-self:flex-end}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{font-size:12.5px;padding:4px 8px}
 .row{display:flex;gap:6px}input[type=text],select{font:inherit;flex:1;min-width:0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
-.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:99px;border:1px solid currentColor}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:99px;border:1px solid currentColor}
 .EMERGENCY{color:var(--em)}.SAME-DAY{color:var(--sd)}.ROUTE{color:var(--ro)}.ANSWER,.confirmed,.closed,.pass{color:var(--ok)}.overdue,.fail{color:var(--em)}.hold,.ready_to_close{color:var(--hold)}.open{color:var(--mut)}.ASK{color:var(--hold)}
 .task{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:8px 0;border-top:1px solid var(--line)}.task:first-of-type{border-top:none}
 .alert{border-left:4px solid currentColor;padding:8px 10px;margin:8px 0;background:var(--bg);border-radius:6px}
@@ -36,9 +36,10 @@ table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-top:1px 
 .dots{display:flex;gap:6px;margin-top:8px;min-height:28px;flex-wrap:wrap}.dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:var(--ok)}.dot.red{background:var(--em)}.dot.amb{background:var(--sd)}
 .bar{height:22px;border-radius:5px;background:var(--bg);position:relative;overflow:hidden;border:1px solid var(--line)}.bar>span{position:absolute;left:0;top:0;bottom:0}.crow{display:grid;grid-template-columns:minmax(120px,170px) 1fr 90px;gap:8px;align-items:center;margin:8px 0;font-size:13px}.ci{position:absolute;top:50%;height:2px;background:var(--ink)}.ci:before,.ci:after{content:"";position:absolute;top:-4px;height:10px;width:2px;background:var(--ink)}.ci:before{left:0}.ci:after{right:0}
 @media(max-width:520px){.crow{grid-template-columns:1fr 1fr}.crow .bar{grid-column:1/3}}
-.pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}.pc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.track{display:flex;margin:8px 0 10px}.track span{flex:1;text-align:center;font-size:11px;padding:4px 2px;background:var(--card);border:1px solid var(--line);color:var(--mut);position:relative}.track span:first-child{border-radius:8px 0 0 8px}.track span:last-child{border-radius:0 8px 8px 0}.track .past{background:var(--acc2)}.track .here{background:var(--acc);color:#fff;font-weight:700}.track em{position:absolute;left:0;right:0;top:100%;font-size:10px;font-style:normal;color:var(--acc);white-space:nowrap}.rw{display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);margin-top:2px}.rw:first-of-type{border-top:none}.ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px}.ic.r{background:var(--em)}.ic.a{background:var(--sd)}.ic.g{background:var(--ok)}
+.pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}.pc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.track{display:flex;margin:8px 0 10px}.track span{flex:1;text-align:center;font-size:12px;padding:4px 2px;background:var(--card);border:1px solid var(--line);color:var(--mut);position:relative}.track span:first-child{border-radius:8px 0 0 8px}.track span:last-child{border-radius:0 8px 8px 0}.track .past{background:var(--acc2)}.track .here{background:var(--acc);color:#fff;font-weight:700}.track em{position:absolute;left:0;right:0;top:100%;font-size:12px;font-style:normal;color:var(--acc);white-space:nowrap}.rw{display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);margin-top:2px}.rw:first-of-type{border-top:none}.ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px}.ic.r{background:var(--em)}.ic.a{background:var(--sd)}.ic.g{background:var(--ok)}
 .story{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}@media(min-width:700px){.story{grid-template-columns:1fr 1fr}}.story>div{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}.story h3{margin:0 0 4px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.story .narr{grid-column:1/-1;font-size:16px;background:var(--acc2)}.story li{margin:2px 0}
 .in-banner{border-inline-start:4px solid currentColor;padding:8px 10px;margin:6px 0;background:var(--bg);border-radius:6px;font-weight:600;overflow-wrap:anywhere}.in-banner.RED{color:var(--em)}.in-banner.AMBER{color:var(--sd)}.in-banner.NONE{color:var(--ok)}
+.in-amber{border:2px solid var(--sd);background:color-mix(in srgb,var(--sd) 10%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0;overflow-wrap:anywhere;font-weight:600}
 .in-red{border:2px solid var(--em);background:color-mix(in srgb,var(--em) 10%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0;overflow-wrap:anywhere}
 .b.in-redb{border-color:var(--em);box-shadow:inset 3px 0 0 var(--em)}
 .in-form{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.in-form label,.in-set label{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
@@ -65,7 +66,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px soli
 .in-li,.in-ph,.in-sec ul{padding-inline-start:18px}
 [dir=rtl]{font-family:"Noto Naskh Arabic","Noto Sans Arabic",Segoe UI,Tahoma,Arial,sans-serif;line-height:1.9}
 [dir=rtl] button,[dir=rtl] input,[dir=rtl] select{font-family:inherit;line-height:1.6}
-.b,.in-words,.in-note,.in-cite,.in-todo,.in-over,.in-banner,.in-sec li,.in-red,.in-alert-note{unicode-bidi:plaintext;text-align:start}
+.b,.in-words,.in-note,.in-cite,.in-todo,.in-over,.in-banner,.in-sec li,.in-red,.in-amber,.in-alert-note{unicode-bidi:plaintext;text-align:start}
 .srcx,bdi{unicode-bidi:isolate;direction:ltr}
 [dir=rtl] li{unicode-bidi:normal}
 input[type=text]{unicode-bidi:plaintext}
@@ -73,24 +74,116 @@ input[type=text]{unicode-bidi:plaintext}
 [dir=rtl] .in-chips button{text-align:right}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) button.p,:root:not([data-theme=light]) nav button.on,:root:not([data-theme=light]) .b.me,:root:not([data-theme=light]) .track .here{color:#0b1a17}}
 :root[data-theme=dark] button.p,:root[data-theme=dark] nav button.on,:root[data-theme=dark] .b.me,:root[data-theme=dark] .track .here{color:#0b1a17}
-button,select,input[type=text],input[type=number]{min-height:40px}
+button,select,input[type=text],input[type=number]{min-height:44px}
+/* polish item 6: every tap target at least 44 CSS px high (audited at 430 px), and the settings summary too */
+input:not([type=checkbox]):not([type=radio]),textarea{min-height:44px}details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.demo-note{font-size:13px;font-weight:600;color:var(--sd);margin:6px 0;overflow-wrap:anywhere}
 .in-ot{display:grid;gap:4px;margin-top:8px;min-width:0}.in-ot label{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
-.in-ot input[type=date]{font:inherit;width:100%;max-width:100%;min-width:0;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.in-ot input[type=date]{font:inherit;width:100%;max-width:100%;min-width:0;min-height:44px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 .in-ot input[aria-invalid=true]{border-color:var(--em)}
 .in-ot .in-banner[hidden]{display:none}
 /* extra.status.css */
-/* status */
+/* status: AI second-check badge, raised-by labels, demo clock caption, Test connection. Logical properties only (RTL-safe). */
+.pl-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;min-height:28px;border-radius:99px;border:1px solid currentColor;font-size:13px;font-weight:600;max-width:100%;overflow-wrap:anywhere;text-align:start}
+.pl-badge[hidden]{display:none}
+.pl-b-rules{color:var(--mut)}
+.pl-b-on{color:var(--ok)}
+.pl-b-amber{color:var(--sd)}
+.pl-b-untested{color:var(--mut)}
+.pl-badge .pl-ic{font-size:12px;line-height:1}
+.pl-clk-cap{font-size:13px;color:var(--mut);align-self:center}
+.clock button{min-height:44px;min-width:44px;padding-inline:12px}
+.pl-mode-note{margin-top:6px}
+.pl-test-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+#pl-test-conn{min-height:44px;padding-inline:14px}
+#pl-test-conn:disabled{opacity:.6;cursor:progress}
+.pl-test-out{font-size:13px;color:var(--ink);overflow-wrap:anywhere;min-width:0}
+.pl-by{display:inline-block;font-size:12px;font-weight:600;line-height:1.4;padding:1px 8px;margin-inline-start:4px;border-radius:99px;border:1px solid currentColor;max-width:100%;overflow-wrap:anywhere;vertical-align:middle}
+.pl-by-rules{color:var(--ro)}
+.pl-by-ai{color:var(--hold)}
+.pl-by-both{color:var(--acc)}
+.pl-by-block{display:block;margin:6px 0;margin-inline-start:0}
+/* The page sets overflow-x:hidden on html and body, which makes body a scroll box and stops the sticky header.
+   clip hides the same horizontal overflow without creating a scroll box. hidden stays as the fallback. */
+html,body{overflow-x:hidden;overflow-x:clip}
+/* Narrow screens: the header is not pinned, so it cannot cover a phone-sized screen. Desktop keeps the sticky header. */
+@media (max-width:520px){
+  header{position:static;padding-top:8px;padding-bottom:8px}
+  h1{line-height:1.25}
+  h1 small{display:block;font-size:12px;line-height:1.25}
+  .pl-badge{margin-top:0;min-height:0;padding:3px 10px;font-size:12px}
+  .clock{margin-top:2px;gap:4px}
+  .clock button{padding-inline:8px;font-size:13px}
+}
 
 /* extra.tour.css */
-/* tour */
+/* "Try it yourself" tour (extra.tour.js). Logical properties only, so the panel and highlights mirror in Arabic (RTL).
+   Panel layout: head and progress fixed; the middle text scrolls; the footer (Back, I did it, Next) is always in view. */
+#tour-root[hidden],.tour-panel [hidden]{display:none!important}
+#tour-start{min-height:44px;padding:8px 14px;font-weight:600}
+.tour-hl{outline:3px solid var(--sd);outline-offset:3px;border-radius:6px;scroll-margin-top:var(--tour-mt,120px);scroll-margin-bottom:var(--tour-mb,16px)}
+@media (prefers-reduced-motion: no-preference){.tour-hl{animation:tour-pulse 1.6s ease-in-out infinite}}
+@keyframes tour-pulse{0%,100%{outline-offset:3px}50%{outline-offset:9px}}
+.tour-panel{position:fixed;z-index:40;display:flex;flex-direction:column;gap:8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:14px 14px 0 0;box-shadow:0 8px 28px rgba(0,0,0,.28);padding:10px 16px 12px;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;inset-inline:0;bottom:0;max-height:46vh;overflow:hidden;text-align:start;box-sizing:border-box}
+.tour-panel p{margin:0}
+.tour-panel button{min-height:44px;min-width:44px;padding:8px 12px;font:inherit}
+.tour-panel button:disabled{opacity:.5;cursor:default}
+.tour-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:0 0 auto}
+.tour-kicker{margin-inline-end:auto;font-size:14px}
+.tour-progress{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.tour-prog{flex:1;height:10px;border-radius:5px;background:var(--bg);border:1px solid var(--line);overflow:hidden}
+.tour-prog i{display:block;height:100%;width:0;background:var(--acc);transition:width .25s}
+@media (prefers-reduced-motion: reduce){.tour-prog i{transition:none}}
+.tour-count{font-weight:600;white-space:nowrap}
+.tour-body{flex:1 1 auto;min-height:0;overflow-y:auto;display:grid;gap:8px;align-content:start;overscroll-behavior:contain}
+.tour-title{font-size:16px;margin:2px 0 0;line-height:1.3}
+.tour-intro{color:var(--mut)}
+.tour-status{font-size:13px;color:var(--mut)}
+.tour-status.tour-done{color:var(--ok);font-weight:600}
+.tour-foot{display:flex;flex-wrap:wrap;gap:8px;flex:0 0 auto}
+.tour-foot .tour-next{margin-inline-start:auto}
+.tour-list{display:none;margin:0;padding:0;list-style:none;gap:4px;grid-template-columns:1fr}
+.tour-list li{margin:0}
+.tour-list button{width:100%;text-align:start;justify-content:flex-start}
+.tour-list button[aria-current=step]{font-weight:700;border-color:var(--acc)}
+.tour-min{max-height:none}
+.tour-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+body.tour-sheet{padding-bottom:var(--tour-sheet-h,0px)}
+/* side card: wide screens, and short windows at any width (the phone sheet needs a tall window) */
+@media (min-width:600px), (max-height:419px){
+ .tour-panel{inset-inline:auto;inset-inline-end:16px;top:var(--tour-top,130px);bottom:16px;width:clamp(260px,36vw,380px);max-height:none;border-radius:14px}
+ .tour-list{display:grid}
+ .tour-panel.tour-min{bottom:auto}
+ body.tour-side{padding-inline-end:clamp(280px,38vw,400px)}
+}
+
+/* extra.zmerge.css */
+/* merge fixes (lead): the sticky header must not eat a short window, and must not hide things scrolled into view */
+@media (max-width:520px), (max-height:640px){
+  html body header{position:static !important}
+}
+@media (min-width:521px) and (min-height:641px){html{scroll-padding-top:164px}}
+/* P1-9 (judge round 1): compact phone header, measured 163px at 360/390/430 wide; every header button stays >=44px */
+@media (max-width:520px){
+ header{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:6px}
+ header h1{margin:0;font-size:18px} header h1 small{display:none}
+ header .pl-badge{margin:0}
+ header .clock{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0}
+ header .pl-clk-cap{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ header #clk,header #hdr-pt{flex-basis:100%;order:-1;font-size:13px}
+ header .clock button{padding-inline:8px}
+ .banner{font-size:12px;padding-block:6px}
+}
+/* P2 (judge round 1): seven KPI tiles on one row on wide screens, so "Silent drops" is not left alone */
+@media (min-width:1000px){.kpi.k6{grid-template-columns:repeat(7,1fr)}}
 
 </style></head><body>
-<header><h1>PeriLoop <small>working name · elective orthopaedic perioperative loop</small></h1>
-<div class="clock"><b id="clk">Day 0</b><b id="hdr-pt" class="hidden"></b><button data-t="1">+1 h</button><button data-t="6">+6 h</button><button data-t="24">+1 day</button><button data-t="72">+3 days</button><button id="reset">Reset demo</button></div></header>
+<header><h1>PeriLoop <small>working name · elective orthopaedic perioperative loop</small></h1><div id="pl-ai-badge" class="pl-badge" role="status" aria-live="polite"></div>
+<div class="clock"><button class="p" id="tour-start" type="button" aria-haspopup="dialog" aria-controls="tour-root" aria-expanded="false">Start here</button><b id="clk">Day 0</b><b id="hdr-pt" class="hidden"></b><span class="pl-clk-cap">Demo clock: skip ahead</span><button data-t="1" title="Skip the demo clock ahead 1 hour" aria-label="+1 hour (skip the demo clock ahead)">+1 hour</button><button data-t="6" title="Skip the demo clock ahead 6 hours" aria-label="+6 hours (skip the demo clock ahead)">+6 hours</button><button data-t="24" title="Skip the demo clock ahead 1 day" aria-label="+1 day (skip the demo clock ahead)">+1 day</button><button data-t="72" title="Skip the demo clock ahead 3 days" aria-label="+3 days (skip the demo clock ahead)">+3 days</button><button id="reset">Reset demo</button></div></header>
 <div class="banner">Synthetic data only. Every patient here is fictional. Decision support for staff, not diagnosis. Clinical thresholds are drafts awaiting surgeon sign-off.</div>
 <nav><button data-v="ov" class="on">Overview</button><button data-v="pt">Patient phone</button><button data-v="intake">Intake</button><button data-v="staff">Staff board</button><button data-v="tests">30-case tests</button><button data-v="about">How it works</button></nav>
 <main>
-<section id="v-ov"><div class="card"><div class="demobar"><b>Guided demo</b> <button class="p" id="dplay">Play 2-minute story</button> <button id="dnext">Next step</button> <span class="mut" id="dcap">Press play. Seven short scenes with three fictional patients.</span></div><div class="steps" id="steps"></div><div class="story" id="story"></div></div>
+<section id="v-ov"><div class="card"><div class="demobar"><b>Watch the story</b> <button id="dplay">Watch instead: 2-minute auto story</button> <button id="dnext">Next step</button> <span class="mut" id="dcap">A hands-off story: seven short scenes with three fictional patients. Prefer to click yourself? Use Start here.</span></div><div class="steps" id="steps"></div><div class="story" id="story"></div></div>
 <div class="kpi k6" id="ovkpi"></div>
 <div class="card"><h2>The loop, live</h2><div class="stages" id="stages"></div><div class="mut" id="stagenote">Each patient sits at their stage. A stage turns red when something there is overdue or an emergency is open, amber for a hold or same-day alert.</div></div>
 <div class="card"><h2>Each patient's checklist, right now</h2><div class="mut">Red: needs action now. Amber: on hold. Green: coming up. Everything else is done or waiting.</div><div id="tl" class="pcs"></div></div>
@@ -100,7 +193,8 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="chat" id="chat" aria-live="polite"></div>
 <div class="chips" id="chips"></div>
 <form class="row" id="f"><input type="text" id="msg" placeholder="Type a message in English, Bahasa Malaysia or Chinese" aria-label="Message"><button class="p">Send</button></form>
-<div class="mut" style="margin-top:6px">Replies come from fixed approved text. Nothing here is generated by a model.</div>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
+<div class="mut" style="margin-top:6px">Replies come from fixed pre-written text (draft, awaiting clinician sign-off). Nothing here is generated by a model.</div>
 <div class="in-note sc-status" id="sc-phone" style="margin-top:6px"></div></div>
 <div class="card"><h2>Your plan</h2><div id="plan"></div></div></div></section>
 <section id="v-staff" class="hidden"><div class="grid two">
@@ -128,19 +222,23 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="in-banner RED" id="iv-ot-banner" role="status" hidden></div>
 </div>
 <div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="p" id="iv-start" type="button">Start interview</button><button id="iv-sample" type="button">Load a sample patient</button><select id="iv-samp" aria-label="Sample patient" style="flex:0 1 auto"></select></div>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
 <div class="mut" id="iv-hint" style="margin-top:6px"></div>
 <div id="iv-red"></div>
 <div class="chat" id="iv-chat" aria-live="polite" style="margin-top:8px"></div>
 <div class="in-chips" id="iv-chips"></div>
 <form class="row" id="iv-form" style="margin-top:6px"><input type="text" id="iv-in" aria-label="Your answer" placeholder="Type an answer in English, Bahasa Malaysia or Chinese" autocomplete="off"><button type="button" id="iv-voice" hidden>Use voice</button><button class="p" type="submit">Send</button></form>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
 </div>
 <details class="card iv-set"><summary id="iv-set-sum">Settings: scripted, no AI</summary>
 <div class="in-set" style="margin-top:8px">
 <label>Mode<select id="iv-set-mode"><option value="scripted" selected>Scripted (no AI)</option><option value="ai">AI via proxy</option></select></label>
-<label>Provider preset<select id="iv-set-preset"></select></label>
-<div class="in-note" id="iv-set-preset-info"></div>
 <label>Proxy URL (AI mode only)<input type="url" id="iv-set-proxy" placeholder="https://your-proxy.example/chat" autocomplete="off"></label>
 <div class="in-note" id="iv-set-status" style="margin-top:6px"></div>
+<div class="pl-test-row"><button type="button" id="pl-test-conn">Test connection</button><span id="pl-test-out" class="pl-test-out" role="status" aria-live="polite"></span></div>
+<div class="in-note pl-mode-note">In AI mode a model can (1) add a short, guarded note that only asks or repeats the patient’s words, and (2) run a second check that can raise a message to same-day, never lower it. Clinical questions are never answered.</div>
+<label>Provider preset<select id="iv-set-preset"></select></label>
+<div class="in-note" id="iv-set-preset-info"></div>
 <div class="in-note" style="margin-top:6px"><b>No key is ever stored in this page; AI mode needs a server-side proxy.</b> In AI mode the fixed red-flag rules still run first on every typed answer, and interview questions stay fixed.</div>
 <div class="in-note sc-status" style="margin-top:6px"></div>
 <div class="in-note" style="margin-top:6px"><b>Data protection.</b> In AI mode the patient message text goes to the configured provider, through your proxy. This demo uses synthetic data only. For real patients, use a sovereign or self-hosted model that your data-protection rules allow.</div>
@@ -158,6 +256,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 </div>
 <div class="in-note" style="margin-top:6px">Set the surgeon to None to see the hospital answer instead.</div>
 <form class="row" id="iv-askform" style="margin-top:8px"><input type="text" id="iv-q" aria-label="Your question" placeholder="For example: When can I shower?"><button class="p" type="submit">Ask</button></form>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
 <div class="in-chips" id="iv-qchips"></div>
 <div id="iv-ans" style="margin-top:6px"></div>
 </div>
@@ -238,8 +337,8 @@ defs["engine"] = function (module, exports, require) {
   };
   const T = {
     EMERGENCY: { en: 'This may be an emergency. Call emergency services (999/998) or go to the nearest emergency department now. Our team has been alerted.', ms: 'Ini mungkin kecemasan. Hubungi perkhidmatan kecemasan atau ke jabatan kecemasan terdekat sekarang. Pasukan kami telah dimaklumkan.', zh: '这可能是紧急情况。请立即拨打急救电话或前往最近的急诊部。我们的团队已收到通知。' },
-    'SAME-DAY': { en: 'This needs a clinician to review you today. Our team has been alerted and will contact you. If it gets worse, go to the emergency department.', ms: 'Ini perlu disemak oleh doktor hari ini. Pasukan kami telah dimaklumkan. Jika bertambah teruk, ke jabatan kecemasan.', zh: '这需要医生今天为您检查。我们的团队已收到通知并会联系您。若加重请前往急诊。' },
-    ROUTE: { en: 'A clinician will reply to you. We cannot answer this one automatically.', ms: 'Doktor akan membalas anda. Kami tidak boleh menjawab soalan ini secara automatik.', zh: '医生会回复您。此问题无法自动回答。' },
+    'SAME-DAY': { en: 'This needs a clinician to review you today. Our team has been alerted. If you have not heard back today, call the ward. If it gets worse, go to the emergency department.', ms: 'Ini perlu disemak oleh doktor hari ini. Pasukan kami telah dimaklumkan. Jika anda belum dihubungi hari ini, hubungi wad. Jika bertambah teruk, ke jabatan kecemasan.', zh: '这需要医生今天为您检查。我们的团队已收到通知。若今天还没有收到回复，请致电病房。若加重请前往急诊。' },
+    ROUTE: { en: 'A clinician will reply to you. We cannot answer this one automatically. If you feel worse, or something new worries you, call the ward or go to the emergency department.', ms: 'Doktor akan membalas anda. Kami tidak boleh menjawab soalan ini secara automatik. Jika anda rasa bertambah teruk, atau ada perkara baharu yang membimbangkan, hubungi wad atau pergi ke jabatan kecemasan.', zh: '医生会回复您。此问题无法自动回答。若您感觉加重，或出现新的担心，请致电病房或前往急诊部。' },
     ASK: { en: 'Can you tell us what is not good: pain, the wound, breathing, leg swelling, or fever? If you are short of breath or have chest pain, call emergency services now.', ms: 'Boleh beritahu apa yang tidak elok: sakit, luka, pernafasan, kaki bengkak atau demam? Jika sesak nafas atau sakit dada, hubungi kecemasan sekarang.', zh: '请告诉我们哪里不舒服：疼痛、伤口、呼吸、腿肿还是发烧？若气促或胸痛请立即呼叫急救。' }
   };
 
@@ -386,7 +485,7 @@ defs["engine"] = function (module, exports, require) {
   function arRe(src, flags) { return new RegExp(arNorm(src), flags || ''); }
   function cx(words) { return arRe(AB + PFX + '(?:' + words + ')'); }
   const AR_CUE = arRe(AB + '(?:و)?(?:لا يوجد|لا توجد|ما عندي|ماعندي|ما عنده|ما عندها|ليس عندي|مو عندي|من غير|من دون|مافي|ما في|ماكو|مافيش|ما فيش|مافيه|ما فيه|مافيها|ما فيها|ما احس|ما احسه|ما احسها|ولا|لا|ما|مو|مب|مش|ليس|ليست|لست|لم|لن|بدون|عدم)' + AE, 'g');
-  const AR_GAP = /^(?:\s|و|او|ولا|لا|حتى|اي|ايه|نوع|من|فيه|فيها|في|عندي|عنده|عندها|شي|شيء|مو|ما|ليس|لم|مب|مش|احس|حاس|حاسه|اشعر|ب|وكمان)*$/;
+  const AR_GAP = /^(?:\s|و|او|ولا|لا|حتى|اي|ايه|نوع|من|فيه|فيها|في|عندي|عنده|عندها|شي|شيء|مو|ما|ليس|لم|مب|مش|احس|حاس|حاسه|اشعر|ب|وكمان|يكن|تكن|اكن|كان|كانت)*$/; // يكن/تكن/اكن/كان: "لم يكن عندي حمى" (judge round 2)
   // Returns the findings that are not negated. A cue must end before the finding and only list words may sit between them.
   function arPositive(text, findRe) {
     const s = String(text), evs = []; let m;
@@ -486,8 +585,8 @@ defs["engine"] = function (module, exports, require) {
 
   // Replies, in Arabic. The emergency reply gives no phone number: the patient is told to call the emergency services.
   Object.assign(T.EMERGENCY, { ar: 'قد يكون هذا حالة طارئة. اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى أقرب قسم للطوارئ. تم إبلاغ فريقنا.' });
-  Object.assign(T['SAME-DAY'], { ar: 'يحتاج هذا إلى تقييم من طبيب اليوم. تم إبلاغ فريقنا وسيتصل بك. إذا ساءت حالتك، اذهب إلى قسم الطوارئ.' });
-  Object.assign(T.ROUTE, { ar: 'سيرد عليك أحد الأطباء. لا نستطيع الإجابة عن هذا السؤال تلقائيا.' });
+  Object.assign(T['SAME-DAY'], { ar: 'يحتاج هذا إلى تقييم من طبيب اليوم. تم إبلاغ فريقنا. إذا لم يتم الرد عليك اليوم، اتصل بالجناح. إذا ساءت حالتك، اذهب إلى قسم الطوارئ.' }); // reviewed:false (machine draft; "will contact you" promise removed after judge review round 1)
+  Object.assign(T.ROUTE, { ar: 'سيرد عليك أحد الأطباء. لا نستطيع الإجابة عن هذا السؤال تلقائيا. إذا شعرت بأنك أسوأ، أو إذا أقلقك شيء جديد، اتصل بالجناح أو اذهب إلى قسم الطوارئ.' }); // reviewed:false (machine draft; safety-net sentence added after judge review round 1)
   Object.assign(T.ASK, { ar: 'أخبرنا بما هو غير جيد: ألم، أم الجرح، أم التنفس، أم تورم الساق، أم الحمى؟ إذا كان لديك ضيق في التنفس أو ألم في الصدر، اتصل بخدمات الطوارئ الآن.' });
   SELF_HARM_REPLY.ar = 'اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى شخص تثق به ويستطيع أن يكون معك الآن. لا تنتظر.';
   // FAQ answers in Arabic. DRAFT translations of the approved English answers. No new clinical content. Pending clinical review.
@@ -503,6 +602,42 @@ defs["engine"] = function (module, exports, require) {
   FAQ.drive_acl.arRe = FAQ.drive_knee.arRe;
 
   /* ---------- classifier (Tier 1: before any model; v1 has no model) ---------- */
+
+  /* ---------- judge round 1 (P0-3, added AFTER the first-pass numbers were measured; those numbers are not re-measured): SAME-DAY vocabulary.
+     ADDED only. Every rule goes through pos(), so "no chills", "not bleeding" and "didn't fall" do not trigger. Ms and zh wording is a machine
+     draft pending native review; the Arabic rules use arPos and are reviewed:false. ---------- */
+  const SD1_LBL = ['bleeding through the dressing or from the wound', 'chills, rigors or shivering (possible fever)', 'fall or head injury'];
+  const BLEED_RE = /(bleed\w*|blood)[^.;]{0,20}(through|seep\w*|leak\w*|soak\w*|ooz\w*|coming out|come out|pouring|running)[^.;]{0,25}(dressing|bandage|plaster|gauze|wound|incision|cast|stitches)|(dressing|bandage|plaster|gauze)[^.;]{0,25}(bleed\w*|blood)[^.;]{0,15}(through|everywhere|all over)|(wound|incision|stitches)[^.;]{0,12}(?:is |are |keeps |keep |started |still )?(bleeding|bled)\b|(darah|berdarah)[^.;]{0,20}(tembus|merembes|menembusi|bocor|keluar)[^.;]{0,20}(balutan|pembalut|luka|plaster)|(balutan|pembalut|luka)[^.;]{0,20}(berdarah|darah)|血[^。.;]{0,8}(渗|透|浸)[^。.;]{0,8}(纱布|敷料|绷带|伤口|胶布)|(纱布|敷料|绷带)[^。.;]{0,8}(渗血|透血|血透|渗出血|浸血|有血渗出|血渗出|一直有血)|伤口(?:(?!没|沒|不|无|無|未)[^。.;]){0,6}(流血|出血)/;
+  // chills: not the idioms ("chills down my spine", "gave me chills", "chills of excitement", "shivering from the aircon")
+  const CHILLS_RE = /(?<!\b(?:gave|give|gives|giving) me )\bchills?\b(?!\s+(?:down|of excitement|of joy|up and down))|\bchilly\b|\brigors?\b|\bshiver\w*\b(?!\s+(?:from|because of|due to)\s+(?:the\s+)?(?:aircon|air-con|air con|ac|a\/c|cold room|cold)\b)|\bmenggigil\b|\bgigil sejuk\b|\bsejuk menggigil\b|寒战|寒颤|打冷战|打冷颤|冷颤|发冷|畏寒/;
+  // a fall without a head strike. Not "fell in love / behind / for it / apart", not "jatuh cinta", not a fear of falling in zh.
+  const FALL_RE = /\b(?:i|we|he|she|they|dad|mum|mom|mother|father|husband|wife|patient|grandma|grandpa|dia|saya|aku)\s+(?:just\s+|also\s+|accidentally\s+|suddenly\s+|have\s+|had\s+|has\s+|baru\s+|tadi\s+)?(?:(?:fell|fallen)\b(?!\s+(?:asleep|in love|behind|for\b|apart|short|ill|sick))|(?:jatuh|terjatuh)\b(?!\s+(?:cinta|sayang|hati)))|\b(?:had|took|have had) a (?:bad |nasty )?fall\b|\bfell (?:down|over|off|out of)\b|\bslipped and fell\b|\bterjatuh\b(?!\s+(?:cinta|sayang))|(?<!怕|害怕|担心|会不会|防止|避免|以免|怕会|不想)(?:摔倒|摔跤|摔了一跤|摔到|跌倒|跌了一跤)/;
+  // a hit to the head (the only fall-type finding kept inside the pre-op intake)
+  const HEAD_RE = /\b(?:hit|hitting|bang(?:ed)?|bump(?:ed)?|knock(?:ed)?|struck|smacked)\b[^.;]{0,15}\b(?:head|skull)\b|\bhead (?:injury|trauma|knock)\b|\bterhantuk\b|\bterantuk\b|\bkepala (?:saya |dia )?(?:terhantuk|terantuk|terkena)|撞到头|撞了头|撞头|头撞到|碰到头|头部受伤/;
+  const AR_SD1_BLEED = arRe('(?:دم|ينزف|نزيف|نزف)[^.;،؟!]{0,20}(?:يتسرب|تسرب|يسيل|يخترق|نافذ|من خلال|عبر|يخرج)[^.;،؟!]{0,20}(?:ضماد|ضمادة|شاش|جرح)|(?:ضماد|ضمادة|شاش)[^.;،؟!]{0,20}(?:دم|ملطخ بالدم|مليان دم|مليء بالدم|غرقان دم)|(?:جرح|جرحي)[^.;،؟!]{0,12}(?:ينزف|يدمي|نازف)');
+  const AR_SD1_CHILLS = arRe(AB + '(?:قشعريره|رعشه|ارتجاف|ارتعاش|ارتعد|ترتجف|يرتجف|ارتجف|برد شديد مع)');
+  // whole-word fall verbs only; not "fell in love" (وقعت في الحب), not "prices fell" (سقطت الأسعار), not "signed" (وقع العقد)
+  const AR_SD1_FALL = arRe('(?<![ء-ي])[وف]?(?:سقط|وقع|طاح|طح|انزلق|تعثر)(?:ت|ه)?(?![ء-ي])(?!\\s+(?:في\\s+)?(?:النوم|الحب|الغرام))(?!\\s+(?:الاسعار|الاسهم|الحكومه|الطائره|العقد|الاتفاق|الاتفاقيه|الورقه))');
+  const AR_SD1_HEAD = arRe('(?:ضربت|ضرب|اصطدم|اصطدمت|خبطت|خبط|انضرب|اتخبط)[^.;،؟!]{0,15}(?:راس|راسي|راسه|رايس|دماغ)');
+  // history, not now: "had a fall last year" is not a same-day fall. A recent cue (today, yesterday, this week, since the operation) wins.
+  const FALL_PAST_RE = /last (?:year|month|winter|summer|spring|autumn)|\b(?:years?|months?|decades?) ago|\bin (?:january|february|march|april|may|june|july|august|september|october|november|december|19\d\d|20\d\d)\b|before (?:the |my )?(?:surgery|operation|op)\b|previous(?:ly)?\b|past (?:six|6|few|several) months|in the past\b|bulan (?:lepas|lalu)|tahun (?:lepas|lalu)|minggu lepas|dulu\b|pernah\b|去年|上个月|上月|前年|几年前|几个月前|以前|曾经|三月|四月|五月|六月|七月|八月|九月|十月|十一月|十二月|一月|二月|العام الماضي|السنه الماضيه|الشهر الماضي|قبل سنه|قبل سنوات|قبل اشهر|من زمان|في (?:يناير|فبراير|مارس|ابريل|مايو|يونيو|يوليو|اغسطس|سبتمبر|اكتوبر|نوفمبر|ديسمبر)|(?:bulan|pada) (?:januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)/;
+  const FALL_RECENT_RE = /today|yesterday|this (?:morning|afternoon|evening|week)|tonight|last night|just now|a (?:moment|minute|few minutes|few hours) ago|since (?:the |my )?(?:surgery|operation|op)\b|after (?:the |my )?(?:surgery|operation)|tadi|semalam|hari ini|malam tadi|baru (?:sahaja|je|tadi)|selepas (?:pembedahan|operasi)|今天|昨天|昨晚|刚才|刚刚|今早|今晚|术后|手术后|اليوم|امس|البارحه|الان|قبل شويه|بعد العمليه/;
+  function sameDay1(t, ctx) {
+    const f = [];
+    if (pos(t, BLEED_RE) || arPos(t, AR_SD1_BLEED)) f.push(SD1_LBL[0]);
+    if (pos(t, CHILLS_RE) || arPos(t, AR_SD1_CHILLS)) f.push(SD1_LBL[1]);
+    const past = FALL_PAST_RE.test(t) && !FALL_RECENT_RE.test(t);
+    if (!past) {
+      const head = pos(t, HEAD_RE) || arPos(t, AR_SD1_HEAD);
+      const fall = !(ctx && ctx.mode === 'intake') && (pos(t, FALL_RE) || arPos(t, AR_SD1_FALL));
+      if (head || fall) f.push(SD1_LBL[2]);
+    }
+    return f;
+  }
+  // Acknowledgements ("thanks", "done", "terima kasih", "谢谢"): anchored on the whole message, so "thanks but my calf is swollen" still reaches the red-flag rules first.
+  const ACK_RE = /^\s*(?:ok(?:ay)?[ ,]+)?(?:(?:thanks?|thank you|thx|tq|ty|noted|got it|understood|will do|done|all done|ok(?:ay)?|sure|cheers|terima kasih|terima kasih banyak|makasih|baik|faham|difahamkan|dah faham|dah siap|siap|谢谢|谢谢你|谢谢您|多谢|好的|好|收到|知道了|明白|明白了|完成了|做完了)(?:\s+(?:a lot|so much|very much|you|doctor|dr|nurse|banyak|doktor|nurse))?[ ,]*)+[\s.!。！👍🙏]*$|^\s*(?:👍|🙏|👌)[\s👍🙏👌]*$/i;
+  const ACK_REPLY = { en: 'Thanks, noted. Message us any time if anything changes.', ms: 'Terima kasih, dicatat. Hubungi kami bila-bila masa jika ada perubahan.', zh: '谢谢，已记录。如有变化请随时联系我们。' };
+
   function classify(text, ctx) {
     ctx = ctx || {}; const t = arNorm(String(text)).toLowerCase(); const flags = []; const L = lang(text); const pack = PACKS[ctx.procedure] || { redFlags: [], faq: [] };
     // EMERGENCY: self-harm first, with its own fixed reply (review2 B1)
@@ -530,6 +665,7 @@ defs["engine"] = function (module, exports, require) {
     if (tv !== null && tv >= 38.0) sd.push('fever ' + tv); else if (tv === null && pos(t, /\bfever\b|demam|发烧|发热|高烧|烧到|burning up|very hot|badan panas|rasa panas/)) sd.push('fever reported');
     if (calfFinding(t)) sd.push('calf/leg pain or swelling'); // round 6: finding-level negation, so 'calf is not swollen and no pain' is not an alarm
     arSameDay(t).forEach(f => { if (!(f.indexOf('fever') === 0 && sd.some(x => x.indexOf('fever') === 0)) && sd.indexOf(f) < 0) sd.push(f); }); // round 7: Arabic
+    sameDay1(t, ctx).forEach(f => { if (sd.indexOf(f) < 0) sd.push(f); }); // judge round 1 (P0-3)
     if (sd.length) return out('SAME-DAY', sd, L, ctx);
     // round 7: Arabic clinical judgement (blood thinners, antibiotics, injections, travel, medicine questions) and worsening pain
     if (arRoute(t)) return out('ROUTE', ['clinical judgement'], L, ctx, { safetyNet: arRouteNet(t), noAnswer: true });
@@ -544,6 +680,7 @@ defs["engine"] = function (module, exports, require) {
     for (const k of (pack.faq || [])) { const f = FAQ[k]; if ((f.re.test(t) || (f.arRe && f.arRe.test(t))) && (!f.needs || f.needs.test(t) || (f.arNeeds && f.arNeeds.test(t)))) { return out('ANSWER', [k], L, ctx, { reply: f.ans[L] || f.ans.en, safetyNet: safetyNet(t), faq: k }); } }
     if (AR_ACK_RE.test(t)) return out('ACK', ['benign'], L, ctx, { reply: AR_ACK_REPLY }); // round 7
     if (/^\s*(i'?m |i am )?(ok|okay|fine|good|baik)\b[\s.!]*$/.test(t)) return out('ACK', ['benign'], L, ctx, { reply: 'Thanks, noted. Message us any time if anything changes.' });
+    if (ACK_RE.test(t)) return out('ACK', ['benign'], L, ctx, { reply: ACK_REPLY[L] || ACK_REPLY.en }); // judge round 1 (P1-6)
     if (AR_ASK_RE.test(t)) return out('ASK', ['vague'], L, ctx); // round 7
     if (/not (so )?(good|well)|unwell|tak sihat|不太好|不舒服/.test(t)) return out('ASK', ['vague'], L, ctx);
     const t2 = t.replace(/tak teruk( sangat)?|not (too |that |very )?(bad|severe)|不严重|不太严重/g, '');
@@ -873,7 +1010,7 @@ defs["idmap"] = function (module, exports, require) {
     if (has('symptoms_now')) put('symptoms_now', ynOf(ia.symptoms_now));
     if (has('lives_alone')) put('lives_alone', ynOf(ia.lives_alone));
     if (has('stairs') && typeof ia.stairs === 'number') put('stairs_home', ia.stairs > 0 ? 'yes' : 'no');
-    if (has('mobility_aid')) put('mobility_aid', ia.mobility_aid === 'none' ? 'no' : 'yes');
+    if (has('mobility_aid') && ia.mobility_aid !== 'unknown') put('mobility_aid', ia.mobility_aid === 'none' ? 'no' : 'yes'); // unknown is recorded below, never yes
     if (has('payer')) put('payer', ia.payer);
     if (has('contact_language')) put('preferred_language', ia.contact_language);
 
@@ -893,6 +1030,14 @@ defs["idmap"] = function (module, exports, require) {
     if (has('sh_fingers')) put('sh_fingers', ynOf(ia.sh_fingers));
     if (has('fa_sore')) put('fa_sore', ynOf(ia.fa_sore));
     if (has('fa_toes')) put('fa_toes', ynOf(ia.fa_toes));
+
+    // polish item 2 (round 8): "I don't know" on any question is recorded as 'unknown' on every field it feeds, never as no.
+    // An unknown diabetes answer does not set HbA1c: HbA1c has its own question and its own answer.
+    Object.keys(ia).forEach(q => {
+      if (ia[q] !== 'unknown' || !has(q)) return;
+      const targets = q === 'diabetes' ? ['diabetes'] : (ROW[q].to || []).filter(t => t !== 'freeText');
+      targets.forEach(t => { if (out[t] === undefined || out[t] === null) out[t] = 'unknown'; });
+    });
     return out;
   }
 
@@ -939,6 +1084,81 @@ defs["interview"] = function (module, exports, require) {
   const UNK_RE = /unknown|don'?t know|not sure|tidak tahu|tak tahu|不知道|不清楚|不确定|ما ادري|مو متاكد|مش متاكد|لا اعرف|غير متاكد|مش عارف|ما اعرف/i;
   // round 6 (review3 M3): on a number question a typed 'no' means no value to give. It is recorded as unknown (a gap), never as a number.
   const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇|لا|لا يوجد|ما فيه|مافي|ما في|لاشي)\s*[.!。]?\s*$/i;
+
+  /* ---------- typed-text masking (polish round 8, item 1). Demo only. ----------
+   * Phone-number-shaped and IC-shaped digit runs become MASK before typed text is stored, shown on the Staff board or
+   * sent to a model. next() still classifies the ORIGINAL text, so the red-flag rules see what was typed.
+   * A run is an optional leading +, then digit groups joined by one space or dash. It is masked when it has 8 to 15 digits,
+   * at least one group of 3 or more digits (so "1 2 3 4 5 6 7 8" stays), is not a date such as 2026-11-08 or 08-11-2026,
+   * and is not part of a decimal such as 9.12345678. Arabic-Indic and full-width digits count as digits. IC numbers
+   * (######-##-####) fall under the same rule. */
+  const MASK = '[number removed]';
+  // dd-mm-yyyy, yyyy-mm-dd, dotted and slashed forms are dates, never masked
+  const DATE_SHAPE = /^(\d{4}[ .\/-]{1,3}\d{1,2}[ .\/-]{1,3}\d{1,2}|\d{1,2}[ .\/-]{1,3}\d{1,2}[ .\/-]{1,3}\d{4})$/; // judge round 1: slashes and spaced dashes count as date separators too
+  // an RN label just before the digits keeps them: "RN 12345678", "MRN: 12345678" are record numbers, not phone numbers
+  const RN_BEFORE = /(?:^|[^A-Za-z])(?:RN|MRN)[ :#.\-]*$/i;
+  // Each character maps to one ASCII character, so an offset in the converted text is the same offset in the original.
+  function digitsAscii(s) {
+    return s.replace(/[٠-٩]/g, c => String(c.charCodeAt(0) - 0x0660))
+      .replace(/[０-９]/g, c => String(c.charCodeAt(0) - 0xFF10))
+      .replace(/[\u2010-\u2015\u2212]/g, '-');   // en dash, em dash and minus count as dashes
+  }
+  // judge round 1 (P1-3): digits spelled out as words ("zero one two ...", "kosong satu dua ...", Chinese numerals), eight or more in a row.
+  const DIGIT_WORDS_RE = new RegExp('\\b(?:(?:zero|one|two|three|four|five|six|seven|eight|nine|kosong|satu|dua|tiga|empat|lima|enam|tujuh|lapan|sembilan)[\\s,.\\-]+){7,}(?:zero|one|two|three|four|five|six|seven|eight|nine|kosong|satu|dua|tiga|empat|lima|enam|tujuh|lapan|sembilan)\\b|[零〇一二三四五六七八九](?:[\\s,.\\-]*[零〇一二三四五六七八九]){7,}', 'gi');
+  function maskTyped(text) {
+    const m1 = maskDigits(text);
+    return typeof m1 === 'string' && m1 ? m1.replace(DIGIT_WORDS_RE, MASK) : m1;
+  }
+  function maskDigits(text) {
+    if (text === undefined || text === null) return '';
+    const s = String(text);
+    if (!s) return s;
+    const probe = digitsAscii(s);
+    const re = /[+(]*\d+(?:[ .\-\/_()]{1,3}\d+)*/g;
+    let out = '', last = 0, m;
+    while ((m = re.exec(probe))) {
+      const run = m[0], body = run.replace(/^[+(]+/, '');
+      const count = body.replace(/\D/g, '').length;
+      const groups = body.split(/[ .\-\/_()]+/);
+      const dots = (body.match(/\./g) || []).length;
+      const startsZeroOrPlus = run.indexOf('+') >= 0 && run.indexOf('+') < 2 || body.charAt(0) === '0';
+      // a group of 3 or more digits, or ten or more single digits starting with 0 or + ("0 1 2 3 4 5 6 7 8 9")
+      const groupRule = groups.some(g => g.length >= 3) || (count >= 10 && startsZeroOrPlus) || (count >= 10 && groups.length >= 5 && groups.every(g => g.length === 2)) || (groups.length >= 10 && groups.length <= 12 && groups.every(g => g.length === 1)); // five or more pairs in a row ("12 34 56 78 90"), or ten to twelve single digits in a row ("1 2 3 4 5 6 7 8 9 0", judge round 2). Short clinical lists ("1 2 3 4 5", "BP 120 80", a 1 to 10 pain scale with its two-digit 10) stay unmasked.
+      const before = probe.charAt(m.index - 1), after = probe.charAt(m.index + run.length + 1);
+      const inDecimal = (before === '.' && /\d/.test(probe.charAt(m.index - 2))) || (probe.charAt(m.index + run.length) === '.' && /\d/.test(after));
+      const rn = RN_BEFORE.test(probe.slice(Math.max(0, m.index - 12), m.index));
+      // one dot is a decimal (1.2345678, 7.2); phone-style dots need two or more
+      const hit = count >= 8 && count <= 15 && groupRule && dots !== 1 && !DATE_SHAPE.test(body) && !inDecimal && !rn;
+      if (hit) { out += s.slice(last, m.index) + MASK; last = m.index + run.length; }
+    }
+    return out + s.slice(last);
+  }
+  // Masks every string in a plain object or array (used for sample histories before they are shown or summarised).
+  function maskDeep(v) {
+    if (typeof v === 'string') return maskTyped(v);
+    if (Array.isArray(v)) return v.map(maskDeep);
+    if (v && typeof v === 'object') { const o = {}; Object.keys(v).forEach(k => { o[k] = maskDeep(v[k]); }); return o; }
+    return v;
+  }
+
+  /* ---------- out-of-range numbers (polish round 8, item 3). A value outside the allowed range is named as wrong, never a generic reprompt. ---------- */
+  const NUM_NAME = {
+    hba1c: { en: 'HbA1c', ms: 'HbA1c', zh: 'HbA1c（糖化血红蛋白）', ar: 'HbA1c' },
+    stairs: { en: 'The number of steps', ms: 'Bilangan anak tangga', zh: '台阶数', ar: 'عدد الدرجات' },
+    acl_weeks: { en: 'The number of weeks', ms: 'Bilangan minggu', zh: '周数', ar: 'عدد الأسابيع' }
+  };
+  const NUM_NAME_DEFAULT = { en: 'This value', ms: 'Nilai ini', zh: '该数值', ar: 'هذه القيمة' };
+  // Machine drafts for ms and zh (reviewed:false). The Arabic line is also a draft.
+  const RANGE_TEXT = {
+    en: (name, v, min, max) => `${name} ${v} looks wrong. The usual range is ${min} to ${max}. Please re-check it with your care team, then type the value again. If you do not know it, type unknown.`,
+    ms: (name, v, min, max) => `${name} ${v} nampak tidak betul. Julat biasa ialah ${min} hingga ${max}. Sila semak semula dengan pasukan penjagaan anda, kemudian taip nilai itu semula. Jika anda tidak tahu, taip tidak tahu. (draf mesin)`,
+    zh: (name, v, min, max) => `${name} ${v} 看起来不正确。常见范围是 ${min} 至 ${max}。请与您的护理团队重新核对，然后再输入一次该数值。如果不知道，请输入“不知道”。（机器草稿）`,
+    ar: (name, v, min, max) => `يبدو أن ${name} ${v} غير صحيح. النطاق المعتاد من ${min} إلى ${max}. يرجى إعادة التحقق منه مع فريق الرعاية، ثم اكتب القيمة مرة أخرى. إذا لم تكن تعرفها، اكتب "لا أعرف". (مسودة آلية، تحتاج مراجعة)`
+  };
+  function rangeText(lang, qid, n, q) {
+    const name = (NUM_NAME[qid] && NUM_NAME[qid][lang]) || NUM_NAME_DEFAULT[lang] || NUM_NAME_DEFAULT.en;
+    return (RANGE_TEXT[lang] || RANGE_TEXT.en)(name, n, q.min, q.max);
+  }
 
   /* ---------- builders ---------- */
   function O(value, en, ms, zh) { return { value, label: { en, ms, zh } }; }
@@ -1261,6 +1481,15 @@ defs["interview"] = function (module, exports, require) {
     if (Array.isArray(rf)) return rf.includes(value);
     return value === rf;
   }
+  // polish item 2: an option matched exactly (value or any label), so "Not sure yet" stays the option, not the unknown answer.
+  function exactOption(q, raw) {
+    const s = arNorm(raw).trim().toLowerCase();
+    const L = x => arNorm(x).toLowerCase();
+    for (const o of q.options) {
+      if ([o.value, o.label.en, o.label.ms, o.label.zh, o.label.ar].map(x => L(x)).includes(s)) return o.value;
+    }
+    return null;
+  }
   function matchOption(q, raw) {
     const s = arNorm(raw).trim().toLowerCase();
     const L = x => arNorm(x).toLowerCase();
@@ -1300,7 +1529,8 @@ defs["interview"] = function (module, exports, require) {
     if (!LANGS.includes(lang)) throw new Error('unsupported language: ' + lang);
     const s = {
       pid: pid || null, procedure, lang, answers: {}, freeText: [], flags: [], red: null, routeFlags: [],
-      queue: COMMON.concat(BY_PROC[procedure]).map(q => q.id), current: null, done: false, reprompt: false, lastError: null
+      queue: COMMON.concat(BY_PROC[procedure]).map(q => q.id), current: null, done: false, reprompt: false, lastError: null,
+      rangeMsg: null
     };
     pruneSkipped(s);
     return s;
@@ -1309,13 +1539,15 @@ defs["interview"] = function (module, exports, require) {
   function next(state, answerValue) {
     if (!state || state.done) return state;
     const s = clone(state);
-    s.reprompt = false; s.lastError = null;
+    s.reprompt = false; s.lastError = null; s.rangeMsg = null;
     const qid = s.current; const q = BANK[qid];
     if (answerValue === undefined || answerValue === null) return reprompt(s, 'no answer');
 
     // 1. Safety first: any typed or spoken text goes through the engine classifier before interpretation.
+    // The classifier reads the ORIGINAL text. Only `safe` (phone and IC-shaped runs masked) is stored or kept.
     const raw = String(answerValue);
     const text = raw.trim();
+    const safe = maskTyped(text);
     let redHit = null; let routeR = null;
     if (text) {
       const r = engine.classify(text, { procedure: s.procedure, mode: 'intake' });
@@ -1327,30 +1559,35 @@ defs["interview"] = function (module, exports, require) {
     }
 
     // 2. Interpret the answer for this question.
-    let value = null; let parsed = true;
+    let value = null; let parsed = true; let rangeN = null;
     if (typeof answerValue === 'boolean' && q.type === 'yesno') value = parseYesNo(text, answerValue);
     else if (q.type === 'yesno') value = UNK_RE.test(arNorm(text)) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
-    else if (q.type === 'choice') value = text ? matchOption(q, text) : null;
-    else if (q.type === 'number') {
+    else if (q.type === 'choice') {
+      // polish item 2: "I don't know" is a recorded answer on a choice question, never a forced pick. An exact option wins over the unknown words.
+      value = text ? (exactOption(q, text) || (UNK_RE.test(arNorm(text)) ? 'unknown' : matchOption(q, text))) : null;
+    } else if (q.type === 'number') {
       const n = parseNumber(text);
       if (n === 'unknown' || (n === null && NUM_NONE_RE.test(arNorm(text)))) value = 'unknown';
       else if (typeof n === 'number' && n >= q.min && n <= q.max) value = n;
-    } else if (q.type === 'text') value = text || null;
+      else if (typeof n === 'number') rangeN = n; // polish item 3: named as wrong, with a re-check request
+    } else if (q.type === 'text') value = text ? safe : null;
 
     if (value === null) {
       if (!redHit) {
         // review2 M2 (round 4): a clinical question typed at a choice or yes/no prompt is kept, not dropped.
-        if (routeR && isClinicalRoute(routeR)) recordRoute(s, qid, routeR, text);
-        return reprompt(s, routeR && isClinicalRoute(routeR) ? 'route' : 'unrecognised');
+        if (routeR && isClinicalRoute(routeR)) recordRoute(s, qid, routeR, safe);
+        const rp = reprompt(s, routeR && isClinicalRoute(routeR) ? 'route' : (rangeN !== null ? 'range' : 'unrecognised'));
+        if (rangeN !== null) rp.rangeMsg = rangeText(s.lang, qid, rangeN, q);
+        return rp;
       }
-      value = text; parsed = false; // advance on the raw text; the red flag stands
+      value = safe; parsed = false; // advance on the masked text; the red flag stands
     }
 
     // 3. Record the answer and any red flag.
     if (redHit) applyRed(s, redHit);
-    if (routeR && (q.type === 'text' || !parsed || isClinicalRoute(routeR))) recordRoute(s, qid, routeR, text);
+    if (routeR && (q.type === 'text' || !parsed || isClinicalRoute(routeR))) recordRoute(s, qid, routeR, safe);
     s.answers[qid] = value;
-    if (q.type === 'text' || !parsed) s.freeText.push(text);
+    if (q.type === 'text' || !parsed) s.freeText.push(safe);
     if (q.redFlagIf !== undefined && matchesRed(q, value)) {
       applyRed(s, { level: q.redLevel, flags: [qid], reply: canonReply(q.redLevel, s.lang, s.procedure), source: 'question', qid });
     }
@@ -1379,12 +1616,12 @@ defs["interview"] = function (module, exports, require) {
   // The summary reads intake ids; every interview answer is also kept under its question text (questions) so the
   // summary can list anything that has no summary line under "Recorded, not summarised".
   function shownOf(q, v, lang) {
+    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道', ar: 'لا أعرف' }[lang];
     if (q.type === 'choice') { const o = q.options.find(x => x.value === v); return o ? o.label[lang] : String(v); }
     if (q.type === 'yesno') {
       const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' }, ar: { yes: 'نعم', no: 'لا' } }[lang];
       return w[v] || String(v);
     }
-    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道', ar: 'لا أعرف' }[lang];
     return String(v);
   }
   function toAnswers(state) {
@@ -1436,7 +1673,8 @@ defs["interview"] = function (module, exports, require) {
   }
   const AR_SAMPLE_COUNT = AR_SAMPLES.length;
 
-  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK, arSample, AR_SAMPLE_COUNT, arNorm };
+  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK, arSample, AR_SAMPLE_COUNT, arNorm,
+    maskTyped, maskDeep, MASK, rangeText };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTERVIEW = api;
 })(this);
 
@@ -1517,22 +1755,34 @@ defs["intake"] = function (module, exports, require) {
     en: {
       tkr_calf: 'Calf pain or swelling in the operated leg', sh_fingers: 'Numb, cold or pale fingers on the operated arm',
       fa_sore: 'Open sore, blister or ulcer on the operated foot or ankle', fa_toes: 'Cold, pale, blue or purple toes',
-      symptoms_now: 'Chest pain, trouble breathing or confusion now'
+      symptoms_now: 'Chest pain, trouble breathing or confusion now',
+      lumbar_leg_weakness: 'New or worsening weakness in one or both legs',
+      lumbar_bladder_bowel_change: 'New change in passing urine or controlling bladder or bowels',
+      lumbar_saddle_numbness: 'Numbness around the back passage, groin or inner thighs'
     },
     ms: {
       tkr_calf: 'Sakit atau bengkak betis pada kaki yang dibedah', sh_fingers: 'Jari kebas, sejuk atau pucat pada lengan yang dibedah',
       fa_sore: 'Luka terbuka, lepuh atau ulser pada kaki atau buku lali yang dibedah', fa_toes: 'Jari kaki sejuk, pucat, biru atau ungu',
-      symptoms_now: 'Sakit dada, sesak nafas atau keliru sekarang'
+      symptoms_now: 'Sakit dada, sesak nafas atau keliru sekarang',
+      lumbar_leg_weakness: 'Kelemahan baharu atau semakin teruk pada satu atau kedua-dua kaki (draf mesin)',
+      lumbar_bladder_bowel_change: 'Perubahan baharu dalam membuang air kecil atau mengawal pundi kencing dan usus (draf mesin)',
+      lumbar_saddle_numbness: 'Kebas di sekitar dubur, pangkal paha atau paha dalam (draf mesin)'
     },
     zh: {
       tkr_calf: '手术腿的小腿疼痛或肿胀', sh_fingers: '手术手臂的手指麻木、发冷或发白',
       fa_sore: '手术脚或踝部的开放性伤口、水疱或溃疡', fa_toes: '脚趾发冷、苍白、发蓝或发紫',
-      symptoms_now: '现在有胸痛、呼吸困难或意识混乱'
+      symptoms_now: '现在有胸痛、呼吸困难或意识混乱',
+      lumbar_leg_weakness: '一条或两条腿新出现或加重的无力（机器草稿）',
+      lumbar_bladder_bowel_change: '小便或大小便控制的新变化（机器草稿）',
+      lumbar_saddle_numbness: '肛门周围、会阴或大腿内侧麻木（机器草稿）'
     },
     ar: {
       tkr_calf: 'ألم أو تورم في ساق العملية', sh_fingers: 'أصابع مخدرة أو باردة أو شاحبة في ذراع العملية',
       fa_sore: 'جرح مفتوح أو بثرة أو قرحة في القدم أو الكاحل المقرر إجراء العملية عليه', fa_toes: 'أصابع قدم باردة أو شاحبة أو زرقاء أو بنفسجية',
-      symptoms_now: 'ألم في الصدر أو ضيق في التنفس أو تشوش الآن'
+      symptoms_now: 'ألم في الصدر أو ضيق في التنفس أو تشوش الآن',
+      lumbar_leg_weakness: 'ضعف جديد أو يزداد سوءا في رجل واحدة أو في الرجلين (مسودة آلية)',
+      lumbar_bladder_bowel_change: 'تغير جديد في التبول أو في التحكم في المثانة أو الأمعاء (مسودة آلية)',
+      lumbar_saddle_numbness: 'تنميل حول فتحة الشرج أو منطقة الأعضاء التناسلية أو داخل الفخذين (مسودة آلية)'
     }
   };
   // Canonical phrases, used only to obtain the engine's own reply text for a question-level red flag.
@@ -1642,6 +1892,9 @@ defs["intake"] = function (module, exports, require) {
     // round 6 (review3 B7): an impossible value is an AMBER reason, never NONE. The English wording is fixed by the review.
     implausible: (l, what) => pick(l, { en: `implausible value: clinician to verify (${what})`, ms: `nilai tidak munasabah: klinik perlu sahkan (${what}) (draf mesin)`, zh: `数值不合理：需临床人员核实（${what}）（机器草稿）` }),
     gapUnclear: (l, label, id) => pick(l, { en: `Unclear answer: ${label} (${id})`, ms: `Jawapan tidak jelas: ${label} (${id})`, zh: `回答不清楚：${label}（${id}）` }),
+    gapUnknown: (l, label, id) => pick(l, { en: `Patient does not know: ${label} (${id})`, ms: `Pesakit tidak tahu: ${label} (${id}) (draf mesin)`, zh: `患者不知道：${label}（${id}）（机器草稿）` }),
+    redUnknown: (l, id) => pick(l, { en: `Red-flag question not answered: clinician to confirm [${id}]`, ms: `Soalan tanda bahaya tidak dijawab: doktor perlu sahkan [${id}] (draf mesin)`, zh: `危险信号问题未回答：需临床医生确认 [${id}]（机器草稿）` }),
+    todoRedUnknown: (l, label) => pick(l, { en: `Confirm red-flag answer (patient does not know): ${label}`, ms: `Sahkan jawapan tanda bahaya (pesakit tidak tahu): ${label} (draf mesin)`, zh: `核实危险信号回答（患者不知道）：${label}（机器草稿）` }),
     gapBtNoName: l => pick(l, { en: 'Blood thinner named? No name given (blood_thinner)', ms: 'Pencair darah dinamakan? Tiada nama diberi (blood_thinner)', zh: '抗凝血药的名称？未提供药名（blood_thinner）' }),
     gapBtCheck: l => pick(l, { en: 'Check: meds_text names an anticoagulant but blood_thinner is no (blood_thinner, meds_text)',
       ms: 'Semak: meds_text menyebut antikoagulan tetapi blood_thinner ialah tidak (blood_thinner, meds_text)', zh: '请核对：meds_text 提到抗凝药，但 blood_thinner 为“否”（blood_thinner, meds_text）' }),
@@ -1686,6 +1939,9 @@ defs["intake"] = function (module, exports, require) {
     gapNotAnswered: (label, id) => `لم تتم الإجابة: ${label} (${id})`,
     implausible: what => `قيمة غير معقولة: يتحقق منها الطبيب (${what}) (مسودة آلية)`,
     gapUnclear: (label, id) => `إجابة غير واضحة: ${label} (${id})`,
+    gapUnknown: (label, id) => `المريض لا يعرف: ${label} (${id}) (مسودة آلية)`,
+    redUnknown: id => `لم يُجب عن سؤال مؤشر خطر: يحتاج الطبيب إلى تأكيده [${id}] (مسودة آلية)`,
+    todoRedUnknown: label => `تأكيد إجابة مؤشر الخطر (المريض لا يعرف): ${label} (مسودة آلية)`,
     gapBtNoName: () => 'هل تم تحديد اسم مميّع الدم؟ لم يُذكر اسم (blood_thinner)',
     gapBtCheck: () => 'تحقق: قائمة الأدوية تذكر مميّعا للدم لكن الإجابة عن مميّع الدم "لا" (blood_thinner, meds_text)',
     gapDmCheck: v => `تحقق: الإجابة عن السكري "لا" لكن HbA1c هو ${v} (diabetes, hba1c)`,
@@ -1754,6 +2010,7 @@ defs["intake"] = function (module, exports, require) {
   }
   // The text shown for an answer. English shows the stored value as it is; ms and zh translate yes/no and the fixed values.
   function valueText(id, v, lang) {
+    if (display(v).toLowerCase() === 'unknown') return YNW[lang].unknown; // polish item 2: a recorded "I don't know", in every language
     if (id === 'blood_thinner') {
       const b = bt(v);
       if (b.ans === null) return b.raw;
@@ -1845,6 +2102,15 @@ defs["intake"] = function (module, exports, require) {
     return { level: top.level, flags, refs, reasons: hits.map(h => h.text), reply: top.reply || canonReply(top.level, lang, x.procedure) };
   }
 
+  /* ---------- unknown answers (round 8, judge items 1 and 2) ---------- */
+  // A red-flag question answered "I don't know". Never a no, never an emergency: it is a clinician check (amber, a gap, a same-day to-do).
+  function redUnknownOf(a, proc) {
+    return Object.keys(RED_QIDS).filter(id => {
+      if (LUMBAR_IDS.includes(id) && proc !== 'LUMBAR') return false;
+      return display(a[id]).toLowerCase() === 'unknown';
+    });
+  }
+
   /* ---------- summary ---------- */
   // Interview mode: the answers came from the interview (toAnswers), so only the fields this procedure's interview asks
   // are gaps. Anything the interview answered without a summary line is listed under "Recorded, not summarised".
@@ -1884,9 +2150,11 @@ defs["intake"] = function (module, exports, require) {
 
     SECTIONS.forEach((s, si) => s.ids.forEach(id => {
       if (isMissing(a[id])) return;
-      const r = shown(id, a[id]);
       const text = valueText(id, a[id], lang);
       if (text !== '') sections[si].lines.push(`${labelOf(id, lang)}: ${text} [${id}]`);
+      // polish item 2: "I don't know" is a gap to clarify, never read as yes or no
+      if (display(a[id]).toLowerCase() === 'unknown') { if (!RED_QIDS[id]) gaps.push(M.gapUnknown(lang, labelOf(id, lang), id)); return; }
+      const r = shown(id, a[id]);
       if (!r.ok) gaps.push(M.gapUnclear(lang, labelOf(id, lang), id));
     }));
 
@@ -1944,6 +2212,23 @@ defs["intake"] = function (module, exports, require) {
     if (b.ans === 'no' && ANTICOAG_NAME.test(arNorm(display(a.meds_text)))) gaps.push(M.gapBtCheck(lang));
     if (yn(a.diabetes) === 'no' && isFinite(n) && n >= 6.5) { gaps.push(M.gapDmCheck(lang, display(a.hba1c))); ambers.push(M.dmConflict(lang, display(a.hba1c)) + ' [diabetes, hba1c]'); }
     if (yn(a.penicillin_allergy) === 'no' && PENICILLIN_TEXT.test(arNorm(display(a.allergy_text)))) gaps.push(M.gapPenCheck(lang));
+
+    // round 8 (judge item 1): a red-flag question answered unknown is an AMBER reason, a gap line and (in todosOf) a to-do
+    redUnknownOf(a, proc).forEach(id => {
+      ambers.push(M.redUnknown(lang, id));
+      gaps.push(M.gapUnknown(lang, redLabel(id, lang), id));
+    });
+    // round 8 (judge item 2): an unknown answer to a question with no summary row is still a gap to clarify (question text as label)
+    if (interviewMode) {
+      const rows = new Set(SECTIONS.reduce((acc, sec) => acc.concat(sec.ids), []));
+      Object.keys(input.interviewAnswers || {}).forEach(qid => {
+        if (input.interviewAnswers[qid] !== 'unknown') return;
+        const t = IDMAP.targetsOf(qid).filter(x => x !== 'freeText');
+        if (t.some(id => RED_QIDS[id]) || t.some(id => rows.has(id))) return;
+        const qt = input.questions && input.questions[qid] ? input.questions[qid].text : qid;
+        gaps.push(M.gapUnknown(lang, qt, qid));
+      });
+    }
 
     // NONE is only possible when every answer is in and no blood-thinner question is open. More than 6 gaps is INCOMPLETE, never NONE.
     const allergyUnresolved = yn(x.answers.penicillin_allergy) === null && eff.names.length === 0;
@@ -2005,6 +2290,8 @@ defs["intake"] = function (module, exports, require) {
     // review1 item 9: one urgent red-flag task per patient, whichever path raised it
     const red = redOf(input);
     if (red) out.push(redTodo(red, lang));
+    // round 8 (judge item 1): an unknown red-flag answer needs a same-day staff check (not an emergency alert)
+    redUnknownOf(a, x.procedure).forEach(id => out.push({ key: 'red_unknown_' + id, title: M.todoRedUnknown(lang, redLabel(id, lang)), owner: 'clinician', dueDays: 0, dueHours: 0, urgent: true, kind: 'call', reason: id, needsClinician: true })); // judge round 2 (P1-D): same owner and deadline as the Staff board task made when the patient answers Unknown
     // review1 item 10: patient's own words that need a clinician, due within 48 h
     const worse = freeTextFlags(x).filter(isWorsening);
     if (worse.length) out.push({ key: 'clinician_review_worsening', title: M.todoWorsening(lang), owner: 'clinician', dueDays: 0, dueHours: 48, kind: 'review', reason: worse.map(f => `freeText.${f.i}`).join(', '), needsClinician: true });
@@ -2571,7 +2858,7 @@ defs["adapter"] = function (module, exports, require) {
     ms: 'Terima kasih. Sila jawab soalan seterusnya.',
     zh: '谢谢。请回答下一个问题。'
   };
-  var SAFE_SAME_DAY ='This needs a clinician to review you today. Our team has been alerted and will contact you. If it gets worse, go to the emergency department.';
+  var SAFE_SAME_DAY ='This needs a clinician to review you today. Our team has been alerted. If you have not heard back today, call the ward. If it gets worse, go to the emergency department.';
 
   /* ---------- output guard (review1 B1; guard2). Every model reply passes here before anyone sees it. ----------
    * A reply is accepted only as (a) a question to the patient, (b) a summary of the patient's own words, or
@@ -3074,7 +3361,7 @@ defs["second_check"] = function (module, exports, require) {
 
   var TIMEOUT_MS = 8000;
   var REASON_WORDS = 12;
-  var SAME_DAY_REPLY = 'This needs a clinician to review you today. Our team has been alerted and will contact you. If it gets worse, go to the emergency department.';
+  var SAME_DAY_REPLY = 'This needs a clinician to review you today. Our team has been alerted. If you have not heard back today, call the ward. If it gets worse, go to the emergency department.';
   // Raised-class text by language. ms and zh are machine drafts, labelled as such, like the other pages.
   var SAME_DAY_REPLIES = {
     en: SAME_DAY_REPLY,
@@ -3359,7 +3646,9 @@ function dueWhen(t){var p=s.P(t.pid),fromNow=t.dueAt-s.now;
 // review2 B5 (round 4): a claim is a note. The task stays open until evidence or a documented clinician decision.
 function claimDone(id,who){var t=s.tasks.find(function(x){return x.id===id});if(!t||t.state==='closed'||t.state==='confirmed')return;t.claimNote=who==='patient'?'patient reports done: staff to verify':'reported done: staff to verify (not closed)';s.note('done_claim',t.pid,t.claimNote+': '+t.title)}
 function chat(pid,who,text){(s.chatAll=s.chatAll||[]).push({pid:pid,who:who,text:text})}
-function send(text){if(!text.trim())return;var pid=cur;chat(pid,'me',text);
+// polish item 1: phone and IC-shaped digit runs are masked before the phone stores, shows or sends the message
+function maskIn(t){var m=window.PL_INTERVIEW;return m&&m.maskTyped?m.maskTyped(t):String(t).replace(/\+?\d[\d -]{6,}\d/g,'[number removed]')}
+function send(text){if(!text.trim())return;text=maskIn(text);var pid=cur;chat(pid,'me',text);
  if(window.__plAI&&window.__plAI.on()&&s.P(pid)){phoneChecked(pid,text);return}
  phoneDeliver(pid,text)}
 function phoneDeliver(pid,text){
@@ -3396,7 +3685,7 @@ document.addEventListener('click',function(e){var t=e.target;
 var seen=0;function syncOut(){for(var i=seen;i<s.outbox.length;i++){var m=s.outbox[i];if(!m.chatted)chat(m.pid,'bot',m.text)}seen=s.outbox.length}
 $('who').addEventListener('change',function(e){cur=e.target.value;render()});
 $('f').addEventListener('submit',function(e){e.preventDefault();var v=$('msg').value;$('msg').value='';var n=s.outbox.length;send(v);seen=s.outbox.length});
-$('reset').addEventListener('click',function(){demoReset()});$('dnext').addEventListener('click',function(){if(window.__demo.i===0&&!$('steps').children.length)demoReset();demoStep()});var timer=null;$('dplay').addEventListener('click',function(){if(timer){clearInterval(timer);timer=null;$('dplay').textContent='Play 2-minute story';return}demoReset();$('dplay').textContent='Pause';var go=function(){if(!demoStep()){clearInterval(timer);timer=null;$('dplay').textContent='Play 2-minute story'}};go();timer=setInterval(go,20000)});
+$('reset').addEventListener('click',function(){demoReset()});$('dnext').addEventListener('click',function(){if(window.__demo.i===0&&!$('steps').children.length)demoReset();demoStep()});var timer=null;$('dplay').addEventListener('click',function(){if(timer){clearInterval(timer);timer=null;$('dplay').textContent='Watch instead: 2-minute auto story';return}demoReset();$('dplay').textContent='Pause';var go=function(){if(!demoStep()){clearInterval(timer);timer=null;$('dplay').textContent='Watch instead: 2-minute auto story'}};go();timer=setInterval(go,20000)});
 $('chips').innerHTML=SAMPLES.map(function(x,i){return '<button data-s="'+i+'">'+x[0]+'</button>'}).join('');
 $('results').innerHTML=[['Hb 9.8 g/dL',{name:'Hb',value:9.8}],['HbA1c 9.1%',{name:'HbA1c',value:9.1}],['Repeat HbA1c 7.6%',{name:'HbA1c',value:7.6}],['MRSA swab positive',{name:'MRSA',positive:true}]].map(function(x){return "<button data-res='"+JSON.stringify(x[1])+"'>"+x[0]+'</button>'}).join('')+'<span class="mut">applies to the patient selected on the phone tab</span>';
 $('run').addEventListener('click',function(){var r=PC.runAll();var h=r.headline;
@@ -3500,19 +3789,23 @@ var CHROME_AR={
  'Answers come only from the sample sources, using the most specific layer that applies. Clinical questions with no approved source are passed to your care team.':'تأتي الإجابات من المصادر التجريبية فقط، وتُستخدم أدق طبقة تنطبق. الأسئلة السريرية التي لا يوجد لها مصدر معتمد تُحال إلى فريق الرعاية.',
  'Country':'الدولة','Hospital':'المستشفى','Team':'الفريق','Surgeon':'الجراح','Answer language':'لغة الإجابة',
  'Set the surgeon to None to see the hospital answer instead.':'اختر "لا شيء" للجراح لرؤية إجابة المستشفى بدلا من ذلك.',
- 'Doctor summary':'ملخص الطبيب','None':'لا يوجد','Any':'أي'
+ 'Doctor summary':'ملخص الطبيب','None':'لا يوجد','Any':'أي',
+ "Demo only. Don't type real names, phone numbers or IC numbers.":'للعرض فقط. لا تكتب أسماء حقيقية أو أرقام هواتف أو أرقام هوية. (مسودة آلية، تحتاج مراجعة)'
 };
 var PH_AR={'Type an answer in English, Bahasa Malaysia or Chinese':'اكتب إجابتك','For example: When can I shower?':'مثال: متى أستطيع الاستحمام؟'};
 // Translates the static Intake labels inside one card. Dynamic areas (chat, summary body, answers, red box, chips, settings) are skipped.
+// the demo notice in Malay and Chinese (machine drafts); the Arabic table is CHROME_AR above
+var CHROME_MS={"Demo only. Don't type real names, phone numbers or IC numbers.":'Demo sahaja. Jangan taip nama sebenar, nombor telefon atau nombor IC. (draf mesin)'};
+var CHROME_ZH={"Demo only. Don't type real names, phone numbers or IC numbers.":'仅供演示。请勿输入真实姓名、电话号码或身份证号码。（机器草稿）'};
 function translateRoot(root,lang){
  if(!root)return;
- var ar=lang==='ar',w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],n;
+ var ar=lang==='ar',MAP=lang==='ar'?CHROME_AR:lang==='ms'?CHROME_MS:lang==='zh'?CHROME_ZH:{},w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],n;
  while((n=w.nextNode()))nodes.push(n);
  nodes.forEach(function(t){
   var p=t.parentNode;
   if(!p||(p.closest&&p.closest('#iv-sum,#iv-chat,#iv-ans,#iv-red,#iv-chips,#iv-qchips,.iv-set')))return;
   var raw=t.__en!==undefined?t.__en:t.nodeValue,key=raw.trim();
-  if(ar&&CHROME_AR[key]){if(t.__en===undefined)t.__en=raw;t.nodeValue=raw.replace(key,CHROME_AR[key])}
+  if(MAP[key]){if(t.__en===undefined)t.__en=raw;t.nodeValue=raw.replace(key,MAP[key])}
   else if(t.__en!==undefined){t.nodeValue=t.__en;t.__en=undefined}
  });
  root.querySelectorAll('input[placeholder]').forEach(function(el){
@@ -3529,16 +3822,46 @@ function applyLangs(){
  setDir(iv,li);setDir(ask,lc);setDir(sum,sumLang);
  translateRoot(iv,li);translateRoot(ask,lc);translateRoot(sum,sumLang);
 }
+// polish item 4 (round 8): the context labels in Malay and Chinese (machine drafts); English and Arabic unchanged
+var CTX_LBL={ms:{country:'negara',hospital:'hospital',team:'pasukan',surgeon:'pakar bedah',procedure:'prosedur',none:'tiada',any:'mana-mana'},zh:{country:'国家',hospital:'医院',team:'团队',surgeon:'外科医生',procedure:'手术',none:'无',any:'任意'}};
 function ctxNames(ctx,lang){
- var ar=lang==='ar';
- return ['country','hospital','team','surgeon'].map(function(k){return (ar?CTX_AR[k]:k)+': '+(ctx[k]||(ar?CTX_AR.none:'none'))}).join(' · ')+' · '+(ar?CTX_AR.procedure:'procedure')+': '+(ctx.procedure||(ar?CTX_AR.any:'any'));
+ var C=lang==='ar'?CTX_AR:(CTX_LBL[lang]||null);
+ return ['country','hospital','team','surgeon'].map(function(k){return (C?C[k]:k)+': '+(ctx[k]||(C?C.none:'none'))}).join(' · ')+' · '+(C?C.procedure:'procedure')+': '+(ctx.procedure||(C?C.any:'any'));
 }
+// The fixed route sentence and the reason stems come from the knowledge module in English and Arabic only. The page localises them for Malay and Chinese.
+var ROUTE_EN='I will pass this to your care team';
+var ROUTE_LOC={ms:'Saya akan hantar soalan ini kepada pasukan penjagaan anda. (draf mesin)',zh:'我会将此问题转交给您的护理团队。（机器草稿）'};
+var ROUTE_REASON={
+ ms:[[/^clinical judgement: no approved source for topic "(.*)"$/,'Pertimbangan klinikal: tiada sumber diluluskan untuk topik "$1"'],[/^more than one topic in this question: (.*)$/,'Lebih daripada satu topik dalam soalan ini: $1'],[/^no approved source$/,'Tiada sumber yang diluluskan'],[/^instruction-like request/,'Permintaan seperti arahan: tidak dijawab daripada sumber'],[/^needs clarification$/,'Perlu penjelasan'],[/^clinical judgement/,'Pertimbangan klinikal'],[/^triage: /,'Saringan: ']],
+ zh:[[/^clinical judgement: no approved source for topic "(.*)"$/,'临床判断：该主题没有已批准的来源（$1）'],[/^more than one topic in this question: (.*)$/,'此问题涉及多个主题：$1'],[/^no approved source$/,'没有已批准的来源'],[/^instruction-like request/,'类似指令的请求：不从资料库作答'],[/^needs clarification$/,'需要澄清'],[/^clinical judgement/,'临床判断'],[/^triage: /,'分诊：']]
+};
+function routeText(t,lang){return (t===ROUTE_EN&&ROUTE_LOC[lang])?ROUTE_LOC[lang]:t}
+function routeReason(r,lang){
+ var rules=ROUTE_REASON[lang];if(!rules||!r)return r;
+ for(var i=0;i<rules.length;i++){if(rules[i][0].test(r))return String(r).replace(rules[i][0],rules[i][1])}
+ return r;
+}
+// Citation lines in Malay and Chinese (machine drafts)
+var CITE_LBL={ms:{src:'Sumber: lapisan ',owner:' · pemilik ',yes:'Diluluskan oleh doktor: ya',draft:'<b style="color:var(--em)">CONTOH draf, tidak diluluskan</b> · tiada doktor meluluskan teks ini untuk klinik ini. (draf mesin)'},zh:{src:'来源：层级 ',owner:' · 负责人 ',yes:'临床医生已批准：是',draft:'<b style="color:var(--em)">样本草稿，未获批准</b> · 本诊所没有临床医生批准此文本。（机器草稿）'}};
 function arText(text,lang,fallback){return lang==='ar'&&!/[؀-ۿ]/.test(String(text||''))?fallback:text}
+// polish item 4 (round 8): the hand-off and route text of the Ask box and the interview, in Malay and Chinese too (machine drafts).
+var NOSRC_LBL={en:'No approved source answers this in the current context. Reason: ',ms:'Tiada sumber yang diluluskan menjawab soalan ini dalam konteks semasa. Sebab: ',zh:'当前情境下没有已批准的来源可回答此问题。原因：'};
+var CTXUSED_LBL={en:'Context used: ',ms:'Konteks yang digunakan: ',zh:'所用情境：',ar:'السياق المستخدم: '};
+var PASS_LBL={
+ ms:{created:function(b){return 'Tugas dicipta di papan kakitangan'+(b?' di bawah "Tidak ditugaskan (tiada pesakit dipilih)". Tiada pesakit dipilih, jadi tugaskan di papan.':'.')+' (draf mesin)'},
+     dup:function(b){return 'Sudah ada di papan kakitangan: soalan yang sama'+(b?' dalam "Tidak ditugaskan (tiada pesakit dipilih)"':' untuk pesakit ini')+'. Tidak diduplikasi. (draf mesin)'}},
+ zh:{created:function(b){return '已在员工看板创建任务'+(b?'，归入“未分配（未选择患者）”。未选择患者，请在看板上分配。':'。')+'（机器草稿）'},
+     dup:function(b){return '员工看板上已有相同问题'+(b?'（“未分配（未选择患者）”下）':'（针对此患者）')+'。未重复添加。（机器草稿）'}}
+};
 function passMsg(res,lang){
  if(!res)return '';
- if(lang!=='ar'||!res.kind||res.kind==='none')return res.msg;
- if(res.kind==='dup')return PASS_AR.dup;
- return PASS_AR.created+(res.bucket?PASS_AR.bucket:'');
+ if(!res.kind||res.kind==='none')return res.msg;
+ if(lang==='ar'){
+  if(res.kind==='dup')return PASS_AR.dup;
+  return PASS_AR.created+(res.bucket?PASS_AR.bucket:'');
+ }
+ if(PASS_LBL[lang])return PASS_LBL[lang][res.kind==='dup'?'dup':'created'](!!res.bucket);
+ return res.msg;
 }
 function renderAskChips(lang){
  var list=lang==='ar'?ASK_CHIPS_AR:ASK_CHIPS;
@@ -3555,6 +3878,7 @@ function honestReply(text,alertExists){
  ['en','ms','zh'].forEach(function(l){out=out.replace(ALERTED[l],NO_ALERT[l])});
  return out;
 }
+var raisedUnknown={};
 var st=null,shownRed=null,curPid=null,curName='',curShort='',curProc='',curTodos=[],ivN=0,busy=false,store=null,settings={mode:'scripted',proxy:''};
 var halted=false,redTyped=null,showSrc=false,sumLang='en',autoDone=false;
 
@@ -3627,7 +3951,7 @@ function start(){
  if(!IV||!IN){$('iv-hint').textContent=MISSING;return}
  var pat=PATS[+$('iv-pat').value],proc=$('iv-proc').value,lang=$('iv-lang').value;
  try{ivN++;curPid='IV'+ivN;curName=pat.name;curShort=pat.short;curProc=proc;st=IV.build(proc,lang,curPid)}catch(e){$('iv-hint').textContent='Could not start: '+e.message;return}
- shownRed=null;curTodos=[];halted=false;redTyped=null;$('iv-in').disabled=false;
+ shownRed=null;raisedUnknown={};curTodos=[];halted=false;redTyped=null;$('iv-in').disabled=false;
  $('iv-chat').innerHTML='';$('iv-red').innerHTML='';$('iv-hint').textContent='';
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
  setHeader(curName);
@@ -3641,7 +3965,8 @@ function renderPrompt(){
  var opts=p.type==='yesno'?YESNO[lang]:(p.type==='choice'?p.options.map(function(o){return [o.value,o.label]}):null);
  if(opts)opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.setAttribute('data-in-val',o[0]);b.textContent=o[1];chips.appendChild(b)});
  // round 6 (review3 M3): every yes/no and number question offers an explicit unknown; it is recorded as a gap, never as No
- if(p.type==='yesno'||p.type==='number'){var ub=document.createElement('button');ub.type='button';ub.setAttribute('data-in-val','unknown');ub.textContent=UNK_LBL[lang]||UNK_LBL.en;chips.appendChild(ub)}
+ // polish item 2: a choice question offers the same unknown answer, recorded as a gap, never a forced pick
+ if(p.type==='yesno'||p.type==='number'||p.type==='choice'){var ub=document.createElement('button');ub.type='button';ub.setAttribute('data-in-val','unknown');ub.textContent=UNK_LBL[lang]||UNK_LBL.en;chips.appendChild(ub)}
  var kind=p.type==='yesno'?'choice':p.type;
  var h=HINT[kind]?HINT[kind][lang]:'';
  if(p.type==='number'&&p.min!=null)h+=' ('+p.min+' to '+p.max+')';
@@ -3723,25 +4048,58 @@ function afterAnswer(){
   $('iv-chips').innerHTML='';$('iv-hint').textContent='';
  }else renderPrompt();
 }
+
+// Judge round 1 (P0-2): "Unknown / not sure" to a red-flag question has an effect straight away. A fixed safety-net line, one same-day clinician
+// task (type red_unknown_<qid>; the end-of-interview to-do has the same key, so it is not sent twice) and an amber note. It is never RED and the interview goes on.
+var UNK_NOW={
+ en:'You were not sure. If you have chest pain, trouble breathing or new confusion now, call 999/998 or go to the nearest emergency department. A clinician will check this answer with you.',
+ ms:'Anda tidak pasti. Jika anda sedang sakit dada, sesak nafas atau keliru sekarang, hubungi 999/998 atau pergi ke jabatan kecemasan terdekat. Doktor akan menyemak jawapan ini dengan anda. (draf mesin)',
+ zh:'您不确定。如果您现在有胸痛、呼吸困难或新出现的意识混乱，请拨打 999/998 或前往最近的急诊部。医生会与您核实这个答案。（机器草稿）',
+ ar:'لم تكن متأكدا. إذا كنت تعاني الآن من ألم في الصدر أو ضيق في التنفس أو تشوش جديد، فاتصل بـ 999/998 أو اذهب إلى أقرب قسم للطوارئ. سيراجع طبيب هذه الإجابة معك. (مسودة آلية، لم تُراجع)'
+};
+var UNK_NOW_OTHER={
+ en:function(l){return 'You were not sure about: '+l+'. If it is happening now or getting worse, call the clinic or go to the nearest emergency department (999/998). A clinician will check this answer with you.'},
+ ms:function(l){return 'Anda tidak pasti tentang: '+l+'. Jika ia berlaku sekarang atau bertambah teruk, hubungi klinik atau pergi ke jabatan kecemasan terdekat (999/998). Doktor akan menyemak jawapan ini dengan anda. (draf mesin)'},
+ zh:function(l){return '您不确定：'+l+'。如果现在正在发生或在加重，请致电诊所或前往最近的急诊部（999/998）。医生会与您核实这个答案。（机器草稿）'},
+ ar:function(l){return 'لم تكن متأكدا بشأن: '+l+'. إذا كان يحدث الآن أو يزداد سوءا، فاتصل بالعيادة أو اذهب إلى أقرب قسم للطوارئ (999/998). سيراجع طبيب هذه الإجابة معك. (مسودة آلية، لم تُراجع)'}
+};
+var UNK_AMBER={en:'AMBER: red-flag question not answered, clinician to confirm today',ms:'AMBER: soalan tanda bahaya tidak dijawab, doktor perlu sahkan hari ini (draf mesin)',zh:'AMBER：危险信号问题未回答，需临床医生今天核实（机器草稿）',ar:'AMBER: لم يُجب عن سؤال مؤشر خطر، يحتاج الطبيب إلى تأكيده اليوم (مسودة آلية، لم تُراجع)'};
+function redUnknownNow(){
+ if(!st||!IV||!IN)return;
+ var lang=st.lang||'en',ans=IV.toAnswers(st);
+ IN.todos(ans).filter(function(t){return /^red_unknown_/.test(t.key)&&!raisedUnknown[t.key]}).forEach(function(t){
+  raisedUnknown[t.key]=1;
+  var qid=t.key.replace(/^red_unknown_/,'');
+  var lab=IN.redLabel?IN.redLabel(qid,lang):qid;
+  addMsg('bot',qid==='symptoms_now'?(UNK_NOW[lang]||UNK_NOW.en):(UNK_NOW_OTHER[lang]||UNK_NOW_OTHER.en)(lab),'in-unk');
+  var T=targetFor(st.pid?{pid:st.pid,name:curName,short:curShort,proc:st.procedure}:null);
+  var S=ensurePatient(T.pid,T.name,T.short,T.proc);
+  if(S){IN.toTasks(S,T.pid,[Object.assign({},t,{owner:'clinician',urgent:true,dueHours:undefined})]);if(window.PeriHooks)window.PeriHooks.render()}
+  var box=$('iv-red');if(box&&!box.querySelector('.in-red')){var d=document.createElement('div');d.className='in-amber';d.setAttribute('data-unk',qid);d.dir='auto';d.textContent=(UNK_AMBER[lang]||UNK_AMBER.en)+' ('+lab+')';box.appendChild(d)}
+ });
+}
 function answerWith(raw,label){
  if(!IV||!IN){$('iv-hint').textContent=MISSING;return}
  if(!st||st.done){$('iv-hint').textContent='Start an interview, or load a sample patient, first.';return}
  if(halted){$('iv-hint').textContent=ui(st.lang).paused;return}
  if(busy)return;
- var text=String(raw==null?'':raw).trim();if(!text)return;
+ var typed=String(raw==null?'':raw).trim();if(!typed)return;
+ // polish item 1: the red-flag rules read the typed text; the echo, the state, the model and the Staff board get the masked text
+ var text=IV.maskTyped(typed);
  var p=IV.prompt(st),wasText=!!p&&p.type==='text';
- addMsg('me',label||text);
+ addMsg('me',IV.maskTyped(label||typed));
  var routesBefore=st.routeFlags.length;
- st=IV.next(st,text);
- if(st.reprompt){var rr=st.routeFlags.length>routesBefore?st.routeFlags[st.routeFlags.length-1]:null;if(rr){addMsg('bot',(rr.reply?rr.reply+' ':'')+ROUTEPASS[st.lang]);}addMsg('bot',REPROMPT[st.lang]);renderPrompt();return}
+ st=IV.next(st,typed);
+ if(st.reprompt){var rr=st.routeFlags.length>routesBefore?st.routeFlags[st.routeFlags.length-1]:null;if(rr){addMsg('bot',(rr.reply?rr.reply+' ':'')+ROUTEPASS[st.lang]);}addMsg('bot',st.rangeMsg||REPROMPT[st.lang]);renderPrompt();return}
  if(st.red&&redTyped===null)redTyped=text;
  noteRed();
  if(halted){showHalted();return}
+ redUnknownNow();
  if(wasText&&effMode()==='ai'&&AD&&SC){
   busy=true;$('iv-hint').textContent='Checking your answer...';
   var nxt=IV.prompt(st);
   var done=function(){busy=false;afterAnswer()};
-  var rulesI=ENG.classify(text,{procedure:st.procedure});
+  var rulesI=ENG.classify(typed,{procedure:st.procedure,mode:'intake'});
   var checkI=(rulesI.cls==='EMERGENCY'||rulesI.cls==='SAME-DAY')?Promise.resolve(null):SC.secondCheck(getAdapter(),text,{lang:st.lang});
   checkI.then(function(sec){
    if(sec){
@@ -3750,7 +4108,11 @@ function answerWith(raw,label){
     if(finI.escalated){addMsg('bot',arText(finI.reply,st.lang,SAME_DAY_AR));var pqI=passToStaff(text,true,false);addNote(passMsg(pqI,st.lang));done();return}
     if(finI.staffTag)tagUnscreened(text);
    }
-   return AD.askSafely(getAdapter(),text,ENG.classify,{lang:st.lang,ctx:{procedure:st.procedure},step:nxt?nxt.text:undefined}).then(function(out){
+   // Judge round 1 (P1-1): an ordinary interview answer ("yes", "metformin and paracetamol", "thanks") is a recorded answer, as in scripted mode.
+   // Only a real question, an urgent class or a clinical-judgement route goes to the model path or to staff.
+   var ciI=ENG.classify(typed,{procedure:st.procedure,mode:'intake'});
+   if(ciI.cls==='ACK'||(ciI.cls==='ROUTE'&&ciI.flags.length===1&&ciI.flags[0]==='no approved answer')){done();return}
+   return AD.askSafely(getAdapter(),text,ENG.classify,{lang:st.lang,ctx:{procedure:st.procedure,mode:'intake'},step:nxt?nxt.text:undefined}).then(function(out){
    if(out&&out.mode==='ai')addMsg('bot','AI note (machine draft, not a diagnosis): '+out.text);
    else if(out&&out.mode==='blocked')addNote(ui(st.lang).blocked);
    // round 5: ROUTE, EMERGENCY and SAME-DAY never reach a model; the fixed engine reply is shown instead
@@ -3775,13 +4137,15 @@ function loadSample(){
  if(v.indexOf('ar:')===0){h=IV&&IV.arSample?IV.arSample(+v.slice(3)):null}else{h=HIS[+v]||null}
  if(!h)return;
  var ar=h.lang==='ar';
- st=null;shownRed=null;halted=false;redTyped=null;$('iv-in').disabled=false;
+ st=null;shownRed=null;raisedUnknown={};halted=false;redTyped=null;$('iv-in').disabled=false;
  $('iv-chat').innerHTML='';$('iv-chips').innerHTML='';$('iv-red').innerHTML='';
  addMsg('bot',ar?'تم تحميل العينة: '+(h.caseAr||h.case)+' (الإجراء: '+(PROC_AR[h.procedure]||h.procedure)+'، وهمي). تظهر إجاباتها في الملخص.'
   :'Sample loaded: '+h.case+' ('+h.procedure+', fictional). Its answers are summarised on the right.');
  curFromSample=true;curPid=h.pid;curProc=h.procedure;curName='Sample '+h.pid+' (fictional)';curShort='S'+(String(v).indexOf('ar:')===0?+v.slice(3)+1:(+v+1));
  setHeader(curName);
  var ans=h.sample?h:{pid:h.pid,procedure:h.procedure,lang:h.lang,answers:h.answers,freeText:h.freeText||[]};
+ // polish item 1: sample text is masked like typed text before it is summarised, put on a task or shown
+ if(IV&&IV.maskDeep)ans=IV.maskDeep(ans);
  curTodos=IN.todos(ans);
  var red=IN.redOf(ans);
  if(red)redBox(red,h.lang,{pid:h.pid,name:curName,short:curShort,proc:h.procedure,interview:false});
@@ -3796,13 +4160,31 @@ function srcHtml(text,lang){
  // Source tags such as [meds_text] or (blood_thinner) are hidden unless "Show sources" is on. Arabic keeps them LTR.
  var parts=s.split(/( \[[^\]]+\]| \([a-z][a-z_0-9.]*(?:, ?[a-z][a-z_0-9.]*)*\))/);
  return parts.map(function(p,i){
-  if(i%2===1){var inner=p.slice(0,1)===' '?p.slice(1):p;return ' <span class="srcx">'+esc(inner)+'</span>'}
+  // the masked token is shown as text (it looks like a source tag, but it is not one)
+  if(i%2===1&&p===' [number removed]')return ' '+esc('[number removed]');
+  if(i%2===1)return srcTag(p,lang);
   if(!ar)return esc(p);
   // Latin and digit runs are cut out before escaping (so HTML entities are never split), then wrapped as LTR isolates.
   var runs=[];
   var marked=p.replace(/[A-Za-z0-9][A-Za-z0-9._%\/:+\-]*(?: [A-Za-z0-9._%\/:+\-]+)*/g,function(m){runs.push(m);return '\u0001'+(runs.length-1)+'\u0002'});
   return esc(marked).replace(/\u0001(\d+)\u0002/g,function(_,k){return '<bdi dir="ltr">'+esc(runs[+k])+'</bdi>'});
  }).join('');
+}
+// polish item 5 (round 8): "Show sources" shows a friendly label; the raw field id stays in the title attribute only.
+var SRC_EN={meds_text:'medicines list'};
+var FREETEXT_LBL={en:"patient's words",ms:'kata pesakit',zh:'患者自述',ar:'كلام المريض'};
+function srcLabel(id,lang){
+ var raw=String(id).trim();
+ if(/^freeText\./.test(raw))return FREETEXT_LBL[lang]||FREETEXT_LBL.en;
+ if(lang==='en'&&SRC_EN[raw])return SRC_EN[raw];
+ var l=(typeof IN!=='undefined'&&IN&&IN.labelOf)?IN.labelOf(raw,lang):raw;
+ return (!l||l===raw)?raw.replace(/_/g,' '):l;
+}
+function srcIdsLabel(ids,lang){return ids.map(function(i){return srcLabel(i,lang)}).join(', ')}
+// one tag such as " [meds_text]" or " (blood_thinner, meds_text)": friendly text shown, raw ids in title
+function srcTag(p,lang){
+ var inner=p.slice(0,1)===' '?p.slice(1):p,open=inner.charAt(0),close=inner.charAt(inner.length-1),ids=inner.slice(1,-1).split(/,\s*/);
+ return ' <span class="srcx" title="'+esc(ids.join(', '))+'">'+esc(open+srcIdsLabel(ids,lang)+close)+'</span>';
 }
 function renderSummary(sum,todos,lang,opt){
  opt=opt||{};sumLang=lang;var U=ui(lang),ar=lang==='ar',LI=ar?'rtl':'auto';lastSum=[sum,todos,lang,opt];
@@ -3828,7 +4210,7 @@ function renderSummary(sum,todos,lang,opt){
   if(ar&&!t.urgent&&!t.dueHours&&t.dueDays<0)due=(-t.dueDays)+' '+M.before;
   if(otYmd&&typeof t.dueDays==='number'&&typeof t.dueHours!=='number'&&!t.urgent)due=IN.OT.fmtCal(IN.OT.addDays(otYmd,t.dueDays),lang)+', '+IN.OT.relOT(t.dueDays,lang);
   var owner=ar?(IN.OWNER_AR[t.owner]||t.owner):t.owner.replace(/_/g,' ');
-  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(owner)+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx"> · '+esc(M.reason)+': '+esc(t.reason)+'</span></div></div>';
+  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(owner)+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx" title="'+esc(String(t.reason||''))+'"> · '+esc(M.reason)+': '+esc(srcIdsLabel(String(t.reason||'').split(/,\s*/),lang))+'</span></div></div>';
  });
  h+='<div class="row" style="margin-top:8px;flex-wrap:wrap;align-items:center"><button class="p" type="button" data-in-act="send">'+esc(ar?'إرسال إلى لوحة الطاقم':'Send to staff board')+'</button><span class="in-note" id="iv-sent"></span></div>';
  h+='</div>';
@@ -3874,6 +4256,9 @@ function passToStaff(q,urgent,clinical){
 }
 function askCtx(){return {country:$('iv-c-country').value,hospital:$('iv-c-hospital').value,team:$('iv-c-team').value,surgeon:$('iv-c-surgeon').value,procedure:$('iv-c-proc').value||undefined}}
 function ask(q){
+ // polish item 1: the question is masked before it is answered, stored as a task, or sent to the model
+ q=IV?IV.maskTyped(q):String(q==null?'':q);
+ if(IV&&$('iv-q'))$('iv-q').value=q;
  if(effMode()==='ai'&&SC&&KN&&SRCS&&String(q||'').trim()){askChecked(q);return}
  askNow(q,null);
 }
@@ -3903,10 +4288,13 @@ function askNow(q,pre){
   var h='';
   if(r.kind==='ANSWER'){
    h+='<div class="in-words"><b>'+esc(r.text)+'</b></div>';
+   var CL=CITE_LBL[lang];
    h+=ar?'<div class="in-cite">المصدر: المستوى '+esc(r.citation.layerLabel||r.citation.layer)+' · الجهة '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>'
-     :'<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>';
+     :(CL?'<div class="in-cite">'+esc(CL.src)+esc(r.citation.layer)+esc(CL.owner)+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>'
+     :'<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>');
    // round 6 (review3 M1): a draft is labelled as a sample, never presented as clinician-approved text
    if(ar)h+=r.approved?'<div class="in-cite">معتمد من طبيب: نعم</div>':'<div class="in-cite"><b style="color:var(--em)">عينة مسودة، غير معتمدة</b> · لم يعتمد أي طبيب هذا النص لهذه العيادة.</div>';
+   else if(CL)h+=r.approved?'<div class="in-cite">'+esc(CL.yes)+'</div>':'<div class="in-cite">'+CL.draft+'</div>';
    else h+=r.approved?'<div class="in-cite">Clinician-approved: yes</div>':'<div class="in-cite"><b style="color:var(--em)">SAMPLE draft, not approved</b> · no clinician has approved this text for this clinic.</div>';
    // review1 item 8: the answer, then the hospital layer it overrides, with owner names
    var ov=KN.overrideLine(store,ctx,r);
@@ -3917,13 +4305,13 @@ function askNow(q,pre){
    if(pre&&pre.staffTag)tagUnscreened(q);
    var H=ASKHEAD;
    h+='<div class="in-words"><b>'+esc(urgent?H.urgent[lang]:pass.ok?H.passed[lang]:H.not[lang])+'</b></div>';
-   h+='<div class="in-words">'+esc(honestReply(r.text,pass.ok,lang))+'</div>';
+   h+='<div class="in-words">'+esc(honestReply(routeText(r.text,lang),pass.ok,lang))+'</div>';
    h+=ar?'<div class="in-cite">لا يوجد مصدر معتمد يجيب عن هذا السؤال في السياق الحالي. السبب: '+esc(r.reason)+'</div>'
-     :'<div class="in-cite">No approved source answers this in the current context. Reason: '+esc(r.reason)+'</div>';
+     :'<div class="in-cite">'+esc(NOSRC_LBL[lang]||NOSRC_LBL.en)+esc(routeReason(r.reason,lang))+'</div>';
    h+='<div class="in-cite" id="iv-ask-task">'+esc(passMsg(pass,lang))+'</div>';
   }
   if(pre&&pre.unscreened)h+='<div class="in-cite">'+esc(ar?UNSCREENED_AR:SC.UNSCREENED_TAG)+'</div>';
-  h+='<div class="in-cite">'+(ar?'السياق المستخدم: ':'Context used: ')+esc(ctxNames(ctx,lang))+'</div>';
+  h+='<div class="in-cite">'+esc(CTXUSED_LBL[lang]||CTXUSED_LBL.en)+esc(ctxNames(ctx,lang))+'</div>';
   out.innerHTML=h;
  }catch(e){out.textContent='Could not answer: '+e.message}
 }
@@ -3943,7 +4331,7 @@ function refreshSettings(){
  var p=AD&&AD.presets?AD.presets[$('iv-set-preset').value]:null;
  $('iv-set-preset-info').textContent=p?'Set on the proxy server only: provider '+p.provider+', base URL '+(p.baseUrl||'(your own)')+', model '+(p.model||'(your own)')+'.':'';
  var scOn=effMode()==='ai'&&!!SC;
- var scMsg=scOn?'Second check: on for Intake, Ask box and Patient phone. The model can raise a message to urgent; it can never lower one. Unscreened messages are tagged on the Staff board.':'Second check: off (rules only). Rules alone were measured at about 56% of urgent messages on an unseen AI-written set; turn on a second check for production.';
+ var scMsg=scOn?'Second check: on for Intake, Ask box and Patient phone. The model can raise a message to urgent; it can never lower one. Unscreened messages are tagged on the Staff board.':'Second check: off (rules only). Rules alone caught 34 of 63 urgent AI-written messages at first pass (Overview chart). A second check is an option under test, not a validated safety layer.';
  var scAr=scOn?'الفحص الثاني: مفعّل للاستقبال وصندوق الأسئلة وهاتف المريض. يمكن للنموذج أن يرفع الرسالة إلى عاجل، لكنه لا يخفضها أبدا. الرسائل غير المفحوصة تُعلَّم على لوحة الطاقم.':'الفحص الثاني: متوقف (القواعد وحدها فقط).';
  document.querySelectorAll('.sc-status').forEach(function(el){el.textContent=(el.id==='sc-phone'&&window.__plPhoneAr)?scAr:scMsg});
 }
@@ -3958,6 +4346,7 @@ function init(){
  HIS.forEach(function(h,i){if(!groups[h.procedure]){groups[h.procedure]=[];order.push(h.procedure)}groups[h.procedure].push([h,i])});
  $('iv-samp').innerHTML=order.map(function(k){return '<optgroup label="'+esc(PK[k]?PK[k].label:k)+'">'+groups[k].map(function(g){return '<option value="'+g[1]+'">'+esc(g[0].pid+' · '+g[0].case)+'</option>'}).join('')+'</optgroup>'}).join('');
  $('iv-set-preset').innerHTML=AD&&AD.presets?Object.keys(AD.presets).map(function(k){return '<option value="'+k+'">'+esc(AD.presets[k].provider)+'</option>'}).join(''):'';
+ if(AD&&AD.presets&&AD.presets.local)$('iv-set-preset').value='local'; // judge round 1 (P2): default to the self-hosted preset, as the Data protection note advises
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
  if(IV&&IV.arSample){var arG='<optgroup label="العربية (عينات وهمية)">';for(var ai=0;ai<IV.AR_SAMPLE_COUNT;ai++){var ah=IV.arSample(ai);arG+='<option value="ar:'+ai+'">'+esc(ah.pid+' · '+ah.caseAr)+'</option>'}$('iv-samp').insertAdjacentHTML('beforeend',arG+'</optgroup>')}
  renderAskChips($('iv-c-lang').value);
@@ -4016,8 +4405,670 @@ init();
 })();
 </script>
 <script>/* extra.status.js */
-// status
+/* status: makes the optional AI second check visible. Plain JS, IIFE, ES5 style like the page.
+ * It wraps functions on window.PL_secondCheck, window.PL_KNOWLEDGE and window.fetch at run time, so engine.js and mod/*.js
+ * are untouched. Labels come from data the page already keeps: alert.flags (the phone path writes the model marker),
+ * the combine() result, and the Ask box reason text. Nothing is sent over the network at load. Fictional data only.
+ *
+ * Languages: en is the reviewed wording. ms, zh and ar strings are MACHINE DRAFTS, not clinician or translator reviewed.
+ */
+(function () {
+  'use strict';
+
+  var MODEL_FLAG = 'second check (model) raised concern'; // flag the phone path writes for a model raise
+  var MODEL_REASON = 'Second check (model) raised concern'; // reason text the Ask box shows for the same raise
+  var URGENT = { EMERGENCY: 1, 'SAME-DAY': 1 };
+  var SC = window.PL_secondCheck, KN = window.PL_KNOWLEDGE;
+  var state = { failed: false, checked: false, modelRaise: 0, lastKn: null, badgeKey: '', lastFetch: null };
+
+  var T = {
+    en: {
+      badge: { rules: 'Rules only (no AI)', on: 'AI second check: on', amber: 'AI second check: unavailable, rules only', untested: 'AI second check: set, not tested' },
+      by: { rules: 'Raised by fixed rules', ai: 'Raised by AI second check', both: 'Raised by both' },
+      test: { btn: 'Test connection', testing: 'Testing the connection...', ok: 'Connected: second check works',
+        notTested: 'Not tested. Choose "AI via proxy" and enter a proxy URL first. Nothing was sent.',
+        fail: 'Not connected: ', failEnd: '. Rules only until this works.',
+        timeout: 'the proxy did not answer within 8 seconds',
+        noconn: 'no connection to the proxy (check the URL and that it is running)',
+        http: 'the proxy answered with an error (HTTP {s})',
+        upstream: 'the proxy answered but could not screen the message',
+        format: 'the proxy answered in a format the page does not accept',
+        failed: 'the request failed', none: 'the proxy gave no usable answer' }
+    },
+    ms: { // machine draft
+      badge: { rules: 'Peraturan sahaja', on: 'Semakan AI kedua: aktif', amber: 'Semakan AI kedua: tidak tersedia, peraturan sahaja', untested: 'Semakan AI kedua: ditetapkan, belum diuji' },
+      by: { rules: 'Dibangkitkan oleh peraturan tetap', ai: 'Dibangkitkan oleh semakan AI kedua', both: 'Dibangkitkan oleh kedua-duanya' },
+      test: { btn: 'Uji sambungan', testing: 'Menguji sambungan...', ok: 'Bersambung: semakan kedua berfungsi',
+        notTested: 'Belum diuji. Pilih "AI melalui proksi" dan masukkan URL proksi dahulu. Tiada apa-apa dihantar.',
+        fail: 'Tidak bersambung: ', failEnd: '. Peraturan sahaja sehingga ini berfungsi.',
+        timeout: 'proksi tidak menjawab dalam 8 saat',
+        noconn: 'tiada sambungan ke proksi (semak URL dan pastikan ia berjalan)',
+        http: 'proksi menjawab dengan ralat (HTTP {s})',
+        upstream: 'proksi menjawab tetapi tidak dapat menyemak mesej',
+        format: 'proksi menjawab dalam format yang tidak diterima',
+        failed: 'permintaan gagal', none: 'proksi tidak memberi jawapan yang boleh digunakan' }
+    },
+    zh: { // machine draft
+      badge: { rules: '仅规则', on: 'AI 第二次检查：已开启', amber: 'AI 第二次检查：不可用，仅规则', untested: 'AI 第二次检查：已设置，尚未测试' },
+      by: { rules: '由固定规则发出', ai: '由 AI 第二次检查发出', both: '由两者共同发出' },
+      test: { btn: '测试连接', testing: '正在测试连接...', ok: '已连接：第二次检查正常',
+        notTested: '尚未测试。请先选择“通过代理使用 AI”并输入代理网址。未发送任何内容。',
+        fail: '未连接：', failEnd: '。在此修复前仅使用规则。',
+        timeout: '代理在 8 秒内未响应',
+        noconn: '无法连接代理（请检查网址并确认其正在运行）',
+        http: '代理返回错误（HTTP {s}）',
+        upstream: '代理已响应，但无法审查该消息',
+        format: '代理返回的格式页面无法接受',
+        failed: '请求失败', none: '代理未给出可用的回答' }
+    },
+    ar: { // machine draft
+      badge: { rules: 'القواعد فقط', on: 'الفحص الثاني بالذكاء الاصطناعي: مفعّل', amber: 'الفحص الثاني بالذكاء الاصطناعي: غير متاح، القواعد فقط', untested: 'الفحص الثاني بالذكاء الاصطناعي: مضبوط، لم يُختبر بعد' }, // untested (ar): reviewed:false, machine draft
+      by: { rules: 'أطلقتها القواعد الثابتة', ai: 'أطلقها الفحص الثاني بالذكاء الاصطناعي', both: 'أطلقتها القواعد والفحص الثاني معا' },
+      test: { btn: 'اختبار الاتصال', testing: 'جار اختبار الاتصال...', ok: 'متصل: الفحص الثاني يعمل',
+        notTested: 'لم يُختبر بعد. اختر "الذكاء الاصطناعي عبر الخادم الوسيط" وأدخل عنوان الخادم أولا. لم يُرسل شيء.',
+        fail: 'غير متصل: ', failEnd: '. القواعد فقط حتى يعمل هذا.',
+        timeout: 'لم يرد الخادم الوسيط خلال 8 ثوان',
+        noconn: 'لا يوجد اتصال بالخادم الوسيط (تحقق من العنوان ومن تشغيله)',
+        http: 'ردّ الخادم الوسيط بخطأ (HTTP {s})',
+        upstream: 'ردّ الخادم الوسيط لكنه لم يستطع فحص الرسالة',
+        format: 'ردّ الخادم الوسيط بصيغة لا تقبلها الصفحة',
+        failed: 'فشل الطلب', none: 'لم يعطِ الخادم الوسيط ردا صالحا' }
+    }
+  };
+
+  function $(id) { return document.getElementById(id); }
+  function aiOn() { try { return !!(window.__plAI && window.__plAI.on()); } catch (e) { return false; } }
+  // The page language is the Intake language picker; Ask uses its own picker, so the Intake one decides here.
+  function lang() { var el = $('iv-lang'), v = el && el.value; return T[v] ? v : 'en'; }
+
+  // Wraps obj[name] once. The wrapper keeps the original call and its return value.
+  function wrapOnce(obj, name, make) {
+    if (!obj || typeof obj[name] !== 'function' || obj[name].__plStatus) return;
+    var w = make(obj[name]);
+    w.__plStatus = true;
+    obj[name] = w;
+  }
+
+  /* ---------- 1. badge ---------- */
+  var ICON = { rules: '○', on: '●', amber: '▲', untested: '◐' }; // ○ ● ▲
+  function badgeKind() { return !aiOn() ? 'rules' : state.failed ? 'amber' : state.checked ? 'on' : 'untested'; }
+  function renderBadge() {
+    var el = $('pl-ai-badge');
+    if (!el) return;
+    var kind = badgeKind(), L = lang(), key = kind + '|' + L;
+    if (key === state.badgeKey && el.firstChild) return; // no change: do not re-announce
+    state.badgeKey = key;
+    el.className = 'pl-badge pl-b-' + kind;
+    el.innerHTML = '<span class="pl-ic" aria-hidden="true">' + ICON[kind] + '</span><span dir="auto"></span>';
+    el.lastChild.textContent = T[L].badge[kind];
+  }
+
+  // Every second-check result passes here. 'unscreened' means the call failed, timed out or was unparsable.
+  wrapOnce(SC, 'secondCheck', function (orig) {
+    return function () {
+      return orig.apply(this, arguments).then(function (v) {
+        state.failed = !!v && v.verdict === 'unscreened';
+        if (v && v.verdict && v.verdict !== 'unscreened') state.checked = true;
+        renderBadge();
+        return v;
+      });
+    };
+  });
+
+  // Records the last fetch so Test connection can tell "no connection" from "the proxy answered with an error".
+  if (typeof window.fetch === 'function' && !window.fetch.__plStatus) {
+    var origFetch = window.fetch;
+    var wrappedFetch = function (url) {
+      var rec = { status: null, error: false };
+      state.lastFetch = rec;
+      return origFetch.apply(this, arguments).then(function (res) { rec.status = res.status; return res; },
+        function (e) { rec.error = true; throw e; });
+    };
+    wrappedFetch.__plStatus = true;
+    window.fetch = wrappedFetch;
+  }
+
+  // A settings change starts a fresh state: the amber state describes the proxy that was in use.
+  function clearModelRaise() { state.modelRaise = 0; }
+  function onSettingsChange() { state.failed = false; state.checked = false; clearModelRaise(); renderBadge(); }
+  ['iv-set-mode', 'iv-set-preset'].forEach(function (id) { var e = $(id); if (e) e.addEventListener('change', onSettingsChange); });
+  var proxyIn = $('iv-set-proxy');
+  if (proxyIn) proxyIn.addEventListener('input', onSettingsChange);
+  // Starting, sampling or switching patient ends any pending model raise.
+  ['iv-start', 'iv-sample', 'iv-pat', 'iv-lang'].forEach(function (id) {
+    var e = $(id); if (e) e.addEventListener('click', clearModelRaise);
+  });
+  ['iv-pat', 'iv-lang'].forEach(function (id) { var e = $(id); if (e) e.addEventListener('change', clearModelRaise); });
+
+  /* ---------- 2. raised-by labels ---------- */
+  // combine() marks a model raise (escalated on an urgent model verdict, with urgent rules absent).
+  // The mark is good only until the current task ends: the Intake bubble is added in that same task, and
+  // any other path (phone, Ask) clears it on its own, so it cannot reach a later Intake bubble.
+  wrapOnce(SC, 'combine', function (orig) {
+    return function (rules, sec, opts) {
+      var out = orig.apply(this, arguments);
+      if (out && out.escalated && sec && sec.verdict === 'urgent' && rules && rules.cls && !URGENT[rules.cls]) {
+        var token = {};
+        state.modelRaise = token;
+        setTimeout(function () { if (state.modelRaise === token) state.modelRaise = 0; }, 0);
+      }
+      return out;
+    };
+  });
+  // The Ask box reads the rules class from the last knowledge answer.
+  wrapOnce(KN, 'answer', function (orig) {
+    return function () { var r = orig.apply(this, arguments); state.lastKn = r; return r; };
+  });
+
+  function mkLabel(kind, block) {
+    var s = document.createElement('span');
+    s.className = 'pl-by pl-by-' + kind + (block ? ' pl-by-block' : '');
+    s.setAttribute('dir', 'auto');
+    s.textContent = T[lang()].by[kind];
+    return s;
+  }
+  function hasLabel(parent) {
+    for (var i = 0; i < parent.children.length; i++) if (parent.children[i].classList.contains('pl-by')) return true;
+    return false;
+  }
+
+  // Staff board alerts. The engine stores flags on each alert; the model marker says the model raised it.
+  function raisedBy(a) {
+    var fl = (a && a.flags) || [];
+    var model = fl.some(function (f) { return String(f).indexOf(MODEL_FLAG) >= 0; });
+    var rules = fl.some(function (f) { return String(f).trim() !== '' && String(f).indexOf(MODEL_FLAG) < 0; });
+    if (model && rules) return 'both';
+    if (model) return 'ai';
+    if (rules) return 'rules';
+    return null; // no data to say who raised it: show no label rather than guess
+  }
+  function labelAlerts() {
+    var box = $('alerts'), hooks = window.PeriHooks;
+    if (!box || !hooks || !hooks.sim) return;
+    var S = hooks.sim();
+    if (!S || !S.alerts || !S.alerts.length) return;
+    // render() lists alerts newest first, one row per alert, in the same order.
+    var list = S.alerts.slice().reverse();
+    if (box.children.length !== list.length) return;
+    for (var i = 0; i < list.length; i++) {
+      var row = box.children[i];
+      if (row.querySelector('.pl-by')) continue;
+      var k = raisedBy(list[i]);
+      var tag = row.querySelector('.tag');
+      if (k && tag) tag.insertAdjacentElement('afterend', mkLabel(k, false));
+    }
+  }
+
+  // Intake red box: red flags come from the fixed rules only (the model never raises a red box).
+  function labelRed() {
+    var box = $('iv-red'), head = box && box.querySelector('.in-red > b');
+    if (!head || head.parentNode.querySelector('.pl-by')) return;
+    head.insertAdjacentElement('afterend', mkLabel('rules', true));
+  }
+
+  // Ask box output: the model's reason text, or an urgent rules class, names the raiser.
+  function labelAsk() {
+    var out = $('iv-ans');
+    if (!out || !out.querySelector('.in-cite') || hasLabel(out)) return;
+    var kind = null;
+    if ((out.textContent || '').indexOf(MODEL_REASON) >= 0) kind = 'ai';
+    else if (state.lastKn && URGENT[state.lastKn.cls]) kind = 'rules';
+    if (kind) out.insertBefore(mkLabel(kind, true), out.firstChild);
+  }
+
+  // Intake chat: a bot bubble added in the same task as a model raise gets the AI label.
+  function labelChat(records) {
+    if (!state.modelRaise) return;
+    state.modelRaise = 0;
+    var done = false; // only the first bot bubble of the raise is the AI-raised reply; the next question is not
+    records.forEach(function (r) {
+      Array.prototype.forEach.call(r.addedNodes, function (n) {
+        if (!done && n.nodeType === 1 && n.classList.contains('b') && n.classList.contains('bot') && !n.querySelector('.pl-by')) {
+          n.appendChild(mkLabel('ai', true));
+          done = true;
+        }
+      });
+    });
+  }
+
+  function watch(id, fn) {
+    var el = $(id);
+    if (!el || !window.MutationObserver) return;
+    new MutationObserver(function (records) { fn(records); }).observe(el, { childList: true });
+  }
+  watch('alerts', labelAlerts);
+  watch('iv-red', labelRed);
+  watch('iv-ans', labelAsk);
+  watch('iv-chat', labelChat);
+
+  // Language change: re-word the badge and the labels that are already on screen.
+  function relabelAll() {
+    renderBadge();
+    ['alerts', 'iv-red', 'iv-ans'].forEach(function (id) {
+      var el = $(id);
+      if (el) Array.prototype.forEach.call(el.querySelectorAll('.pl-by'), function (n) { n.parentNode.removeChild(n); });
+    });
+    labelAlerts(); labelRed(); labelAsk();
+    var out = $('pl-test-out'), btn = $('pl-test-conn');
+    if (btn) btn.textContent = T[lang()].test.btn;
+  }
+  ['iv-lang', 'iv-c-lang'].forEach(function (id) { var e = $(id); if (e) e.addEventListener('change', relabelAll); });
+
+  /* ---------- 3. Test connection ---------- */
+  // Reason for an unscreened result, worded by case. The fetch record says whether the proxy answered at all.
+  function plainReason(r) {
+    var X = T[lang()].test, f = state.lastFetch;
+    if (r === 'second check timed out') return X.timeout;
+    if (r === 'second check unavailable') {
+      if (f && f.error) return X.noconn;
+      if (f && f.status === 200) return X.upstream;
+      if (f && f.status) return X.http.replace('{s}', String(f.status));
+      return X.none;
+    }
+    if (r === 'second check unparsed') return X.format;
+    if (r === 'second check error') return X.failed;
+    return r || X.none;
+  }
+  function runTest() {
+    var out = $('pl-test-out'), btn = $('pl-test-conn'), X = T[lang()].test;
+    if (!btn || !out) return;
+    if (!aiOn()) { out.textContent = X.notTested; return; }
+    btn.disabled = true;
+    out.textContent = X.testing;
+    state.lastFetch = null;
+    // One harmless synthetic message through the existing second-check adapter. It is not a patient message.
+    window.__plAI.check('Connection test from the settings page. Not a patient message.', { lang: 'en' }).then(function (v) {
+      btn.disabled = false;
+      if (v && (v.verdict === 'urgent' || v.verdict === 'routine')) { state.checked = true; out.textContent = X.ok; }
+      else out.textContent = X.fail + plainReason(v && v.reason) + X.failEnd;
+      renderBadge();
+    });
+  }
+  var testBtn = $('pl-test-conn');
+  if (testBtn) {
+    testBtn.textContent = T[lang()].test.btn;
+    testBtn.addEventListener('click', runTest);
+  }
+
+  renderBadge();
+  labelAlerts();
+  // Exposed for the verification script only.
+  window.PL_status = { state: state, renderBadge: renderBadge, badgeKind: badgeKind, T: T };
+})();
 
 /* extra.tour.js */
-// tour
+/* "Try it yourself: 7 steps" (opened by the Start here button).
+   It only clicks the page's own tabs and controls and reads state (window.PeriHooks.sim() and the DOM).
+   A step ticks itself when the visitor's own action produces the expected result; every step also has an "I did it" fallback.
+   Nothing here is sent over the network. */
+(function () {
+  'use strict';
+  var doc = document, win = window, body = doc.body;
+  var STEP_COUNT = 7;
+  var TITLE = 'Try it yourself: 7 steps, about 3 minutes';
+
+  function $(id) { return doc.getElementById(id); }
+  function txt(el) { return el ? String(el.textContent || '') : ''; }
+  function sim() { try { return win.PeriHooks && win.PeriHooks.sim ? win.PeriHooks.sim() : null; } catch (e) { return null; } }
+  function alertCount() { return doc.querySelectorAll('#alerts .alert').length; }
+  function mq(q) { try { return win.matchMedia ? win.matchMedia(q) : null; } catch (e) { return null; } }
+  var reduceMQ = mq('(prefers-reduced-motion: reduce)');
+  var phoneMQ = mq('(max-width: 599px) and (min-height: 420px)');
+  function reduced() { return !!(reduceMQ && reduceMQ.matches); }
+  function isPhone() { return !!(phoneMQ && phoneMQ.matches); }
+  function navBtn(v) { return doc.querySelector('nav button[data-v="' + v + '"]'); }
+  function tabOn(v) { var b = navBtn(v); return !b || b.classList.contains('on'); }
+
+  // Steps. targets: selectors on the real page. check(base): reads the page. clickTick: a visitor click inside these ticks the step.
+  var STEPS = [
+    {
+      title: 'What this is',
+      intro: 'PeriLoop turns each patient’s surgery plan into owned tasks and chases the late ones (every patient here is fictional).',
+      tab: 'ov', targets: ['#ovkpi'],
+      doIt: 'Look at the counts at the top of Overview, then scroll down to the stage board. (The Watch the story card is a separate, hands-off option.)',
+      see: 'Counts such as Open items and Overdue, and six stages from Screening to Follow-up that turn red when something is overdue or an emergency is open.'
+    },
+    {
+      title: 'Load a sample with a same-day red flag',
+      tab: 'intake', targets: ['#iv-samp', '#iv-sample'],
+      doIt: 'In Intake, pick “FIC-TKR-05 · free text: calf swelling (SAME-DAY)” in the sample list, then press Load a sample patient (Start interview does not load this sample).',
+      see: 'A red summary banner (RED), a red SAME-DAY box, and a SAME-DAY alert with an urgent task on the Staff board.',
+      check: function () { return txt($('hdr-pt')).indexOf('FIC-TKR-05') >= 0; }
+    },
+    {
+      title: 'Send a red-flag message from the patient phone',
+      tab: 'pt', targets: ['#msg', '#f button'],
+      doIt: 'In the chat box, type “my calf is swollen and I feel short of breath” and press Send.',
+      see: 'A new red EMERGENCY card in Alerts on the Staff board, and the patient reply tells them to call 999 or go to the emergency department.',
+      baseline: function () { return alertCount(); },
+      check: function (base) { return alertCount() > base; }
+    },
+    {
+      title: 'Acknowledge the alert and find its owner',
+      tab: 'staff', targets: ['#board'],
+      clickTick: '#alerts [data-ack], #board button',
+      doIt: 'Press Acknowledge on the newest alert at the top of Alerts (staff group), then look at Case board, which is highlighted.',
+      see: 'The alert records who acknowledged it, and a Case board task names its owner (for example, owner clinician); the alert card itself does not name one.'
+    },
+    {
+      title: 'Optional: try AI via proxy',
+      tab: 'intake', open: 'details.iv-set', targets: ['#iv-set-mode', '#iv-set-proxy', '#iv-set-status', '#pl-test-conn', '#pl-test-out'],
+      doIt: 'In Settings, set Mode to AI via proxy, type http://localhost:8787 into Proxy URL, then press Test connection (the tour opens Settings for you). With no proxy running you should see “Not connected” and the header badge turns to “unavailable, rules only”. Then set Mode back to Scripted (no AI); closing the tour also restores your earlier setting.',
+      see: 'The status line under the proxy box changes to “AI via proxy: typed answers go to your proxy only after the fixed red-flag rules have run.” Nothing is sent unless a proxy is listening there.',
+      result: function () { return 'Result: ' + txt($('pl-test-out')).trim() + ' Badge: ' + txt($('pl-ai-badge')).trim().replace(/^\S\s*/, '') + '.'; },
+      check: function () { return /^AI via proxy/.test(txt($('iv-set-status')).trim()) && txt($('pl-test-out')).trim().length > 0; }
+    },
+    {
+      title: 'Switch the language to Arabic',
+      dynIntro: function () { var m = $('iv-set-mode'); return m && m.value === 'ai' ? 'Note: Settings still has Mode on AI via proxy. Set it back to Scripted (no AI) in the Settings card if you want.' : 'Settings are back on Scripted (no AI).'; },
+      tab: 'intake', targets: ['#iv-lang'],
+      doIt: 'In the Intake card, change Language to العربية; switch back to English when you finish.',
+      see: 'The Intake card switches to right-to-left, so its labels and text align from the right.',
+      check: function () { var c = doc.querySelector('.iv-int'); return !!c && c.getAttribute('dir') === 'rtl'; }
+    },
+    {
+      title: 'Move the demo clock forward',
+      tab: 'ov', targets: ['header .clock'],
+      doIt: 'Press +1 day in the header. The time buttons (+1 h, +6 h, +1 day, +3 days) skip the demo clock forward, so you can watch overdue chasing without waiting.',
+      see: 'The clock on Overview moves on, and the Overdue count can rise as tasks pass their due time.',
+      baseline: function () { var S = sim(); return S ? S.now : 0; },
+      check: function (base) { var S = sim(); return !!S && S.now > base; }
+    }
+  ];
+
+  var SAVED = null; // the visitor's own Settings before the tour, restored on close or finish
+  var S = { open: false, i: 0, done: [], base: null, hl: [], timer: null, band: null, away: false, clickFn: null, tallNote: false };
+  var root = null, panel = null, live = null, startBtn = $('tour-start');
+  var els = {};
+
+  function build() {
+    root = doc.createElement('div');
+    root.id = 'tour-root';
+    root.hidden = true;
+    var list = STEPS.map(function (s, i) {
+      return '<li><button type="button" data-tour-go="' + i + '">' + (i + 1) + '. ' + s.title + '</button></li>';
+    }).join('');
+    // Layout: head and progress are fixed, the middle text scrolls, the footer (Back, I did it, Next) is always in view.
+    root.innerHTML =
+      '<section id="tour-panel" class="tour-panel" role="dialog" aria-modal="false" aria-labelledby="tour-title" aria-label="' + TITLE + '">' +
+        '<div class="tour-head"><b class="tour-kicker">' + TITLE + '</b>' +
+          '<button type="button" class="tour-collapse" aria-expanded="true" aria-controls="tour-body tour-foot">Hide steps</button>' +
+          '<button type="button" class="tour-close">Close</button></div>' +
+        '<div class="tour-progress"><div class="tour-prog" role="progressbar" aria-label="Progress through the seven steps" aria-valuemin="1" aria-valuemax="' + STEP_COUNT + '" aria-valuenow="1" aria-valuetext="1 of ' + STEP_COUNT + '"><i></i></div><span class="tour-count">1 of ' + STEP_COUNT + '</span></div>' +
+        '<div id="tour-body" class="tour-body">' +
+          '<h2 id="tour-title" class="tour-title" tabindex="-1"></h2>' +
+          '<p class="tour-intro"></p>' +
+          '<p><b>What to do:</b> <span class="tour-do"></span></p>' +
+          '<p><b>You should see:</b> <span class="tour-see"></span></p>' +
+          '<p class="tour-status"></p>' +
+          '<ol class="tour-list" aria-label="The seven steps">' + list + '</ol>' +
+        '</div>' +
+        '<div id="tour-foot" class="tour-foot">' +
+          '<button type="button" class="tour-goto">Go to the tab</button>' +
+          '<button type="button" class="tour-back">Back</button>' +
+          '<button type="button" class="tour-did">I did it</button>' +
+          '<button type="button" class="tour-next p">Next</button>' +
+        '</div>' +
+        '<div class="tour-sr" id="tour-live" role="status" aria-live="polite"></div>' +
+      '</section>';
+    body.appendChild(root);
+    panel = $('tour-panel');
+    live = $('tour-live');
+    els.body = $('tour-body');
+    els.foot = $('tour-foot');
+    els.title = root.querySelector('.tour-title');
+    els.intro = root.querySelector('.tour-intro');
+    els.doT = root.querySelector('.tour-do');
+    els.seeT = root.querySelector('.tour-see');
+    els.status = root.querySelector('.tour-status');
+    els.count = root.querySelector('.tour-count');
+    els.prog = root.querySelector('.tour-prog');
+    els.back = root.querySelector('.tour-back');
+    els.next = root.querySelector('.tour-next');
+    els.goto = root.querySelector('.tour-goto');
+    root.querySelector('.tour-close').addEventListener('click', closeTour);
+    root.querySelector('.tour-collapse').addEventListener('click', toggleCollapse);
+    els.back.addEventListener('click', function () { if (S.i > 0) showStep(S.i - 1); });
+    els.next.addEventListener('click', function () {
+      if (S.i < STEP_COUNT - 1) showStep(S.i + 1); else finish();
+    });
+    els.did = root.querySelector('.tour-did');
+    els.did.addEventListener('click', function () {
+      S.done[S.i] = true; render(); announce('Step ' + (S.i + 1) + ' marked done.');
+    });
+    els.goto.addEventListener('click', function () {
+      var st = STEPS[S.i];
+      if (st.tab) go(st.tab);
+      render();
+      reveal(S.hl);
+    });
+    root.querySelector('.tour-list').addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-tour-go]') : null;
+      if (b) showStep(+b.getAttribute('data-tour-go'));
+    });
+  }
+
+  function announce(msg) { if (live) live.textContent = msg; }
+
+  function go(v) {
+    var b = navBtn(v);
+    if (b && !b.classList.contains('on')) b.click();
+  }
+
+  function disarmClick() {
+    if (S.clickFn) { doc.removeEventListener('click', S.clickFn, true); S.clickFn = null; }
+  }
+
+  function armClick(sel) {
+    disarmClick();
+    S.clickFn = function (e) {
+      var t = e.target;
+      if (!S.open || S.done[S.i] || !t || !t.closest || !t.closest(sel)) return;
+      S.done[S.i] = true;
+      render();
+      reveal(S.hl);
+      announce('Step ' + (S.i + 1) + ' done: you did it.');
+    };
+    doc.addEventListener('click', S.clickFn, true);
+  }
+
+  function clearHl() {
+    S.hl.forEach(function (el) { el.classList.remove('tour-hl'); });
+    S.hl = [];
+    disarmClick();
+  }
+
+  // Keeps the highlighted target out from under the page header (when it is still showing) and the phone sheet.
+  function layout() {
+    if (!root) return;
+    var hdr = doc.querySelector('header');
+    var hb = Math.max(0, hdr ? hdr.getBoundingClientRect().bottom : 0);
+    var phone = isPhone();
+    var sheetH = (S.open && phone && panel) ? panel.getBoundingClientRect().height : 0;
+    body.classList.toggle('tour-side', S.open && !phone);
+    body.classList.toggle('tour-sheet', S.open && phone);
+    S.band = { top: hb + 8, bottom: win.innerHeight - sheetH - (phone ? 8 : 16) };
+    var st = doc.documentElement.style;
+    st.setProperty('--tour-mt', Math.round(hb + 8) + 'px');
+    st.setProperty('--tour-mb', Math.round(sheetH + (phone ? 8 : 16)) + 'px');
+    var short = win.innerHeight < 520;
+    st.setProperty('--tour-top', Math.round(short ? 12 : hb + 12) + 'px');
+    st.setProperty('--tour-sheet-h', Math.round(sheetH) + 'px');
+  }
+
+  // Brings the first target into the free band (clear of the header and the phone sheet), then fits the group if it can.
+  // Scrolling is instant, so positions read straight after are final.
+  function reveal(targets) {
+    if (!targets || !targets.length) return;
+    layout();
+    var first = targets[0];
+    try { first.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); }
+    catch (e) { first.scrollIntoView(false); }
+    layout(); // the header offset changes once the page has moved
+    var band = S.band || { top: 0, bottom: win.innerHeight };
+    var top = Infinity, bottom = -Infinity;
+    targets.forEach(function (el) { var r = el.getBoundingClientRect(); top = Math.min(top, r.top); bottom = Math.max(bottom, r.bottom); });
+    var delta = 0;
+    S.tallNote = bottom - top > band.bottom - band.top;
+    if (bottom - top <= band.bottom - band.top) {
+      if (top < band.top) delta = top - band.top;
+      else if (bottom > band.bottom) delta = bottom - band.bottom;
+    } else {
+      delta = top - band.top;
+    }
+    if (Math.abs(delta) > 1) win.scrollBy({ top: delta, behavior: 'auto' });
+    if (S.open && els.status) els.status.textContent = statusText();
+  }
+
+  function statusText() {
+    var st = STEPS[S.i], done = !!S.done[S.i], away = S.away;
+    var msg;
+    if (away) msg = 'You are on another tab, so this step’s highlight is out of view. Use the button below to return.';
+    else if (done) msg = 'Done.';
+    else if (st.clickTick) msg = 'This step ticks when you press Acknowledge or a Case board button, or press I did it.';
+    else if (st.check) msg = 'This step ticks itself when the result appears, or press I did it.';
+    else msg = 'Press I did it when you have looked.';
+    if (done && !away && st.result) { try { msg += ' ' + st.result(); } catch (e) { /* text only */ } }
+    if (S.tallNote && !away) msg += ' This target is taller than the free space on screen: its top edge is shown, so scroll the page to read the rest.';
+    return msg;
+  }
+
+  function render() {
+    if (!root) return;
+    var st = STEPS[S.i], n = S.i + 1, done = !!S.done[S.i];
+    var away = !!st.tab && !tabOn(st.tab);
+    S.away = away;
+    els.title.textContent = n + '. ' + st.title;
+    var intro = st.dynIntro ? st.dynIntro() : (st.intro || '');
+    els.intro.textContent = intro;
+    els.intro.hidden = !intro;
+    els.doT.textContent = st.doIt;
+    els.seeT.textContent = st.see;
+    els.status.textContent = statusText();
+    els.status.className = 'tour-status' + (done && !away ? ' tour-done' : '');
+    els.goto.hidden = !away;
+    if (away) els.goto.textContent = 'Go to the ' + (navBtn(st.tab) ? txt(navBtn(st.tab)) : st.tab) + ' tab';
+    els.count.textContent = n + ' of ' + STEP_COUNT;
+    els.prog.setAttribute('aria-valuenow', String(n));
+    els.prog.setAttribute('aria-valuetext', n + ' of ' + STEP_COUNT);
+    els.prog.firstChild.style.width = Math.round(n / STEP_COUNT * 100) + '%';
+    els.back.disabled = S.i === 0;
+    els.next.textContent = S.i === STEP_COUNT - 1 ? 'Finish' : 'Next';
+    root.querySelectorAll('[data-tour-go]').forEach(function (b, j) {
+      if (j === S.i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
+    layout();
+  }
+
+  // Step done: the visible target may have grown (for example a status line), so it is revealed again.
+  function markDone() {
+    S.done[S.i] = true;
+    render();
+    reveal(S.hl);
+    announce('Step ' + (S.i + 1) + ' done.');
+  }
+
+  function tick() {
+    if (!S.open) return;
+    var st = STEPS[S.i];
+    if (!S.done[S.i] && st.check) {
+      var ok = false;
+      try { ok = !!st.check(S.base); } catch (e) { ok = false; }
+      if (ok) { markDone(); return; }
+    }
+    // the visitor moved to another tab: say so, once per change
+    var away = !!st.tab && !tabOn(st.tab);
+    if (away !== S.away) render();
+  }
+
+  function showStep(i) {
+    S.i = i;
+    var st = STEPS[i];
+    clearHl();
+    S.tallNote = false;
+    S.base = st.baseline ? st.baseline() : null;
+    if (st.open) { var d = doc.querySelector(st.open); if (d) d.open = true; }
+    if (st.tab) go(st.tab);
+    st.targets.forEach(function (sel) {
+      var el = doc.querySelector(sel);
+      if (el) { el.classList.add('tour-hl'); S.hl.push(el); }
+    });
+    if (st.clickTick) armClick(st.clickTick);
+    if (els.body) els.body.scrollTop = 0; // every step starts at the top of its text
+    render();
+    announce('Step ' + (i + 1) + ' of ' + STEP_COUNT + ': ' + st.title + '.');
+    tick();
+    reveal(S.hl);
+  }
+
+  function snapSettings() {
+    var m = $('iv-set-mode'), u = $('iv-set-proxy');
+    SAVED = m && u ? { mode: m.value, url: u.value } : null;
+  }
+  function restoreSettings() {
+    var m = $('iv-set-mode'), u = $('iv-set-proxy');
+    if (!SAVED || !m || !u) return;
+    if (m.value !== SAVED.mode || u.value !== SAVED.url) {
+      u.value = SAVED.url; m.value = SAVED.mode;
+      m.dispatchEvent(new Event('change', { bubbles: true }));
+      u.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    SAVED = null;
+  }
+
+  function openTour() {
+    if (!S.open) snapSettings();
+    S.open = true;
+    root.hidden = false;
+    if (startBtn) startBtn.setAttribute('aria-expanded', 'true');
+    showStep(S.i);
+    if (!S.timer) S.timer = win.setInterval(tick, 500);
+    try { els.title.focus({ preventScroll: true }); } catch (e) { /* focus is a nicety */ }
+  }
+
+  function closeTour() {
+    restoreSettings();
+    S.open = false;
+    if (root) root.hidden = true;
+    clearHl();
+    if (S.timer) { win.clearInterval(S.timer); S.timer = null; }
+    layout();
+    if (startBtn) { startBtn.setAttribute('aria-expanded', 'false'); try { startBtn.focus({ preventScroll: true }); } catch (e) { /* nicety */ } }
+  }
+
+  // Finish closes the tour and starts it over next time; the ticks are cleared too, so a re-run checks again.
+  function finish() { closeTour(); S.i = 0; S.done = []; }
+
+  function toggleCollapse() {
+    var c = panel.classList.toggle('tour-min');
+    var b = root.querySelector('.tour-collapse');
+    b.textContent = c ? 'Show steps' : 'Hide steps';
+    b.setAttribute('aria-expanded', c ? 'false' : 'true');
+    els.body.hidden = c;
+    els.foot.hidden = c;
+    layout();
+  }
+
+  build();
+  if (startBtn) startBtn.addEventListener('click', openTour);
+  // Esc closes the tour only when the visitor is not typing or choosing: a focused select, input or text box keeps its own Esc.
+  doc.addEventListener('keydown', function (e) {
+    if (!S.open || e.defaultPrevented) return;
+    if (e.key !== 'Escape' && e.key !== 'Esc') return;
+    var a = doc.activeElement, tag = a && a.tagName ? a.tagName : '';
+    if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA' || (a && a.isContentEditable)) return;
+    e.preventDefault();
+    closeTour();
+  });
+  win.addEventListener('resize', function () { if (S.open) layout(); });
+  win.addEventListener('scroll', function () { if (S.open) layout(); }, { passive: true });
+  if (phoneMQ && phoneMQ.addEventListener) phoneMQ.addEventListener('change', function () { if (S.open) layout(); });
+
+  // Read-only handle for checks: the step list and the current state. It changes nothing on the page.
+  win.PeriTour = {
+    title: TITLE,
+    steps: STEPS.map(function (s) { return { title: s.title, tab: s.tab || null, targets: s.targets.slice(), auto: !!s.check, click: s.clickTick || null }; }),
+    state: function () { return { open: S.open, i: S.i, done: S.done.slice(), away: S.away }; }
+  };
+})();
 </script></body></html>

@@ -46,8 +46,8 @@
   };
   const T = {
     EMERGENCY: { en: 'This may be an emergency. Call emergency services (999/998) or go to the nearest emergency department now. Our team has been alerted.', ms: 'Ini mungkin kecemasan. Hubungi perkhidmatan kecemasan atau ke jabatan kecemasan terdekat sekarang. Pasukan kami telah dimaklumkan.', zh: '这可能是紧急情况。请立即拨打急救电话或前往最近的急诊部。我们的团队已收到通知。' },
-    'SAME-DAY': { en: 'This needs a clinician to review you today. Our team has been alerted and will contact you. If it gets worse, go to the emergency department.', ms: 'Ini perlu disemak oleh doktor hari ini. Pasukan kami telah dimaklumkan. Jika bertambah teruk, ke jabatan kecemasan.', zh: '这需要医生今天为您检查。我们的团队已收到通知并会联系您。若加重请前往急诊。' },
-    ROUTE: { en: 'A clinician will reply to you. We cannot answer this one automatically.', ms: 'Doktor akan membalas anda. Kami tidak boleh menjawab soalan ini secara automatik.', zh: '医生会回复您。此问题无法自动回答。' },
+    'SAME-DAY': { en: 'This needs a clinician to review you today. Our team has been alerted. If you have not heard back today, call the ward. If it gets worse, go to the emergency department.', ms: 'Ini perlu disemak oleh doktor hari ini. Pasukan kami telah dimaklumkan. Jika anda belum dihubungi hari ini, hubungi wad. Jika bertambah teruk, ke jabatan kecemasan.', zh: '这需要医生今天为您检查。我们的团队已收到通知。若今天还没有收到回复，请致电病房。若加重请前往急诊。' },
+    ROUTE: { en: 'A clinician will reply to you. We cannot answer this one automatically. If you feel worse, or something new worries you, call the ward or go to the emergency department.', ms: 'Doktor akan membalas anda. Kami tidak boleh menjawab soalan ini secara automatik. Jika anda rasa bertambah teruk, atau ada perkara baharu yang membimbangkan, hubungi wad atau pergi ke jabatan kecemasan.', zh: '医生会回复您。此问题无法自动回答。若您感觉加重，或出现新的担心，请致电病房或前往急诊部。' },
     ASK: { en: 'Can you tell us what is not good: pain, the wound, breathing, leg swelling, or fever? If you are short of breath or have chest pain, call emergency services now.', ms: 'Boleh beritahu apa yang tidak elok: sakit, luka, pernafasan, kaki bengkak atau demam? Jika sesak nafas atau sakit dada, hubungi kecemasan sekarang.', zh: '请告诉我们哪里不舒服：疼痛、伤口、呼吸、腿肿还是发烧？若气促或胸痛请立即呼叫急救。' }
   };
 
@@ -194,7 +194,7 @@
   function arRe(src, flags) { return new RegExp(arNorm(src), flags || ''); }
   function cx(words) { return arRe(AB + PFX + '(?:' + words + ')'); }
   const AR_CUE = arRe(AB + '(?:و)?(?:لا يوجد|لا توجد|ما عندي|ماعندي|ما عنده|ما عندها|ليس عندي|مو عندي|من غير|من دون|مافي|ما في|ماكو|مافيش|ما فيش|مافيه|ما فيه|مافيها|ما فيها|ما احس|ما احسه|ما احسها|ولا|لا|ما|مو|مب|مش|ليس|ليست|لست|لم|لن|بدون|عدم)' + AE, 'g');
-  const AR_GAP = /^(?:\s|و|او|ولا|لا|حتى|اي|ايه|نوع|من|فيه|فيها|في|عندي|عنده|عندها|شي|شيء|مو|ما|ليس|لم|مب|مش|احس|حاس|حاسه|اشعر|ب|وكمان)*$/;
+  const AR_GAP = /^(?:\s|و|او|ولا|لا|حتى|اي|ايه|نوع|من|فيه|فيها|في|عندي|عنده|عندها|شي|شيء|مو|ما|ليس|لم|مب|مش|احس|حاس|حاسه|اشعر|ب|وكمان|يكن|تكن|اكن|كان|كانت)*$/; // يكن/تكن/اكن/كان: "لم يكن عندي حمى" (judge round 2)
   // Returns the findings that are not negated. A cue must end before the finding and only list words may sit between them.
   function arPositive(text, findRe) {
     const s = String(text), evs = []; let m;
@@ -294,8 +294,8 @@
 
   // Replies, in Arabic. The emergency reply gives no phone number: the patient is told to call the emergency services.
   Object.assign(T.EMERGENCY, { ar: 'قد يكون هذا حالة طارئة. اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى أقرب قسم للطوارئ. تم إبلاغ فريقنا.' });
-  Object.assign(T['SAME-DAY'], { ar: 'يحتاج هذا إلى تقييم من طبيب اليوم. تم إبلاغ فريقنا وسيتصل بك. إذا ساءت حالتك، اذهب إلى قسم الطوارئ.' });
-  Object.assign(T.ROUTE, { ar: 'سيرد عليك أحد الأطباء. لا نستطيع الإجابة عن هذا السؤال تلقائيا.' });
+  Object.assign(T['SAME-DAY'], { ar: 'يحتاج هذا إلى تقييم من طبيب اليوم. تم إبلاغ فريقنا. إذا لم يتم الرد عليك اليوم، اتصل بالجناح. إذا ساءت حالتك، اذهب إلى قسم الطوارئ.' }); // reviewed:false (machine draft; "will contact you" promise removed after judge review round 1)
+  Object.assign(T.ROUTE, { ar: 'سيرد عليك أحد الأطباء. لا نستطيع الإجابة عن هذا السؤال تلقائيا. إذا شعرت بأنك أسوأ، أو إذا أقلقك شيء جديد، اتصل بالجناح أو اذهب إلى قسم الطوارئ.' }); // reviewed:false (machine draft; safety-net sentence added after judge review round 1)
   Object.assign(T.ASK, { ar: 'أخبرنا بما هو غير جيد: ألم، أم الجرح، أم التنفس، أم تورم الساق، أم الحمى؟ إذا كان لديك ضيق في التنفس أو ألم في الصدر، اتصل بخدمات الطوارئ الآن.' });
   SELF_HARM_REPLY.ar = 'اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى شخص تثق به ويستطيع أن يكون معك الآن. لا تنتظر.';
   // FAQ answers in Arabic. DRAFT translations of the approved English answers. No new clinical content. Pending clinical review.
@@ -311,6 +311,42 @@
   FAQ.drive_acl.arRe = FAQ.drive_knee.arRe;
 
   /* ---------- classifier (Tier 1: before any model; v1 has no model) ---------- */
+
+  /* ---------- judge round 1 (P0-3, added AFTER the first-pass numbers were measured; those numbers are not re-measured): SAME-DAY vocabulary.
+     ADDED only. Every rule goes through pos(), so "no chills", "not bleeding" and "didn't fall" do not trigger. Ms and zh wording is a machine
+     draft pending native review; the Arabic rules use arPos and are reviewed:false. ---------- */
+  const SD1_LBL = ['bleeding through the dressing or from the wound', 'chills, rigors or shivering (possible fever)', 'fall or head injury'];
+  const BLEED_RE = /(bleed\w*|blood)[^.;]{0,20}(through|seep\w*|leak\w*|soak\w*|ooz\w*|coming out|come out|pouring|running)[^.;]{0,25}(dressing|bandage|plaster|gauze|wound|incision|cast|stitches)|(dressing|bandage|plaster|gauze)[^.;]{0,25}(bleed\w*|blood)[^.;]{0,15}(through|everywhere|all over)|(wound|incision|stitches)[^.;]{0,12}(?:is |are |keeps |keep |started |still )?(bleeding|bled)\b|(darah|berdarah)[^.;]{0,20}(tembus|merembes|menembusi|bocor|keluar)[^.;]{0,20}(balutan|pembalut|luka|plaster)|(balutan|pembalut|luka)[^.;]{0,20}(berdarah|darah)|血[^。.;]{0,8}(渗|透|浸)[^。.;]{0,8}(纱布|敷料|绷带|伤口|胶布)|(纱布|敷料|绷带)[^。.;]{0,8}(渗血|透血|血透|渗出血|浸血|有血渗出|血渗出|一直有血)|伤口(?:(?!没|沒|不|无|無|未)[^。.;]){0,6}(流血|出血)/;
+  // chills: not the idioms ("chills down my spine", "gave me chills", "chills of excitement", "shivering from the aircon")
+  const CHILLS_RE = /(?<!\b(?:gave|give|gives|giving) me )\bchills?\b(?!\s+(?:down|of excitement|of joy|up and down))|\bchilly\b|\brigors?\b|\bshiver\w*\b(?!\s+(?:from|because of|due to)\s+(?:the\s+)?(?:aircon|air-con|air con|ac|a\/c|cold room|cold)\b)|\bmenggigil\b|\bgigil sejuk\b|\bsejuk menggigil\b|寒战|寒颤|打冷战|打冷颤|冷颤|发冷|畏寒/;
+  // a fall without a head strike. Not "fell in love / behind / for it / apart", not "jatuh cinta", not a fear of falling in zh.
+  const FALL_RE = /\b(?:i|we|he|she|they|dad|mum|mom|mother|father|husband|wife|patient|grandma|grandpa|dia|saya|aku)\s+(?:just\s+|also\s+|accidentally\s+|suddenly\s+|have\s+|had\s+|has\s+|baru\s+|tadi\s+)?(?:(?:fell|fallen)\b(?!\s+(?:asleep|in love|behind|for\b|apart|short|ill|sick))|(?:jatuh|terjatuh)\b(?!\s+(?:cinta|sayang|hati)))|\b(?:had|took|have had) a (?:bad |nasty )?fall\b|\bfell (?:down|over|off|out of)\b|\bslipped and fell\b|\bterjatuh\b(?!\s+(?:cinta|sayang))|(?<!怕|害怕|担心|会不会|防止|避免|以免|怕会|不想)(?:摔倒|摔跤|摔了一跤|摔到|跌倒|跌了一跤)/;
+  // a hit to the head (the only fall-type finding kept inside the pre-op intake)
+  const HEAD_RE = /\b(?:hit|hitting|bang(?:ed)?|bump(?:ed)?|knock(?:ed)?|struck|smacked)\b[^.;]{0,15}\b(?:head|skull)\b|\bhead (?:injury|trauma|knock)\b|\bterhantuk\b|\bterantuk\b|\bkepala (?:saya |dia )?(?:terhantuk|terantuk|terkena)|撞到头|撞了头|撞头|头撞到|碰到头|头部受伤/;
+  const AR_SD1_BLEED = arRe('(?:دم|ينزف|نزيف|نزف)[^.;،؟!]{0,20}(?:يتسرب|تسرب|يسيل|يخترق|نافذ|من خلال|عبر|يخرج)[^.;،؟!]{0,20}(?:ضماد|ضمادة|شاش|جرح)|(?:ضماد|ضمادة|شاش)[^.;،؟!]{0,20}(?:دم|ملطخ بالدم|مليان دم|مليء بالدم|غرقان دم)|(?:جرح|جرحي)[^.;،؟!]{0,12}(?:ينزف|يدمي|نازف)');
+  const AR_SD1_CHILLS = arRe(AB + '(?:قشعريره|رعشه|ارتجاف|ارتعاش|ارتعد|ترتجف|يرتجف|ارتجف|برد شديد مع)');
+  // whole-word fall verbs only; not "fell in love" (وقعت في الحب), not "prices fell" (سقطت الأسعار), not "signed" (وقع العقد)
+  const AR_SD1_FALL = arRe('(?<![ء-ي])[وف]?(?:سقط|وقع|طاح|طح|انزلق|تعثر)(?:ت|ه)?(?![ء-ي])(?!\\s+(?:في\\s+)?(?:النوم|الحب|الغرام))(?!\\s+(?:الاسعار|الاسهم|الحكومه|الطائره|العقد|الاتفاق|الاتفاقيه|الورقه))');
+  const AR_SD1_HEAD = arRe('(?:ضربت|ضرب|اصطدم|اصطدمت|خبطت|خبط|انضرب|اتخبط)[^.;،؟!]{0,15}(?:راس|راسي|راسه|رايس|دماغ)');
+  // history, not now: "had a fall last year" is not a same-day fall. A recent cue (today, yesterday, this week, since the operation) wins.
+  const FALL_PAST_RE = /last (?:year|month|winter|summer|spring|autumn)|\b(?:years?|months?|decades?) ago|\bin (?:january|february|march|april|may|june|july|august|september|october|november|december|19\d\d|20\d\d)\b|before (?:the |my )?(?:surgery|operation|op)\b|previous(?:ly)?\b|past (?:six|6|few|several) months|in the past\b|bulan (?:lepas|lalu)|tahun (?:lepas|lalu)|minggu lepas|dulu\b|pernah\b|去年|上个月|上月|前年|几年前|几个月前|以前|曾经|三月|四月|五月|六月|七月|八月|九月|十月|十一月|十二月|一月|二月|العام الماضي|السنه الماضيه|الشهر الماضي|قبل سنه|قبل سنوات|قبل اشهر|من زمان|في (?:يناير|فبراير|مارس|ابريل|مايو|يونيو|يوليو|اغسطس|سبتمبر|اكتوبر|نوفمبر|ديسمبر)|(?:bulan|pada) (?:januari|februari|mac|april|mei|jun|julai|ogos|september|oktober|november|disember)/;
+  const FALL_RECENT_RE = /today|yesterday|this (?:morning|afternoon|evening|week)|tonight|last night|just now|a (?:moment|minute|few minutes|few hours) ago|since (?:the |my )?(?:surgery|operation|op)\b|after (?:the |my )?(?:surgery|operation)|tadi|semalam|hari ini|malam tadi|baru (?:sahaja|je|tadi)|selepas (?:pembedahan|operasi)|今天|昨天|昨晚|刚才|刚刚|今早|今晚|术后|手术后|اليوم|امس|البارحه|الان|قبل شويه|بعد العمليه/;
+  function sameDay1(t, ctx) {
+    const f = [];
+    if (pos(t, BLEED_RE) || arPos(t, AR_SD1_BLEED)) f.push(SD1_LBL[0]);
+    if (pos(t, CHILLS_RE) || arPos(t, AR_SD1_CHILLS)) f.push(SD1_LBL[1]);
+    const past = FALL_PAST_RE.test(t) && !FALL_RECENT_RE.test(t);
+    if (!past) {
+      const head = pos(t, HEAD_RE) || arPos(t, AR_SD1_HEAD);
+      const fall = !(ctx && ctx.mode === 'intake') && (pos(t, FALL_RE) || arPos(t, AR_SD1_FALL));
+      if (head || fall) f.push(SD1_LBL[2]);
+    }
+    return f;
+  }
+  // Acknowledgements ("thanks", "done", "terima kasih", "谢谢"): anchored on the whole message, so "thanks but my calf is swollen" still reaches the red-flag rules first.
+  const ACK_RE = /^\s*(?:ok(?:ay)?[ ,]+)?(?:(?:thanks?|thank you|thx|tq|ty|noted|got it|understood|will do|done|all done|ok(?:ay)?|sure|cheers|terima kasih|terima kasih banyak|makasih|baik|faham|difahamkan|dah faham|dah siap|siap|谢谢|谢谢你|谢谢您|多谢|好的|好|收到|知道了|明白|明白了|完成了|做完了)(?:\s+(?:a lot|so much|very much|you|doctor|dr|nurse|banyak|doktor|nurse))?[ ,]*)+[\s.!。！👍🙏]*$|^\s*(?:👍|🙏|👌)[\s👍🙏👌]*$/i;
+  const ACK_REPLY = { en: 'Thanks, noted. Message us any time if anything changes.', ms: 'Terima kasih, dicatat. Hubungi kami bila-bila masa jika ada perubahan.', zh: '谢谢，已记录。如有变化请随时联系我们。' };
+
   function classify(text, ctx) {
     ctx = ctx || {}; const t = arNorm(String(text)).toLowerCase(); const flags = []; const L = lang(text); const pack = PACKS[ctx.procedure] || { redFlags: [], faq: [] };
     // EMERGENCY: self-harm first, with its own fixed reply (review2 B1)
@@ -338,6 +374,7 @@
     if (tv !== null && tv >= 38.0) sd.push('fever ' + tv); else if (tv === null && pos(t, /\bfever\b|demam|发烧|发热|高烧|烧到|burning up|very hot|badan panas|rasa panas/)) sd.push('fever reported');
     if (calfFinding(t)) sd.push('calf/leg pain or swelling'); // round 6: finding-level negation, so 'calf is not swollen and no pain' is not an alarm
     arSameDay(t).forEach(f => { if (!(f.indexOf('fever') === 0 && sd.some(x => x.indexOf('fever') === 0)) && sd.indexOf(f) < 0) sd.push(f); }); // round 7: Arabic
+    sameDay1(t, ctx).forEach(f => { if (sd.indexOf(f) < 0) sd.push(f); }); // judge round 1 (P0-3)
     if (sd.length) return out('SAME-DAY', sd, L, ctx);
     // round 7: Arabic clinical judgement (blood thinners, antibiotics, injections, travel, medicine questions) and worsening pain
     if (arRoute(t)) return out('ROUTE', ['clinical judgement'], L, ctx, { safetyNet: arRouteNet(t), noAnswer: true });
@@ -352,6 +389,7 @@
     for (const k of (pack.faq || [])) { const f = FAQ[k]; if ((f.re.test(t) || (f.arRe && f.arRe.test(t))) && (!f.needs || f.needs.test(t) || (f.arNeeds && f.arNeeds.test(t)))) { return out('ANSWER', [k], L, ctx, { reply: f.ans[L] || f.ans.en, safetyNet: safetyNet(t), faq: k }); } }
     if (AR_ACK_RE.test(t)) return out('ACK', ['benign'], L, ctx, { reply: AR_ACK_REPLY }); // round 7
     if (/^\s*(i'?m |i am )?(ok|okay|fine|good|baik)\b[\s.!]*$/.test(t)) return out('ACK', ['benign'], L, ctx, { reply: 'Thanks, noted. Message us any time if anything changes.' });
+    if (ACK_RE.test(t)) return out('ACK', ['benign'], L, ctx, { reply: ACK_REPLY[L] || ACK_REPLY.en }); // judge round 1 (P1-6)
     if (AR_ASK_RE.test(t)) return out('ASK', ['vague'], L, ctx); // round 7
     if (/not (so )?(good|well)|unwell|tak sihat|不太好|不舒服/.test(t)) return out('ASK', ['vague'], L, ctx);
     const t2 = t.replace(/tak teruk( sangat)?|not (too |that |very )?(bad|severe)|不严重|不太严重/g, '');

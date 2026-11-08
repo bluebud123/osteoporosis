@@ -150,7 +150,7 @@
     if (has('symptoms_now')) put('symptoms_now', ynOf(ia.symptoms_now));
     if (has('lives_alone')) put('lives_alone', ynOf(ia.lives_alone));
     if (has('stairs') && typeof ia.stairs === 'number') put('stairs_home', ia.stairs > 0 ? 'yes' : 'no');
-    if (has('mobility_aid')) put('mobility_aid', ia.mobility_aid === 'none' ? 'no' : 'yes');
+    if (has('mobility_aid') && ia.mobility_aid !== 'unknown') put('mobility_aid', ia.mobility_aid === 'none' ? 'no' : 'yes'); // unknown is recorded below, never yes
     if (has('payer')) put('payer', ia.payer);
     if (has('contact_language')) put('preferred_language', ia.contact_language);
 
@@ -170,6 +170,14 @@
     if (has('sh_fingers')) put('sh_fingers', ynOf(ia.sh_fingers));
     if (has('fa_sore')) put('fa_sore', ynOf(ia.fa_sore));
     if (has('fa_toes')) put('fa_toes', ynOf(ia.fa_toes));
+
+    // polish item 2 (round 8): "I don't know" on any question is recorded as 'unknown' on every field it feeds, never as no.
+    // An unknown diabetes answer does not set HbA1c: HbA1c has its own question and its own answer.
+    Object.keys(ia).forEach(q => {
+      if (ia[q] !== 'unknown' || !has(q)) return;
+      const targets = q === 'diabetes' ? ['diabetes'] : (ROW[q].to || []).filter(t => t !== 'freeText');
+      targets.forEach(t => { if (out[t] === undefined || out[t] === null) out[t] = 'unknown'; });
+    });
     return out;
   }
 

@@ -1,0 +1,18 @@
+/* merge fixes (lead): the sticky header must not eat a short window, and must not hide things scrolled into view */
+@media (max-width:520px), (max-height:640px){
+  html body header{position:static !important}
+}
+@media (min-width:521px) and (min-height:641px){html{scroll-padding-top:164px}}
+/* P1-9 (judge round 1): compact phone header, measured 163px at 360/390/430 wide; every header button stays >=44px */
+@media (max-width:520px){
+ header{display:flex;flex-wrap:wrap;align-items:center;column-gap:8px;row-gap:6px}
+ header h1{margin:0;font-size:18px} header h1 small{display:none}
+ header .pl-badge{margin:0}
+ header .clock{flex-basis:100%;display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:0}
+ header .pl-clk-cap{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+ header #clk,header #hdr-pt{flex-basis:100%;order:-1;font-size:13px}
+ header .clock button{padding-inline:8px}
+ .banner{font-size:12px;padding-block:6px}
+}
+/* P2 (judge round 1): seven KPI tiles on one row on wide screens, so "Silent drops" is not left alone */
+@media (min-width:1000px){.kpi.k6{grid-template-columns:repeat(7,1fr)}}

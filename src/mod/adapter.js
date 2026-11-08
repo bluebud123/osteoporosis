@@ -26,7 +26,7 @@
     ms: 'Terima kasih. Sila jawab soalan seterusnya.',
     zh: '谢谢。请回答下一个问题。'
   };
-  var SAFE_SAME_DAY ='This needs a clinician to review you today. Our team has been alerted and will contact you. If it gets worse, go to the emergency department.';
+  var SAFE_SAME_DAY ='This needs a clinician to review you today. Our team has been alerted. If you have not heard back today, call the ward. If it gets worse, go to the emergency department.';
 
   /* ---------- output guard (review1 B1; guard2). Every model reply passes here before anyone sees it. ----------
    * A reply is accepted only as (a) a question to the patient, (b) a summary of the patient's own words, or

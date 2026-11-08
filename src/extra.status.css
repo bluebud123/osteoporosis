@@ -1,1 +1,32 @@
-/* status */
+/* status: AI second-check badge, raised-by labels, demo clock caption, Test connection. Logical properties only (RTL-safe). */
+.pl-badge{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:6px 10px;min-height:28px;border-radius:99px;border:1px solid currentColor;font-size:13px;font-weight:600;max-width:100%;overflow-wrap:anywhere;text-align:start}
+.pl-badge[hidden]{display:none}
+.pl-b-rules{color:var(--mut)}
+.pl-b-on{color:var(--ok)}
+.pl-b-amber{color:var(--sd)}
+.pl-b-untested{color:var(--mut)}
+.pl-badge .pl-ic{font-size:12px;line-height:1}
+.pl-clk-cap{font-size:13px;color:var(--mut);align-self:center}
+.clock button{min-height:44px;min-width:44px;padding-inline:12px}
+.pl-mode-note{margin-top:6px}
+.pl-test-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+#pl-test-conn{min-height:44px;padding-inline:14px}
+#pl-test-conn:disabled{opacity:.6;cursor:progress}
+.pl-test-out{font-size:13px;color:var(--ink);overflow-wrap:anywhere;min-width:0}
+.pl-by{display:inline-block;font-size:12px;font-weight:600;line-height:1.4;padding:1px 8px;margin-inline-start:4px;border-radius:99px;border:1px solid currentColor;max-width:100%;overflow-wrap:anywhere;vertical-align:middle}
+.pl-by-rules{color:var(--ro)}
+.pl-by-ai{color:var(--hold)}
+.pl-by-both{color:var(--acc)}
+.pl-by-block{display:block;margin:6px 0;margin-inline-start:0}
+/* The page sets overflow-x:hidden on html and body, which makes body a scroll box and stops the sticky header.
+   clip hides the same horizontal overflow without creating a scroll box. hidden stays as the fallback. */
+html,body{overflow-x:hidden;overflow-x:clip}
+/* Narrow screens: the header is not pinned, so it cannot cover a phone-sized screen. Desktop keeps the sticky header. */
+@media (max-width:520px){
+  header{position:static;padding-top:8px;padding-bottom:8px}
+  h1{line-height:1.25}
+  h1 small{display:block;font-size:12px;line-height:1.25}
+  .pl-badge{margin-top:0;min-height:0;padding:3px 10px;font-size:12px}
+  .clock{margin-top:2px;gap:4px}
+  .clock button{padding-inline:8px;font-size:13px}
+}

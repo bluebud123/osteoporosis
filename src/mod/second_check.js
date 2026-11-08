@@ -12,7 +12,7 @@
 
   var TIMEOUT_MS = 8000;
   var REASON_WORDS = 12;
-  var SAME_DAY_REPLY = 'This needs a clinician to review you today. Our team has been alerted and will contact you. If it gets worse, go to the emergency department.';
+  var SAME_DAY_REPLY = 'This needs a clinician to review you today. Our team has been alerted. If you have not heard back today, call the ward. If it gets worse, go to the emergency department.';
   // Raised-class text by language. ms and zh are machine drafts, labelled as such, like the other pages.
   var SAME_DAY_REPLIES = {
     en: SAME_DAY_REPLY,

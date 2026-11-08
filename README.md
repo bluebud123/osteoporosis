@@ -9,7 +9,7 @@ Synthetic data only. Every patient in this repository is fictional. This is deci
 ## Try it in 60 seconds
 
 1. Open `index.html` in any modern browser. No install, no server, no login. The default mode runs scripted, with no AI model.
-2. On the Overview tab, press **Play 2-minute story**. Seven short scenes walk through three fictional patients (Mdm Aisha 62, knee; Mr Wong 59, lumbar; Mr Farid 70, hip).
+2. On the Overview tab, press **Watch instead: 2-minute auto story** (or use **Start here** to click through it yourself). Seven short scenes walk through three fictional patients (Mdm Aisha 62, knee; Mr Wong 59, lumbar; Mr Farid 70, hip).
 3. Open the **Intake** tab. Pick a sample patient, or start the interview. Answer the questions (English, Bahasa Malaysia, Chinese or Arabic). The doctor summary, the to-do list and the Ask box update as you go. **Send to staff board** creates the to-do tasks.
 4. Open the **Staff board** tab to see the tasks, alerts and due times created by Intake and the patient phone.
 5. Open the **30-case tests** tab and run the 30 tests. Each case has an expected outcome written before the engine was built.
@@ -95,6 +95,13 @@ The engine also returns **ACK** (a benign acknowledgement) and **OK** (nothing t
 - The shared checklist includes insurer pre-authorisation, because Abu Dhabi elective inpatient care generally needs it. This comes from search snippets and is not confirmed from official pages.
 - No revenue figure. The planned unit of value is one operation episode paid for by a hospital, starting with a pilot.
 - A published-rate figure for missed steps (public literature) is still to be added. Four published figures with their limits are listed in `mod/public_figures.md`. They are placeholder sizing only.
+
+## Changes after the first senior review (round 1)
+
+- Rules added AFTER the first-pass numbers on the Overview were measured, so those numbers do not include them and were not re-measured: bleeding through the dressing, chills or shivering, and a fall or hit to the head now route as same-day (English, Bahasa Malaysia, Chinese, Arabic; ms, zh and ar wording is machine draft, reviewed:false for Arabic).
+- Every routed (not answered) reply now says: if you feel worse or something new worries you, call the ward or go to the emergency department.
+- The sample text is a draft awaiting clinician sign-off; it is not approved. The AI second check is an option under test, not a validated safety layer.
+- Details, raw test output and anything not done: `IMPLEMENTATION.md`.
 
 ## Synthetic data statement
 

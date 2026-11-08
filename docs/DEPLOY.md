@@ -14,7 +14,7 @@ Goal: a link that anyone can open in a browser, with no login. The whole app is 
 2. Put the repository files in it, including `index.html` (renamed from `prototype.html`), `README.md` and `DEPLOY.md`. Commit to the branch `main`.
 3. In the repository, go to **Settings > Pages**.
 4. Under **Build and deployment**, choose **Deploy from a branch**. Select branch **main** and folder **/ (root)**, then save.
-5. Wait for the deployment to finish. The Pages section shows the link to the live site. Open it to check that the page loads and that Play 2-minute story works.
+5. Wait for the deployment to finish. The Pages section shows the link to the live site. Open it to check that the page loads and that Watch instead: 2-minute auto story works.
 
 ## Option 2: Netlify Drop
 

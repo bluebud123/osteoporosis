@@ -15,7 +15,7 @@ Before recording, confirm every button label, the OT date field and the sample p
 | 1:08 to 1:25 | Ask box with an answer and its source line. | "The Ask box answers from layered sources: country, hospital, team and surgeon. Each answer shows its source and owner. A clinical question, like a blood thinner, goes to a clinician instead." | Type "When can I shower?" in the Ask box and press Ask. Then type a blood thinner question and press Ask. |
 | 1:25 to 1:38 | Confirmation line after sending. | "I press Send to staff board. The to-dos become tasks. A second press adds nothing new." | Click Send to staff board, then press it again. |
 | 1:38 to 1:50 | Staff board with tasks, owners and due times. | "On the Staff board, each task has an owner and a due time. Unanswered alerts are re-paged, then passed to an on-call fallback." | Click Staff board. Point to one task's owner and due time. |
-| 1:50 to 2:00 | Limits text, or the How it works tab. | "Rules alone caught 42 of 75 urgent test messages written by AI. So a second check is needed in production, and it is not yet validated by clinicians. Not done: clinician labelling, native Arabic review, surgeon sign-off, a real channel, database or login, and any measure of missed steps." | Click How it works and scroll to the limits. |
+| 1:50 to 2:00 | Limits text, or the How it works tab. | "Rules alone caught 42 of 75 urgent test messages written by AI. So a second check is an option under test, not a validated safety layer, and it is not yet validated by clinicians. Not done: clinician labelling, native Arabic review, surgeon sign-off, a real channel, database or login, and any measure of missed steps." | Click How it works and scroll to the limits. |
 
 ## Shot list
 

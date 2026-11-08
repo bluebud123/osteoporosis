@@ -108,7 +108,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | B59 | Clinical thresholds and the interview question tree are drafts awaiting surgeon sign-off; no sign-off is recorded. | No sign-off record in any file. | VERIFIED |
 | B60 | In AI mode the patient message text goes to the configured provider, through the proxy. | src.html line 130 "Data protection" note. | VERIFIED |
 | B61 | Rules alone caught 42 of 75 urgent messages (56.0%, CI 44.7-66.7) in the blind set. | EV4 (rerun identical to file); unseen4_firstpass.txt line 1. | VERIFIED |
-| B62 | Rules alone are partial, and a second check is needed in production. | B61 (42 of 75 caught); "needed" is the author's conclusion from B61. | VERIFIED (data); the conclusion is the author's |
+| B62 | Rules alone are partial, and a second check is an option under test, not a validated safety layer. | B61 (42 of 75 caught); "an option under test" is the author's wording; no validation of the second check is claimed. | VERIFIED (data); the conclusion is the author's |
 | B63 | The second check has not been validated against clinicians. | No clinician-labelled file in the review set. | VERIFIED (absence) |
 | B64 | The 30 test cases all pass; the test suites show the rules behave as intended, not that they are clinically accurate. | T 30/30; the suites are author-written (scope statement). | VERIFIED |
 | B65 | Test suite results in section 6.1 (test.js and 18 mod suites) all pass with 0 failures. | T; ADP 18; CR 5; CON 17; G2 121; INT 258; ITV 43; KNO 18; NEG 42; OTD 80; PE 19; RG1 22; RG2 494; RG3 181; RV1B 22; R3 239; SC 26; ARC 538; ARCC 80. All run this pass, all exit 0. | VERIFIED |
@@ -234,7 +234,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | V16 | "On the Staff board, each task has an owner and a due time." | review1.md round 1 M2 (earlier pass); not clicked. | UNVERIFIED (on-screen) |
 | V17 | "Unanswered alerts are re-paged, then passed to an on-call fallback." | B33 (engine caps, lines 5-8, 313). | VERIFIED (engine); UNVERIFIED (on-screen) |
 | V18 | "Rules alone caught 42 of 75 urgent test messages written by AI." | B61 (EV4), B49, B79. | VERIFIED |
-| V19 | "So a second check is needed in production, and it is not yet validated by clinicians." | B62, B63. | VERIFIED |
+| V19 | "So a second check is an option under test, not a validated safety layer, and it is not yet validated by clinicians." | B62, B63. | VERIFIED |
 | V20 | "Not done: clinician labelling, native Arabic review, surgeon sign-off, a real channel, database or login, and any measure of missed steps." | B103. | VERIFIED |
 | V21 | Video says the demo runs scripted, with no AI model, so the second check is not in the recording. | B02, B27 (browser not re-run), B85. | VERIFIED (source); UNVERIFIED (recording content) |
 | V22 | The How it works tab shows the limits. | src.html line 155 is the How it works section; the limits text not read. | UNVERIFIED |

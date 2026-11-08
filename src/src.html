@@ -21,7 +21,7 @@ h2{font-size:15px;margin:0 0 8px}.mut{color:var(--mut);font-size:13px}
 .b{max-width:85%;padding:7px 10px;border-radius:12px;font-size:14px}.b.bot{background:var(--card);border:1px solid var(--line);align-self:flex-start}.b.me{background:var(--acc);color:#fff;align-self:flex-end}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.chips button{font-size:12.5px;padding:4px 8px}
 .row{display:flex;gap:6px}input[type=text],select{font:inherit;flex:1;min-width:0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
-.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:99px;border:1px solid currentColor}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:1px 7px;border-radius:99px;border:1px solid currentColor}
 .EMERGENCY{color:var(--em)}.SAME-DAY{color:var(--sd)}.ROUTE{color:var(--ro)}.ANSWER,.confirmed,.closed,.pass{color:var(--ok)}.overdue,.fail{color:var(--em)}.hold,.ready_to_close{color:var(--hold)}.open{color:var(--mut)}.ASK{color:var(--hold)}
 .task{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 8px;padding:8px 0;border-top:1px solid var(--line)}.task:first-of-type{border-top:none}
 .alert{border-left:4px solid currentColor;padding:8px 10px;margin:8px 0;background:var(--bg);border-radius:6px}
@@ -36,9 +36,10 @@ table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-top:1px 
 .dots{display:flex;gap:6px;margin-top:8px;min-height:28px;flex-wrap:wrap}.dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;color:#fff;background:var(--ok)}.dot.red{background:var(--em)}.dot.amb{background:var(--sd)}
 .bar{height:22px;border-radius:5px;background:var(--bg);position:relative;overflow:hidden;border:1px solid var(--line)}.bar>span{position:absolute;left:0;top:0;bottom:0}.crow{display:grid;grid-template-columns:minmax(120px,170px) 1fr 90px;gap:8px;align-items:center;margin:8px 0;font-size:13px}.ci{position:absolute;top:50%;height:2px;background:var(--ink)}.ci:before,.ci:after{content:"";position:absolute;top:-4px;height:10px;width:2px;background:var(--ink)}.ci:before{left:0}.ci:after{right:0}
 @media(max-width:520px){.crow{grid-template-columns:1fr 1fr}.crow .bar{grid-column:1/3}}
-.pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}.pc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.track{display:flex;margin:8px 0 10px}.track span{flex:1;text-align:center;font-size:11px;padding:4px 2px;background:var(--card);border:1px solid var(--line);color:var(--mut);position:relative}.track span:first-child{border-radius:8px 0 0 8px}.track span:last-child{border-radius:0 8px 8px 0}.track .past{background:var(--acc2)}.track .here{background:var(--acc);color:#fff;font-weight:700}.track em{position:absolute;left:0;right:0;top:100%;font-size:10px;font-style:normal;color:var(--acc);white-space:nowrap}.rw{display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);margin-top:2px}.rw:first-of-type{border-top:none}.ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px}.ic.r{background:var(--em)}.ic.a{background:var(--sd)}.ic.g{background:var(--ok)}
+.pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}.pc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.track{display:flex;margin:8px 0 10px}.track span{flex:1;text-align:center;font-size:12px;padding:4px 2px;background:var(--card);border:1px solid var(--line);color:var(--mut);position:relative}.track span:first-child{border-radius:8px 0 0 8px}.track span:last-child{border-radius:0 8px 8px 0}.track .past{background:var(--acc2)}.track .here{background:var(--acc);color:#fff;font-weight:700}.track em{position:absolute;left:0;right:0;top:100%;font-size:12px;font-style:normal;color:var(--acc);white-space:nowrap}.rw{display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);margin-top:2px}.rw:first-of-type{border-top:none}.ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px}.ic.r{background:var(--em)}.ic.a{background:var(--sd)}.ic.g{background:var(--ok)}
 .story{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}@media(min-width:700px){.story{grid-template-columns:1fr 1fr}}.story>div{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}.story h3{margin:0 0 4px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.story .narr{grid-column:1/-1;font-size:16px;background:var(--acc2)}.story li{margin:2px 0}
 .in-banner{border-inline-start:4px solid currentColor;padding:8px 10px;margin:6px 0;background:var(--bg);border-radius:6px;font-weight:600;overflow-wrap:anywhere}.in-banner.RED{color:var(--em)}.in-banner.AMBER{color:var(--sd)}.in-banner.NONE{color:var(--ok)}
+.in-amber{border:2px solid var(--sd);background:color-mix(in srgb,var(--sd) 10%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0;overflow-wrap:anywhere;font-weight:600}
 .in-red{border:2px solid var(--em);background:color-mix(in srgb,var(--em) 10%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0;overflow-wrap:anywhere}
 .b.in-redb{border-color:var(--em);box-shadow:inset 3px 0 0 var(--em)}
 .in-form{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.in-form label,.in-set label{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
@@ -65,7 +66,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px soli
 .in-li,.in-ph,.in-sec ul{padding-inline-start:18px}
 [dir=rtl]{font-family:"Noto Naskh Arabic","Noto Sans Arabic",Segoe UI,Tahoma,Arial,sans-serif;line-height:1.9}
 [dir=rtl] button,[dir=rtl] input,[dir=rtl] select{font-family:inherit;line-height:1.6}
-.b,.in-words,.in-note,.in-cite,.in-todo,.in-over,.in-banner,.in-sec li,.in-red,.in-alert-note{unicode-bidi:plaintext;text-align:start}
+.b,.in-words,.in-note,.in-cite,.in-todo,.in-over,.in-banner,.in-sec li,.in-red,.in-amber,.in-alert-note{unicode-bidi:plaintext;text-align:start}
 .srcx,bdi{unicode-bidi:isolate;direction:ltr}
 [dir=rtl] li{unicode-bidi:normal}
 input[type=text]{unicode-bidi:plaintext}
@@ -73,19 +74,22 @@ input[type=text]{unicode-bidi:plaintext}
 [dir=rtl] .in-chips button{text-align:right}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) button.p,:root:not([data-theme=light]) nav button.on,:root:not([data-theme=light]) .b.me,:root:not([data-theme=light]) .track .here{color:#0b1a17}}
 :root[data-theme=dark] button.p,:root[data-theme=dark] nav button.on,:root[data-theme=dark] .b.me,:root[data-theme=dark] .track .here{color:#0b1a17}
-button,select,input[type=text],input[type=number]{min-height:40px}
+button,select,input[type=text],input[type=number]{min-height:44px}
+/* polish item 6: every tap target at least 44 CSS px high (audited at 430 px), and the settings summary too */
+input:not([type=checkbox]):not([type=radio]),textarea{min-height:44px}details>summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.demo-note{font-size:13px;font-weight:600;color:var(--sd);margin:6px 0;overflow-wrap:anywhere}
 .in-ot{display:grid;gap:4px;margin-top:8px;min-width:0}.in-ot label{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
-.in-ot input[type=date]{font:inherit;width:100%;max-width:100%;min-width:0;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.in-ot input[type=date]{font:inherit;width:100%;max-width:100%;min-width:0;min-height:44px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 .in-ot input[aria-invalid=true]{border-color:var(--em)}
 .in-ot .in-banner[hidden]{display:none}
 /*EXTRA_CSS*/
 </style></head><body>
-<header><h1>PeriLoop <small>working name · elective orthopaedic perioperative loop</small></h1>
-<div class="clock"><b id="clk">Day 0</b><b id="hdr-pt" class="hidden"></b><button data-t="1">+1 h</button><button data-t="6">+6 h</button><button data-t="24">+1 day</button><button data-t="72">+3 days</button><button id="reset">Reset demo</button></div></header>
+<header><h1>PeriLoop <small>working name · elective orthopaedic perioperative loop</small></h1><div id="pl-ai-badge" class="pl-badge" role="status" aria-live="polite"></div>
+<div class="clock"><button class="p" id="tour-start" type="button" aria-haspopup="dialog" aria-controls="tour-root" aria-expanded="false">Start here</button><b id="clk">Day 0</b><b id="hdr-pt" class="hidden"></b><span class="pl-clk-cap">Demo clock: skip ahead</span><button data-t="1" title="Skip the demo clock ahead 1 hour" aria-label="+1 hour (skip the demo clock ahead)">+1 hour</button><button data-t="6" title="Skip the demo clock ahead 6 hours" aria-label="+6 hours (skip the demo clock ahead)">+6 hours</button><button data-t="24" title="Skip the demo clock ahead 1 day" aria-label="+1 day (skip the demo clock ahead)">+1 day</button><button data-t="72" title="Skip the demo clock ahead 3 days" aria-label="+3 days (skip the demo clock ahead)">+3 days</button><button id="reset">Reset demo</button></div></header>
 <div class="banner">Synthetic data only. Every patient here is fictional. Decision support for staff, not diagnosis. Clinical thresholds are drafts awaiting surgeon sign-off.</div>
 <nav><button data-v="ov" class="on">Overview</button><button data-v="pt">Patient phone</button><button data-v="intake">Intake</button><button data-v="staff">Staff board</button><button data-v="tests">30-case tests</button><button data-v="about">How it works</button></nav>
 <main>
-<section id="v-ov"><div class="card"><div class="demobar"><b>Guided demo</b> <button class="p" id="dplay">Play 2-minute story</button> <button id="dnext">Next step</button> <span class="mut" id="dcap">Press play. Seven short scenes with three fictional patients.</span></div><div class="steps" id="steps"></div><div class="story" id="story"></div></div>
+<section id="v-ov"><div class="card"><div class="demobar"><b>Watch the story</b> <button id="dplay">Watch instead: 2-minute auto story</button> <button id="dnext">Next step</button> <span class="mut" id="dcap">A hands-off story: seven short scenes with three fictional patients. Prefer to click yourself? Use Start here.</span></div><div class="steps" id="steps"></div><div class="story" id="story"></div></div>
 <div class="kpi k6" id="ovkpi"></div>
 <div class="card"><h2>The loop, live</h2><div class="stages" id="stages"></div><div class="mut" id="stagenote">Each patient sits at their stage. A stage turns red when something there is overdue or an emergency is open, amber for a hold or same-day alert.</div></div>
 <div class="card"><h2>Each patient's checklist, right now</h2><div class="mut">Red: needs action now. Amber: on hold. Green: coming up. Everything else is done or waiting.</div><div id="tl" class="pcs"></div></div>
@@ -95,7 +99,8 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="chat" id="chat" aria-live="polite"></div>
 <div class="chips" id="chips"></div>
 <form class="row" id="f"><input type="text" id="msg" placeholder="Type a message in English, Bahasa Malaysia or Chinese" aria-label="Message"><button class="p">Send</button></form>
-<div class="mut" style="margin-top:6px">Replies come from fixed approved text. Nothing here is generated by a model.</div>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
+<div class="mut" style="margin-top:6px">Replies come from fixed pre-written text (draft, awaiting clinician sign-off). Nothing here is generated by a model.</div>
 <div class="in-note sc-status" id="sc-phone" style="margin-top:6px"></div></div>
 <div class="card"><h2>Your plan</h2><div id="plan"></div></div></div></section>
 <section id="v-staff" class="hidden"><div class="grid two">
@@ -123,19 +128,23 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="in-banner RED" id="iv-ot-banner" role="status" hidden></div>
 </div>
 <div class="row" style="margin-top:8px;flex-wrap:wrap"><button class="p" id="iv-start" type="button">Start interview</button><button id="iv-sample" type="button">Load a sample patient</button><select id="iv-samp" aria-label="Sample patient" style="flex:0 1 auto"></select></div>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
 <div class="mut" id="iv-hint" style="margin-top:6px"></div>
 <div id="iv-red"></div>
 <div class="chat" id="iv-chat" aria-live="polite" style="margin-top:8px"></div>
 <div class="in-chips" id="iv-chips"></div>
 <form class="row" id="iv-form" style="margin-top:6px"><input type="text" id="iv-in" aria-label="Your answer" placeholder="Type an answer in English, Bahasa Malaysia or Chinese" autocomplete="off"><button type="button" id="iv-voice" hidden>Use voice</button><button class="p" type="submit">Send</button></form>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
 </div>
 <details class="card iv-set"><summary id="iv-set-sum">Settings: scripted, no AI</summary>
 <div class="in-set" style="margin-top:8px">
 <label>Mode<select id="iv-set-mode"><option value="scripted" selected>Scripted (no AI)</option><option value="ai">AI via proxy</option></select></label>
-<label>Provider preset<select id="iv-set-preset"></select></label>
-<div class="in-note" id="iv-set-preset-info"></div>
 <label>Proxy URL (AI mode only)<input type="url" id="iv-set-proxy" placeholder="https://your-proxy.example/chat" autocomplete="off"></label>
 <div class="in-note" id="iv-set-status" style="margin-top:6px"></div>
+<div class="pl-test-row"><button type="button" id="pl-test-conn">Test connection</button><span id="pl-test-out" class="pl-test-out" role="status" aria-live="polite"></span></div>
+<div class="in-note pl-mode-note">In AI mode a model can (1) add a short, guarded note that only asks or repeats the patient’s words, and (2) run a second check that can raise a message to same-day, never lower it. Clinical questions are never answered.</div>
+<label>Provider preset<select id="iv-set-preset"></select></label>
+<div class="in-note" id="iv-set-preset-info"></div>
 <div class="in-note" style="margin-top:6px"><b>No key is ever stored in this page; AI mode needs a server-side proxy.</b> In AI mode the fixed red-flag rules still run first on every typed answer, and interview questions stay fixed.</div>
 <div class="in-note sc-status" style="margin-top:6px"></div>
 <div class="in-note" style="margin-top:6px"><b>Data protection.</b> In AI mode the patient message text goes to the configured provider, through your proxy. This demo uses synthetic data only. For real patients, use a sovereign or self-hosted model that your data-protection rules allow.</div>
@@ -153,6 +162,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 </div>
 <div class="in-note" style="margin-top:6px">Set the surgeon to None to see the hospital answer instead.</div>
 <form class="row" id="iv-askform" style="margin-top:8px"><input type="text" id="iv-q" aria-label="Your question" placeholder="For example: When can I shower?"><button class="p" type="submit">Ask</button></form>
+<div class="demo-note">Demo only. Don't type real names, phone numbers or IC numbers.</div>
 <div class="in-chips" id="iv-qchips"></div>
 <div id="iv-ans" style="margin-top:6px"></div>
 </div>
@@ -292,7 +302,9 @@ function dueWhen(t){var p=s.P(t.pid),fromNow=t.dueAt-s.now;
 // review2 B5 (round 4): a claim is a note. The task stays open until evidence or a documented clinician decision.
 function claimDone(id,who){var t=s.tasks.find(function(x){return x.id===id});if(!t||t.state==='closed'||t.state==='confirmed')return;t.claimNote=who==='patient'?'patient reports done: staff to verify':'reported done: staff to verify (not closed)';s.note('done_claim',t.pid,t.claimNote+': '+t.title)}
 function chat(pid,who,text){(s.chatAll=s.chatAll||[]).push({pid:pid,who:who,text:text})}
-function send(text){if(!text.trim())return;var pid=cur;chat(pid,'me',text);
+// polish item 1: phone and IC-shaped digit runs are masked before the phone stores, shows or sends the message
+function maskIn(t){var m=window.PL_INTERVIEW;return m&&m.maskTyped?m.maskTyped(t):String(t).replace(/\+?\d[\d -]{6,}\d/g,'[number removed]')}
+function send(text){if(!text.trim())return;text=maskIn(text);var pid=cur;chat(pid,'me',text);
  if(window.__plAI&&window.__plAI.on()&&s.P(pid)){phoneChecked(pid,text);return}
  phoneDeliver(pid,text)}
 function phoneDeliver(pid,text){
@@ -329,7 +341,7 @@ document.addEventListener('click',function(e){var t=e.target;
 var seen=0;function syncOut(){for(var i=seen;i<s.outbox.length;i++){var m=s.outbox[i];if(!m.chatted)chat(m.pid,'bot',m.text)}seen=s.outbox.length}
 $('who').addEventListener('change',function(e){cur=e.target.value;render()});
 $('f').addEventListener('submit',function(e){e.preventDefault();var v=$('msg').value;$('msg').value='';var n=s.outbox.length;send(v);seen=s.outbox.length});
-$('reset').addEventListener('click',function(){demoReset()});$('dnext').addEventListener('click',function(){if(window.__demo.i===0&&!$('steps').children.length)demoReset();demoStep()});var timer=null;$('dplay').addEventListener('click',function(){if(timer){clearInterval(timer);timer=null;$('dplay').textContent='Play 2-minute story';return}demoReset();$('dplay').textContent='Pause';var go=function(){if(!demoStep()){clearInterval(timer);timer=null;$('dplay').textContent='Play 2-minute story'}};go();timer=setInterval(go,20000)});
+$('reset').addEventListener('click',function(){demoReset()});$('dnext').addEventListener('click',function(){if(window.__demo.i===0&&!$('steps').children.length)demoReset();demoStep()});var timer=null;$('dplay').addEventListener('click',function(){if(timer){clearInterval(timer);timer=null;$('dplay').textContent='Watch instead: 2-minute auto story';return}demoReset();$('dplay').textContent='Pause';var go=function(){if(!demoStep()){clearInterval(timer);timer=null;$('dplay').textContent='Watch instead: 2-minute auto story'}};go();timer=setInterval(go,20000)});
 $('chips').innerHTML=SAMPLES.map(function(x,i){return '<button data-s="'+i+'">'+x[0]+'</button>'}).join('');
 $('results').innerHTML=[['Hb 9.8 g/dL',{name:'Hb',value:9.8}],['HbA1c 9.1%',{name:'HbA1c',value:9.1}],['Repeat HbA1c 7.6%',{name:'HbA1c',value:7.6}],['MRSA swab positive',{name:'MRSA',positive:true}]].map(function(x){return "<button data-res='"+JSON.stringify(x[1])+"'>"+x[0]+'</button>'}).join('')+'<span class="mut">applies to the patient selected on the phone tab</span>';
 $('run').addEventListener('click',function(){var r=PC.runAll();var h=r.headline;
@@ -433,19 +445,23 @@ var CHROME_AR={
  'Answers come only from the sample sources, using the most specific layer that applies. Clinical questions with no approved source are passed to your care team.':'تأتي الإجابات من المصادر التجريبية فقط، وتُستخدم أدق طبقة تنطبق. الأسئلة السريرية التي لا يوجد لها مصدر معتمد تُحال إلى فريق الرعاية.',
  'Country':'الدولة','Hospital':'المستشفى','Team':'الفريق','Surgeon':'الجراح','Answer language':'لغة الإجابة',
  'Set the surgeon to None to see the hospital answer instead.':'اختر "لا شيء" للجراح لرؤية إجابة المستشفى بدلا من ذلك.',
- 'Doctor summary':'ملخص الطبيب','None':'لا يوجد','Any':'أي'
+ 'Doctor summary':'ملخص الطبيب','None':'لا يوجد','Any':'أي',
+ "Demo only. Don't type real names, phone numbers or IC numbers.":'للعرض فقط. لا تكتب أسماء حقيقية أو أرقام هواتف أو أرقام هوية. (مسودة آلية، تحتاج مراجعة)'
 };
 var PH_AR={'Type an answer in English, Bahasa Malaysia or Chinese':'اكتب إجابتك','For example: When can I shower?':'مثال: متى أستطيع الاستحمام؟'};
 // Translates the static Intake labels inside one card. Dynamic areas (chat, summary body, answers, red box, chips, settings) are skipped.
+// the demo notice in Malay and Chinese (machine drafts); the Arabic table is CHROME_AR above
+var CHROME_MS={"Demo only. Don't type real names, phone numbers or IC numbers.":'Demo sahaja. Jangan taip nama sebenar, nombor telefon atau nombor IC. (draf mesin)'};
+var CHROME_ZH={"Demo only. Don't type real names, phone numbers or IC numbers.":'仅供演示。请勿输入真实姓名、电话号码或身份证号码。（机器草稿）'};
 function translateRoot(root,lang){
  if(!root)return;
- var ar=lang==='ar',w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],n;
+ var ar=lang==='ar',MAP=lang==='ar'?CHROME_AR:lang==='ms'?CHROME_MS:lang==='zh'?CHROME_ZH:{},w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],n;
  while((n=w.nextNode()))nodes.push(n);
  nodes.forEach(function(t){
   var p=t.parentNode;
   if(!p||(p.closest&&p.closest('#iv-sum,#iv-chat,#iv-ans,#iv-red,#iv-chips,#iv-qchips,.iv-set')))return;
   var raw=t.__en!==undefined?t.__en:t.nodeValue,key=raw.trim();
-  if(ar&&CHROME_AR[key]){if(t.__en===undefined)t.__en=raw;t.nodeValue=raw.replace(key,CHROME_AR[key])}
+  if(MAP[key]){if(t.__en===undefined)t.__en=raw;t.nodeValue=raw.replace(key,MAP[key])}
   else if(t.__en!==undefined){t.nodeValue=t.__en;t.__en=undefined}
  });
  root.querySelectorAll('input[placeholder]').forEach(function(el){
@@ -462,16 +478,46 @@ function applyLangs(){
  setDir(iv,li);setDir(ask,lc);setDir(sum,sumLang);
  translateRoot(iv,li);translateRoot(ask,lc);translateRoot(sum,sumLang);
 }
+// polish item 4 (round 8): the context labels in Malay and Chinese (machine drafts); English and Arabic unchanged
+var CTX_LBL={ms:{country:'negara',hospital:'hospital',team:'pasukan',surgeon:'pakar bedah',procedure:'prosedur',none:'tiada',any:'mana-mana'},zh:{country:'国家',hospital:'医院',team:'团队',surgeon:'外科医生',procedure:'手术',none:'无',any:'任意'}};
 function ctxNames(ctx,lang){
- var ar=lang==='ar';
- return ['country','hospital','team','surgeon'].map(function(k){return (ar?CTX_AR[k]:k)+': '+(ctx[k]||(ar?CTX_AR.none:'none'))}).join(' · ')+' · '+(ar?CTX_AR.procedure:'procedure')+': '+(ctx.procedure||(ar?CTX_AR.any:'any'));
+ var C=lang==='ar'?CTX_AR:(CTX_LBL[lang]||null);
+ return ['country','hospital','team','surgeon'].map(function(k){return (C?C[k]:k)+': '+(ctx[k]||(C?C.none:'none'))}).join(' · ')+' · '+(C?C.procedure:'procedure')+': '+(ctx.procedure||(C?C.any:'any'));
 }
+// The fixed route sentence and the reason stems come from the knowledge module in English and Arabic only. The page localises them for Malay and Chinese.
+var ROUTE_EN='I will pass this to your care team';
+var ROUTE_LOC={ms:'Saya akan hantar soalan ini kepada pasukan penjagaan anda. (draf mesin)',zh:'我会将此问题转交给您的护理团队。（机器草稿）'};
+var ROUTE_REASON={
+ ms:[[/^clinical judgement: no approved source for topic "(.*)"$/,'Pertimbangan klinikal: tiada sumber diluluskan untuk topik "$1"'],[/^more than one topic in this question: (.*)$/,'Lebih daripada satu topik dalam soalan ini: $1'],[/^no approved source$/,'Tiada sumber yang diluluskan'],[/^instruction-like request/,'Permintaan seperti arahan: tidak dijawab daripada sumber'],[/^needs clarification$/,'Perlu penjelasan'],[/^clinical judgement/,'Pertimbangan klinikal'],[/^triage: /,'Saringan: ']],
+ zh:[[/^clinical judgement: no approved source for topic "(.*)"$/,'临床判断：该主题没有已批准的来源（$1）'],[/^more than one topic in this question: (.*)$/,'此问题涉及多个主题：$1'],[/^no approved source$/,'没有已批准的来源'],[/^instruction-like request/,'类似指令的请求：不从资料库作答'],[/^needs clarification$/,'需要澄清'],[/^clinical judgement/,'临床判断'],[/^triage: /,'分诊：']]
+};
+function routeText(t,lang){return (t===ROUTE_EN&&ROUTE_LOC[lang])?ROUTE_LOC[lang]:t}
+function routeReason(r,lang){
+ var rules=ROUTE_REASON[lang];if(!rules||!r)return r;
+ for(var i=0;i<rules.length;i++){if(rules[i][0].test(r))return String(r).replace(rules[i][0],rules[i][1])}
+ return r;
+}
+// Citation lines in Malay and Chinese (machine drafts)
+var CITE_LBL={ms:{src:'Sumber: lapisan ',owner:' · pemilik ',yes:'Diluluskan oleh doktor: ya',draft:'<b style="color:var(--em)">CONTOH draf, tidak diluluskan</b> · tiada doktor meluluskan teks ini untuk klinik ini. (draf mesin)'},zh:{src:'来源：层级 ',owner:' · 负责人 ',yes:'临床医生已批准：是',draft:'<b style="color:var(--em)">样本草稿，未获批准</b> · 本诊所没有临床医生批准此文本。（机器草稿）'}};
 function arText(text,lang,fallback){return lang==='ar'&&!/[؀-ۿ]/.test(String(text||''))?fallback:text}
+// polish item 4 (round 8): the hand-off and route text of the Ask box and the interview, in Malay and Chinese too (machine drafts).
+var NOSRC_LBL={en:'No approved source answers this in the current context. Reason: ',ms:'Tiada sumber yang diluluskan menjawab soalan ini dalam konteks semasa. Sebab: ',zh:'当前情境下没有已批准的来源可回答此问题。原因：'};
+var CTXUSED_LBL={en:'Context used: ',ms:'Konteks yang digunakan: ',zh:'所用情境：',ar:'السياق المستخدم: '};
+var PASS_LBL={
+ ms:{created:function(b){return 'Tugas dicipta di papan kakitangan'+(b?' di bawah "Tidak ditugaskan (tiada pesakit dipilih)". Tiada pesakit dipilih, jadi tugaskan di papan.':'.')+' (draf mesin)'},
+     dup:function(b){return 'Sudah ada di papan kakitangan: soalan yang sama'+(b?' dalam "Tidak ditugaskan (tiada pesakit dipilih)"':' untuk pesakit ini')+'. Tidak diduplikasi. (draf mesin)'}},
+ zh:{created:function(b){return '已在员工看板创建任务'+(b?'，归入“未分配（未选择患者）”。未选择患者，请在看板上分配。':'。')+'（机器草稿）'},
+     dup:function(b){return '员工看板上已有相同问题'+(b?'（“未分配（未选择患者）”下）':'（针对此患者）')+'。未重复添加。（机器草稿）'}}
+};
 function passMsg(res,lang){
  if(!res)return '';
- if(lang!=='ar'||!res.kind||res.kind==='none')return res.msg;
- if(res.kind==='dup')return PASS_AR.dup;
- return PASS_AR.created+(res.bucket?PASS_AR.bucket:'');
+ if(!res.kind||res.kind==='none')return res.msg;
+ if(lang==='ar'){
+  if(res.kind==='dup')return PASS_AR.dup;
+  return PASS_AR.created+(res.bucket?PASS_AR.bucket:'');
+ }
+ if(PASS_LBL[lang])return PASS_LBL[lang][res.kind==='dup'?'dup':'created'](!!res.bucket);
+ return res.msg;
 }
 function renderAskChips(lang){
  var list=lang==='ar'?ASK_CHIPS_AR:ASK_CHIPS;
@@ -488,6 +534,7 @@ function honestReply(text,alertExists){
  ['en','ms','zh'].forEach(function(l){out=out.replace(ALERTED[l],NO_ALERT[l])});
  return out;
 }
+var raisedUnknown={};
 var st=null,shownRed=null,curPid=null,curName='',curShort='',curProc='',curTodos=[],ivN=0,busy=false,store=null,settings={mode:'scripted',proxy:''};
 var halted=false,redTyped=null,showSrc=false,sumLang='en',autoDone=false;
 
@@ -560,7 +607,7 @@ function start(){
  if(!IV||!IN){$('iv-hint').textContent=MISSING;return}
  var pat=PATS[+$('iv-pat').value],proc=$('iv-proc').value,lang=$('iv-lang').value;
  try{ivN++;curPid='IV'+ivN;curName=pat.name;curShort=pat.short;curProc=proc;st=IV.build(proc,lang,curPid)}catch(e){$('iv-hint').textContent='Could not start: '+e.message;return}
- shownRed=null;curTodos=[];halted=false;redTyped=null;$('iv-in').disabled=false;
+ shownRed=null;raisedUnknown={};curTodos=[];halted=false;redTyped=null;$('iv-in').disabled=false;
  $('iv-chat').innerHTML='';$('iv-red').innerHTML='';$('iv-hint').textContent='';
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
  setHeader(curName);
@@ -574,7 +621,8 @@ function renderPrompt(){
  var opts=p.type==='yesno'?YESNO[lang]:(p.type==='choice'?p.options.map(function(o){return [o.value,o.label]}):null);
  if(opts)opts.forEach(function(o){var b=document.createElement('button');b.type='button';b.setAttribute('data-in-val',o[0]);b.textContent=o[1];chips.appendChild(b)});
  // round 6 (review3 M3): every yes/no and number question offers an explicit unknown; it is recorded as a gap, never as No
- if(p.type==='yesno'||p.type==='number'){var ub=document.createElement('button');ub.type='button';ub.setAttribute('data-in-val','unknown');ub.textContent=UNK_LBL[lang]||UNK_LBL.en;chips.appendChild(ub)}
+ // polish item 2: a choice question offers the same unknown answer, recorded as a gap, never a forced pick
+ if(p.type==='yesno'||p.type==='number'||p.type==='choice'){var ub=document.createElement('button');ub.type='button';ub.setAttribute('data-in-val','unknown');ub.textContent=UNK_LBL[lang]||UNK_LBL.en;chips.appendChild(ub)}
  var kind=p.type==='yesno'?'choice':p.type;
  var h=HINT[kind]?HINT[kind][lang]:'';
  if(p.type==='number'&&p.min!=null)h+=' ('+p.min+' to '+p.max+')';
@@ -656,25 +704,58 @@ function afterAnswer(){
   $('iv-chips').innerHTML='';$('iv-hint').textContent='';
  }else renderPrompt();
 }
+
+// Judge round 1 (P0-2): "Unknown / not sure" to a red-flag question has an effect straight away. A fixed safety-net line, one same-day clinician
+// task (type red_unknown_<qid>; the end-of-interview to-do has the same key, so it is not sent twice) and an amber note. It is never RED and the interview goes on.
+var UNK_NOW={
+ en:'You were not sure. If you have chest pain, trouble breathing or new confusion now, call 999/998 or go to the nearest emergency department. A clinician will check this answer with you.',
+ ms:'Anda tidak pasti. Jika anda sedang sakit dada, sesak nafas atau keliru sekarang, hubungi 999/998 atau pergi ke jabatan kecemasan terdekat. Doktor akan menyemak jawapan ini dengan anda. (draf mesin)',
+ zh:'您不确定。如果您现在有胸痛、呼吸困难或新出现的意识混乱，请拨打 999/998 或前往最近的急诊部。医生会与您核实这个答案。（机器草稿）',
+ ar:'لم تكن متأكدا. إذا كنت تعاني الآن من ألم في الصدر أو ضيق في التنفس أو تشوش جديد، فاتصل بـ 999/998 أو اذهب إلى أقرب قسم للطوارئ. سيراجع طبيب هذه الإجابة معك. (مسودة آلية، لم تُراجع)'
+};
+var UNK_NOW_OTHER={
+ en:function(l){return 'You were not sure about: '+l+'. If it is happening now or getting worse, call the clinic or go to the nearest emergency department (999/998). A clinician will check this answer with you.'},
+ ms:function(l){return 'Anda tidak pasti tentang: '+l+'. Jika ia berlaku sekarang atau bertambah teruk, hubungi klinik atau pergi ke jabatan kecemasan terdekat (999/998). Doktor akan menyemak jawapan ini dengan anda. (draf mesin)'},
+ zh:function(l){return '您不确定：'+l+'。如果现在正在发生或在加重，请致电诊所或前往最近的急诊部（999/998）。医生会与您核实这个答案。（机器草稿）'},
+ ar:function(l){return 'لم تكن متأكدا بشأن: '+l+'. إذا كان يحدث الآن أو يزداد سوءا، فاتصل بالعيادة أو اذهب إلى أقرب قسم للطوارئ (999/998). سيراجع طبيب هذه الإجابة معك. (مسودة آلية، لم تُراجع)'}
+};
+var UNK_AMBER={en:'AMBER: red-flag question not answered, clinician to confirm today',ms:'AMBER: soalan tanda bahaya tidak dijawab, doktor perlu sahkan hari ini (draf mesin)',zh:'AMBER：危险信号问题未回答，需临床医生今天核实（机器草稿）',ar:'AMBER: لم يُجب عن سؤال مؤشر خطر، يحتاج الطبيب إلى تأكيده اليوم (مسودة آلية، لم تُراجع)'};
+function redUnknownNow(){
+ if(!st||!IV||!IN)return;
+ var lang=st.lang||'en',ans=IV.toAnswers(st);
+ IN.todos(ans).filter(function(t){return /^red_unknown_/.test(t.key)&&!raisedUnknown[t.key]}).forEach(function(t){
+  raisedUnknown[t.key]=1;
+  var qid=t.key.replace(/^red_unknown_/,'');
+  var lab=IN.redLabel?IN.redLabel(qid,lang):qid;
+  addMsg('bot',qid==='symptoms_now'?(UNK_NOW[lang]||UNK_NOW.en):(UNK_NOW_OTHER[lang]||UNK_NOW_OTHER.en)(lab),'in-unk');
+  var T=targetFor(st.pid?{pid:st.pid,name:curName,short:curShort,proc:st.procedure}:null);
+  var S=ensurePatient(T.pid,T.name,T.short,T.proc);
+  if(S){IN.toTasks(S,T.pid,[Object.assign({},t,{owner:'clinician',urgent:true,dueHours:undefined})]);if(window.PeriHooks)window.PeriHooks.render()}
+  var box=$('iv-red');if(box&&!box.querySelector('.in-red')){var d=document.createElement('div');d.className='in-amber';d.setAttribute('data-unk',qid);d.dir='auto';d.textContent=(UNK_AMBER[lang]||UNK_AMBER.en)+' ('+lab+')';box.appendChild(d)}
+ });
+}
 function answerWith(raw,label){
  if(!IV||!IN){$('iv-hint').textContent=MISSING;return}
  if(!st||st.done){$('iv-hint').textContent='Start an interview, or load a sample patient, first.';return}
  if(halted){$('iv-hint').textContent=ui(st.lang).paused;return}
  if(busy)return;
- var text=String(raw==null?'':raw).trim();if(!text)return;
+ var typed=String(raw==null?'':raw).trim();if(!typed)return;
+ // polish item 1: the red-flag rules read the typed text; the echo, the state, the model and the Staff board get the masked text
+ var text=IV.maskTyped(typed);
  var p=IV.prompt(st),wasText=!!p&&p.type==='text';
- addMsg('me',label||text);
+ addMsg('me',IV.maskTyped(label||typed));
  var routesBefore=st.routeFlags.length;
- st=IV.next(st,text);
- if(st.reprompt){var rr=st.routeFlags.length>routesBefore?st.routeFlags[st.routeFlags.length-1]:null;if(rr){addMsg('bot',(rr.reply?rr.reply+' ':'')+ROUTEPASS[st.lang]);}addMsg('bot',REPROMPT[st.lang]);renderPrompt();return}
+ st=IV.next(st,typed);
+ if(st.reprompt){var rr=st.routeFlags.length>routesBefore?st.routeFlags[st.routeFlags.length-1]:null;if(rr){addMsg('bot',(rr.reply?rr.reply+' ':'')+ROUTEPASS[st.lang]);}addMsg('bot',st.rangeMsg||REPROMPT[st.lang]);renderPrompt();return}
  if(st.red&&redTyped===null)redTyped=text;
  noteRed();
  if(halted){showHalted();return}
+ redUnknownNow();
  if(wasText&&effMode()==='ai'&&AD&&SC){
   busy=true;$('iv-hint').textContent='Checking your answer...';
   var nxt=IV.prompt(st);
   var done=function(){busy=false;afterAnswer()};
-  var rulesI=ENG.classify(text,{procedure:st.procedure});
+  var rulesI=ENG.classify(typed,{procedure:st.procedure,mode:'intake'});
   var checkI=(rulesI.cls==='EMERGENCY'||rulesI.cls==='SAME-DAY')?Promise.resolve(null):SC.secondCheck(getAdapter(),text,{lang:st.lang});
   checkI.then(function(sec){
    if(sec){
@@ -683,7 +764,11 @@ function answerWith(raw,label){
     if(finI.escalated){addMsg('bot',arText(finI.reply,st.lang,SAME_DAY_AR));var pqI=passToStaff(text,true,false);addNote(passMsg(pqI,st.lang));done();return}
     if(finI.staffTag)tagUnscreened(text);
    }
-   return AD.askSafely(getAdapter(),text,ENG.classify,{lang:st.lang,ctx:{procedure:st.procedure},step:nxt?nxt.text:undefined}).then(function(out){
+   // Judge round 1 (P1-1): an ordinary interview answer ("yes", "metformin and paracetamol", "thanks") is a recorded answer, as in scripted mode.
+   // Only a real question, an urgent class or a clinical-judgement route goes to the model path or to staff.
+   var ciI=ENG.classify(typed,{procedure:st.procedure,mode:'intake'});
+   if(ciI.cls==='ACK'||(ciI.cls==='ROUTE'&&ciI.flags.length===1&&ciI.flags[0]==='no approved answer')){done();return}
+   return AD.askSafely(getAdapter(),text,ENG.classify,{lang:st.lang,ctx:{procedure:st.procedure,mode:'intake'},step:nxt?nxt.text:undefined}).then(function(out){
    if(out&&out.mode==='ai')addMsg('bot','AI note (machine draft, not a diagnosis): '+out.text);
    else if(out&&out.mode==='blocked')addNote(ui(st.lang).blocked);
    // round 5: ROUTE, EMERGENCY and SAME-DAY never reach a model; the fixed engine reply is shown instead
@@ -708,13 +793,15 @@ function loadSample(){
  if(v.indexOf('ar:')===0){h=IV&&IV.arSample?IV.arSample(+v.slice(3)):null}else{h=HIS[+v]||null}
  if(!h)return;
  var ar=h.lang==='ar';
- st=null;shownRed=null;halted=false;redTyped=null;$('iv-in').disabled=false;
+ st=null;shownRed=null;raisedUnknown={};halted=false;redTyped=null;$('iv-in').disabled=false;
  $('iv-chat').innerHTML='';$('iv-chips').innerHTML='';$('iv-red').innerHTML='';
  addMsg('bot',ar?'تم تحميل العينة: '+(h.caseAr||h.case)+' (الإجراء: '+(PROC_AR[h.procedure]||h.procedure)+'، وهمي). تظهر إجاباتها في الملخص.'
   :'Sample loaded: '+h.case+' ('+h.procedure+', fictional). Its answers are summarised on the right.');
  curFromSample=true;curPid=h.pid;curProc=h.procedure;curName='Sample '+h.pid+' (fictional)';curShort='S'+(String(v).indexOf('ar:')===0?+v.slice(3)+1:(+v+1));
  setHeader(curName);
  var ans=h.sample?h:{pid:h.pid,procedure:h.procedure,lang:h.lang,answers:h.answers,freeText:h.freeText||[]};
+ // polish item 1: sample text is masked like typed text before it is summarised, put on a task or shown
+ if(IV&&IV.maskDeep)ans=IV.maskDeep(ans);
  curTodos=IN.todos(ans);
  var red=IN.redOf(ans);
  if(red)redBox(red,h.lang,{pid:h.pid,name:curName,short:curShort,proc:h.procedure,interview:false});
@@ -729,13 +816,31 @@ function srcHtml(text,lang){
  // Source tags such as [meds_text] or (blood_thinner) are hidden unless "Show sources" is on. Arabic keeps them LTR.
  var parts=s.split(/( \[[^\]]+\]| \([a-z][a-z_0-9.]*(?:, ?[a-z][a-z_0-9.]*)*\))/);
  return parts.map(function(p,i){
-  if(i%2===1){var inner=p.slice(0,1)===' '?p.slice(1):p;return ' <span class="srcx">'+esc(inner)+'</span>'}
+  // the masked token is shown as text (it looks like a source tag, but it is not one)
+  if(i%2===1&&p===' [number removed]')return ' '+esc('[number removed]');
+  if(i%2===1)return srcTag(p,lang);
   if(!ar)return esc(p);
   // Latin and digit runs are cut out before escaping (so HTML entities are never split), then wrapped as LTR isolates.
   var runs=[];
   var marked=p.replace(/[A-Za-z0-9][A-Za-z0-9._%\/:+\-]*(?: [A-Za-z0-9._%\/:+\-]+)*/g,function(m){runs.push(m);return '\u0001'+(runs.length-1)+'\u0002'});
   return esc(marked).replace(/\u0001(\d+)\u0002/g,function(_,k){return '<bdi dir="ltr">'+esc(runs[+k])+'</bdi>'});
  }).join('');
+}
+// polish item 5 (round 8): "Show sources" shows a friendly label; the raw field id stays in the title attribute only.
+var SRC_EN={meds_text:'medicines list'};
+var FREETEXT_LBL={en:"patient's words",ms:'kata pesakit',zh:'患者自述',ar:'كلام المريض'};
+function srcLabel(id,lang){
+ var raw=String(id).trim();
+ if(/^freeText\./.test(raw))return FREETEXT_LBL[lang]||FREETEXT_LBL.en;
+ if(lang==='en'&&SRC_EN[raw])return SRC_EN[raw];
+ var l=(typeof IN!=='undefined'&&IN&&IN.labelOf)?IN.labelOf(raw,lang):raw;
+ return (!l||l===raw)?raw.replace(/_/g,' '):l;
+}
+function srcIdsLabel(ids,lang){return ids.map(function(i){return srcLabel(i,lang)}).join(', ')}
+// one tag such as " [meds_text]" or " (blood_thinner, meds_text)": friendly text shown, raw ids in title
+function srcTag(p,lang){
+ var inner=p.slice(0,1)===' '?p.slice(1):p,open=inner.charAt(0),close=inner.charAt(inner.length-1),ids=inner.slice(1,-1).split(/,\s*/);
+ return ' <span class="srcx" title="'+esc(ids.join(', '))+'">'+esc(open+srcIdsLabel(ids,lang)+close)+'</span>';
 }
 function renderSummary(sum,todos,lang,opt){
  opt=opt||{};sumLang=lang;var U=ui(lang),ar=lang==='ar',LI=ar?'rtl':'auto';lastSum=[sum,todos,lang,opt];
@@ -761,7 +866,7 @@ function renderSummary(sum,todos,lang,opt){
   if(ar&&!t.urgent&&!t.dueHours&&t.dueDays<0)due=(-t.dueDays)+' '+M.before;
   if(otYmd&&typeof t.dueDays==='number'&&typeof t.dueHours!=='number'&&!t.urgent)due=IN.OT.fmtCal(IN.OT.addDays(otYmd,t.dueDays),lang)+', '+IN.OT.relOT(t.dueDays,lang);
   var owner=ar?(IN.OWNER_AR[t.owner]||t.owner):t.owner.replace(/_/g,' ');
-  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(owner)+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx"> · '+esc(M.reason)+': '+esc(t.reason)+'</span></div></div>';
+  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(owner)+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx" title="'+esc(String(t.reason||''))+'"> · '+esc(M.reason)+': '+esc(srcIdsLabel(String(t.reason||'').split(/,\s*/),lang))+'</span></div></div>';
  });
  h+='<div class="row" style="margin-top:8px;flex-wrap:wrap;align-items:center"><button class="p" type="button" data-in-act="send">'+esc(ar?'إرسال إلى لوحة الطاقم':'Send to staff board')+'</button><span class="in-note" id="iv-sent"></span></div>';
  h+='</div>';
@@ -807,6 +912,9 @@ function passToStaff(q,urgent,clinical){
 }
 function askCtx(){return {country:$('iv-c-country').value,hospital:$('iv-c-hospital').value,team:$('iv-c-team').value,surgeon:$('iv-c-surgeon').value,procedure:$('iv-c-proc').value||undefined}}
 function ask(q){
+ // polish item 1: the question is masked before it is answered, stored as a task, or sent to the model
+ q=IV?IV.maskTyped(q):String(q==null?'':q);
+ if(IV&&$('iv-q'))$('iv-q').value=q;
  if(effMode()==='ai'&&SC&&KN&&SRCS&&String(q||'').trim()){askChecked(q);return}
  askNow(q,null);
 }
@@ -836,10 +944,13 @@ function askNow(q,pre){
   var h='';
   if(r.kind==='ANSWER'){
    h+='<div class="in-words"><b>'+esc(r.text)+'</b></div>';
+   var CL=CITE_LBL[lang];
    h+=ar?'<div class="in-cite">المصدر: المستوى '+esc(r.citation.layerLabel||r.citation.layer)+' · الجهة '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>'
-     :'<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>';
+     :(CL?'<div class="in-cite">'+esc(CL.src)+esc(r.citation.layer)+esc(CL.owner)+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>'
+     :'<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>');
    // round 6 (review3 M1): a draft is labelled as a sample, never presented as clinician-approved text
    if(ar)h+=r.approved?'<div class="in-cite">معتمد من طبيب: نعم</div>':'<div class="in-cite"><b style="color:var(--em)">عينة مسودة، غير معتمدة</b> · لم يعتمد أي طبيب هذا النص لهذه العيادة.</div>';
+   else if(CL)h+=r.approved?'<div class="in-cite">'+esc(CL.yes)+'</div>':'<div class="in-cite">'+CL.draft+'</div>';
    else h+=r.approved?'<div class="in-cite">Clinician-approved: yes</div>':'<div class="in-cite"><b style="color:var(--em)">SAMPLE draft, not approved</b> · no clinician has approved this text for this clinic.</div>';
    // review1 item 8: the answer, then the hospital layer it overrides, with owner names
    var ov=KN.overrideLine(store,ctx,r);
@@ -850,13 +961,13 @@ function askNow(q,pre){
    if(pre&&pre.staffTag)tagUnscreened(q);
    var H=ASKHEAD;
    h+='<div class="in-words"><b>'+esc(urgent?H.urgent[lang]:pass.ok?H.passed[lang]:H.not[lang])+'</b></div>';
-   h+='<div class="in-words">'+esc(honestReply(r.text,pass.ok,lang))+'</div>';
+   h+='<div class="in-words">'+esc(honestReply(routeText(r.text,lang),pass.ok,lang))+'</div>';
    h+=ar?'<div class="in-cite">لا يوجد مصدر معتمد يجيب عن هذا السؤال في السياق الحالي. السبب: '+esc(r.reason)+'</div>'
-     :'<div class="in-cite">No approved source answers this in the current context. Reason: '+esc(r.reason)+'</div>';
+     :'<div class="in-cite">'+esc(NOSRC_LBL[lang]||NOSRC_LBL.en)+esc(routeReason(r.reason,lang))+'</div>';
    h+='<div class="in-cite" id="iv-ask-task">'+esc(passMsg(pass,lang))+'</div>';
   }
   if(pre&&pre.unscreened)h+='<div class="in-cite">'+esc(ar?UNSCREENED_AR:SC.UNSCREENED_TAG)+'</div>';
-  h+='<div class="in-cite">'+(ar?'السياق المستخدم: ':'Context used: ')+esc(ctxNames(ctx,lang))+'</div>';
+  h+='<div class="in-cite">'+esc(CTXUSED_LBL[lang]||CTXUSED_LBL.en)+esc(ctxNames(ctx,lang))+'</div>';
   out.innerHTML=h;
  }catch(e){out.textContent='Could not answer: '+e.message}
 }
@@ -876,7 +987,7 @@ function refreshSettings(){
  var p=AD&&AD.presets?AD.presets[$('iv-set-preset').value]:null;
  $('iv-set-preset-info').textContent=p?'Set on the proxy server only: provider '+p.provider+', base URL '+(p.baseUrl||'(your own)')+', model '+(p.model||'(your own)')+'.':'';
  var scOn=effMode()==='ai'&&!!SC;
- var scMsg=scOn?'Second check: on for Intake, Ask box and Patient phone. The model can raise a message to urgent; it can never lower one. Unscreened messages are tagged on the Staff board.':'Second check: off (rules only). Rules alone were measured at about 56% of urgent messages on an unseen AI-written set; turn on a second check for production.';
+ var scMsg=scOn?'Second check: on for Intake, Ask box and Patient phone. The model can raise a message to urgent; it can never lower one. Unscreened messages are tagged on the Staff board.':'Second check: off (rules only). Rules alone caught 34 of 63 urgent AI-written messages at first pass (Overview chart). A second check is an option under test, not a validated safety layer.';
  var scAr=scOn?'الفحص الثاني: مفعّل للاستقبال وصندوق الأسئلة وهاتف المريض. يمكن للنموذج أن يرفع الرسالة إلى عاجل، لكنه لا يخفضها أبدا. الرسائل غير المفحوصة تُعلَّم على لوحة الطاقم.':'الفحص الثاني: متوقف (القواعد وحدها فقط).';
  document.querySelectorAll('.sc-status').forEach(function(el){el.textContent=(el.id==='sc-phone'&&window.__plPhoneAr)?scAr:scMsg});
 }
@@ -891,6 +1002,7 @@ function init(){
  HIS.forEach(function(h,i){if(!groups[h.procedure]){groups[h.procedure]=[];order.push(h.procedure)}groups[h.procedure].push([h,i])});
  $('iv-samp').innerHTML=order.map(function(k){return '<optgroup label="'+esc(PK[k]?PK[k].label:k)+'">'+groups[k].map(function(g){return '<option value="'+g[1]+'">'+esc(g[0].pid+' · '+g[0].case)+'</option>'}).join('')+'</optgroup>'}).join('');
  $('iv-set-preset').innerHTML=AD&&AD.presets?Object.keys(AD.presets).map(function(k){return '<option value="'+k+'">'+esc(AD.presets[k].provider)+'</option>'}).join(''):'';
+ if(AD&&AD.presets&&AD.presets.local)$('iv-set-preset').value='local'; // judge round 1 (P2): default to the self-hosted preset, as the Data protection note advises
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
  if(IV&&IV.arSample){var arG='<optgroup label="العربية (عينات وهمية)">';for(var ai=0;ai<IV.AR_SAMPLE_COUNT;ai++){var ah=IV.arSample(ai);arG+='<option value="ar:'+ai+'">'+esc(ah.pid+' · '+ah.caseAr)+'</option>'}$('iv-samp').insertAdjacentHTML('beforeend',arG+'</optgroup>')}
  renderAskChips($('iv-c-lang').value);
