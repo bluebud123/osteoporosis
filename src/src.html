@@ -78,6 +78,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 .in-ot input[type=date]{font:inherit;width:100%;max-width:100%;min-width:0;min-height:40px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 .in-ot input[aria-invalid=true]{border-color:var(--em)}
 .in-ot .in-banner[hidden]{display:none}
+/*EXTRA_CSS*/
 </style></head><body>
 <header><h1>PeriLoop <small>working name · elective orthopaedic perioperative loop</small></h1>
 <div class="clock"><b id="clk">Day 0</b><b id="hdr-pt" class="hidden"></b><button data-t="1">+1 h</button><button data-t="6">+6 h</button><button data-t="24">+1 day</button><button data-t="72">+3 days</button><button id="reset">Reset demo</button></div></header>
@@ -946,4 +947,5 @@ $('iv-set-preset').addEventListener('change',refreshSettings);
 $('iv-set-proxy').addEventListener('input',refreshSettings);
 init();
 })();
-</script></body></html>
+</script>
+<script>/*EXTRA_JS*/</script></body></html>

@@ -113,6 +113,13 @@ const casesBlock = [
 
 const src = read('src.html');
 let html = replaceOnce(src, '/*ENGINE*/', engineBlock);
+// Optional add-on files: every src/extra*.css and src/extra*.js (sorted) is inlined at the EXTRA slots.
+const extras = fs.readdirSync(ROOT).filter(f => /^extra.*\.(css|js)$/.test(f)).sort();
+for (const [slot, ext] of [['/*EXTRA_CSS*/', '.css'], ['/*EXTRA_JS*/', '.js']]) {
+  const code = extras.filter(f => f.endsWith(ext)).map(f => '/* ' + f + ' */\n' + fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+  if (/<\/script/i.test(code) || /<\/style/i.test(code)) throw new Error('an extra file contains a closing tag that cannot be inlined');
+  html = html.split(slot).join(code);
+}
 html = replaceOnce(html, '/*CASES*/', casesBlock);
 
 fs.writeFileSync(OUT, html);
