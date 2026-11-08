@@ -38,7 +38,7 @@ table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-top:1px 
 @media(max-width:520px){.crow{grid-template-columns:1fr 1fr}.crow .bar{grid-column:1/3}}
 .pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}.pc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.track{display:flex;margin:8px 0 10px}.track span{flex:1;text-align:center;font-size:11px;padding:4px 2px;background:var(--card);border:1px solid var(--line);color:var(--mut);position:relative}.track span:first-child{border-radius:8px 0 0 8px}.track span:last-child{border-radius:0 8px 8px 0}.track .past{background:var(--acc2)}.track .here{background:var(--acc);color:#fff;font-weight:700}.track em{position:absolute;left:0;right:0;top:100%;font-size:10px;font-style:normal;color:var(--acc);white-space:nowrap}.rw{display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);margin-top:2px}.rw:first-of-type{border-top:none}.ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px}.ic.r{background:var(--em)}.ic.a{background:var(--sd)}.ic.g{background:var(--ok)}
 .story{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}@media(min-width:700px){.story{grid-template-columns:1fr 1fr}}.story>div{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}.story h3{margin:0 0 4px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.story .narr{grid-column:1/-1;font-size:16px;background:var(--acc2)}.story li{margin:2px 0}
-.in-banner{border-left:4px solid currentColor;padding:8px 10px;margin:6px 0;background:var(--bg);border-radius:6px;font-weight:600;overflow-wrap:anywhere}.in-banner.RED{color:var(--em)}.in-banner.AMBER{color:var(--sd)}.in-banner.NONE{color:var(--ok)}
+.in-banner{border-inline-start:4px solid currentColor;padding:8px 10px;margin:6px 0;background:var(--bg);border-radius:6px;font-weight:600;overflow-wrap:anywhere}.in-banner.RED{color:var(--em)}.in-banner.AMBER{color:var(--sd)}.in-banner.NONE{color:var(--ok)}
 .in-red{border:2px solid var(--em);background:color-mix(in srgb,var(--em) 10%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0;overflow-wrap:anywhere}
 .b.in-redb{border-color:var(--em);box-shadow:inset 3px 0 0 var(--em)}
 .in-form{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.in-form label,.in-set label{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
@@ -46,7 +46,7 @@ table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-top:1px 
 .in-words{overflow-wrap:anywhere;word-break:break-word}.in-note{font-size:12.5px;color:var(--mut);overflow-wrap:anywhere}
 .in-sec{border-top:1px solid var(--line);padding:6px 0}.in-sec h3{margin:0 0 2px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.in-sec ul{margin:0;padding-left:18px}
 .in-todo{padding:6px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
-.in-cite{font-size:12.5px;color:var(--mut);margin-top:4px;overflow-wrap:anywhere}.in-over{margin-top:8px;padding:6px 8px;border-left:3px solid var(--sd);background:var(--bg);border-radius:6px;font-size:13.5px;overflow-wrap:anywhere}
+.in-cite{font-size:12.5px;color:var(--mut);margin-top:4px;overflow-wrap:anywhere}.in-over{margin-top:8px;padding:6px 8px;border-inline-start:3px solid var(--sd);background:var(--bg);border-radius:6px;font-size:13.5px;overflow-wrap:anywhere}
 .in-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.in-chips button{font-size:12.5px;padding:4px 8px;max-width:100%;text-align:left}
 details.card summary{cursor:pointer;font-weight:600}
 .in-banner.INCOMPLETE{color:var(--mut)}
@@ -61,6 +61,16 @@ details.card summary{cursor:pointer;font-weight:600}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ro);outline-offset:1px}
 #iv-chat{height:auto;min-height:220px;max-height:60vh}
 #hdr-pt{font-size:13px}
+/* Arabic (ar): right-to-left with logical properties. Arabic system fonts only (no downloads). Numbers and Latin snippets stay LTR. */
+.in-li,.in-ph,.in-sec ul{padding-inline-start:18px}
+[dir=rtl]{font-family:"Noto Naskh Arabic","Noto Sans Arabic",Segoe UI,Tahoma,Arial,sans-serif;line-height:1.9}
+[dir=rtl] button,[dir=rtl] input,[dir=rtl] select{font-family:inherit;line-height:1.6}
+.b,.in-words,.in-note,.in-cite,.in-todo,.in-over,.in-banner,.in-sec li,.in-red,.in-alert-note{unicode-bidi:plaintext;text-align:start}
+.srcx,bdi{unicode-bidi:isolate;direction:ltr}
+[dir=rtl] li{unicode-bidi:normal}
+input[type=text]{unicode-bidi:plaintext}
+.in-ot input[type=date]{direction:ltr}
+[dir=rtl] .in-chips button{text-align:right}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) button.p,:root:not([data-theme=light]) nav button.on,:root:not([data-theme=light]) .b.me,:root:not([data-theme=light]) .track .here{color:#0b1a17}}
 :root[data-theme=dark] button.p,:root[data-theme=dark] nav button.on,:root[data-theme=dark] .b.me,:root[data-theme=dark] .track .here{color:#0b1a17}
 button,select,input[type=text],input[type=number]{min-height:40px}
@@ -85,7 +95,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="chips" id="chips"></div>
 <form class="row" id="f"><input type="text" id="msg" placeholder="Type a message in English, Bahasa Malaysia or Chinese" aria-label="Message"><button class="p">Send</button></form>
 <div class="mut" style="margin-top:6px">Replies come from fixed approved text. Nothing here is generated by a model.</div>
-<div class="in-note sc-status" style="margin-top:6px"></div></div>
+<div class="in-note sc-status" id="sc-phone" style="margin-top:6px"></div></div>
 <div class="card"><h2>Your plan</h2><div id="plan"></div></div></div></section>
 <section id="v-staff" class="hidden"><div class="grid two">
 <div class="card"><h2>Alerts (staff group)</h2><div id="alerts"></div></div>
@@ -103,7 +113,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="in-form" style="margin-top:8px">
 <label>Fictional patient<select id="iv-pat"></select></label>
 <label>Procedure<select id="iv-proc"></select></label>
-<label>Language<select id="iv-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option></select></label>
+<label>Language<select id="iv-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option><option value="ar">العربية</option></select></label>
 </div>
 <div class="in-ot" id="iv-ot-box">
 <label>Operation (OT) date<input type="date" id="iv-ot" aria-describedby="iv-ot-info iv-ot-msg"></label>
@@ -138,7 +148,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <label>Team<select id="iv-c-team"><option value="">None</option><option value="Sample Ortho Ward Team" selected>Sample Ortho Ward Team</option></select></label>
 <label>Surgeon<select id="iv-c-surgeon"><option value="">None</option><option value="Dr Sample Surgeon" selected>Dr Sample Surgeon</option></select></label>
 <label>Procedure<select id="iv-c-proc"><option value="">Any</option><option value="TKR" selected>TKR</option><option value="THR">THR</option><option value="LUMBAR">LUMBAR</option></select></label>
-<label>Answer language<select id="iv-c-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option></select></label>
+<label>Answer language<select id="iv-c-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option><option value="ar">العربية</option></select></label>
 </div>
 <div class="in-note" style="margin-top:6px">Set the surgeon to None to see the hospital answer instead.</div>
 <form class="row" id="iv-askform" style="margin-top:8px"><input type="text" id="iv-q" aria-label="Your question" placeholder="For example: When can I shower?"><button class="p" type="submit">Ask</button></form>
@@ -228,7 +238,7 @@ defs["engine"] = function (module, exports, require) {
   };
 
   /* ---------- text helpers ---------- */
-  function lang(t) { if (/[一-鿿]/.test(t)) return 'zh'; const m = (t.toLowerCase().match(/\b(saya|kaki|luka|bila|boleh|dan|sakit|yang|betis|bengkak|sejak|semalam|ada|tidak|mandi|balutan)\b/g) || []).length; return m >= 2 ? 'ms' : 'en'; }
+  function lang(t) { if (/[一-鿿]/.test(t)) return 'zh'; if (/[ء-يٱ-ۓۺ-ۿ]/.test(t)) return 'ar'; const m = (t.toLowerCase().match(/\b(saya|kaki|luka|bila|boleh|dan|sakit|yang|betis|bengkak|sejak|semalam|ada|tidak|mandi|balutan)\b/g) || []).length; return m >= 2 ? 'ms' : 'en'; }
   const NEG = /(\bno\b|\bnot\b|\bwithout\b|\bnor\b|\bnil\b|tiada|tidak|tak ada|takde|没有|沒有|无)[^.;,]{0,12}$/;
   // round 6: a Chinese negation directly in front of the finding (不是中风, 不闷, 没痛) also negates it
   const ADJ_NEG_RE = /(不是|没有|沒有|没|不|唔|冇|无|無)$/;
@@ -348,12 +358,150 @@ defs["engine"] = function (module, exports, require) {
     });
   }
 
+  /* ---------- round 7: Arabic (ar). ADDED only; no existing rule or wording changes. ----------
+     arNorm() runs on every text in classify(), so the Arabic patterns below are written in normalised form: bare alef,
+     ya, ha, no tashkeel. Arabic-Indic and Persian digits become ASCII (38, ٣٨ and ۳۸ match the same rule).
+     Negation mirrors positiveFindings(): a cue (لا، ما، مو، ما عندي، ولا ...) negates a finding when only list words sit between.
+     A compound finding (body word + symptom word) uses arNear(): the negation is read at the symptom word.
+     DRAFT: Modern Standard Arabic with Gulf/Emirati forms and some Egyptian and Levantine. Not clinician validated. */
+  const AL = 'ء-ي';
+  const AB = '(?<![' + AL + '])', AE = '(?![' + AL + '])';
+  const PFX = '(?:ال|بال|لل|وال|ب|ل|و|ف|ك)?';
+  function arNorm(s) {
+    return String(s)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱٲٳ]/g, 'ا')
+      .replace(/[ىیئ]/g, 'ي')
+      .replace(/ک/g, 'ك').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0))
+      .replace(/٫/g, '.').replace(/٬/g, '');
+  }
+  function arRe(src, flags) { return new RegExp(arNorm(src), flags || ''); }
+  function cx(words) { return arRe(AB + PFX + '(?:' + words + ')'); }
+  const AR_CUE = arRe(AB + '(?:و)?(?:لا يوجد|لا توجد|ما عندي|ماعندي|ما عنده|ما عندها|ليس عندي|مو عندي|من غير|من دون|مافي|ما في|ماكو|مافيش|ما فيش|مافيه|ما فيه|مافيها|ما فيها|ما احس|ما احسه|ما احسها|ولا|لا|ما|مو|مب|مش|ليس|ليست|لست|لم|لن|بدون|عدم)' + AE, 'g');
+  const AR_GAP = /^(?:\s|و|او|ولا|لا|حتى|اي|ايه|نوع|من|فيه|فيها|في|عندي|عنده|عندها|شي|شيء|مو|ما|ليس|لم|مب|مش|احس|حاس|حاسه|اشعر|ب|وكمان)*$/;
+  // Returns the findings that are not negated. A cue must end before the finding and only list words may sit between them.
+  function arPositive(text, findRe) {
+    const s = String(text), evs = []; let m;
+    const cre = new RegExp(AR_CUE.source, 'g');
+    while ((m = cre.exec(s))) evs.push({ cue: true, start: m.index, end: m.index + m[0].length });
+    const fre = new RegExp(findRe.source, 'g');
+    while ((m = fre.exec(s))) { if (m[0] === '') fre.lastIndex++; else evs.push({ cue: false, start: m.index, end: m.index + m[0].length }); }
+    evs.sort((a, b) => a.start - b.start || (a.cue ? 1 : -1));
+    const out = []; let from = null;
+    for (const e of evs) {
+      if (e.cue) { from = e.end; continue; }
+      const negated = from !== null && from <= e.start && AR_GAP.test(s.slice(from, e.start));
+      if (!negated) out.push(e);
+      from = negated ? e.end : null;
+    }
+    return out;
+  }
+  function arPos(t, re) { return arPositive(t, re).length > 0; }
+  // A symptom word counts only when a body word (ctx) sits within win characters of it, and it is not negated.
+  function arNear(t, ctxRe, findRe, win) {
+    const ctx = new RegExp(ctxRe.source);
+    return arPositive(t, findRe).some(f => ctx.test(t.slice(Math.max(0, f.start - win), Math.min(t.length, f.end + win))));
+  }
+
+  // Emergency: direct phrases (raw) and body-word + symptom pairs (near)
+  const AR_RAW = [
+    { label: 'breathlessness', re: arRe(AB + '(?:ما اقدر اتنفس|مو قادر اتنفس|ما قدرت اتنفس|لا استطيع التنفس|ما استطيع التنفس|صعوبه (?:في |ب)?التنفس|صعوبه (?:في )?النفس|ضيق (?:في )?التنفس|ضيق نفس|ضيق في النفس|انقطاع النفس|اختناق|اختنق|مخنوق|مختنق|لهاث|يلهث|تلهث|الهث|نهجان|مانع الهوا|نفس قصير|اتنفس بصعوبه|ما اقدر اخذ نفس|مو قادر اخذ نفس|اتنفس بتعب)') },
+    { label: 'coughing blood', re: arRe('(?:اسعل|سعلت|سعال|اكح|كحيت|كحه|كحة|بصقت|ابصق|بصاق|قحه|قحة)[^.;،؟!]{0,20}(?:دم|دما|دماء|دموي)' + AE + '|(?:دم|دما)[^.;،؟!]{0,15}(?:بلغم|سعال|كحه|كحة|بصاق|ابصق)') },
+    { label: 'collapse, unresponsive or no reaction', re: arRe(AB + '(?:اغمي|انغمي|اغمى|يغمى|فاقد الوعي|فاقده الوعي|فاقدة الوعي|فقد الوعي|فقدت الوعي|فقد وعيه|فقدت وعيها|مو واعي|مو واعيه|مو واعية|غير واعي|غير واعيه|غايب عن الوعي|غايبه عن الوعي|غايبة عن الوعي)|' + AB + '(?:هو|هي|ابوي|ابويه|ابوها|امي|امه|امها|زوجي|زوجتي|زوجه|زوجها|مرتي|جوزي|اخوي|اختي|ولدي|بنتي|ابني|المريض|المريضه|الشخص|والدي|والدتي)[^.;،؟!]{0,25}(?:ما|مو|لا) ?(?:يرد|ترد|يصحى|تصحى|يتجاوب|تتجاوب|يستجيب|تستجيب|يتكلم|تتكلم|يسمع|تسمع|يتحرك|تتحرك)|(?:طاح|طحت|وقع|وقعت|انهار|انهارت|سقط|سقطت)[^.;،؟!]{0,25}(?:ما|مو|لا) ?(?:يرد|ترد|يصحى|تصحى|يتجاوب|تتجاوب|يتكلم|تتكلم)') },
+    { label: 'confusion/drowsiness', re: arRe(AB + '(?:يهذي|تهذي|يهذر|تهذر|يخرف|تخرف|مشوش|مشوشه|مشوشة|تشوشت|مرتبك|مرتبكه|مرتبكة)|' + AB + '(?:هو|هي|ابوي|امي|المريض|المريضه|زوجي|زوجتي|مرتي|جوزي)[^.;،؟!]{0,20}(?:ما|مو|لا) ?(?:يعرف|تعرف|يدري|تدري) (?:وين|اين|ايش|اسمه|اسمها|اهله|اهلها|شو)|(?:كلامه|كلامها) ما له (?:معنى|معني)|(?:يسال|تسال) وين') },
+    { label: 'stroke signs: slurred or lost speech', re: arRe(AB + '(?:كلامه ثقيل|كلامها ثقيل|كلامه تقيل|كلامها تقيل|كلامه مو واضح|كلامها مو واضح|كلام مو واضح|كلامي ثقيل|كلامي مو واضح|ما يقدر يتكلم|ما تقدر تتكلم|ما يقدر يحكي|ما تقدر تحكي|يتكلم بصعوبه|تتكلم بصعوبه|ينطق بصعوبه|تنطق بصعوبه|لسانه ثقيل|لسانها ثقيل|لساني ثقيل|لسانه تقيل|لسانها تقيل|لساني تقيل|يلوي لسانه|يتلعثم|تتلعثم|ما يطلع كلامه|ما تطلع كلامها|فقد الكلام|فقدت الكلام)') },
+    { label: 'seizure, fit or convulsion', re: arRe(AB + 'صرع' + AE + '|' + AB + '(?:نوبه صرع|يتشنج كله|يتشنج كلها|يتشنج جسمه|يتشنج جسمها|تتشنج كلها|تشنجات كامله|تشنجات متكرره|اختلاج|رجفه كامله|يرتعش كله|يرتجف كله|تشنج كامل)') },
+    { label: 'vomiting blood', re: arRe('(?:يقيء|تقيء|قيء|استفرغ|استفرغت|استفراغ|رجعت|ترجع|يرجع|رميت|يرمي|قاء|يتقيا|تتقيا|اتقيا|تقيا)[^.;،؟!]{0,15}(?:دم|دما|دماء|دموي)' + AE + '|(?:دم|دما)[^.;،؟!]{0,8}(?:قيء|استفراغ|يتقيا|تتقيا|ارجع|رجعت)') },
+    { label: 'black tarry stool', re: arRe(AB + '(?:براز|غايط|برازي|غايطي|تغوطت|تبرزت|بوبي)[^.;،؟!]{0,12}(?:اسود|سوده|سوداء|قطران|قطراني|مثل القطران)|(?:اسود|سوده|سوداء|قطراني)[^.;،؟!]{0,8}(?:براز|غايط|برازي|غايطي)|قطراني') },
+    { label: 'throat closing or lip/tongue swelling (possible anaphylaxis)', re: arRe(AB + '(?:حساسيه|تحسس|تحسسيه)[^.;،؟!]{0,20}(?:صدمه|اختناق|ما اقدر|ضيق نفس)|' + AB + 'صدمه تحسسيه|انافيلاكسيس|انافلاكسيس|انفلاكسيس') },
+    { label: 'possible overdose', re: arRe(AB + '(?:اخذت|شربت|اكلت|بلعت|تناولت)[^.;،؟!]{0,10}(?:زياده|زايده|كثير|كثيره|كميه كبيره|عدد كبير|علبه كامله|علب|كل الحبوب|كل الدوا|الحبوب كلها|الدوا كله)[^.;،؟!]{0,20}(?:دوا|دواء|ادويه|حبوب|حبه|حبات|بنادول|باراسيتامول|علب)' + '|' + AB + '(?:اخذت|شربت|اكلت|بلعت|تناولت)[^.;،؟!]{0,10}(?:دوا|دواء|ادويه|حبوب|حبه|حبات|بنادول|باراسيتامول)[^.;،؟!]{0,10}(?:كثير|كثيره|زياده|زايده|كامله|كامل)' + '|' + AB + '(?:اخذت|شربت|اكلت|بلعت|تناولت) (?:\\d{2,}|عشرين|ثلاثين|اربعين|خمسين|عشره|عشر)[^.;،؟!]{0,12}(?:حبه|حبة|حبات|حبوب|دوا|دواء|بنادول|باراسيتامول|ادويه|علب)' + '|' + AB + '(?:جرعه زياده|جرعه زايده|جرعه زائده|جرعه مضاعفه|تجاوزت الجرعه|اخذت ضعف|اخذت الجرعه مرتين|اكثر من المفروض|اكثر من الجرعه|اخذت حبوب بالغلط|اخذت الدوا بالغلط|اخذت بالغلط|اكلت بالغلط)' + '|' + AB + '(?:اخذت كل الحبوب|اكلت كل الحبوب|شربت كل الدوا|اخذت كل الدوا|اخذت الدوا كله|اكلت الدوا كله|شربت الدوا كله|اخذت علبه كامله)') },
+    { label: 'bladder or bowel control lost, or saddle numbness', re: arRe('(?:ما|مو|لا) ?(?:اقدر|قادر|استطيع) ?(?:اتبول|ابول|اتبرز|اتغوط|اطلع البول|اطلع الغايط|اعصر)|(?:ما|مو) ?(?:يقدر|تقدر) ?(?:يتبول|تتبول|يتبرز|تتبرز|يتغوط|تتغوط)|احتباس (?:بول|البول)|انحباس البول|انحبس البول|انحبست البول|ما (?:يطلع|طلع|تطلع|طلعت) (?:البول|الغايط|البراز)|تبولت على نفسي|تبولت في الفراش|تغوطت على نفسي|سلس (?:بول|البول|غايط|براز)|ما اقدر امسك (?:البول|الغايط|البراز)|ما (?:اقدر|اتحكم) (?:اتحكم )?(?:بالبول|في البول|بالغايط|في الغايط|بالبراز)|فقدت السيطره على (?:البول|الغايط|البراز)') },
+  ];
+  const AR_NEAR = [
+    { label: 'chest pain', ctx: cx('صدر|قلب'), find: arRe(AB + '(?:الم|الالم)' + AE + '|وجع|يوجع|يعور|ضيق|يضغط|ضاغط|مضغوط|ضغط على|ثقيل|ثقل|انقباض|يخنق|يقبض|مؤلم|يؤلم|يتالم'), win: 40 },
+    { label: 'blue or purple lips (cyanosis)', ctx: cx('شفايف|شفاه|شفه|شفت|لسان|اظافر|اظفار'), find: arRe('ازرق|زرق|بنفسج|رمادي'), win: 16 },
+    { label: 'stroke signs: face drooping', ctx: cx('وجه|فم|ملامح'), find: arRe('نازل|ينزل|مايل|معوج|مشوه|ينسحب|تنسحب|نص وجه|نصف وجه'), win: 25 },
+    { label: 'heavy bleeding that will not stop', ctx: cx('نزيف|ينزف|تنزف|نزف|نزفت|دم'), find: arRe('شديد|قوي|قوه|كثير|غزير|ما يوقف|ما يتوقف|مو راضي يوقف|ما يقف'), win: 20 },
+    { label: 'heavy bleeding that will not stop', ctx: cx('ضماد|ضمادة|شاش|بندج|جبيره|جبس|بلاستر|جرح|غرزه|خياطه'), find: arRe('مبلول|مغرق|مشبع|غرقان|مليان|منقوع'), win: 30 },
+    { label: 'throat closing or lip/tongue swelling (possible anaphylaxis)', ctx: cx('لسان|شفايف|شفه|شفت|حلق|حنجر|وجه|وش'), find: arRe('منتفخ|ورم|متورم|انتفاخ|مسدود|ينسد|ينغلق|مقفول|ضيق'), win: 20 },
+    { label: 'bladder or bowel control lost, or saddle numbness', ctx: cx('موخر|دبر|شرج|بين رجلي|بين فخذي|منطقه الجلوس|المنطقه الحساسه|الحوض|العانه|الاعضاء التناسليه|الفخذ الداخلي|السرج|منطقه حساسه'), find: arRe('خدر|مخدر|تنميل|' + AB + 'ما احس(?! ?ب?(?:خدر|تنميل))'), win: 30 },
+    { label: 'limb circulation/nerve', ctx: cx('اصابع|اصبع|رجل|ساق|ايد|يد|قدم|اطراف|كف'), find: arRe('زرق|ازرق|ابيض|بيضاء|بيضا|بارد|ميت|بنفسج|رمادي|شاحب|تغير لون|مخدر|خدرانه|متخدر|خدرت|تنمل|' + AB + 'ما احس(?! ?ب?(?:خدر|تنميل))|ما اقدر احرك|ما اتحرك|ما تتحرك|ما يتحرك|لون غريب'), win: 25 }
+  ];
+  const AR_ARM_CTX = cx('ايد|يد|ذراع'), AR_ARM_WEAK = arRe(AB + '(?:ضعيف|ضعف|خدر|خدرت|تنمل|مشلول|ما يقدر يرفع|ما تقدر ترفع|ما يتحرك|ما تتحرك|ما يحرك|ما تحرك|مو قادر يرفع|مو قادره ترفع)');
+  const AR_LEG_CTX = cx('رجل|ساق'), AR_LEG_WEAK = arRe(AB + '(?:ضعيف|ضعف|خدر|خدرت|تنمل|مشلول|ما يقدر يمشي|ما تقدر تمشي|مو قادر امشي|ما اقدر امشي)');
+  const AR_STROKE_COMP = arRe(AB + '(?:فجاه|فجاة|مفاجي|جهه وحده|جهة وحدة|جهه واحده|جهة واحدة|جانب واحد|جنب واحد|نص جسمه|نص جسمها|نص جسمي|دوخه|دوخة|دايخ|دايخه|دوار|وجهه|وجهها|فمه|فمها|كلامه|كلامها)');
+  const AR_OP = arRe(AB + '(?:عمليه|عمليتي|جراحه|منظار|بعد العمليه|بعد الجراحه)');
+  const AR_SPINE = arRe('ظهر|عمود|فقر|ديسك|انزلاق');
+  const AR_SELF_RE = arRe('(?:(?<!ما )(?<!مو )(?:ابي|ابغى|اريد) (?:ان )?(?:اموت|الموت)|ابي انتحر|ابغى انتحر|اريد الانتحار|افكر (?:في |ب)?(?:ال)?انتحار|انتحار|اقتل نفسي|اقتل روحي|انهي حياتي|انهاء حياتي|ما ابي اعيش|ما ابغى اعيش|ما اريد ان اعيش|لا اريد ان اعيش|مابي اعيش|ما عاد ابي اعيش|تعبت من الحياه|اريد ان ارتاح للابد|اذي نفسي|اوذي نفسي)');
+  function arFlags(t) {
+    const hits = [];
+    const add = l => { if (hits.indexOf(l) < 0) hits.push(l); };
+    AR_RAW.forEach(u => { if (arPos(t, u.re)) add(u.label); });
+    AR_NEAR.forEach(u => { if (arNear(t, u.ctx, u.find, u.win)) add(u.label); });
+    const armHit = arNear(t, AR_ARM_CTX, AR_ARM_WEAK, 30), legHit = arNear(t, AR_LEG_CTX, AR_LEG_WEAK, 30);
+    const comp = arPos(t, AR_STROKE_COMP), op = arPos(t, AR_OP), spine = arPos(t, AR_SPINE);
+    if ((armHit && (!op || comp)) || (legHit && (comp || spine))) add('stroke signs: arm or leg weakness or numbness');
+    return hits;
+  }
+
+  // Same day: wound change, fever, calf or leg pain or swelling
+  const AR_WOUND_CTX = cx('جرح|جرحي|جرحه|ضماد|ضمادة|شاش|بندج|بلاستر|غرزه|خياطه|ندبه|عمليه|عمليتي');
+  const AR_WOUND_STRONG = arRe(AB + '(?:صديد|قيح)');
+  const AR_WOUND_WEAK = arRe('احمرار|احمر|حمراء|حمرا|مفتوح|انفتح|تفتح|افراز|سائل|يسيل|تسرب|رائحه|ريحه|نتن|اصفر|صفراء|منتفخ|ورم|متورم|مبلول');
+  const AR_FEVER_NUM = arRe('(?:حرارت|حراره|حمى|سخونه|درجه)[^.;،؟!]{0,15}?(3\\d(?:[.,]\\d)?|4[0-2](?:[.,]\\d)?)');
+  const AR_FEVER_UNIT = arRe('(?<![\\d.,])(3[89](?:[.,]\\d)?|40(?:[.,]\\d)?)\\s*(?:درجه|درجات|مئويه)');
+  // the finding is the fever word itself, so a cue such as "ما عندي" sits in front of it and negates it; "حرارتي طبيعية" is not a finding
+  const AR_FEVER_WORD = arRe(AB + '(?:حمى|سخونه|سخن|سخنت|حراره|حرارتي|حرارته|حرارتها|حرارتك)(?! ?(?:طبيعي|طبيعيه|طبيعية|عاديه|عادية|كويسه|كويسة|زينه))');
+  const AR_CALF_CTX = cx('ساق|سمانه|بطه|رجل|رجولي|رجليه');
+  const AR_CALF_FIND = arRe(AB + '(?:الم|الالم)' + AE + '|ورم|تورم|متورم|منتفخ|انتفاخ|وجع|يوجع|توجع|مؤلم|حساس');
+  function arTemp(t) { const m = t.match(AR_FEVER_NUM) || t.match(AR_FEVER_UNIT); return m ? parseFloat(m[1].replace(',', '.')) : null; }
+  function arSameDay(t) {
+    const sd = [];
+    if (arPos(t, AR_WOUND_STRONG) || arNear(t, AR_WOUND_CTX, AR_WOUND_WEAK, 60)) sd.push('wound change');
+    const tv = arTemp(t);
+    if (tv !== null) { if (tv >= 38.0) sd.push('fever ' + tv); }
+    else if (arPos(t, AR_FEVER_WORD)) sd.push('fever reported');
+    if (arNear(t, AR_CALF_CTX, AR_CALF_FIND, 40)) sd.push('calf/leg pain or swelling');
+    return sd;
+  }
+
+  // Clinical judgement (ROUTE) and worsening: plain tests, since a wrong route is still answered by a clinician
+  const AR_ROUTE_RE = arRe('مسيل الدم|مميع الدم|مميعات|مسيلات|وارفرين|وارفارين|ريفاروكسابان|ابيكسابان|دابيغاتران|اليكويس|هيبارين|كلكسان|اسبرين|مضاد حيوي|مضادات حيوية|مضاد|حقنه|حقنة|حقن|ابره|طيران|طياره|سفر|سافر|مسافر|رحله|دوا|دواء|ادويه|ادوية|حبوب|جرعه|اوقف|ايبوبروفين|ديكلوفيناك|بنادول|باراسيتامول|كورتيزون|مسكن|مسكنات');
+  const AR_WORSEN_RE = arRe('(?:يزداد|تزداد|يزيد|تزيد|زاد|زادت|اسوا|اسوء|يشتد|تشتد|اشد|اكثر)[^.;،؟!]{0,25}(?:الم|الالم|وجع|يوجع|يوجعني|يعور|يؤلم|ضيق)|(?:الم|الالم|وجع|يوجع|يوجعني|يعور|يؤلم)[^.;،؟!]{0,25}(?:اكثر|اشد|اسوا|يزداد|يزيد|يشتد|تزداد|زاد)');
+  function arRoute(t) { return AR_ROUTE_RE.test(t); }
+  function arRouteNet(t) { return /حقن|ابره/.test(t) ? ['bleeding elsewhere', 'black stools'] : /مضاد/.test(t) ? ['redness', 'discharge', 'fever', 'wound opening'] : []; }
+  function arWorsening(t) { return AR_WORSEN_RE.test(t); }
+  const AR_ACK_RE = arRe('^\\s*(?:انا )?(?:تمام|زين|بخير|كويس|الحمدلله|مشكور|شكرا|شكرا جزيلا|ممتاز|واضح|ok|okay)[\\s.!؟?]*$');
+  const AR_ACK_REPLY = 'شكرا، تم التسجيل. راسلنا في أي وقت إذا تغيّر شيء.';
+  const AR_ASK_RE = arRe('مو زين|مو بخير|مش كويس|مو كويس|مو مرتاح|مو مرتاحه|تعبان|تعبانه|ما احس بخير|مب زين|مب كويس|ما انا بخير|مو طيب|مش زين|مش تمام|تعبت');
+  const AR_ALARM = arRe(AB + '(?:فجاه|فجاة|مفاجئ|مفاجي|خدر|ازرق|زرقاء|اسوا|اسوء|سوء|شديد جدا|ما اقدر|لا اقدر|مو قادر|ما استطيع|لا استطيع)');
+
+  // Replies, in Arabic. The emergency reply gives no phone number: the patient is told to call the emergency services.
+  Object.assign(T.EMERGENCY, { ar: 'قد يكون هذا حالة طارئة. اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى أقرب قسم للطوارئ. تم إبلاغ فريقنا.' });
+  Object.assign(T['SAME-DAY'], { ar: 'يحتاج هذا إلى تقييم من طبيب اليوم. تم إبلاغ فريقنا وسيتصل بك. إذا ساءت حالتك، اذهب إلى قسم الطوارئ.' });
+  Object.assign(T.ROUTE, { ar: 'سيرد عليك أحد الأطباء. لا نستطيع الإجابة عن هذا السؤال تلقائيا.' });
+  Object.assign(T.ASK, { ar: 'أخبرنا بما هو غير جيد: ألم، أم الجرح، أم التنفس، أم تورم الساق، أم الحمى؟ إذا كان لديك ضيق في التنفس أو ألم في الصدر، اتصل بخدمات الطوارئ الآن.' });
+  SELF_HARM_REPLY.ar = 'اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى شخص تثق به ويستطيع أن يكون معك الآن. لا تنتظر.';
+  // FAQ answers in Arabic. DRAFT translations of the approved English answers. No new clinical content. Pending clinical review.
+  FAQ.shower.ans.ar = 'يمكنك الاستحمام بعد أن تكون الضمادة المقاومة للماء سليمة وحوافها جافة؛ أبقِ الماء بعيدا عن الجرح غير المحمي. (ترجمة مسودة، تحتاج العيادة إلى الموافقة.)';
+  FAQ.shower.arRe = arRe('استحم|دش|شاور|اغتسل'); FAQ.shower.arNeeds = arRe('مقاوم');
+  FAQ.bruising.ans.ar = 'الكدمات التي تنتشر إلى أسفل الطرف شائعة في الأسبوعين الأولين. (ترجمة مسودة.)';
+  FAQ.bruising.arRe = arRe('كدم|كدمه|كدمات|تكدم|سحجه');
+  FAQ.low_temp.ans.ar = 'الحرارة أقل من 38.0 درجة شائعة في أول 48 ساعة. أعد القياس بعد 4 ساعات واتصل بنا إذا وصلت إلى 38.0 درجة أو أكثر. (عتبة مسودة، يؤكدها المستشفى.)';
+  FAQ.low_temp.arRe = arRe('(?:حرارت|حراره|حمى|سخونه)[^.;،؟!]{0,15}?3[67](?:[.,]\\d)?');
+  FAQ.drive_knee.ans.ar = 'توجيهات القيادة بعد استبدال الركبة تأتي من جراحك في موعد المراجعة. (ترجمة مسودة.)';
+  FAQ.drive_knee.arRe = arRe('سياق|سواق|اسوق|اقود|القياده|قياده|السياره|سياره');
+  FAQ.drive_acl.ans.ar = 'القيادة بعد إعادة بناء الرباط الصليبي تعتمد على الساق التي أجريت لها الجراحة وعلى تحكمك في دواسات السيارة؛ سيؤكد ذلك أخصائي العلاج الطبيعي. (ترجمة مسودة.)';
+  FAQ.drive_acl.arRe = FAQ.drive_knee.arRe;
+
   /* ---------- classifier (Tier 1: before any model; v1 has no model) ---------- */
   function classify(text, ctx) {
-    ctx = ctx || {}; const t = String(text).toLowerCase(); const flags = []; const L = lang(text); const pack = PACKS[ctx.procedure] || { redFlags: [], faq: [] };
+    ctx = ctx || {}; const t = arNorm(String(text)).toLowerCase(); const flags = []; const L = lang(text); const pack = PACKS[ctx.procedure] || { redFlags: [], faq: [] };
     // EMERGENCY: self-harm first, with its own fixed reply (review2 B1)
     const selfText = t.replace(/\bdo not (want|wish)\b/g, "don't $1"); // 'not' would otherwise negate 'want to live'
-    if (pos(selfText, SELF_HARM_RE) || SELF_HARM_RAW_RE.test(t)) return out('EMERGENCY', ['self-harm statement'], L, ctx, { reply: SELF_HARM_REPLY[L] || SELF_HARM_REPLY.en });
+    if (pos(selfText, SELF_HARM_RE) || SELF_HARM_RAW_RE.test(t) || AR_SELF_RE.test(t)) return out('EMERGENCY', ['self-harm statement'], L, ctx, { reply: SELF_HARM_REPLY[L] || SELF_HARM_REPLY.en });
     const breath = /catch(ing)? (his|her|my|their)? ?breath|gasp|struggl\w* to breathe|breath(ing)? (very )?(fast|hard|rapid)|can'?t get (enough )?air|short(ness)? of breath|呼吸(很|太)?急|气短|一直喘|走两步就喘|喘|breathless|(can'?t|cannot) breathe|breathe properly|chest (is )?tight|tight chest|difficulty breathing|sesak nafas|semput|呼吸困难|喘不过气|气促/;
     const chest = /chest.{0,30}(pain|hurt|squeez|tight|heavy|crush)|pain in (my )?chest|sakit dada|dada.{0,12}(sakit|sempit|berat)|胸(?!口?(不|没|唔|冇|无))口?.{0,4}(痛|闷)|胸闷|放射/;
     const cough = /cough(ed|ing)? (up )?(a bit of )?blood|batuk berdarah|咳血/;
@@ -367,6 +515,7 @@ defs["engine"] = function (module, exports, require) {
     if (pos(t, unresp)) flags.push('reduced consciousness');
     if (pos(t, /confus(ed|ion)|very sleepy|drowsy|disorient|keliru|意识模糊|糊涂/)) flags.push('confusion/drowsiness');
     urgentFlags(t).forEach(f => { if (flags.indexOf(f) < 0) flags.push(f); });
+    arFlags(t).forEach(f => { if (flags.indexOf(f) < 0) flags.push(f); }); // round 7: Arabic
     if (flags.length) return out('EMERGENCY', flags, L, ctx);
     // SAME-DAY
     const sd = [];
@@ -374,7 +523,11 @@ defs["engine"] = function (module, exports, require) {
     let tv = temp(t); if (tv === null) { const m2 = t.match(/(?<![\d.])(3[89](?:\.\d)?|40(?:\.\d)?)(?![\d])/); if (m2 && /temp|therm|suhu|体温|fever|demam|panas|\bhot\b|烫|发烧|烧到/.test(t)) tv = parseFloat(m2[1]); }
     if (tv !== null && tv >= 38.0) sd.push('fever ' + tv); else if (tv === null && pos(t, /\bfever\b|demam|发烧|发热|高烧|烧到|burning up|very hot|badan panas|rasa panas/)) sd.push('fever reported');
     if (calfFinding(t)) sd.push('calf/leg pain or swelling'); // round 6: finding-level negation, so 'calf is not swollen and no pain' is not an alarm
+    arSameDay(t).forEach(f => { if (!(f.indexOf('fever') === 0 && sd.some(x => x.indexOf('fever') === 0)) && sd.indexOf(f) < 0) sd.push(f); }); // round 7: Arabic
     if (sd.length) return out('SAME-DAY', sd, L, ctx);
+    // round 7: Arabic clinical judgement (blood thinners, antibiotics, injections, travel, medicine questions) and worsening pain
+    if (arRoute(t)) return out('ROUTE', ['clinical judgement'], L, ctx, { safetyNet: arRouteNet(t), noAnswer: true });
+    if (arWorsening(t)) return out('ROUTE', ['worsening trend'], L, ctx, { reviewWithinHrs: 48, safetyNet: ['fever', 'wound change', 'new swelling'], noAnswer: true });
     // ROUTE: clinical judgement, never answered
     if (pos(t, /blood thinner|anticoag|\bdoac\b|warfarin|rivaroxaban|apixaban|enoxaparin|clexane|injection|ibuprofen|diclofenac|antibiotic|prescri|\bdose\b|stop (taking|my|them)|can i stop|\bfly(ing)?\b|flight|travel|penerbangan|terbang|飞机|止痛药/)) {
       const net = /injection/.test(t) ? ['bleeding elsewhere', 'black stools'] : /antibiotic|scar|scratch/.test(t) ? ['redness', 'discharge', 'fever', 'wound opening'] : [];
@@ -382,11 +535,14 @@ defs["engine"] = function (module, exports, require) {
     }
     if (pos(t, /(more|worse|again|increas|bertambah|加重|更痛).{0,40}(night|pain|hurt|sakit|痛)|(pain|hurt\w*).{0,40}(more|worse|again)/)) return out('ROUTE', ['worsening trend'], L, ctx, { reviewWithinHrs: 48, safetyNet: ['fever', 'wound change', 'new swelling'], noAnswer: true });
     // ANSWER from the approved store only
-    for (const k of (pack.faq || [])) { const f = FAQ[k]; if (f.re.test(t) && (!f.needs || f.needs.test(t))) { return out('ANSWER', [k], L, ctx, { reply: f.ans[L] || f.ans.en, safetyNet: safetyNet(t), faq: k }); } }
+    for (const k of (pack.faq || [])) { const f = FAQ[k]; if ((f.re.test(t) || (f.arRe && f.arRe.test(t))) && (!f.needs || f.needs.test(t) || (f.arNeeds && f.arNeeds.test(t)))) { return out('ANSWER', [k], L, ctx, { reply: f.ans[L] || f.ans.en, safetyNet: safetyNet(t), faq: k }); } }
+    if (AR_ACK_RE.test(t)) return out('ACK', ['benign'], L, ctx, { reply: AR_ACK_REPLY }); // round 7
     if (/^\s*(i'?m |i am )?(ok|okay|fine|good|baik)\b[\s.!]*$/.test(t)) return out('ACK', ['benign'], L, ctx, { reply: 'Thanks, noted. Message us any time if anything changes.' });
+    if (AR_ASK_RE.test(t)) return out('ASK', ['vague'], L, ctx); // round 7
     if (/not (so )?(good|well)|unwell|tak sihat|不太好|不舒服/.test(t)) return out('ASK', ['vague'], L, ctx);
     const t2 = t.replace(/tak teruk( sangat)?|not (too |that |very )?(bad|severe)|不严重|不太严重/g, '');
     if (ctx.mode !== 'intake' && positiveFindings(t2, /(?<![a-z])(?:sudden|suddenly|cannot|can'?t|unable|numb|blue|severe|worse|worsening|teruk|tiba-tiba|tak boleh|kebas)(?![a-z])|突然|严重|不能|无法|麻木|厉害/).length) return out('SAME-DAY', ['unrecognised alarm words: human review today'], L, ctx); // round 6: negated words ('no numbness') do not count
+    if (ctx.mode !== 'intake' && arPos(t, AR_ALARM)) return out('SAME-DAY', ['unrecognised alarm words: human review today'], L, ctx); // round 7: same rule as the other languages
     return out('ROUTE', ['no approved answer'], L, ctx, { noAnswer: true }); // never guess
   }
   function safetyNet(t) { const answered = {}, asked = []; const q = { 'calf pain/swelling': /no (calf|leg) (pain|swelling)/, fever: /no fever|tiada demam|没有发烧/, breathlessness: /no (breathless|shortness)/ }; for (const k in q) { if (q[k].test(t)) answered[k] = 'no'; else asked.push(k); } return { answered, asked }; }
@@ -502,7 +658,7 @@ defs["engine"] = function (module, exports, require) {
       });
     }
   }
-  const api = { Sim, classify, PACKS, SHARED, THRESH, CFG, FAQ, NEXT_LEVELS };
+  const api = { Sim, classify, PACKS, SHARED, THRESH, CFG, FAQ, NEXT_LEVELS, arNorm };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PeriLoop = api;
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -751,19 +907,32 @@ defs["interview"] = function (module, exports, require) {
 
   const engine = (typeof require === 'function') ? require('../engine.js') : root.PeriLoop;
   const IDMAP = (typeof require === 'function') ? require('./idmap.js') : root.PL_IDMAP;
-  const LANGS = ['en', 'ms', 'zh'];
+  const LANGS = ['en', 'ms', 'zh', 'ar'];
   const PROCEDURES = ['TKR', 'THR', 'ACL', 'LUMBAR', 'SHOULDER', 'FOOTANKLE'];
   const LEVEL_RANK = { 'SAME-DAY': 2, EMERGENCY: 3 };
   // Canonical phrases used only to obtain the engine's own reply text for question-level red flags.
   const CANON = {
-    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛' },
-    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧' }
+    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛', ar: 'عندي ألم في الصدر منذ الليلة' },
+    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧', ar: 'عندي حمى منذ الليلة' }
   };
-  const YES_RE = /^\s*(yes|yeah|yep|ya|ada|y|是的?|有|对)(?![a-z])/i;
-  const NO_RE = /^\s*(no|nope|tidak|tak|tiada|takde|否|不是|不|没有|没|无)(?![a-z])/i;
-  const UNK_RE = /unknown|don'?t know|not sure|tidak tahu|tak tahu|不知道|不清楚|不确定/i;
+  // Arabic normalisation for typed answers: tashkeel and tatweel out, alef / ya / ta-marbuta unified, Arabic-Indic digits to ASCII.
+  function arNorm(text) {
+    return String(text == null ? '' : text)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ؤ/g, 'و')
+      .replace(/ئ/g, 'ي')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+      .replace(/٫/g, '.').replace(/٬/g, ',');
+  }
+  // Patterns below run on arNorm(text), so Arabic alternatives are written without hamza, alef maqsura or ta-marbuta.
+  const YES_RE = /^\s*(yes|yeah|yep|ya|ada|y|是的?|有|对|نعم|ايوه|ايوا)(?![a-zء-ي])/i;
+  const NO_RE = /^\s*(no|nope|tidak|tak|tiada|takde|否|不是|不|没有|没|无|لا|مو|مش|ليس)(?![a-zء-ي])/i;
+  const UNK_RE = /unknown|don'?t know|not sure|tidak tahu|tak tahu|不知道|不清楚|不确定|ما ادري|مو متاكد|مش متاكد|لا اعرف|غير متاكد|مش عارف|ما اعرف/i;
   // round 6 (review3 M3): on a number question a typed 'no' means no value to give. It is recorded as unknown (a gap), never as a number.
-  const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇)\s*[.!。]?\s*$/i;
+  const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇|لا|لا يوجد|ما فيه|مافي|ما في|لاشي)\s*[.!。]?\s*$/i;
 
   /* ---------- builders ---------- */
   function O(value, en, ms, zh) { return { value, label: { en, ms, zh } }; }
@@ -985,9 +1154,79 @@ defs["interview"] = function (module, exports, require) {
     ]
   };
 
+  /* ---------- Arabic (ar): machine draft, Gulf-friendly simple MSA, reviewed:false. Every question and option has one. ---------- */
+  // Each entry: [question text] or [question text, { option value: label }] for choice questions.
+  const AR_Q = {
+    sex: ['ما هو جنسك؟', { female: 'أنثى', male: 'ذكر', prefer_not: 'أفضل عدم الإفصاح' }],
+    medicines: ['اذكر كل الأدوية التي تتناولها الآن، بما في ذلك الفيتامينات والمنتجات العشبية. اذكر الجرعات إن كنت تعرفها.'],
+    blood_thinners: ['هل تتناول مميّعا للدم، مثل الأسبرين أو الوارفارين أو الريفاروكسابان أو الأبيكسابان؟'],
+    blood_thinner_detail: ['أيّ منها، وبأي جرعة، ومتى كانت آخر مرة تناولته؟'],
+    allergies: ['هل لديك حساسية من الأدوية أو اللاتكس أو اليود (بما في ذلك صبغة الأشعة)؟'],
+    allergy_detail: ['اذكر كل حساسية وما الذي حدث، مثلا: البنسلين: طفح جلدي.'],
+    diabetes: ['هل لديك مرض السكري؟'],
+    hba1c: ['ما هي آخر نتيجة لتحليل HbA1c (%)؟ اكتب "لا أعرف" إذا لم تكن تعرفها.'],
+    heart_lung: ['هل لديك مرض في القلب أو في الرئة، مثل فشل القلب أو الذبحة الصدرية أو الربو أو مرض الانسداد الرئوي المزمن (COPD)؟'],
+    kidney: ['هل لديك مرض في الكلى، أو تحتاج إلى غسيل الكلى؟'],
+    anaesthetic: ['هل سبق لك، أو لأحد أقاربك المقربين، أن واجه مشكلة مع التخدير أو التهدئة؟'],
+    anaesthetic_detail: ['ماذا حدث، ومن الذي تعرض لذلك؟'],
+    smoking: ['هل تدخن، أو تستخدم السجائر الإلكترونية أو الفيب؟', { never: 'لا، أبدا', former: 'توقفت عن ذلك', current: 'ما زلت أدخن أو أستخدم الفيب' }],
+    alcohol: ['كم مرة تشرب الكحول؟', { none: 'لا أشرب أبدا', occasional: 'أحيانا', regular: 'بانتظام' }],
+    same_joint: ['هل سبق أن أجريت أي عملية سابقة على نفس المفصل أو المنطقة؟'],
+    same_joint_detail: ['ما نوع تلك العملية، ومتى أجريتها؟'],
+    hospital_mrsa: ['خلال السنة الماضية، هل دخلت المستشفى، أو أُخبرت أنك تحمل بكتيريا MRSA؟'],
+    pregnancy: ['هل أنتِ حامل، أو ربما تكونين حاملا؟'],
+    symptoms_now: ['الآن، هل لديك ألم في الصدر أو ضيق في التنفس أو تشوش في الوعي؟'],
+    home_help: ['من سيساعدك في المنزل خلال أول أسبوعين بعد العملية؟', { family: 'العائلة', alone: 'سأكون وحدي', helper: 'مساعدة مدفوعة الأجر', unsure: 'لست متأكدا بعد' }],
+    lives_alone: ['هل تعيش وحدك؟'],
+    stairs: ['كم عدد درجات السلم داخل منزلك، مثلا للوصول إلى غرفة النوم أو الحمام؟ اكتب 0 إذا لم يوجد سلم.'],
+    mobility_aid: ['هل تستخدم أي شيء لمساعدتك على المشي؟', { none: 'لا أستخدم شيئا', stick: 'عصا', frame: 'مشاية (إطار للمشي)', crutches: 'عكازان', wheelchair: 'كرسي متحرك' }],
+    payer: ['كيف سيتم دفع تكلفة هذا العلاج؟', { self: 'دفع ذاتي', employer: 'عبر جهة العمل أو برنامج الشركة', insurance: 'تأمين خاص', government: 'برنامج حكومي', other: 'أخرى' }],
+    contact_language: ['ما اللغة التي تفضل أن نستخدمها عند التواصل معك؟', { en: 'الإنجليزية', ms: 'الماليزية', zh: 'الصينية', ar: 'العربية' }],
+    final_note: ['هل هناك أي شيء آخر تريد أن يعرفه الفريق، أو أي عرض يقلقك؟'],
+    tkr_walk: ['إلى أي مسافة تستطيع المشي قبل أن تضطرك الركبة إلى التوقف؟', { under_100: 'أقل من 100 متر', '100_500': 'من 100 إلى 500 متر', over_500: 'أكثر من 500 متر', cannot: 'لا أستطيع المشي' }],
+    tkr_night: ['هل يوقظك ألم الركبة في الليل؟'],
+    tkr_injection: ['هل أخذت حقنة ستيرويد أو أي حقنة أخرى في الركبة خلال الأشهر الستة الماضية؟'],
+    tkr_calf: ['هل لديك ألم أو تورم في الساق في الرجل المقرر إجراء العملية عليها الآن؟'],
+    thr_socks: ['هل تستطيع لبس الجوارب والحذاء بنفسك؟', { independent: 'نعم، بنفسي', with_help: 'فقط بمساعدة', cannot: 'لا، لا أستطيع' }],
+    thr_limp: ['هل تعرج عند المشي؟'],
+    thr_injection: ['هل أخذت حقنة في الورك خلال الأشهر الستة الماضية؟'],
+    thr_leg_length: ['هل لاحظت أن إحدى الرجلين تبدو أقصر من الأخرى؟'],
+    acl_giving_way: ['هل تنخلع الركبة أو تفقد ثباتها عند الدوران أو اللف أو النزول على الدرج؟'],
+    acl_weeks: ['منذ كم أسبوعا حدثت الإصابة؟ اكتب "لا أعرف" إذا لم تكن متأكدا.'],
+    acl_other: ['هل سبق أن أصبت بإصابة أخرى في الركبة، مثل تمزق الغضروف الهلالي؟'],
+    acl_sport: ['ما الرياضة أو النشاط الذي تريد أن تعود إليه؟'],
+    lum_leg_weak: ['هل لاحظت ضعفا جديدا، أو يزداد سوءا، في رجل واحدة أو في الرجلين؟'],
+    lum_bladder: ['هل حدث أي تغيير جديد في التبول، أو في التحكم في البول، أو في التحكم في الأمعاء؟'],
+    lum_saddle: ['هل لاحظت تنميلا حول فتحة الشرج أو منطقة الأعضاء التناسلية أو الجزء الداخلي من الفخذين؟'],
+    lum_distance: ['إلى أين يمتد ألم ساقك؟', { back_only: 'الظهر فقط، دون ألم في الساق', buttock: 'الأرداف', thigh: 'الفخذ', below_knee: 'أسفل الركبة' }],
+    lum_claudication: ['هل يسبب المشي ألما في الساق يخف عندما تجلس أو تنحني إلى الأمام؟'],
+    sh_night: ['هل يبقيك ألم الكتف مستيقظا، خاصة عند النوم على ذلك الجانب؟'],
+    sh_overhead: ['إلى أي مدى تستطيع رفع الذراع المقرر إجراء العملية عليها فوق رأسك؟', { full: 'بالكامل، دون مساعدة', partial: 'جزئيا', none: 'لا أستطيع إطلاقا' }],
+    sh_dominant: ['بأي يد تكتب؟', { right: 'اليمنى', left: 'اليسرى' }],
+    sh_fingers: ['هل أصابع الذراع المقرر إجراء العملية عليها مخدرة أو باردة أو شاحبة الآن؟'],
+    fa_shoes: ['ما نوع الحذاء الذي تستطيع لبسه الآن؟', { normal: 'حذائي المعتاد', wide: 'فقط أحذية واسعة أو خاصة', none: 'لا أستطيع لبس الحذاء' }],
+    fa_sore: ['هل يوجد جرح مفتوح أو بثرة أو قرحة على القدم أو الكاحل المقرر إجراء العملية عليه؟'],
+    fa_toes: ['هل أصابع القدم في ذلك الجانب باردة أو شاحبة أو زرقاء أو بنفسجية؟'],
+    fa_falls: ['هل سقطت خلال الأشهر الستة الماضية؟']
+  };
+  // Option added for every language (contact language now includes Arabic).
+  const CONTACT_AR_OPTION = [O('ar', 'Arabic', 'Bahasa Arab', '阿拉伯语')];
+
   /* ---------- lookup ---------- */
   const BANK = {};
-  COMMON.concat(...PROCEDURES.map(p => BY_PROC[p])).forEach(q => { BANK[q.id] = q; });
+  COMMON.concat(...PROCEDURES.map(p => BY_PROC[p])).forEach(q => {
+    if (q.id === 'contact_language') q.options.push(...CONTACT_AR_OPTION);
+    const a = AR_Q[q.id];
+    if (!a) throw new Error('no ar text for question ' + q.id);
+    q.text.ar = a[0];
+    if (q.type === 'choice') {
+      q.options.forEach(o => {
+        if (!a[1] || typeof a[1][o.value] !== 'string') throw new Error('no ar label for ' + q.id + '.' + o.value);
+        o.label.ar = a[1][o.value];
+      });
+    }
+    BANK[q.id] = q;
+  });
 
   /* ---------- helpers ---------- */
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
@@ -1017,27 +1256,30 @@ defs["interview"] = function (module, exports, require) {
     return value === rf;
   }
   function matchOption(q, raw) {
-    const s = raw.trim().toLowerCase();
+    const s = arNorm(raw).trim().toLowerCase();
+    const L = x => arNorm(x).toLowerCase();
     for (const o of q.options) {
-      const exact = [o.value, o.label.en, o.label.ms, o.label.zh].map(x => String(x).toLowerCase());
+      const exact = [o.value, o.label.en, o.label.ms, o.label.zh, o.label.ar].map(x => L(x));
       if (exact.includes(s)) return o.value;
     }
     for (const o of q.options) {
-      const inside = [o.label.en, o.label.ms, o.label.zh].map(x => x.toLowerCase())
+      const inside = [o.label.en, o.label.ms, o.label.zh, o.label.ar].map(x => L(x))
         .filter(l => l.length >= 2 || /[一-鿿]/.test(l));
       if (inside.some(l => s.includes(l))) return o.value;
     }
     return null;
   }
   function parseNumber(raw) {
-    if (UNK_RE.test(raw)) return 'unknown';
-    const m = String(raw).match(/-?\d+(?:\.\d+)?/);
+    const n = arNorm(raw); // Arabic-Indic digits and the Arabic decimal mark become ASCII first
+    if (UNK_RE.test(n)) return 'unknown';
+    const m = n.match(/-?\d+(?:\.\d+)?/);
     return m ? parseFloat(m[0]) : null;
   }
   function parseYesNo(raw, original) {
     if (typeof original === 'boolean') return original ? 'yes' : 'no';
-    if (YES_RE.test(raw)) return 'yes';
-    if (NO_RE.test(raw)) return 'no';
+    const n = arNorm(raw);
+    if (YES_RE.test(n)) return 'yes';
+    if (NO_RE.test(n)) return 'no';
     return null;
   }
   function pruneSkipped(s) {
@@ -1081,11 +1323,11 @@ defs["interview"] = function (module, exports, require) {
     // 2. Interpret the answer for this question.
     let value = null; let parsed = true;
     if (typeof answerValue === 'boolean' && q.type === 'yesno') value = parseYesNo(text, answerValue);
-    else if (q.type === 'yesno') value = UNK_RE.test(text) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
+    else if (q.type === 'yesno') value = UNK_RE.test(arNorm(text)) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
     else if (q.type === 'choice') value = text ? matchOption(q, text) : null;
     else if (q.type === 'number') {
       const n = parseNumber(text);
-      if (n === 'unknown' || (n === null && NUM_NONE_RE.test(text))) value = 'unknown';
+      if (n === 'unknown' || (n === null && NUM_NONE_RE.test(arNorm(text)))) value = 'unknown';
       else if (typeof n === 'number' && n >= q.min && n <= q.max) value = n;
     } else if (q.type === 'text') value = text || null;
 
@@ -1133,10 +1375,10 @@ defs["interview"] = function (module, exports, require) {
   function shownOf(q, v, lang) {
     if (q.type === 'choice') { const o = q.options.find(x => x.value === v); return o ? o.label[lang] : String(v); }
     if (q.type === 'yesno') {
-      const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' } }[lang];
+      const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' }, ar: { yes: 'نعم', no: 'لا' } }[lang];
       return w[v] || String(v);
     }
-    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道' }[lang];
+    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道', ar: 'لا أعرف' }[lang];
     return String(v);
   }
   function toAnswers(state) {
@@ -1155,7 +1397,40 @@ defs["interview"] = function (module, exports, require) {
     };
   }
 
-  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK };
+  /* ---------- Arabic sample patients (fictional). Each script is typed through next(), so the answers are the interview's own. ---------- */
+  const AR_SAMPLES = [
+    { pid: 'AR-S1', case: 'Knee replacement, diabetes, blood thinner, penicillin allergy (fictional)', caseAr: 'استبدال مفصل الركبة مع السكري ومميّع للدم وحساسية البنسلين (وهمي)', procedure: 'TKR',
+      script: { sex: 'أنثى', medicines: 'باراسيتامول 500 ملغ عند الحاجة', blood_thinners: 'نعم', blood_thinner_detail: 'أسبرين 75 ملغ، آخر جرعة أمس',
+        allergies: 'نعم', allergy_detail: 'البنسلين: طفح جلدي', diabetes: 'نعم', hba1c: '٩٫١', tkr_walk: 'من 100 إلى 500 متر',
+        tkr_night: 'نعم', final_note: 'الألم في الركبة يزداد في الليل' } },
+    { pid: 'AR-S2', case: 'Lumbar, new numbness in the saddle area (fictional)', caseAr: 'أسفل الظهر مع تنميل جديد في منطقة السرج (وهمي)', procedure: 'LUMBAR',
+      script: { lum_saddle: 'نعم', lum_distance: 'الأرداف', final_note: 'لا شيء آخر' } },
+    { pid: 'AR-S3', case: 'Hip replacement, lives alone with stairs at home (fictional)', caseAr: 'استبدال مفصل الورك، يعيش وحده ولديه درج في المنزل (وهمي)', procedure: 'THR',
+      script: { home_help: 'سأكون وحدي', lives_alone: 'نعم', stairs: '١٢', mobility_aid: 'عكازان', payer: 'تأمين خاص', thr_limp: 'نعم',
+        final_note: 'لا شيء آخر' } }
+  ];
+  function defaultAr(q) {
+    if (q.type === 'yesno') return 'لا';
+    if (q.type === 'choice') return q.options[0].label.ar;
+    if (q.type === 'number') return 5;
+    return 'لا شيء';
+  }
+  // One Arabic sample run through the interview, returned in the shape the page loads (toAnswers plus case and pid).
+  function arSample(index) {
+    const S = AR_SAMPLES[index];
+    if (!S) return null;
+    let s = build(S.procedure, 'ar', S.pid); let guard = 0;
+    while (!s.done && guard++ < 200) {
+      const q = BANK[s.current];
+      const a = Object.prototype.hasOwnProperty.call(S.script, q.id) ? S.script[q.id] : defaultAr(q);
+      s = next(s, a);
+      if (s.reprompt) break;
+    }
+    return Object.assign(toAnswers(s), { case: S.case, caseAr: S.caseAr, pid: S.pid, sample: true, complete: s.done === true, reprompt: !!s.reprompt });
+  }
+  const AR_SAMPLE_COUNT = AR_SAMPLES.length;
+
+  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK, arSample, AR_SAMPLE_COUNT, arNorm };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTERVIEW = api;
 })(this);
 
@@ -1210,6 +1485,18 @@ defs["intake"] = function (module, exports, require) {
       walk_distance_m: '步行距离（米）', payer: '付费方式', preferred_language: '首选语言',
       lumbar_bladder_bowel_change: '小便或大便改变', lumbar_saddle_numbness: '鞍区麻木',
       lumbar_leg_weakness: '腿部无力', night_pain: '夜间疼痛', prior_injections: '既往注射'
+    },
+    // Arabic (ar): machine draft, Gulf-friendly simple MSA. Not clinician-reviewed.
+    ar: {
+      meds_text: 'الأدوية الحالية', blood_thinner: 'مميّع الدم', allergy_text: 'الحساسية (نص حر)',
+      penicillin_allergy: 'حساسية البنسلين', latex_allergy: 'حساسية اللاتكس', diabetes: 'السكري',
+      hba1c: 'HbA1c', heart_disease: 'مرض القلب', lung_disease: 'مرض الرئة', kidney_disease: 'مرض الكلى',
+      anaesthetic_problem: 'مشكلة سابقة مع التخدير', smoker: 'التدخين', alcohol: 'الكحول',
+      prior_surgery_same_joint: 'عملية سابقة على نفس المفصل', mrsa_or_admission_past_year: 'MRSA أو دخول المستشفى خلال السنة',
+      lives_alone: 'يعيش وحده', stairs_home: 'درج في المنزل', mobility_aid: 'أداة مساعدة على المشي',
+      walk_distance_m: 'مسافة المشي بالمتر', payer: 'جهة الدفع', preferred_language: 'اللغة المفضلة',
+      lumbar_bladder_bowel_change: 'تغير في المثانة أو الأمعاء', lumbar_saddle_numbness: 'تنميل منطقة السرج',
+      lumbar_leg_weakness: 'ضعف في الساق', night_pain: 'ألم ليلي', prior_injections: 'حقن سابقة'
     }
   };
   const labelOf = (id, lang) => (QL[lang] && QL[lang][id]) || Q[id] || id;
@@ -1235,13 +1522,30 @@ defs["intake"] = function (module, exports, require) {
       tkr_calf: '手术腿的小腿疼痛或肿胀', sh_fingers: '手术手臂的手指麻木、发冷或发白',
       fa_sore: '手术脚或踝部的开放性伤口、水疱或溃疡', fa_toes: '脚趾发冷、苍白、发蓝或发紫',
       symptoms_now: '现在有胸痛、呼吸困难或意识混乱'
+    },
+    ar: {
+      tkr_calf: 'ألم أو تورم في ساق العملية', sh_fingers: 'أصابع مخدرة أو باردة أو شاحبة في ذراع العملية',
+      fa_sore: 'جرح مفتوح أو بثرة أو قرحة في القدم أو الكاحل المقرر إجراء العملية عليه', fa_toes: 'أصابع قدم باردة أو شاحبة أو زرقاء أو بنفسجية',
+      symptoms_now: 'ألم في الصدر أو ضيق في التنفس أو تشوش الآن'
     }
   };
   // Canonical phrases, used only to obtain the engine's own reply text for a question-level red flag.
   const CANON = {
-    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛' },
-    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧' }
+    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛', ar: 'عندي ألم في الصدر منذ الليلة' },
+    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧', ar: 'عندي حمى منذ الليلة' }
   };
+  // Arabic normalisation for matching: tashkeel and tatweel out, alef / ya / ta-marbuta / hamza carriers unified, Arabic-Indic digits to ASCII.
+  function arNorm(text) {
+    return String(text == null ? '' : text)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ؤ/g, 'و')
+      .replace(/ئ/g, 'ي')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+      .replace(/٫/g, '.').replace(/٬/g, ',');
+  }
   const RANK = { 'SAME-DAY': 2, EMERGENCY: 3 };
   const YN = new Set(['penicillin_allergy', 'latex_allergy', 'diabetes', 'heart_disease', 'lung_disease', 'kidney_disease',
     'anaesthetic_problem', 'smoker', 'prior_surgery_same_joint', 'mrsa_or_admission_past_year', 'lives_alone', 'stairs_home',
@@ -1257,34 +1561,55 @@ defs["intake"] = function (module, exports, require) {
   const WORDS_SECTION = SECTIONS.length - 1;
   const ANAES_GROUP = ['anaesthetic_problem', 'heart_disease', 'lung_disease', 'kidney_disease', 'smoker'];
   // review1 B2: names that count as a blood thinner when they appear in the medicine list or free text
-  const ANTICOAG_NAME = /warfarin|rivaroxaban|apixaban|dabigatran|edoxaban|enoxaparin|clexane|aspirin|clopidogrel|xarelto|eliquis|marevan|coumadin/i;
-  const PENICILLIN_TEXT = /penicillin|penisilin|amoxicillin|amoksisilin|augmentin|ampicillin|pen v|青霉素/i;
+  const ANTICOAG_NAME = /warfarin|rivaroxaban|apixaban|dabigatran|edoxaban|enoxaparin|clexane|aspirin|clopidogrel|xarelto|eliquis|marevan|coumadin|وارفارين|ريفاروكسابان|ابيكسابان|اسبرين|كلوبيدوجريل|انوكسابارين|مميع|مسيل/i;
+  const PENICILLIN_TEXT = /penicillin|penisilin|amoxicillin|amoksisilin|augmentin|ampicillin|pen v|青霉素|بنسلين|اموكسيسيلين|اوغمنتين|امبيسيلين/i;
   // review2 B4 (round 4): drug and latex allergies named in free text
-  const SULFA_RE = /sulfa|sulpha|sulfonamide|sulphonamide|co-?trimoxazole|bactrim|septrin/i;
-  const IODINE_RE = /iodine|iodin|yodium|碘|contrast dye|pewarna kontras/i;
-  const LATEX_RE = /latex|lateks|乳胶/i;
-  const NEG_ALLERGY_RE = /\b(not|no|never|tiada|tak|tidak|without)\b[^.;]{0,12}\ballerg\w*|不过敏|没有过敏|无过敏|没过敏/i;
-  const NONE_START_RE = /^\s*(no|none|nil|tiada|tak ada|tidak ada|无|没有)\b/i;
+  const SULFA_RE = /sulfa|sulpha|sulfonamide|sulphonamide|co-?trimoxazole|bactrim|septrin|سلفا/i;
+  const IODINE_RE = /iodine|iodin|yodium|碘|contrast dye|pewarna kontras|يود|صبغه/i;
+  const LATEX_RE = /latex|lateks|乳胶|لاتكس/i;
+  const NEG_ALLERGY_RE = /\b(not|no|never|tiada|tak|tidak|without)\b[^.;]{0,12}\ballerg\w*|不过敏|没有过敏|无过敏|没过敏|\b(?:لا|ليس|مو|مش|بدون)\b[^.;،]{0,12}حساسي/i;
+  const NONE_START_RE = /^\s*(no|none|nil|tiada|tak ada|tidak ada|无|没有|لا يوجد|ما فيه|مافي)\b/i;
   // review1 item 10 (round 3 B): the worsening amber needs a SYMPTOM word AND a worsening word. Medicine or travel
   // questions ("can I take ibuprofen", "can I fly") have no symptom word and never trigger it.
-  const SYMPTOM_RE = /\b(pain|painful|ache|aching|swelling|swollen|numb|numbness|weakness|weak|fever|discharge|bleeding|redness|tingling|sore|lump|rash|pus|blister|ulcer)\b|sakit|bengkak|kebas|lemah|demam|nanah|痛|肿|麻木|无力|发烧|发热|流脓|渗液|发红/i;
-  const STRONG_WORSE_RE = /\bworse\b|\bworsen\w*|deteriorat\w*|\bspreading\b|semakin|lebih teruk|bertambah|makin|更严重|加重|越来越|变差|恶化/i;
+  const SYMPTOM_RE = /\b(pain|painful|ache|aching|swelling|swollen|numb|numbness|weakness|weak|fever|discharge|bleeding|redness|tingling|sore|lump|rash|pus|blister|ulcer)\b|sakit|bengkak|kebas|lemah|demam|nanah|痛|肿|麻木|无力|发烧|发热|流脓|渗液|发红|الم|وجع|تورم|انتفاخ|خدر|ضعف|حراره|سخونه|نزيف|احمرار|جرح|صديد|بثره/i;
+  const STRONG_WORSE_RE = /\bworse\b|\bworsen\w*|deteriorat\w*|\bspreading\b|semakin|lebih teruk|bertambah|makin|更严重|加重|越来越|变差|恶化|اسوا|اسوء|يزداد|تزداد|ازداد|تزايد|يتفاقم|تفاقم|يتدهور|تدهور/i;
   const WEAK_WORSE_RE = /\bincreas\w*|getting (?:bigger|more)|\bmore (?:pain|painful|swollen|swelling|numb\w*|weak\w*|discharge|bleeding|tender|fever)\b/i;
-  const MED_OR_TRAVEL_RE = /medicin|medication|\bubat\b|\bpills?\b|\btablets?\b|\bdose\b|\bdrug|painkiller|ibuprofen|paracetamol|parasetamol|aspirin|warfarin|\bfly\b|\bflying\b|\bflights?\b|\bdriv|penerbangan|terbang|memandu|药|片|飞机|飞行|驾车|开车/i;
+  const MED_OR_TRAVEL_RE = /medicin|medication|\bubat\b|\bpills?\b|\btablets?\b|\bdose\b|\bdrug|painkiller|ibuprofen|paracetamol|parasetamol|aspirin|warfarin|\bfly\b|\bflying\b|\bflights?\b|\bdriv|penerbangan|terbang|memandu|药|片|飞机|飞行|驾车|开车|دواء|ادويه|حبوب|جرعه|مسكن|اسبرين|طيران|طياره|سفر|قياده|سياقه/i;
   const WORSENING_TEXT = 'Patient reports worsening symptoms: clinician to review';
 
   /* ---------- values: normalise for display; yes/no and field values translated for ms and zh (machine drafts) ---------- */
-  const YNW = { en: { yes: 'yes', no: 'no', unknown: 'unknown', unclear: 'unclear' }, ms: { yes: 'ya', no: 'tidak', unknown: 'tidak tahu', unclear: 'tidak jelas' }, zh: { yes: '是', no: '否', unknown: '不知道', unclear: '不清楚' } };
+  const YNW = { en: { yes: 'yes', no: 'no', unknown: 'unknown', unclear: 'unclear' }, ms: { yes: 'ya', no: 'tidak', unknown: 'tidak tahu', unclear: 'tidak jelas' }, zh: { yes: '是', no: '否', unknown: '不知道', unclear: '不清楚' },
+    ar: { yes: 'نعم', no: 'لا', unknown: 'لا أعرف', unclear: 'غير واضح' } };
   const FIELD_VAL = {
-    alcohol: { ms: { none: 'tidak pernah', occasional: 'kadang-kadang', regular: 'kerap' }, zh: { none: '不饮酒', occasional: '偶尔', regular: '经常' } },
+    alcohol: { ms: { none: 'tidak pernah', occasional: 'kadang-kadang', regular: 'kerap' }, zh: { none: '不饮酒', occasional: '偶尔', regular: '经常' },
+      ar: { none: 'لا أشرب أبدا', occasional: 'أحيانا', regular: 'بانتظام' } },
     payer: { ms: { self: 'bayar sendiri', employer: 'skim syarikat majikan', insurance: 'insurans swasta', government: 'skim kerajaan', other: 'lain-lain' },
-      zh: { self: '自费', employer: '雇主或公司计划', insurance: '私人保险', government: '政府计划', other: '其他' } },
-    preferred_language: { ms: { en: 'Bahasa Inggeris', ms: 'Bahasa Malaysia', zh: 'Bahasa Cina' }, zh: { en: '英文', ms: '马来文', zh: '中文' } },
+      zh: { self: '自费', employer: '雇主或公司计划', insurance: '私人保险', government: '政府计划', other: '其他' },
+      ar: { self: 'دفع ذاتي', employer: 'عبر جهة العمل', insurance: 'تأمين خاص', government: 'برنامج حكومي', other: 'أخرى' } },
+    preferred_language: { ms: { en: 'Bahasa Inggeris', ms: 'Bahasa Malaysia', zh: 'Bahasa Cina', ar: 'Bahasa Arab' }, zh: { en: '英文', ms: '马来文', zh: '中文', ar: '阿拉伯文' },
+      ar: { en: 'الإنجليزية', ms: 'الماليزية', zh: 'الصينية', ar: 'العربية' } },
     walk_distance_m: { ms: { 'under 100 m': 'kurang 100 m', '100-500 m': '100 hingga 500 m', 'over 500 m': 'lebih 500 m', 'cannot walk': 'tidak boleh berjalan' },
-      zh: { 'under 100 m': '不到100米', '100-500 m': '100至500米', 'over 500 m': '超过500米', 'cannot walk': '无法行走' } },
-    hba1c: { ms: { 'not applicable': 'tidak berkenaan (tiada diabetes)', unknown: 'tidak tahu' }, zh: { 'not applicable': '不适用（无糖尿病）', unknown: '不知道' } },
-    allergy_text: { ms: { 'none known': 'tiada diketahui', yes: 'ya' }, zh: { 'none known': '无已知过敏', yes: '是' } }
+      zh: { 'under 100 m': '不到100米', '100-500 m': '100至500米', 'over 500 m': '超过500米', 'cannot walk': '无法行走' },
+      ar: { 'under 100 m': 'أقل من 100 م', '100-500 m': 'من 100 إلى 500 م', 'over 500 m': 'أكثر من 500 م', 'cannot walk': 'لا أستطيع المشي' } },
+    hba1c: { ms: { 'not applicable': 'tidak berkenaan (tiada diabetes)', unknown: 'tidak tahu' }, zh: { 'not applicable': '不适用（无糖尿病）', unknown: '不知道' },
+      ar: { 'not applicable': 'لا ينطبق (لا يوجد سكري)', unknown: 'لا أعرف' } },
+    allergy_text: { ms: { 'none known': 'tiada diketahui', yes: 'ya' }, zh: { 'none known': '无已知过敏', yes: '是' },
+      ar: { 'none known': 'لا توجد حساسية معروفة', yes: 'نعم' } }
   };
+  // Arabic section titles, the notice and the label (machine drafts, not clinician-reviewed).
+  const SECTION_AR = { 'Medicines': 'الأدوية', 'Allergies': 'الحساسية', 'Medical history': 'التاريخ المرضي', 'Home and support': 'المنزل والدعم',
+    'Procedure-specific': 'خاص بالإجراء', "Patient's own words": 'كلمات المريض', 'Recorded, not summarised': 'مسجل، غير ملخص' };
+  const LABEL_AR = 'بلاغ من المريض، يتحقق منه الطبيب السريري';
+  const REC_AR = SECTION_AR['Recorded, not summarised'];
+  // Shown under every summary. English and the Malay and Chinese notice are unchanged; Arabic says a clinician must review it first.
+  const NOTICE = {
+    en: 'Malay and Chinese text in this summary is a machine draft. A native-speaking clinician must review it before use.',
+    ar: 'النص العربي في هذا الملخص مسودة آلية لم تُراجع. يجب أن يراجعه طبيب ناطق بالعربية، ويفضل من دول الخليج، قبل الاستخدام.'
+  };
+  const WD_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  const MON_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const OWNER_AR = { surgeon: 'الجراح', anaesthetist: 'طبيب التخدير', preop_nurse: 'ممرض ما قبل العملية', ward_nurse: 'ممرض الجناح',
+    physio: 'أخصائي العلاج الطبيعي', pharmacy: 'الصيدلية', clinic_coordinator: 'منسق العيادة', clinician: 'الطبيب المعالج' };
   const pick = (lang, o) => (o[lang] !== undefined ? o[lang] : o.en);
 
   /* ---------- every sentence the page or the summary shows, by language (machine drafts for ms and zh) ---------- */
@@ -1305,8 +1630,8 @@ defs["intake"] = function (module, exports, require) {
     redOther: (l, label, id) => pick(l, { en: `${label} reported [${id}]`, ms: `${label} dilaporkan [${id}]`, zh: `报告：${label} [${id}]` }),
     wordsTriaged: (l, cls, flags, i) => pick(l, { en: `Patient's words auto-triaged ${cls} (${flags}) [freeText.${i}]`,
       ms: `Kata-kata pesakit diklasifikasikan ${cls} (${flags}) [freeText.${i}]`, zh: `患者自述被自动分级为 ${cls}（${flags}）[freeText.${i}]` }),
-    wordsLine: (l, cls, text, i) => pick(l, { en: `Patient's words (auto-triage ${cls}): "${text}" [freeText.${i}]`,
-      ms: `Kata-kata pesakit (auto-triage ${cls}): "${text}" [freeText.${i}]`, zh: `患者自述（自动分级 ${cls}）："${text}" [freeText.${i}]` }),
+    wordsLine: (l, tags, text, refs) => pick(l, { en: `Patient's words (auto-triage ${tags}): "${text}" [${refs}]`,
+      ms: `Kata-kata pesakit (auto-triage ${tags}): "${text}" [${refs}]`, zh: `患者自述（自动分级 ${tags}）："${text}" [${refs}]` }),
     gapNotAnswered: (l, label, id) => pick(l, { en: `Not answered: ${label} (${id})`, ms: `Belum dijawab: ${label} (${id})`, zh: `未回答：${label}（${id}）` }),
     // round 6 (review3 B7): an impossible value is an AMBER reason, never NONE. The English wording is fixed by the review.
     implausible: (l, what) => pick(l, { en: `implausible value: clinician to verify (${what})`, ms: `nilai tidak munasabah: klinik perlu sahkan (${what}) (draf mesin)`, zh: `数值不合理：需临床人员核实（${what}）（机器草稿）` }),
@@ -1334,10 +1659,52 @@ defs["intake"] = function (module, exports, require) {
     dmConflict: (l, v) => pick(l, { en: `HbA1c ${v} recorded but diabetes answered no: clinician to verify`, ms: `HbA1c ${v} direkod tetapi diabetes dijawab tidak: doktor perlu sahkan`, zh: `记录了糖化血红蛋白 ${v}，但糖尿病回答为“否”：需临床医生核实` }),
     incompleteAllergy: l => pick(l, { en: 'Allergy question missing or unclear [penicillin_allergy]', ms: 'Soalan alahan tiada atau tidak jelas [penicillin_allergy]', zh: '过敏问题缺失或不清楚 [penicillin_allergy]' }),
     incompleteDiabetes: l => pick(l, { en: 'Diabetes question missing or unclear [diabetes]', ms: 'Soalan diabetes tiada atau tidak jelas [diabetes]', zh: '糖尿病问题缺失或不清楚 [diabetes]' }),
-    routeLine: (l, qid, text) => pick(l, { en: `Patient's question during intake (clinician to answer): "${text}" [${qid}]`, ms: `Soalan pesakit semasa pengambilan (doktor perlu jawab): "${text}" [${qid}]`, zh: `患者在问诊中的问题（需临床医生回答）："${text}" [${qid}]` }),
     todoRoute: (l, text) => pick(l, { en: 'Patient question to answer: ' + text, ms: 'Soalan pesakit untuk dijawab: ' + text, zh: '需回答的患者问题：' + text }),
     todoWorsening: l => pick(l, { en: 'Clinician review: patient reports worsening symptoms', ms: 'Semakan doktor: pesakit melaporkan gejala semakin teruk', zh: '临床医生审阅：患者报告症状加重' })
   };
+  // Arabic (ar) for every entry in M: machine draft wording, reviewed:false. Wrapped below so en, ms and zh are unchanged.
+  const CLS_AR = { EMERGENCY: 'طارئ', 'SAME-DAY': 'في نفس اليوم', ROUTE: 'يُحال إلى الفريق', ASK: 'يحتاج توضيحا', ANSWER: 'إجابة' };
+  const clsAr = c => CLS_AR[c] || 'غير مصنف';
+  const M_AR = {
+    btReported: name => 'تم الإبلاغ عن مميّع للدم' + (name ? ': ' + name : ' (الاسم غير مذكور)'),
+    hba1cHigh: (v, thr) => `HbA1c ${v} يساوي الحد ${thr}% أو يتجاوزه`,
+    penReported: () => 'تم الإبلاغ عن حساسية البنسلين',
+    anaesReported: label => `تم الإبلاغ عن: ${label}`,
+    aloneStairs: () => 'يعيش وحده ولديه درج في المنزل',
+    worsening: () => 'يبلغ المريض عن أعراض تزداد سوءا: يراجعها الطبيب',
+    btConflict: () => 'قائمة الأدوية تذكر مميّعا للدم، لكن إجابة نعم/لا لا تتفق معها: يتحقق منها الطبيب',
+    cauda: (label, id) => `احتمال علامة خطر في الذيل الفرسي أو في الجهاز العصبي: تم الإبلاغ عن ${label} [${id}]`,
+    redOther: (label, id) => `تم الإبلاغ عن: ${label} [${id}]`,
+    wordsTriaged: (cls, flags, i) => `تم تصنيف كلمات المريض آليا: ${clsAr(cls)} (${flags}) [freeText.${i}]`,
+    wordsLine: (tags, text, refs) => `كلمات المريض (تصنيف آلي: ${tags}): "${text}" [${refs}]`,
+    gapNotAnswered: (label, id) => `لم تتم الإجابة: ${label} (${id})`,
+    implausible: what => `قيمة غير معقولة: يتحقق منها الطبيب (${what}) (مسودة آلية)`,
+    gapUnclear: (label, id) => `إجابة غير واضحة: ${label} (${id})`,
+    gapBtNoName: () => 'هل تم تحديد اسم مميّع الدم؟ لم يُذكر اسم (blood_thinner)',
+    gapBtCheck: () => 'تحقق: قائمة الأدوية تذكر مميّعا للدم لكن الإجابة عن مميّع الدم "لا" (blood_thinner, meds_text)',
+    gapDmCheck: v => `تحقق: الإجابة عن السكري "لا" لكن HbA1c هو ${v} (diabetes, hba1c)`,
+    gapPenCheck: () => 'تحقق: الحساسية المذكورة في النص تشير إلى دواء من فئة البنسلين لكن حساسية البنسلين "لا" (penicillin_allergy, allergy_text)',
+    gapProc: () => 'لم يُتعرف على الإجراء أو لم يُذكر (procedure)',
+    incompleteBt: () => 'إجابة مميّع الدم ناقصة أو غير واضحة [blood_thinner]',
+    incompleteCount: n => `${n} إجابة ناقصة أو غير واضحة`,
+    todoAnticoagYes: () => 'قرار الطبيب: إيقاف مميّع الدم أو الاستمرار فيه قبل العملية',
+    todoAnticoagConflict: () => 'قرار الطبيب: تأكيد حالة مميّع الدم (قائمة الأدوية والإجابة غير متطابقتين)',
+    todoHba1c: thr => `تحسين HbA1c قبل العملية (عند ${thr}% أو أعلى)`,
+    todoAnaes: () => 'مراجعة التخدير',
+    todoAntibiotic: () => 'خطة المضاد الحيوي حول العملية (حساسية البنسلين)',
+    todoMrsa: () => 'فحص MRSA قبل العملية',
+    todoPhysio: () => 'مراجعة العلاج الطبيعي أو الاجتماعية للمنزل والدرج والحركة',
+    todoPreauth: () => 'تم الحصول على الموافقة المسبقة من التأمين',
+    todoRed: flags => 'مؤشر خطر أثناء الاستقبال: ' + flags,
+    allergyConflict: () => 'ذُكرت حساسية في النص الحر، لكن إجابة الحساسية "لا": يتحقق منها الطبيب',
+    drugAllergy: names => `ذُكرت حساسية دوائية في النص الحر: ${names}`,
+    dmConflict: v => `تم تسجيل HbA1c ${v} لكن إجابة السكري "لا": يتحقق منها الطبيب`,
+    incompleteAllergy: () => 'سؤال الحساسية ناقص أو غير واضح [penicillin_allergy]',
+    incompleteDiabetes: () => 'سؤال السكري ناقص أو غير واضح [diabetes]',
+    todoRoute: text => 'سؤال المريض للإجابة عنه: ' + text,
+    todoWorsening: () => 'مراجعة الطبيب: يبلغ المريض عن أعراض تزداد سوءا'
+  };
+  Object.keys(M_AR).forEach(k => { const en = M[k]; M[k] = (l, ...a) => (l === 'ar' ? M_AR[k](...a) : en(l, ...a)); });
 
   /* ---------- value helpers (never guess: unclear values are shown as given and sent to gaps) ---------- */
   function unpack(input) {
@@ -1347,7 +1714,7 @@ defs["intake"] = function (module, exports, require) {
     }
     return { pid: null, procedure: null, lang: 'en', answers: (input && typeof input === 'object') ? input : {}, freeText: [], routes: [] };
   }
-  function LANG_OK(l) { return l === 'en' || l === 'ms' || l === 'zh'; }
+  function LANG_OK(l) { return l === 'en' || l === 'ms' || l === 'zh' || l === 'ar'; }
   const isMissing = v => v === undefined || v === null || (typeof v === 'string' && v.trim() === '') || (Array.isArray(v) && v.length === 0);
   const display = v => typeof v === 'boolean' ? (v ? 'yes' : 'no') : (v == null ? '' : String(v).trim());
   function yn(v) {
@@ -1385,7 +1752,7 @@ defs["intake"] = function (module, exports, require) {
       const b = bt(v);
       if (b.ans === null) return b.raw;
       const w = YNW[lang][b.ans];
-      return (b.ans === 'yes' && b.name) ? w + ', ' + b.name : w;
+      return (b.ans === 'yes' && b.name) ? w + (lang === 'ar' ? '، ' : ', ') + b.name : w;
     }
     const s = display(v);
     if (lang === 'en') return s;
@@ -1409,7 +1776,7 @@ defs["intake"] = function (module, exports, require) {
   // and a medicine or travel question needs a strong worsening word as well ("can I increase my painkiller" does not count).
   function isWorsening(f) {
     if (f.red) return false;
-    const t = f.text;
+    const t = arNorm(f.text);
     if (!SYMPTOM_RE.test(t)) return false;
     if (STRONG_WORSE_RE.test(t)) return true;
     return WEAK_WORSE_RE.test(t) && !MED_OR_TRAVEL_RE.test(t);
@@ -1419,9 +1786,10 @@ defs["intake"] = function (module, exports, require) {
   function allergyNames(x) {
     const a = x.answers, texts = [];
     const said = display(a.allergy_text);
-    if (said && !NONE_START_RE.test(said)) texts.push(said);
+    if (said && !NONE_START_RE.test(said)) texts.push(arNorm(said));
     [display(a.meds_text)].concat(x.freeText.filter(t => typeof t === 'string')).forEach(t => {
-      if (/allerg|alahan|过敏/i.test(t) && !NEG_ALLERGY_RE.test(t)) texts.push(t);
+      const n = arNorm(t);
+      if (/allerg|alahan|过敏|حساسي/i.test(n) && !NEG_ALLERGY_RE.test(n)) texts.push(n);
     });
     const txt = texts.join(' | '), names = [];
     if (PENICILLIN_TEXT.test(txt)) names.push('penicillin');
@@ -1506,7 +1874,7 @@ defs["intake"] = function (module, exports, require) {
     const pack = eng.PACKS[proc] || null;
     const ambers = [], gaps = [];
     const Y = id => yn(a[id]) === 'yes';
-    const sections = SECTIONS.map(s => ({ title: s.title, lines: [] }));
+    const sections = SECTIONS.map(s => ({ title: titleFor(s.title, lang), lines: [] }));
 
     SECTIONS.forEach((s, si) => s.ids.forEach(id => {
       if (isMissing(a[id])) return;
@@ -1526,10 +1894,22 @@ defs["intake"] = function (module, exports, require) {
     // RED: the same rule as the interview and the urgent task (redOf)
     const red = redOf(input);
     const reds = red ? red.reasons : [];
-    freeTextFlags(x).forEach(f => {
-      sections[WORDS_SECTION].lines.push(M.wordsLine(lang, f.cls, f.text, f.i));
+    // round 7 (polish): each distinct patient statement appears once, with its classes as a tag and every source it came from.
+    // The same text is recorded once per attempt (in free text and in the routed questions), so it is merged here.
+    const words = new Map();
+    const addWords = (text, cls, ref) => {
+      const t = String(text).trim().replace(/\s+/g, ' '), key = t.toLowerCase();
+      if (!words.has(key)) words.set(key, { text: t, classes: [], refs: [] });
+      const e = words.get(key);
+      if (cls && !e.classes.includes(cls)) e.classes.push(cls);
+      if (!e.refs.includes(ref)) e.refs.push(ref);
+    };
+    freeTextFlags(x).forEach(f => addWords(f.text, f.cls, 'freeText.' + f.i));
+    x.routes.filter(clinicalRoute).forEach(r => addWords(r.text, r.cls || 'ROUTE', r.qid));
+    words.forEach(e => {
+      const tags = e.classes.map(c => (lang === 'ar' ? clsAr(c) : c)).join(lang === 'ar' ? '، ' : ', ');
+      sections[WORDS_SECTION].lines.push(M.wordsLine(lang, tags, e.text, e.refs.join(', ')));
     });
-    x.routes.filter(clinicalRoute).forEach(r => sections[WORDS_SECTION].lines.push(M.routeLine(lang, r.qid, r.text)));
 
     // AMBER
     const b = bt(a.blood_thinner);
@@ -1548,16 +1928,16 @@ defs["intake"] = function (module, exports, require) {
     implausibleValues(a, x).forEach(w => ambers.push(M.implausible(lang, w)));
 
     // review1 B2: a blood thinner named in the medicine list or free text must agree with the yes/no answer
-    const btNamed = ANTICOAG_NAME.test(display(a.meds_text)) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(t));
+    const btNamed = ANTICOAG_NAME.test(arNorm(display(a.meds_text))) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(arNorm(t)));
     const btConflict = btNamed && b.ans !== 'yes';
     const btUnresolved = b.ans === null;
     if (btConflict) ambers.push(M.btConflict(lang) + ' [blood_thinner, meds_text]');
 
     // gaps: contradictions and clarifications
     if (b.ans === 'yes' && !b.name) gaps.push(M.gapBtNoName(lang));
-    if (b.ans === 'no' && ANTICOAG_NAME.test(display(a.meds_text))) gaps.push(M.gapBtCheck(lang));
+    if (b.ans === 'no' && ANTICOAG_NAME.test(arNorm(display(a.meds_text)))) gaps.push(M.gapBtCheck(lang));
     if (yn(a.diabetes) === 'no' && isFinite(n) && n >= 6.5) { gaps.push(M.gapDmCheck(lang, display(a.hba1c))); ambers.push(M.dmConflict(lang, display(a.hba1c)) + ' [diabetes, hba1c]'); }
-    if (yn(a.penicillin_allergy) === 'no' && PENICILLIN_TEXT.test(display(a.allergy_text))) gaps.push(M.gapPenCheck(lang));
+    if (yn(a.penicillin_allergy) === 'no' && PENICILLIN_TEXT.test(arNorm(display(a.allergy_text)))) gaps.push(M.gapPenCheck(lang));
 
     // NONE is only possible when every answer is in and no blood-thinner question is open. More than 6 gaps is INCOMPLETE, never NONE.
     const allergyUnresolved = yn(x.answers.penicillin_allergy) === null && eff.names.length === 0;
@@ -1591,13 +1971,13 @@ defs["intake"] = function (module, exports, require) {
           recorded.push(`${q.text}: ${q.shown} [${qid}]`);
         }
       });
-      sections.push({ title: REC_TITLE, lines: recorded });
+      sections.push({ title: lang === 'ar' ? REC_AR : REC_TITLE, lines: recorded });
     }
-    return { pid: x.pid, procedure: proc, banner: { level, reasons }, sections, label: LABEL, gaps };
+    return { pid: x.pid, procedure: proc, banner: { level, reasons }, sections, label: lang === 'ar' ? LABEL_AR : LABEL, gaps };
   }
 
   /* ---------- to-dos (owners: surgeon, anaesthetist, preop_nurse, ward_nurse, physio, pharmacy, clinic_coordinator, clinician) ---------- */
-  function todos(input) {
+  function todosOf(input) {
     const x = unpack(input), a = effectiveAllergy(x).a, out = [], lang = x.lang;
     const Y = id => yn(a[id]) === 'yes';
     const n = num(a.hba1c);
@@ -1605,7 +1985,7 @@ defs["intake"] = function (module, exports, require) {
     const b = bt(a.blood_thinner);
     const thr = eng.THRESH.HbA1c.ge;
 
-    const btNamed = ANTICOAG_NAME.test(display(a.meds_text)) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(t));
+    const btNamed = ANTICOAG_NAME.test(arNorm(display(a.meds_text))) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(arNorm(t)));
     if (b.ans === 'yes') out.push({ key: 'anticoag_decision', title: M.todoAnticoagYes(lang), owner: 'surgeon', dueDays: -14, kind: 'review', reason: 'blood_thinner', needsClinician: true });
     else if (btNamed) out.push({ key: 'anticoag_decision', title: M.todoAnticoagConflict(lang), owner: 'surgeon', dueDays: -14, kind: 'review', reason: 'blood_thinner, meds_text', needsClinician: true });
     if (isFinite(n) && n >= thr) out.push({ key: 'optimise_hba1c', title: M.todoHba1c(lang, thr), owner: 'clinician', dueDays: -14, kind: 'review', reason: 'hba1c', needsClinician: true });
@@ -1629,6 +2009,17 @@ defs["intake"] = function (module, exports, require) {
     return out;
   }
 
+  // Arabic to-dos keep their Arabic title in the summary. The Staff board stays English: toTasks uses staffTitle, the English twin.
+  function todos(input) {
+    const x = unpack(input);
+    const out = todosOf(input);
+    if (x.lang === 'ar') {
+      const en = todosOf(Object.assign({}, x, { lang: 'en' }));
+      out.forEach((t, i) => { if (en[i]) t.staffTitle = en[i].title; });
+    }
+    return out;
+  }
+
   /* ---------- engine integration ---------- */
   function toTasks(sim, pid, list) {
     const p = sim.P ? sim.P(pid) : null;
@@ -1642,7 +2033,7 @@ defs["intake"] = function (module, exports, require) {
       else dueAt = base + t.dueDays * D;
       // otOffsetDays: the to-do's offset from the OT date (negative = before surgery). Only these move when the OT date moves.
       const otOffsetDays = (typeof t.dueDays === 'number' && typeof t.dueHours !== 'number' && !t.urgent) ? t.dueDays : null;
-      made.push(sim.addTask(pid, { type: t.key, title: t.title, owner: t.owner, kind: t.kind, dueAt, reason: t.reason, needsClinician: t.needsClinician, evidence: [], otOffsetDays }));
+      made.push(sim.addTask(pid, { type: t.key, title: t.staffTitle || t.title, owner: t.owner, kind: t.kind, dueAt, reason: t.reason, needsClinician: t.needsClinician, evidence: [], otOffsetDays }));
     });
     if (made.length) OT.syncOT(sim, pid);
     return made;
@@ -1651,7 +2042,8 @@ defs["intake"] = function (module, exports, require) {
   /* ---------- review1 B3/B4: urgent red-flag task and patient-question task ---------- */
   // The urgent task for a red flag. One key per patient (review1 item 9), so repeated presses or two paths never duplicate it.
   function redTodo(red, lang) {
-    const flags = (red.flags || []).join('; ');
+    // Arabic titles show the Arabic label of each flag; the English Staff board title keeps the field ids as before.
+    const flags = (red.flags || []).map(f => (lang === 'ar' ? redLabel(f, 'ar') : f)).join('; ');
     return { key: 'intake_red_flag', title: M.todoRed(lang || 'en', flags), owner: 'clinician', dueDays: 0, kind: 'review',
       reason: (red.refs && red.refs.length ? red.refs : red.flags || []).join(', '), needsClinician: true, urgent: true };
   }
@@ -1704,20 +2096,21 @@ defs["intake"] = function (module, exports, require) {
     const p = parseYmd(ymd); if (!p) return '';
     const wd = new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay();
     if (lang === 'zh') return p.m + '月' + p.d + '日 周' + WD_ZH[wd];
+    if (lang === 'ar') return WD_AR[wd] + ' ' + p.d + ' ' + MON_AR[p.m - 1];
     if (lang === 'ms') return WD_MS[wd] + ' ' + p.d + ' ' + MON_MS[p.m - 1];
     return WD_EN[wd] + ' ' + p.d + ' ' + MON_EN[p.m - 1];
   }
   function relOT(n, lang) {
-    if (n < 0) return pick(lang, { en: (-n) + ' day' + (n === -1 ? '' : 's') + ' before OT', ms: (-n) + ' hari sebelum OT (draf mesin)', zh: '手术前 ' + (-n) + ' 天（机器草稿）' });
-    if (n === 0) return pick(lang, { en: 'OT day', ms: 'hari OT (draf mesin)', zh: '手术当天（机器草稿）' });
-    return pick(lang, { en: n + ' day' + (n === 1 ? '' : 's') + ' after OT', ms: n + ' hari selepas OT (draf mesin)', zh: '手术后 ' + n + ' 天（机器草稿）' });
+    if (n < 0) return pick(lang, { en: (-n) + ' day' + (n === -1 ? '' : 's') + ' before OT', ms: (-n) + ' hari sebelum OT (draf mesin)', zh: '手术前 ' + (-n) + ' 天（机器草稿）', ar: 'قبل العملية بـ ' + (-n) + ' ' + (n === -1 ? 'يوم' : 'أيام') });
+    if (n === 0) return pick(lang, { en: 'OT day', ms: 'hari OT (draf mesin)', zh: '手术当天（机器草稿）', ar: 'يوم العملية' });
+    return pick(lang, { en: n + ' day' + (n === 1 ? '' : 's') + ' after OT', ms: n + ' hari selepas OT (draf mesin)', zh: '手术后 ' + n + ' 天（机器草稿）', ar: 'بعد العملية بـ ' + n + ' ' + (n === 1 ? 'يوم' : 'أيام') });
   }
   // 'today', 'in 1 day', 'in 14 days', '2 days ago'
   function whenText(k, lang) {
     if (isNaN(k)) return '';
-    if (k === 0) return pick(lang, { en: 'today', ms: 'hari ini (draf mesin)', zh: '今天' });
-    if (k < 0) return pick(lang, { en: (-k) + ' day' + (k === -1 ? '' : 's') + ' ago', ms: (-k) + ' hari lalu (draf mesin)', zh: '已过 ' + (-k) + ' 天' });
-    return pick(lang, { en: 'in ' + k + ' day' + (k === 1 ? '' : 's'), ms: 'dalam ' + k + ' hari (draf mesin)', zh: '还有 ' + k + ' 天' });
+    if (k === 0) return pick(lang, { en: 'today', ms: 'hari ini (draf mesin)', zh: '今天', ar: 'اليوم' });
+    if (k < 0) return pick(lang, { en: (-k) + ' day' + (k === -1 ? '' : 's') + ' ago', ms: (-k) + ' hari lalu (draf mesin)', zh: '已过 ' + (-k) + ' 天', ar: 'منذ ' + (-k) + ' ' + (k === -1 ? 'يوم' : 'أيام') });
+    return pick(lang, { en: 'in ' + k + ' day' + (k === 1 ? '' : 's'), ms: 'dalam ' + k + ' hari (draf mesin)', zh: '还有 ' + k + ' 天', ar: 'بعد ' + k + ' ' + (k === 1 ? 'يوم' : 'أيام') });
   }
   // Text for a to-do or task due date, e.g. 'Fri 13 Nov, 5 days before OT'.
   function dueLabel(sim, t, lang) {
@@ -1733,10 +2126,10 @@ defs["intake"] = function (module, exports, require) {
     const k = daysFromNow(sim, ymd);
     const crit = pid ? openCritical(sim, pid) : [];
     const out = { days: k, date: ymd, when: whenText(k, lang), weekday: fmtCal(ymd, lang), blocked: false, blockMsg: null, warn: null, banner: null, critical: crit.map(t => t.title) };
-    if (isNaN(k)) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Choose a valid date.', ms: 'Pilih tarikh yang sah. (draf mesin)', zh: '请选择有效日期。（机器草稿）' }); return out; }
-    if (k < 0) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Blocked: that date has already passed. Choose today or a later date.', ms: 'Disekat: tarikh itu sudah berlalu. Pilih hari ini atau tarikh kemudian. (draf mesin)', zh: '已阻止：该日期已过。请选择今天或之后的日期。（机器草稿）' }); return out; }
-    if (k < 2) out.warn = pick(lang, { en: 'Warning: too late for routine pre-op work-up; clinician to decide.', ms: 'Amaran: terlalu lewat untuk kerja pra-operasi rutin; doktor perlu putuskan. (draf mesin)', zh: '警告：距离手术太近，不适合常规术前检查；由临床医生决定。（机器草稿）' });
-    if (k <= 7 && crit.length) { const n = crit.length; out.banner = pick(lang, { en: 'Surgery at risk: ' + n + ' critical item' + (n === 1 ? '' : 's') + ' open', ms: 'Pembedahan berisiko: ' + n + ' item kritikal belum selesai (draf mesin)', zh: '手术有风险：' + n + ' 项关键事项未完成（机器草稿）' }); }
+    if (isNaN(k)) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Choose a valid date.', ms: 'Pilih tarikh yang sah. (draf mesin)', zh: '请选择有效日期。（机器草稿）', ar: 'اختر تاريخا صحيحا.' }); return out; }
+    if (k < 0) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Blocked: that date has already passed. Choose today or a later date.', ms: 'Disekat: tarikh itu sudah berlalu. Pilih hari ini atau tarikh kemudian. (draf mesin)', zh: '已阻止：该日期已过。请选择今天或之后的日期。（机器草稿）', ar: 'مرفوض: هذا التاريخ قد مضى. اختر اليوم أو تاريخا لاحقا.' }); return out; }
+    if (k < 2) out.warn = pick(lang, { en: 'Warning: too late for routine pre-op work-up; clinician to decide.', ms: 'Amaran: terlalu lewat untuk kerja pra-operasi rutin; doktor perlu putuskan. (draf mesin)', zh: '警告：距离手术太近，不适合常规术前检查；由临床医生决定。（机器草稿）', ar: 'تحذير: قريب جدا من العملية لفحوص ما قبل العملية الروتينية؛ يقرر الطبيب.' });
+    if (k <= 7 && crit.length) { const n = crit.length; out.banner = pick(lang, { en: 'Surgery at risk: ' + n + ' critical item' + (n === 1 ? '' : 's') + ' open', ms: 'Pembedahan berisiko: ' + n + ' item kritikal belum selesai (draf mesin)', zh: '手术有风险：' + n + ' 项关键事项未完成（机器草稿）', ar: 'العملية معرضة للخطر: ' + n + ' بند حرج غير مكتمل' }); }
     return out;
   }
   // Recomputes the OT-linked tasks of one patient from the current surgeryAt. Closed or confirmed tasks are left alone.
@@ -1784,7 +2177,10 @@ defs["intake"] = function (module, exports, require) {
   const OT = { ymdOfLocal, parseYmd, dayNum, addDays, demoDay, calOf, daysFromNow, daysToOT, otDate, fmtCal, relOT, whenText, dueLabel,
     openCritical, otStatus, syncOT, setOT, CRITICAL_KEYS };
 
-  const api = { summarise, todos, toTasks, Q, QL, labelOf, redOf, redTodo, questionTask, isWorsening: f => isWorsening(f), WORSENING_TEXT, RED_QIDS, REC_TITLE, valueText, OT };
+  function titleFor(t, lang) { return lang === 'ar' ? (SECTION_AR[t] || t) : t; }
+  function redLabel(id, lang) { return (RED_LABEL[lang] && RED_LABEL[lang][id]) || RED_LABEL.en[id] || labelOf(id, lang); }
+  const api = { summarise, todos, toTasks, Q, QL, labelOf, redOf, redTodo, questionTask, isWorsening: f => isWorsening(f), WORSENING_TEXT, RED_QIDS, REC_TITLE, valueText, OT,
+    NOTICE, SECTION_AR, LABEL_AR, REC_AR, OWNER_AR, WD_AR, MON_AR, redLabel, arNorm };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTAKE = api;
 })(this);
 
@@ -1796,50 +2192,93 @@ defs["knowledge"] = function (module, exports, require) {
   // Layered knowledge store: country < hospital < team < surgeon (most specific wins per topic).
   // No network, no models. Retrieval is plain BM25 over chunks.
   // FICTIONAL SAMPLE tooling only: not clinical advice.
+  // Arabic (ar): machine draft wording, not clinician-reviewed. Questions are normalised first (tashkeel, alef, ya,
+  // ta-marbuta, Arabic-Indic digits) and common prefixes are stripped lightly, so the same token scoring applies.
 
   var LAYERS = { country: 0, hospital: 1, team: 2, surgeon: 3 };
-  var LANGS = ['en', 'ms', 'zh'];
+  var LANGS = ['en', 'ms', 'zh', 'ar'];
   var MIN_SCORE = 0.5;
   // review3 M1/M2 (round 6): a question is answered only when exactly one topic keyword is in it, the answer's own topic
   // keyword is that one, and the score reaches the bar. Draft (not clinician-approved) answers use the stricter bar and are
   // always tagged 'SAMPLE draft, not approved' on the page. Everything else goes to the care team.
   var STRICT_MIN_SCORE = 1.0;
+  // Arabic keyword patterns are written in normalised form (no hamza, alef maqsura, or ta-marbuta; see arNorm).
   var TOPIC_KW = {
-    wound_care: /wound|dressing|bandage|plaster|luka|balutan|sapu|伤口|敷料|纱布|绷带|刀口/i,
-    shower: /shower|bath|mandi|basuh|洗澡|淋浴|沐浴/i,
-    follow_up: /follow[- ]?up|review|appointment|temujanji|susulan|复诊|复查|门诊|回诊|预约/i,
-    driving: /\bdriv|memandu|开车|驾车/i,
-    blood_thinner_stop: /blood thinner|anticoag|thinner|pencair darah|抗凝|血液稀释|warfarin|aspirin/i,
-    antibiotics: /antibiotic|antibiotik|抗生素/i,
-    injections: /injection|\bjabs?\b|suntikan|针|注射/i,
-    flying: /\bfly\b|\bflying\b|\bflights?\b|\bplanes?\b|penerbangan|terbang|飞/i,
-    medicines: /medicin|medication|\bubat\b|\bpills?\b|\bdose\b|painkiller|\btablets?\b|药/i,
-    fasting: /\bfast(ing|ed)?\b|nil by mouth|\bpuasa\b|禁食|禁水|空腹/i
+    wound_care: /wound|dressing|bandage|plaster|luka|balutan|sapu|伤口|敷料|纱布|绷带|刀口|جرح|ضماد|شاش|لاصق/i,
+    shower: /shower|bath|mandi|basuh|洗澡|淋浴|沐浴|استحمام|دش|حمام/i,
+    follow_up: /follow[- ]?up|review|appointment|temujanji|susulan|复诊|复查|门诊|回诊|预约|مراجعه|موعد|متابعه|زياره/i,
+    driving: /\bdriv|memandu|开车|驾车|قياده|سياقه|اقود|اسوق/i,
+    blood_thinner_stop: /blood thinner|anticoag|thinner|pencair darah|抗凝|血液稀释|warfarin|aspirin|مميع|مسيل|وارفارين|اسبرين/i,
+    antibiotics: /antibiotic|antibiotik|抗生素|مضاد/i,
+    injections: /injection|\bjabs?\b|suntikan|针|注射|حقن|ابره/i,
+    flying: /\bfly\b|\bflying\b|\bflights?\b|\bplanes?\b|penerbangan|terbang|飞|طيران|طياره|رحله|اطير/i,
+    medicines: /medicin|medication|\bubat\b|\bpills?\b|\bdose\b|painkiller|\btablets?\b|药|دواء|دوا|ادويه|حبوب|جرعه|مسكن/i,
+    fasting: /\bfast(ing|ed)?\b|nil by mouth|\bpuasa\b|禁食|禁水|空腹|صيام|صايم|صوم|اكل قبل/i
   };
   function topicKeywordMatch(topic, question) {
     var re = TOPIC_KW[topic];
     return !!re && re.test(question);
   }
   var ROUTE_TEXT = 'I will pass this to your care team';
+  var ROUTE_TEXT_AR = 'سأحيل سؤالك إلى فريق الرعاية الخاص بك.';
+  var LAYER_AR = { country: 'الدولة', hospital: 'المستشفى', team: 'فريق الجناح', surgeon: 'الجراح' };
+  var REASON_AR = {
+    clinical: 'تقدير سريري: يحتاج مراجعة الفريق الطبي',
+    instruction: 'طلب يشبه التعليمات: لا يُجاب عليه من المصادر',
+    clarify: 'يحتاج إلى توضيح',
+    topics: 'أكثر من موضوع في هذا السؤال',
+    noTopicSource: 'تقدير سريري: لا يوجد مصدر معتمد لهذا الموضوع',
+    noSource: 'لا يوجد مصدر معتمد لهذا السؤال',
+    triage: { EMERGENCY: 'فرز: طارئ', 'SAME-DAY': 'فرز: في نفس اليوم' }
+  };
   var CLINICAL = {
-    blood_thinner_stop: /blood thinner|anticoag|warfarin|rivaroxaban|apixaban|clexane|enoxaparin|aspirin|\b(stop|restart)\b.{0,20}\b(thinner|tablets?|pills?|medicines?)\b/i,
-    antibiotics: /antibiotic|antibiotik/i,
-    injections: /injection|\bjabs?\b|suntikan/i,
-    flying: /\bfly\b|\bflying\b|\bflights?\b|\bplanes?\b|penerbangan|terbang/i,
-    driving: /\bdriv|memandu/i,
-    medicines: /medicin|medication|\bubat\b|\bpills?\b|\bdose\b|painkiller|\btablets?\b/i,
-    fasting: /\bfast(ing|ed)?\b|nil by mouth|\bpuasa\b|禁食|禁水|空腹/i
+    blood_thinner_stop: /blood thinner|anticoag|warfarin|rivaroxaban|apixaban|clexane|enoxaparin|aspirin|\b(stop|restart)\b.{0,20}\b(thinner|tablets?|pills?|medicines?)\b|مميع|مسيل|وارفارين|ريفاروكسابان|ابيكسابان|اسبرين|انوكسابارين/i,
+    antibiotics: /antibiotic|antibiotik|مضاد/i,
+    injections: /injection|\bjabs?\b|suntikan|حقن|ابره/i,
+    flying: /\bfly\b|\bflying\b|\bflights?\b|\bplanes?\b|penerbangan|terbang|طيران|طياره|رحله|اطير/i,
+    driving: /\bdriv|memandu|قياده|سياقه|اقود|اسوق/i,
+    medicines: /medicin|medication|\bubat\b|\bpills?\b|\bdose\b|painkiller|\btablets?\b|دواء|دوا|ادويه|حبوب|جرعه|مسكن/i,
+    fasting: /\bfast(ing|ed)?\b|nil by mouth|\bpuasa\b|禁食|禁水|空腹|صيام|صايم|صوم|اكل قبل/i
   };
   // review2 M3 (round 4): instruction-like or approval requests are never answered from the store.
-  var INJECT_RE = /\bsystem\s*:|\byou are now\b|\bignore (all |your |previous |the )?(rules|instructions|above)\b|\bapprove\b|\bact as\b|\bpretend\b|\boverride\b/i;
+  var INJECT_RE = /\bsystem\s*:|\byou are now\b|\bignore (all |your |previous |the )?(rules|instructions|above)\b|\bapprove\b|\bact as\b|\bpretend\b|\boverride\b|تجاهل|تظاهر|وافق/i;
   var STOP = {};
   ('a an the is are am be been to of in on at for and or do does did i you your my me we it this that ' +
    'what when can how with from as by if will would should there any not no so please yes ok ' +
    'saya anda apa bila dan yang ke di untuk ini itu dengan adakah bagaimana kah tak tidak dah juga atau ' +
    'pada dalam kami kita boleh bolehkah').split(' ').forEach(function (w) { STOP[w] = true; });
+  // Arabic function words (written naturally; normalised below so they match the tokens)
+  ('في على من الى عن هل ما لا ان او مع كيف متى ممكن استطيع انا انت هذا هذه ذلك التي الذي ليس مو مش ابي ابغى هو هي كم ' +
+   'اريد أريد ينفع يجوز').split(' ').forEach(function (w) { STOP[arNorm(w)] = true; });
 
   function hasOwn(o, k) { return Object.prototype.hasOwnProperty.call(o, k); }
   function isClinical(topic) { return hasOwn(CLINICAL, topic); }
+
+  // Arabic normalisation: drop tashkeel and tatweel; unify alef forms, alef maqsura, ta-marbuta, hamza carriers;
+  // Arabic-Indic digits and the Arabic decimal separator become ASCII.
+  var AR_LETTERS = /[؀-ۿ]/;
+  function arNorm(text) {
+    return String(text == null ? '' : text)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/[ؤ]/g, 'و')
+      .replace(/[ئ]/g, 'ي')
+      .replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
+      .replace(/٫/g, '.').replace(/٬/g, ',');
+  }
+  // Light prefix stripping for Arabic words only: definite article and the common one-letter conjunctions and prepositions.
+  var AR_PREFIX2 = ['وال', 'بال', 'كال', 'فال', 'لل', 'ال'];
+  function arStrip(w) {
+    if (!AR_LETTERS.test(w)) return w;
+    for (var i = 0; i < AR_PREFIX2.length; i++) {
+      var p = AR_PREFIX2[i];
+      if (w.indexOf(p) === 0 && w.length - p.length >= 3) return w.slice(p.length);
+    }
+    if (/^[وبلف]/.test(w) && w.length - 1 >= 4) return w.slice(1);
+    return w;
+  }
 
   function stem(w) {
     return w.length > 4 ? w.replace(/(ing|ed|es|s|e)$/, '') : w;
@@ -1847,9 +2286,10 @@ defs["knowledge"] = function (module, exports, require) {
 
   function tokenize(text) {
     var out = [];
-    var raw = String(text || '').toLowerCase().match(/[一-鿿]|[\p{L}\p{N}]+/gu) || [];
+    var raw = arNorm(text).toLowerCase().match(/[一-鿿]|[\p{L}\p{N}]+/gu) || [];
     raw.forEach(function (w) {
       if (/^[一-鿿]$/.test(w)) { out.push(w); return; }
+      w = arStrip(w);
       if (w.length < 2 || hasOwn(STOP, w)) return;
       var s = stem(w);
       if (s.length >= 2 && !hasOwn(STOP, s)) out.push(s);
@@ -1985,43 +2425,53 @@ defs["knowledge"] = function (module, exports, require) {
   function answer(store, ctx, question, lang) {
     ctx = ctx || {};
     var q = String(question || '');
+    var qn = arNorm(q); // normalised question for the keyword and clinical patterns
     var c = classifySafe(q, ctx);
     var L = LANGS.indexOf(lang) >= 0 ? lang : (LANGS.indexOf(c.lang) >= 0 ? c.lang : 'en');
+    var AR = L === 'ar';
+    // Route text and reason in the answer language. English output is unchanged.
+    function routeOut(reasonEn, reasonAr, cls) {
+      return route(AR ? ROUTE_TEXT_AR : ROUTE_TEXT, AR ? reasonAr : reasonEn, cls);
+    }
 
     // Triage pre-empts everything else.
-    if (c.cls === 'EMERGENCY' || c.cls === 'SAME-DAY') return route(c.reply, 'triage: ' + c.cls, c.cls);
+    if (c.cls === 'EMERGENCY' || c.cls === 'SAME-DAY') {
+      return route(c.reply, AR ? REASON_AR.triage[c.cls] : 'triage: ' + c.cls, c.cls);
+    }
     if (c.cls === 'ROUTE' && c.flags.some(function (f) { return /clinical judgement|worsening/.test(f); })) {
       // review1 item 14: the engine flag already says "clinical judgement"; do not repeat it
       var why = c.flags.join(', ');
-      return route(ROUTE_TEXT, /^clinical judgement/.test(why) ? why : 'clinical judgement: ' + why);
+      return routeOut(/^clinical judgement/.test(why) ? why : 'clinical judgement: ' + why, REASON_AR.clinical);
     }
-    if (c.cls === 'ASK') return route(c.reply, 'needs clarification', c.cls);
-    if (INJECT_RE.test(q)) return route(ROUTE_TEXT, 'instruction-like request: not answered from the store');
+    if (c.cls === 'ASK') return route(c.reply, AR ? REASON_AR.clarify : 'needs clarification', c.cls);
+    if (INJECT_RE.test(qn)) return routeOut('instruction-like request: not answered from the store', REASON_AR.instruction);
 
     var winners = resolve(store, ctx, L);
 
     // Clinical topics named in the question need an approved chunk for that exact topic.
-    var clin = detectClinical(q);
+    var clin = detectClinical(qn);
     for (var i = 0; i < clin.length; i++) {
       if (!winners[clin[i]]) {
-        return route(ROUTE_TEXT, 'clinical judgement: no approved source for topic "' + clin[i] + '"');
+        return routeOut('clinical judgement: no approved source for topic "' + clin[i] + '"', REASON_AR.noTopicSource);
       }
     }
 
-    var matchingTopics = Object.keys(TOPIC_KW).filter(function (t) { return topicKeywordMatch(t, q); });
-    if (matchingTopics.length > 1) return route(ROUTE_TEXT, 'more than one topic in this question: ' + matchingTopics.join(', '));
+    var matchingTopics = Object.keys(TOPIC_KW).filter(function (t) { return topicKeywordMatch(t, qn); });
+    if (matchingTopics.length > 1) {
+      return routeOut('more than one topic in this question: ' + matchingTopics.join(', '), REASON_AR.topics);
+    }
 
     var score = makeScorer(store);
     var qt = tokenize(q);
     var best = null;
     Object.keys(winners).forEach(function (t) {
       var w = winners[t];
-      if (!topicKeywordMatch(w.chunk.topic, q)) return; // wrong topic for this question (review3 M2)
+      if (!topicKeywordMatch(w.chunk.topic, qn)) return; // wrong topic for this question (review3 M2)
       var s = score(qt, w.chunk);
       var need = w.chunk.approved ? MIN_SCORE : STRICT_MIN_SCORE;
       if (s >= need && (!best || s > best.score)) best = { score: s, w: w };
     });
-    if (!best) return route(ROUTE_TEXT, 'no approved source'); // also used when no source matches this question's topic with enough confidence
+    if (!best) return routeOut('no approved source', REASON_AR.noSource); // also used when no source matches this question's topic with enough confidence
 
     var w = best.w;
     return {
@@ -2029,6 +2479,7 @@ defs["knowledge"] = function (module, exports, require) {
       text: w.chunk.text,
       citation: {
         layer: w.source.layer,
+        layerLabel: AR ? LAYER_AR[w.source.layer] : w.source.layer,
         owner: w.source.owner,
         title: w.source.title,
         chunkId: w.chunk.chunkId
@@ -2048,6 +2499,15 @@ defs["knowledge"] = function (module, exports, require) {
     var lower = resolve(store, Object.assign({}, ctx || {}, { surgeon: '' }), r.lang)[r.topic];
     if (!lower || lower.chunk.chunkId === r.citation.chunkId) return null;
     if (LAYERS[lower.source.layer] >= LAYERS[r.citation.layer]) return null;
+    if (r.lang === 'ar') {
+      return {
+        head: 'يتجاوز توجيهات ' + LAYER_AR[lower.source.layer] + ':',
+        body: lower.chunk.text + ' (' + LAYER_AR[lower.source.layer] + ' – المالك: ' + lower.source.owner + '؛ ' +
+          LAYER_AR[r.citation.layer] + ' – المالك: ' + r.citation.owner + ')',
+        lowerLayer: lower.source.layer, lowerOwner: lower.source.owner,
+        upperLayer: r.citation.layer, upperOwner: r.citation.owner
+      };
+    }
     return {
       head: 'Overrides ' + lower.source.layer + ' guidance:',
       body: lower.chunk.text + ' (' + lower.source.layer + ' owner: ' + lower.source.owner + '; ' +
@@ -2064,6 +2524,8 @@ defs["knowledge"] = function (module, exports, require) {
     answer: answer,
     overrideLine: overrideLine,
     tokenize: tokenize,
+    arNorm: arNorm,
+    LAYER_AR: LAYER_AR,
     STRICT_MIN_SCORE: STRICT_MIN_SCORE,
     CLINICAL_TOPICS: Object.keys(CLINICAL),
     MIN_SCORE: MIN_SCORE
@@ -2139,7 +2601,77 @@ defs["adapter"] = function (module, exports, require) {
   var NEG_EN = /\b(?:I|we)\s+(?:cannot|can'?t|can not|am unable to|am not able to|won'?t|will not|do not|don'?t)\s+(?:advise|advice|give (?:you )?(?:any |a |an |medical |clinical |the )?(?:advice|diagnos\w*|prognos\w*|recommendation|opinion|answer|normal ranges?)|tell you (?:what|whether|which|if|how)|say (?:whether|what|if|which|how)|check|confirm|interpret|diagnos\w*|decide|judge|know|answer|recommend)\b[^,.;:!?]{0,90}/gi;
   var NEG_MS = /\b(?:saya|kami)\s+(?:tidak|tak)\s+(?:dapat|boleh|mampu)\s+(?:memberi|beri|mengesahkan|menilai|menentukan|memberitahu|menerangkan|mengesyorkan|menyemak)\b[^,.;:!?。]{0,90}/gi;
   var NEG_ZH = /(?:我|我们)(?:无法|不能|不可以|没法|不便)[^，,。；;！!？?]{0,60}/g;
-  var NEG_ALL = [NEG_EN, NEG_MS, NEG_ZH];
+  /* ---------- round 7: Arabic guard (ar). Same rules as en, ms, zh. Draft vocabulary, not clinician validated. ----------
+   * Replies are normalised first (arNorm), so the Arabic patterns are written in normalised form (ا ي ه, no tashkeel).
+   * Summaries are accepted by structure: a third-person sentence whose content words all restate the patient's own words.
+   * Instructions, reassurance, diagnosis and dosing are blocked in Arabic exactly as in the other languages. */
+  var AL = 'ء-ي';
+  var AB = '(?<![' + AL + '])', AE = '(?![' + AL + '])';
+  var AR_LETTER = /[ء-يٱ-ۓۺ-ۿ]/;
+  function hasAr(s) { return AR_LETTER.test(String(s)); }
+  function arNorm(s) {
+    return String(s)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱٲٳ]/g, 'ا')
+      .replace(/[ىیئ]/g, 'ي')
+      .replace(/ک/g, 'ك').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
+      .replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
+      .replace(/[۰-۹]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
+      .replace(/٫/g, '.').replace(/٬/g, '');
+  }
+  function arRe(src, flags) { return new RegExp(arNorm(src), flags || ''); }
+  // negated refusal: "لا أستطيع الإجابة ..." is removed before the advice / reassurance / diagnosis checks
+  var NEG_AR = arRe(AB + '(?:لا|ما|مو|مش|ليس|لم|مب|بدون|ولا)\\s*(?:استطيع|اقدر|يمكنني|اقدم|اعطي|انصح|اشخص|اؤكد|اجيب|اعلق|اقول|اجزم|اعرف|اتحقق)' + AE + '[^،.;:!?؟]{0,90}', 'gi');
+  var INSTR_AR_VERB = '(?:خذ|خذي|خذوا|تناول|تناولي|توقف|توقفي|اوقف|اوقفي|تتوقف|تتوقفي|تاخذ|تاخذي|تتناول|تستمر|تتابع|تبدا|تكرر|تضاعف|تقلل|تزيد|تشرب|ابدا|ابدئي|استمر|استمري|تابع|تابعي|كرر|زد|قلل|قللي|ضاعف|ضاعفي|تجاهل|امسك|تجنب|اعط|اعطي|لا تاخذ|لا تتوقف|لا توقف|لا تتناول|لا تاخذي|لا تتوقفي|اشرب|استخدم|استخدمي)';
+  var AR_MED_OBJ = '(?:وارفرين|وارفارين|ريفاروكسابان|ابيكسابان|دابيغاتران|اليكويس|هيبارين|كلكسان|اسبرين|مسيل|مميع|بنادول|باراسيتامول|ايبوبروفين|ديكلوفيناك|مضاد|دوا|دواء|ادويه|ادوية|حبوب|حبه|حبة|حبات|حبتين|حقنه|حقنة|ابره|ابرة|ترامادول|مورفين|كودين|انسولين|ميتفورمين|جرعه|جرعة|مسكن|مسكنات|كورتيزون|امبوكسيلين|اموكسيسيلين)';
+  var INSTR_AR_RE = arRe(AB + INSTR_AR_VERB + AE + '[^.?!؟]{0,40}' + AR_MED_OBJ + '|' + AB + AR_MED_OBJ + '[^.?!؟]{0,30}' + AB + INSTR_AR_VERB);
+  var AR_MED_RE = arRe(AR_MED_OBJ);
+  var AR_DIRECTIVE_RE = arRe('اسال|اتكلم|تواصل|راجع|اسأل|ينفع|يجوز|ممكن');
+  var AR_MED_NAME_RE = arRe(AB + '(?:وارفرين|وارفارين|ريفاروكسابان|ابيكسابان|اسبرين|بنادول|باراسيتامول|ايبوبروفين|ديكلوفيناك|هيبارين|مضاد حيوي|مضادات حيوية|مسيل الدم|مميع)');
+  var AR_DOSE_RE = arRe('(?:\\d+(?:\\.\\d+)?|واحد|واحده|اثنين|اثنتين|حبتين|ثلاث|ثلاثه|اربع|اربعه|خمس|نص|نصف)\\s*(?:حبه|حبة|حبات|حبوب|ملغ|مغ|ملي|مل|ميلي|وحده|وحدات|كبسول|كبسوله|قرص|اقراص|جرعه|جرعة)|مرتين (?:في|ب)?اليوم|مره (?:في|ب)?اليوم|ثلاث مرات|كل \\d+ ساعه|جرعه|جرعة|حبتين');
+  var AR_DX = 'نقرس|التهاب|جلطه|تجلط|كسر|نزيف|عدوى|جرثوم|سرطان|السكري|سكري|هشاشه|ديسك|انزلاق غضروفي|تمزق|مرض|عرق النسا|فيروس|انفلونزا|ربو|ورم خبيث';
+  var DX_ASSERT_AR = arRe('(?:هذا|هذه|هذي|ذلك|هذول)\\s*(?:غالبا|ربما|على الارجح|يبدو|يشبه|يكون|هو|انه|انها)?\\s*(?:هو\\s*)?(?:ك|ب|ل)?(?:' + AR_DX + ')');
+  var DX_ASSERT_AR2 = arRe('(?:ممكن|ربما|قد|غالبا)\\s*(?:يكون|تكون|هو|هي)\\s*(?:ك|ب|ل)?(?:' + AR_DX + ')');
+  var DIAG_YOU_AR = arRe('(?:انت|انتي|انتم)\\s*(?:مصاب|مصابه|عندك|عندكي)|(?:عندك|عندكي|عندكم)\\s*(?:ال)?(?:' + AR_DX + ')|مصاب ب(?:' + AR_DX + ')');
+  var AR_DIAG_WORD = arRe('تشخيص|مرضك|تشخيصك|تشخيصه|تشخيصها');
+  var ADVICE_AR = arRe(AB + '(?:يجب عليك|يجب ان تذهب|لازم|لابد|ينبغي عليك|انصحك|انصح|الافضل ان|من الافضل|لا تحتاج|ما تحتاج|لا داعي ان تراجع|ابقى في البيت|ابقي في البيت|لا تروح|لا تذهب|لا تراجع|اذهب|اذهبي)' + AE);
+  var REASSURE_AR = arRe(AB + '(?:لا داعي للقلق|لا داعي للخوف|لا تقلق|لا تقلقي|ما تقلق|لا تخف|لا تخافي|ما فيه شي|ما فيه شيء|مافيه شي|مافيه شيء|لا شي خطير|لا بأس|لا باس|شي بسيط|شيء بسيط|يزول|سيزول|راح يزول|سيختفي|يختفي|راح يختفي|ليس خطيرا|مو خطير|ليس خطير|لا يضر|ما يضر|عادي|عاديه|عادية|هذا عادي|امن|امنه)' + AE);
+  var REASSURE_AR2 = /(?<!غير )(?<!مو )(?<!ليس )(?<!ليست )(?:طبيعي|طبيعيه|طبيعية)/;
+  var AR_CLIN = ['سكري', 'السكري', 'ربو', 'الربو', 'نقرس', 'عدوى', 'التهاب', 'جلطه', 'تجلط', 'كسر', 'نزيف', 'سرطان', 'ورم', 'حساسيه', 'بنسلين', 'تخدير', 'فشل كلوي', 'الكلى', 'غسيل كلى', 'القلب', 'قلب', 'ضغط الدم', 'وارفرين', 'ريفاروكسابان', 'اسبرين', 'بنادول', 'باراسيتامول', 'ايبوبروفين', 'تدخين', 'تدخن', 'سجاير', 'كحول', 'مضاد حيوي', 'مضادات حيوية', 'مسيل الدم', 'مميع', 'ديسك', 'الرباط', 'الغضروف'];
+  var CLINICIAN_AR = arRe('الطبيب|الطبيبه|الطبيبة|الفريق|الصيدلي|الممرض|الممرضه|الاطباء');
+  // Arabic function words and redirect words. Content words outside this list must be grounded in the patient's text.
+  var AR_FRAME = ('في من على الى عن مع و او ان لا ما هذا هذه ذلك التي الذي هو هي انت انتي انا نحن كل بعض يمكن يرجى الرجاء ارجو سوف سيراجع سيقوم سيتصل يتصل تتصل فريق طبي طبيب طبيبه ممرض ممرضه صيدلي مختص مختصين حالتك رعايه اسعاف طوارئ اتصل اتصلي تواصل اتصال بك لك لكم عليك شخص مراجعه اجابه سوال اذا لو قبل بعد لان ثم قد كما ليس نعم شكرا المريض المريضه يقول تقول قال قالت انه انها بان اكيد بالتاكيد تماما هنا الان يكون تكون فيه فيها الاجابه السوال الاتصال').split(' ');
+  AR_FRAME = AR_FRAME.map(function (w) { return arNorm(w); });
+  function arWords(s) { return arNorm(s).split(/[^ء-ي]+/).filter(function (w) { return w.length >= 2; }); }
+  function arIsFrame(w) {
+    var c = [w, w.replace(/^(?:وال|بال|لل|ال)/, ''), w.replace(/^[وبلفك]/, ''), w.replace(/^[وبلفك]ال/, '')];
+    return c.some(function (x) { return AR_FRAME.indexOf(x) >= 0; });
+  }
+  function arContentWords(s) { return arWords(s).filter(function (w) { return !arIsFrame(w); }); }
+  function arBigrams(w) { var o = []; for (var i = 0; i + 1 < w.length; i++) o.push(w.substr(i, 2)); return o; }
+  function arStem(w) { return w.replace(/^(?:وال|بال|لل|ال)/, ''); }
+  function arWordGrounded(w, srcWords) {
+    var wb = arBigrams(w);
+    var wn = arStem(w);
+    return srcWords.some(function (x0) {
+      var x = arStem(x0);
+      // a shared stem (ساق / ساقها / ساقي) or enough shared bigrams
+      var n = 0; while (n < wn.length && n < x.length && wn.charAt(n) === x.charAt(n)) n++;
+      if (n >= 3 || (n === wn.length && n >= 2)) return true;
+      var xb = arBigrams(x);
+      var hit = wb.filter(function (b) { return xb.indexOf(b) >= 0; }).length;
+      return hit / wb.length >= 0.6;
+    });
+  }
+  function arGroundedSummary(s, src, min) {
+    var words = arContentWords(s);
+    if (!words.length) return true;
+    var srcWords = arWords(src);
+    var ok = words.filter(function (w) { return arWordGrounded(w, srcWords); }).length;
+    return ok / words.length >= min;
+  }
+
+  var NEG_ALL = [NEG_EN, NEG_MS, NEG_ZH, NEG_AR];
   function stripNeg(s) { var out = String(s); NEG_ALL.forEach(function (re) { out = out.replace(re, ' '); }); return out; }
   var ADVICE_RE = /\b(?:you should|you must|you need to|you ought|you have to|you had better|i advise|i recommend|i suggest|we advise|we recommend|you do not need|you don'?t need|you need not|no need to|don'?t go|do not go|stay at home|wait at home|it is safe|okay to|ok to|fine to|go ahead with|go for it|you can wait|best to|better to|should|must|ought to)\b|\b(?:anda|kamu)\s+(?:patut|perlu|mesti|harus|sepatutnya|boleh teruskan|tidak perlu|tak perlu)\b|\btidak perlu (?:jumpa|pergi|ke)\b|\bjangan pergi\b|\bsebaiknya\b|\bdisyorkan\b|你应该|你应当|您应该|您应当|必须|最好|不必去|不用去|不要去|在家等|可以在家|可以等|不需要去|不用急诊|不必急诊/i;
   var NEED_TO_CARE_RE = /\bneed to (?:contact|call|tell|speak|raise|ask|discuss|talk|see)\b/gi;
@@ -2164,7 +2696,7 @@ defs["adapter"] = function (module, exports, require) {
   var ZH_NUM = { '一': '1', '二': '2', '两': '2', '三': '3', '四': '4', '五': '5', '六': '6', '七': '7', '八': '8', '九': '9', '十': '10' };
   var EN_NUM = { one: '1', two: '2', three: '3', four: '4', five: '5', satu: '1', dua: '2', tiga: '3', empat: '4', lima: '5' };
   var ESC_RE = /contact|call|emergency|urgent|999|seek|hospital|care team|medical team|clinic|hubungi|kecemasan|pasukan|急诊|急救|联系|拨打|医护团队|就医|就诊|医疗团队/i;
-  var COND_RE = /\b(?:if|when|unless)\b|如果|若|jika|kalau|sekiranya|apabila/i;
+  var COND_RE = /\b(?:if|when|unless)\b|如果|若|jika|kalau|sekiranya|apabila|إذا|اذا|لو/i;
   var CLINICIAN_RE = /clinician|doctor|care team|medical team|nurse|pharmacist|doktor|pasukan|jururawat|临床医生|医生|医护团队|医疗团队|药剂师|护士/i;
   var QSTART_RE = /^(?:do|does|did|have|has|had|can|could|would|will|is|are|was|were|any|if|whether|what|which|who|where|when|why|how|apakah|adakah|berapa|bila|bilakah|di mana|mengapa|siapa|bagaimana|是否|有没有|您有没有|你有没有|您是否|你是否|请问|什么|哪|谁|为什么|多少|几|发生)/i;
   var DOSE_NUM_RE = /\b\d+(?:\.\d+)?\s*(?:mg|mcg|µg|ug|g|ml|iu|units?|tablets?|tabs?|pills?|capsules?|puffs?|sachets?|biji|keping|butir|kapsul|sudu|titik)\b|\b(?:one|two|three|four|five|half|satu|dua|tiga|empat|lima|setengah)\s+(?:tablets?|tabs?|pills?|capsules?|biji|keping|butir|kapsul|sudu)\b|(?:\d+(?:\.\d+)?|[一二两三四五六七八九十])\s*(?:片|粒|颗|毫克|克)|几片|多少片|几粒|多少粒|\b(?:once|twice)\s+(?:a |per |each )?(?:day|daily|night)\b|\bper day\b/gi;
@@ -2201,10 +2733,16 @@ defs["adapter"] = function (module, exports, require) {
   function isContentWord(w) { return EN_STOP.indexOf(w) < 0 && MS_STOP.indexOf(w) < 0; }
   function isFrame(s) {
     if (hasCJK(s)) return zhContent(s).length === 0;
+    if (hasAr(s)) return arContentWords(s).length === 0 && enTokens(s).filter(isContentWord).length === 0;
     return enTokens(s).filter(isContentWord).length === 0;
   }
   // A declarative sentence must restate the patient's own words: en/ms by token overlap, zh by character bigrams.
-  function groundedSummary(s, src) {
+  // Arabic sentences are grounded word by word (bigram overlap); any English words in them are checked as before.
+  function groundedSummary(s, src, min) {
+    if (hasAr(s)) return arGroundedSummary(s, src, min || 0.6) && (enTokens(s).filter(isContentWord).length === 0 || groundedSummaryEn(s, src));
+    return groundedSummaryEn(s, src);
+  }
+  function groundedSummaryEn(s, src) {
     if (hasCJK(s)) {
       var sb = bigrams(zhContent(s)), srcB = bigrams(zhContent(src));
       if (!sb.length) return true;
@@ -2229,34 +2767,39 @@ defs["adapter"] = function (module, exports, require) {
     var en = s.match(CLIN_EN_RE) || [];
     for (var i = 0; i < en.length; i++) if (srcSq.indexOf(squash(en[i])) < 0) return false;
     for (var j = 0; j < CLIN_ZH.length; j++) if (s.indexOf(CLIN_ZH[j]) >= 0 && src.indexOf(CLIN_ZH[j]) < 0) return false;
+    for (var a = 0; a < AR_CLIN.length; a++) if (s.indexOf(AR_CLIN[a]) >= 0 && src.indexOf(AR_CLIN[a]) < 0) return false;
     return true;
   }
-  function isQuestion(s) { return /[?？]["')\]]*\s*$/.test(s); }
+  function isQuestion(s) { return /[?？؟]["')\]]*\s*$/.test(s); }
   function splitSentences(r) {
     return r.split(/\n+/).reduce(function (a, line) {
-      return a.concat(line.split(/(?<=[!?。！？])\s*|(?<=\.)\s+/));
+      return a.concat(line.split(/(?<=[!?。！？؟])\s*|(?<=\.)\s+/));
     }, []).map(function (s) { return s.trim(); }).filter(Boolean);
   }
   function instrHit(s) {
-    return INSTR_EN_RE.test(s) || INSTR_EN_REV_RE.test(s) || INSTR_MS_RE.test(s) || INSTR_ZH_RE.test(s) || DO_NOT_RE.test(s) || YOU_CAN_RE.test(s);
+    return INSTR_EN_RE.test(s) || INSTR_EN_REV_RE.test(s) || INSTR_MS_RE.test(s) || INSTR_ZH_RE.test(s) || DO_NOT_RE.test(s) || YOU_CAN_RE.test(s) || INSTR_AR_RE.test(s);
   }
-  function isThirdPerson(s) { return /^(?:the patient|pesakit|patient|they|he|she)\b/i.test(s) || /^患者/.test(s); }
+  // Third-person subject of a summary (en, ms, zh, ar). It only lets an instruction-like sentence through when restates() also holds.
+  var AR_PATIENT_RE = /^(?:المريض|المريضه|مريض|مريضه|الشخص)(?![ء-ي])/;
+  function isThirdPerson(s) { return /^(?:the patient|pesakit|patient|they|he|she|dia|beliau)\b/i.test(s) || /^(?:患者|病人|佢|他|她)/.test(s) || AR_PATIENT_RE.test(s); }
+  // A restatement: every content word of the sentence (or 60% for en/ms, 90% for zh/ar) is in the patient's words, and no clinical term is new.
+  function restates(s, src) { return groundedSummary(s, src, hasAr(s) || hasCJK(s) ? 0.9 : 0.6) && clinicalGrounded(s, src); }
   function removeQForm(s) { return s.replace(/\b(?:do|does|did|can|could|would|will|any|if|whether|have|when|unless|in case)\s+you\s+have\b/gi, ' '); }
   function isEscalation(s) { return ESC_RE.test(s) && COND_RE.test(s); }
 
   // Returns {ok:true} or {ok:false, reason}. classify is optional: when given, assertions and medicine-directed questions are classified too.
   function guardReply(reply, userText, classify) {
-    var r = String(reply == null ? '' : reply).trim();
+    var r = arNorm(String(reply == null ? '' : reply)).trim();
     var fail = function (reason) { return { ok: false, reason: reason }; };
     if (!r) return fail('empty');
     if (r.length > 600) return fail('too_long');
-    var src = patientSource(userText);
+    var src = arNorm(patientSource(userText));
 
     // 1. whole-reply checks on the reply with negated refusals removed
     var scan = stripNeg(r);
-    if (ADVICE_RE.test(scan.replace(NEED_TO_CARE_RE, ' '))) return fail('advice');
-    if (REASSURE_RE.test(scan)) return fail('reassurance');
-    if (DX_ASSERT_EN.test(scan) || DX_ASSERT_ZH.test(scan)) return fail('diagnosis');
+    if (ADVICE_RE.test(scan.replace(NEED_TO_CARE_RE, ' ')) || ADVICE_AR.test(scan)) return fail('advice');
+    if (REASSURE_RE.test(scan) || REASSURE_AR.test(scan) || REASSURE_AR2.test(scan)) return fail('reassurance');
+    if (DX_ASSERT_EN.test(scan) || DX_ASSERT_ZH.test(scan) || DX_ASSERT_AR.test(scan) || DX_ASSERT_AR2.test(scan)) return fail('diagnosis');
 
     // 2. sentence checks
     var sentences = splitSentences(r);
@@ -2267,20 +2810,23 @@ defs["adapter"] = function (module, exports, require) {
       var q = isQuestion(s);
       var noNeg = stripNeg(s);
       if (!q && DIAG_WORD.test(noNeg)) return fail('diagnosis');
+      if (!q && (AR_DIAG_WORD.test(noNeg) || DIAG_YOU_AR.test(noNeg))) return fail('diagnosis');
       if (!(q && QSTART_RE.test(s)) && !COND_RE.test(noNeg)) {
         if (DIAG_YOU_EN.test(removeQForm(noNeg))) return fail('diagnosis');
         if (!q && DIAG_YOU_ZH.test(noNeg)) return fail('diagnosis');
       }
       if (q) {
         if (DOSE_NUM_RE.test(s)) { DOSE_NUM_RE.lastIndex = 0; return fail('dose'); }
+        if (AR_DOSE_RE.test(s)) return fail('dose');
         DOSE_NUM_RE.lastIndex = 0;
-        if (instrHit(s) && QSTRONG_RE.test(s)) return fail('instruction');
-        if (MED_ANY_RE.test(s) && WEAK_DIRECTIVE_RE.test(s)) directiveQ.push(s);
+        if (instrHit(s) && (QSTRONG_RE.test(s) || hasAr(s))) return fail('instruction');
+        if ((MED_ANY_RE.test(s) || AR_MED_RE.test(s)) && (WEAK_DIRECTIVE_RE.test(s) || AR_DIRECTIVE_RE.test(s))) directiveQ.push(s);
         continue;
       }
       // declarative
-      if (instrHit(s) && !(isThirdPerson(s) && clinicalGrounded(s, src))) return fail('instruction');
+      if (instrHit(s) && !(isThirdPerson(s) && restates(s, src))) return fail('instruction');
       if (DOSE_BARE_RE.test(s) && !DOSE_BARE_RE.test(src)) return fail('dose');
+      if (AR_DOSE_RE.test(s) && !AR_DOSE_RE.test(src)) return fail('dose');
       var doseTok = s.match(DOSE_NUM_RE) || [];
       var srcSq = squash(src);
       if (doseTok.some(function (t) { return srcSq.indexOf(squash(t)) < 0; })) return fail('dose');
@@ -2316,7 +2862,7 @@ defs["adapter"] = function (module, exports, require) {
     }
 
     // 5. a refusal or redirect may not name a medicine in a statement
-    if ((hasNeg(r) || CLINICIAN_RE.test(r)) && sentences.some(function (x) { return !isQuestion(x) && MED_NAME_RE.test(x); })) return fail('medicine_in_redirect');
+    if ((hasNeg(r) || CLINICIAN_RE.test(r) || CLINICIAN_AR.test(r)) && sentences.some(function (x) { return !isQuestion(x) && (MED_NAME_RE.test(x) || AR_MED_NAME_RE.test(x)); })) return fail('medicine_in_redirect');
     return { ok: true };
   }
   function hasNeg(s) { return NEG_ALL.some(function (re) { re.lastIndex = 0; var h = re.test(s); re.lastIndex = 0; return h; }); }
@@ -2670,7 +3216,7 @@ defs["second_check"] = function (module, exports, require) {
 };
 
 defs["sources.sample"] = function (module, exports, require) {
-module.exports = {"notice":"FICTIONAL SAMPLE – not clinical advice. Invented countries, hospitals, teams and surgeons for testing only.","sources":[{"layer":"country","owner":"Sample Emirate Health Authority","title":"FICTIONAL SAMPLE – Country guidance (en)","lang":"en","procedures":[],"text":"[topic=wound_care]\nKeep the dressing dry and do not remove it unless your care team tells you to.\n\n[topic=shower]\nShowering is usually allowed once the waterproof dressing is intact (country baseline).\n\n[topic=blood_thinner_stop approved=false]\nDo not stop or restart a blood thinner on your own. (FICTIONAL draft, not clinician-approved.)"},{"layer":"country","owner":"Sample Emirate Health Authority","title":"FICTIONAL SAMPLE – Country guidance (ms)","lang":"ms","procedures":[],"text":"[topic=shower]\nMandi dibenarkan apabila balutan kalis air masih utuh (garis panduan negara)."},{"layer":"hospital","owner":"Sample General Hospital","title":"FICTIONAL SAMPLE – Hospital discharge guide (en)","lang":"en","procedures":[],"text":"[topic=follow_up]\nYour first follow-up at the surgical clinic is about two weeks after surgery.\n\n[topic=shower]\nHospital guidance: wait 48 hours before showering.\n\n[topic=driving approved=false]\nDriving depends on your surgery and recovery. (FICTIONAL draft, not clinician-approved.)"},{"layer":"hospital","owner":"Sample General Hospital","title":"FICTIONAL SAMPLE – Hospital discharge guide (ms)","lang":"ms","procedures":[],"text":"[topic=follow_up]\nTemujanji susulan di klinik pembedahan ialah kira-kira dua minggu selepas pembedahan."},{"layer":"team","owner":"Sample Ortho Ward Team","title":"FICTIONAL SAMPLE – Ward team notes (en)","lang":"en","procedures":["TKR","THR"],"text":"[topic=wound_care]\nWard team: the nurse will check and change your dressing before discharge."},{"layer":"surgeon","owner":"Dr Sample Surgeon","title":"FICTIONAL SAMPLE – Surgeon note (en)","lang":"en","procedures":[],"text":"[topic=shower]\nSurgeon override (FICTIONAL): you may shower from day 2 if the dressing is dry."}]};
+module.exports = {"notice":"FICTIONAL SAMPLE – not clinical advice. Invented countries, hospitals, teams and surgeons for testing only.","sources":[{"layer":"country","owner":"Sample Emirate Health Authority","title":"FICTIONAL SAMPLE – Country guidance (en)","lang":"en","procedures":[],"text":"[topic=wound_care]\nKeep the dressing dry and do not remove it unless your care team tells you to.\n\n[topic=shower]\nShowering is usually allowed once the waterproof dressing is intact (country baseline).\n\n[topic=blood_thinner_stop approved=false]\nDo not stop or restart a blood thinner on your own. (FICTIONAL draft, not clinician-approved.)"},{"layer":"country","owner":"Sample Emirate Health Authority","title":"FICTIONAL SAMPLE – Country guidance (ms)","lang":"ms","procedures":[],"text":"[topic=shower]\nMandi dibenarkan apabila balutan kalis air masih utuh (garis panduan negara)."},{"layer":"hospital","owner":"Sample General Hospital","title":"FICTIONAL SAMPLE – Hospital discharge guide (en)","lang":"en","procedures":[],"text":"[topic=follow_up]\nYour first follow-up at the surgical clinic is about two weeks after surgery.\n\n[topic=shower]\nHospital guidance: wait 48 hours before showering.\n\n[topic=driving approved=false]\nDriving depends on your surgery and recovery. (FICTIONAL draft, not clinician-approved.)"},{"layer":"hospital","owner":"Sample General Hospital","title":"FICTIONAL SAMPLE – Hospital discharge guide (ms)","lang":"ms","procedures":[],"text":"[topic=follow_up]\nTemujanji susulan di klinik pembedahan ialah kira-kira dua minggu selepas pembedahan."},{"layer":"team","owner":"Sample Ortho Ward Team","title":"FICTIONAL SAMPLE – Ward team notes (en)","lang":"en","procedures":["TKR","THR"],"text":"[topic=wound_care]\nWard team: the nurse will check and change your dressing before discharge."},{"layer":"surgeon","owner":"Dr Sample Surgeon","title":"FICTIONAL SAMPLE – Surgeon note (en)","lang":"en","procedures":[],"text":"[topic=shower]\nSurgeon override (FICTIONAL): you may shower from day 2 if the dressing is dry."},{"layer":"country","owner":"Sample Emirate Health Authority","title":"FICTIONAL SAMPLE – Country guidance (ar)","lang":"ar","procedures":[],"text":"[topic=wound_care]\nأبقِ الضمادة جافة، ولا تُزِلها إلا إذا طلب منك فريق الرعاية ذلك.\n\n[topic=shower]\nعادةً يُسمح بالاستحمام عندما تكون الضمادة الضد للماء سليمة (المعيار الوطني).\n\n[topic=blood_thinner_stop approved=false]\nلا توقف المميّع للدم ولا تعد تناوله من تلقاء نفسك. (FICTIONAL SAMPLE – مسودة وهمية، غير معتمدة سريريا)"},{"layer":"hospital","owner":"Sample General Hospital","title":"FICTIONAL SAMPLE – Hospital discharge guide (ar)","lang":"ar","procedures":[],"text":"[topic=follow_up]\nموعد المراجعة الأولى في عيادة الجراحة يكون بعد نحو أسبوعين من العملية.\n\n[topic=shower]\nتوجيهات المستشفى: انتظر 48 ساعة قبل الاستحمام.\n\n[topic=driving approved=false]\nتعتمد القيادة على نوع عمليتك وعلى مدى تعافيك. (FICTIONAL SAMPLE – مسودة وهمية، غير معتمدة سريريا)"},{"layer":"team","owner":"Sample Ortho Ward Team","title":"FICTIONAL SAMPLE – Ward team notes (ar)","lang":"ar","procedures":["TKR","THR"],"text":"[topic=wound_care]\nفريق الجناح: ستفحص الممرضة الضمادة وتغيّرها قبل خروجك."},{"layer":"surgeon","owner":"Dr Sample Surgeon","title":"FICTIONAL SAMPLE – Surgeon note (ar)","lang":"ar","procedures":[],"text":"[topic=shower]\nتجاوز الجراح (وهمي): يمكنك الاستحمام من اليوم الثاني إذا كانت الضمادة جافة."}]};
 };
 
 defs["histories"] = function (module, exports, require) {
@@ -2691,7 +3237,7 @@ window.PL_HISTORIES = window.__plReq('histories');
 (function(){
 var PL=window.PeriLoop,PC=window.PeriCases,$=function(i){return document.getElementById(i)};
 var s,cur,ids;
-var SAMPLES=[['Calf swollen (EN)','My left calf is swollen and painful since last night.'],['Bengkak (BM)','Kaki kiri saya bengkak dan sakit di betis sejak semalam.'],['伤口红 (ZH)','手术后伤口有点红，还有一点水流出来，需要紧张吗？'],['Breathless','Suddenly short of breath and my chest hurts when I breathe in.'],['Bruising','My knee is bruised down to my ankle. No calf pain, no fever.'],['Shower?','When can I shower? My wound has a waterproof dressing.'],['Blood thinner?','Do I still take my blood thinner tonight?'],['Flying?',"I'm flying to Penang in 3 weeks, is that OK?"],['Vague','Doc, not so good lah since last night.']];
+var SAMPLES=[['Calf swollen (EN)','My left calf is swollen and painful since last night.'],['Bengkak (BM)','Kaki kiri saya bengkak dan sakit di betis sejak semalam.'],['伤口红 (ZH)','手术后伤口有点红，还有一点水流出来，需要紧张吗？'],['Breathless','Suddenly short of breath and my chest hurts when I breathe in.'],['Bruising','My knee is bruised down to my ankle. No calf pain, no fever.'],['Shower?','When can I shower? My wound has a waterproof dressing.'],['Blood thinner?','Do I still take my blood thinner tonight?'],['Flying?',"I'm flying to Penang in 3 weeks, is that OK?"],['Vague','Doc, not so good lah since last night.'],['ساق متورمة (AR)','ساقي اليسرى متورمة ومؤلمة منذ الليلة.'],['ضيق في التنفس (AR)','فجأة أشعر بضيق في التنفس وألم في صدري عند الشهيق.'],['الاستحمام؟ (AR)','متى أستطيع الاستحمام؟ الضمادة مقاومة للماء.']];
 
 function wilson(k,n){if(!n)return[0,0];var z=1.96,p=k/n,d=1+z*z/n,c=p+z*z/(2*n),a=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n));return[Math.max(0,(c-a)/d),Math.min(1,(c+a)/d)]}
 var STG=[['Screening','Results and holds'],['Pre-op prep','Briefing, plan, pre-auth'],['Surgery','Day 0'],['Early recovery','Days 1-6: injections, wound, red flags'],['Recovery','Days 7-14: physio, review'],['Follow-up','Visit booked and attended']];
@@ -2788,8 +3334,9 @@ function render(){
  var w=$('who');w.innerHTML='';Object.keys(s.patients).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=s.patients[k].name+' · '+(PL.PACKS[s.patients[k].procedure]||{label:'no procedure'}).label;if(k===cur)o.selected=true;w.appendChild(o)});
  var c=$('chat');c.innerHTML='';var msgs=(s.chatlog||[]).filter(function(m){return m.pid===cur});
  s.outbox.filter(function(m){return m.pid===cur}).forEach(function(m){msgs.push(m)});msgs.sort(function(a,b){return a.t-b.t||0});
- (s.chatAll||[]).filter(function(m){return m.pid===cur}).forEach(function(m){var d=document.createElement('div');d.className='b '+(m.who==='me'?'me':'bot');d.textContent=m.text;c.appendChild(d)});
+ (s.chatAll||[]).filter(function(m){return m.pid===cur}).forEach(function(m){var d=document.createElement('div');d.className='b '+(m.who==='me'?'me':'bot');d.dir='auto';d.textContent=m.text;c.appendChild(d)});
  c.scrollTop=c.scrollHeight;
+window.__plPhoneAr=/[\u0600-\u06FF]/.test(c.textContent);if(window.__plRefreshSc)window.__plRefreshSc();
  var pl=$('plan');pl.innerHTML='';s.tasksOf(cur).filter(function(t){return t.auto||true}).forEach(function(t){var d=document.createElement('div');d.className='task';var due=Math.round((t.dueAt-s.P(cur).surgeryAt)/24);d.innerHTML='<div><b>'+esc(t.title)+'</b>'+(t.claimNote?'<div class="in-words">'+esc(t.claimNote)+'</div>':'')+'<div class="mut">Owner: '+esc(t.owner.replace(/_/g,' '))+' · due '+(due>0?'post-op day '+due:'day '+due)+'</div></div><div style="text-align:right"><span class="tag '+t.state+'">'+t.state.replace(/_/g,' ')+'</span>'+((t.state==='open'||t.state==='overdue')?'<div><button data-claim="'+t.id+'" data-who="patient">I have done this (staff will verify)</button></div>':'')+'</div>';pl.appendChild(d)});
  var al=$('alerts');al.innerHTML=s.alerts.length?'':'<div class="mut">No alerts. Send a message from the Patient phone tab.</div>';
  s.alerts.slice().reverse().forEach(function(a){var d=document.createElement('div');d.className='alert '+a.cls+(unresp(a)?' unresp':'');var steps=(a.escalations||[]).map(function(e){return (NEXT_LBL[e.to]||e.to)+' at h'+e.at}).join(', ');d.innerHTML='<span class="tag">'+a.cls+'</span>'+(unresp(a)?' <span class="tag" style="background:var(--em);color:var(--bg)"><b>UNRESPONDED EMERGENCY</b></span>':'')+' <b>'+esc(s.P(a.pid).name.replace(' (fictional)',''))+'</b> · '+esc(a.topic)+'<div>'+esc(a.flags.join(', '))+'</div><div class="mut">“'+esc(a.msgs[a.msgs.length-1])+'”</div><div class="mut">Pings '+a.pings+'/'+s.cfg.rePingCap+(a.nobodyResponded?' · <b>nobody responded, on-call fallback</b>':'')+(steps?' · next level paged: '+esc(steps):'')+(a.ackedBy?' · acknowledged by '+esc(a.ackedBy):'')+'</div>'+(a.state==='open'?'<button data-ack="'+a.id+'">Acknowledge</button>':'');al.appendChild(d)});
@@ -2899,6 +3446,99 @@ var UI={
   blocked:'模型回复已被安全过滤器拦截'}
 };
 function ui(l){return UI[l]||UI.en}
+/* ---------- Arabic (ar) interface: machine-draft wording, not clinician-reviewed. Gulf-friendly simple MSA. ---------- */
+YESNO.ar=[['yes','نعم'],['no','لا']];
+UNK_LBL.ar='لا أعرف / غير متأكد';
+HINT.choice.ar='اختر خيارا، أو اكتب.';HINT.number.ar='اكتب رقما، أو "لا أعرف".';HINT.text.ar='اكتب إجابتك.';
+DRAFT.ar=' (مسودة آلية، تحتاج مراجعة)';
+GREET.ar='سأطرح عليك بعض الأسئلة قبل عمليتك. خذ وقتك. يمكنك الكتابة أو اختيار أحد الخيارات.';
+ROUTEPASS.ar='لقد أحلت سؤالك إلى فريق الرعاية الخاص بك.';
+REPROMPT.ar='لم أفهم ذلك. يرجى الإجابة بالطريقة التي يطلبها السؤال.';
+DONE.ar='شكرا لك. سيراجع فريق العيادة إجاباتك. هذا ليس تشخيصا.';
+ASKHEAD.urgent.ar='عاجل: اتبع هذا الآن';ASKHEAD.passed.ar='أُحيل إلى فريق الرعاية';ASKHEAD.not.ar='لم يُحَل بعد';
+var OTUI_AR={proc:'الإجراء',ot:'موعد العملية (OT)'};
+var ALERTED_AR=/[^.؟!\n]*(?:فريق|طاقم)[^.؟!\n]*(?:إخطار|اخطار|إبلاغ|ابلاغ|تنبيه|أبلغ|أُبلغ)[^.؟!\n]*[.؟!]?/;
+var NO_ALERT_AR='يرجى الاتصال بالعيادة أو التوجه إلى قسم الطوارئ الآن.';
+var FALLBACK_RED_AR='تم اكتشاف مؤشر خطر. يجب أن يراجعه الطبيب الآن.';
+var SAME_DAY_AR='يرجى الاتصال بالعيادة اليوم، أو التوجه إلى قسم الطوارئ إذا ساءت حالتك.';
+var ASK_CHIPS_AR=['متى أستطيع الاستحمام؟','متى موعد المراجعة؟','هل أستمر في تناول المميّع الليلة؟','هل أستطيع السفر بالطائرة بعد 3 أسابيع؟'];
+var PROC_AR={TKR:'تبديل مفصل الركبة',THR:'تبديل مفصل الورك',ACL:'إصلاح الرباط الصليبي الأمامي',LUMBAR:'جراحة أسفل الظهر',SHOULDER:'جراحة الكتف',FOOTANKLE:'جراحة القدم والكاحل'};
+var LEVEL_AR={EMERGENCY:'طارئ','SAME-DAY':'في نفس اليوم'};
+var UNSCREENED_AR='لم تُفحص هذه الرسالة بالفحص الثاني.';
+var PASS_AR={created:'تم إنشاء مهمة للفريق على لوحة الطاقم.',bucket:' ضمن "لم يُحدد مريض". لم يُختر مريض، لذا عيّنها على اللوحة.',dup:'المهمة موجودة بالفعل على لوحة الطاقم: السؤال نفسه. لم تُكرر.'};
+var CTX_AR={country:'الدولة',hospital:'المستشفى',team:'الفريق',surgeon:'الجراح',procedure:'الإجراء',none:'لا يوجد',any:'أي'};
+UI.ar={
+ banner:{RED:'عاجل: يلزم أولا مراجعة سريرية عاجلة من الطبيب. لا تعتبر هذا الملخص مكتملا. هذا ليس إذناً بالسلامة.',AMBER:'يحتاج مراجعة: يلزم أن يراجعه الطبيب قبل العملية. هذا ليس إذناً بالسلامة.',INCOMPLETE:'ناقص: إجابات كثيرة ناقصة. هذا ليس إذناً بالسلامة.',NONE:'لا تنبيهات من القواعد الثابتة: لم تجد القواعد الثابتة أي محفزات. هذا ليس إذناً بالسلامة.'},
+ titles:{},redLine:'مؤشر خطر أثناء الاستقبال',typed:'المكتوب',
+ todoMeta:{owner:'المسؤول',due:'الموعد',now:'الآن',within:'خلال',hours:'ساعة',before:'يوم قبل العملية',surgeryDay:'يوم العملية',decide:'يقرره الطبيب',reason:'السبب'},
+ label:'بلاغ من المريض، يتحقق منه الطبيب السريري',nothing:'لم يُبلَّغ عن شيء.',gaps:'نقاط تحتاج إلى توضيح',todo:'قائمة المهام',showSrc:'إظهار المصادر',hideSrc:'إخفاء المصادر',
+ stopped:'توقفت المقابلة بعد مؤشر خطر، ولن تُطرح الأسئلة المتبقية. هذا الملخص غير مكتمل.',
+ paused:'توقفت المقابلة مؤقتا بعد مؤشر خطر. استخدم "تنبيه الطاقم الآن" أو "المتابعة رغم ذلك".',
+ blocked:'حجبت فلاتر السلامة رد النموذج',
+ draftNote:'النص العربي في هذا الملخص مسودة آلية لم تُراجع. يجب أن يراجعه طبيب ناطق بالعربية، ويفضل من دول الخليج، قبل الاستخدام.',
+ btnAlert:'تنبيه الطاقم الآن',btnContinue:'المتابعة رغم ذلك',btnStaff:'فتح لوحة الطاقم',
+ redTitle:'مؤشر خطر',flagsLbl:'المؤشرات',detected:'اكتُشف بالقواعد الثابتة، وليس بنموذج.',
+ redCreated:'تم إنشاء مهمة عاجلة على لوحة الطاقم، مستحقة الآن.',redExists:'المهمة العاجلة موجودة بالفعل على لوحة الطاقم، ولم تُكرر.',redFail:'تعذر إنشاء المهمة العاجلة. اتصل بالعيادة الآن.',
+ resumed:'تم استئناف المقابلة. يبقى مؤشر الخطر مسجلا.',
+ alertCreated:'مهمة عاجلة على لوحة الطاقم، مستحقة الآن.',alertExists:'مهمة عاجلة موجودة بالفعل على لوحة الطاقم، ولم تُكرر.'
+};
+// Static Intake labels (exact English text in the page, matched after trimming). Settings and the summary body stay as they are.
+var CHROME_AR={
+ 'Pre-operative intake':'الاستقبال قبل العملية','(fictional patients only)':'(مرضى وهميون فقط)',
+ 'Questions come one at a time. They ask; they never advise.':'تُطرح الأسئلة واحدا تلو الآخر. تسأل فقط، ولا تقدم نصيحة.',
+ 'Answer in your own words or tap a choice. Every typed answer goes through the fixed red-flag rules first.':'أجب بكلماتك أو اختر خيارا. تمر كل إجابة مكتوبة أولا على قواعد مؤشرات الخطر الثابتة.',
+ 'A red flag stops the interview. Staff are alerted, and the summary turns red.':'يوقف مؤشر الخطر المقابلة. ينبَّه الطاقم، ويتحول الملخص إلى الأحمر.',
+ 'Fictional patient':'مريض وهمي','Procedure':'الإجراء','Language':'اللغة','Operation (OT) date':'تاريخ العملية (OT)',
+ 'Start interview':'ابدأ المقابلة','Load a sample patient':'تحميل مريض تجريبي','Send':'إرسال','Ask':'اسأل','Use voice':'استخدم الصوت',
+ 'Ask about your surgery':'اسأل عن عمليتك',
+ 'Answers come only from the sample sources, using the most specific layer that applies. Clinical questions with no approved source are passed to your care team.':'تأتي الإجابات من المصادر التجريبية فقط، وتُستخدم أدق طبقة تنطبق. الأسئلة السريرية التي لا يوجد لها مصدر معتمد تُحال إلى فريق الرعاية.',
+ 'Country':'الدولة','Hospital':'المستشفى','Team':'الفريق','Surgeon':'الجراح','Answer language':'لغة الإجابة',
+ 'Set the surgeon to None to see the hospital answer instead.':'اختر "لا شيء" للجراح لرؤية إجابة المستشفى بدلا من ذلك.',
+ 'Doctor summary':'ملخص الطبيب','None':'لا يوجد','Any':'أي'
+};
+var PH_AR={'Type an answer in English, Bahasa Malaysia or Chinese':'اكتب إجابتك','For example: When can I shower?':'مثال: متى أستطيع الاستحمام؟'};
+// Translates the static Intake labels inside one card. Dynamic areas (chat, summary body, answers, red box, chips, settings) are skipped.
+function translateRoot(root,lang){
+ if(!root)return;
+ var ar=lang==='ar',w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],n;
+ while((n=w.nextNode()))nodes.push(n);
+ nodes.forEach(function(t){
+  var p=t.parentNode;
+  if(!p||(p.closest&&p.closest('#iv-sum,#iv-chat,#iv-ans,#iv-red,#iv-chips,#iv-qchips,.iv-set')))return;
+  var raw=t.__en!==undefined?t.__en:t.nodeValue,key=raw.trim();
+  if(ar&&CHROME_AR[key]){if(t.__en===undefined)t.__en=raw;t.nodeValue=raw.replace(key,CHROME_AR[key])}
+  else if(t.__en!==undefined){t.nodeValue=t.__en;t.__en=undefined}
+ });
+ root.querySelectorAll('input[placeholder]').forEach(function(el){
+  if(el.closest('.iv-set,#iv-sum,#iv-chat'))return;
+  if(el.dataset.phEn===undefined)el.dataset.phEn=el.getAttribute('placeholder');
+  el.setAttribute('placeholder',ar&&PH_AR[el.dataset.phEn]?PH_AR[el.dataset.phEn]:el.dataset.phEn);
+ });
+}
+function setDir(el,lang){if(!el)return;if(lang==='ar')el.setAttribute('dir','rtl');else el.removeAttribute('dir')}
+// Direction and static labels for the three Intake cards. Each card follows its own language selector.
+function applyLangs(){
+ var li=$('iv-lang')?$('iv-lang').value:'en',lc=$('iv-c-lang')?$('iv-c-lang').value:'en';
+ var iv=document.querySelector('.iv-int'),ask=document.querySelector('.iv-ask'),sum=document.querySelector('.iv-sum');
+ setDir(iv,li);setDir(ask,lc);setDir(sum,sumLang);
+ translateRoot(iv,li);translateRoot(ask,lc);translateRoot(sum,sumLang);
+}
+function ctxNames(ctx,lang){
+ var ar=lang==='ar';
+ return ['country','hospital','team','surgeon'].map(function(k){return (ar?CTX_AR[k]:k)+': '+(ctx[k]||(ar?CTX_AR.none:'none'))}).join(' · ')+' · '+(ar?CTX_AR.procedure:'procedure')+': '+(ctx.procedure||(ar?CTX_AR.any:'any'));
+}
+function arText(text,lang,fallback){return lang==='ar'&&!/[؀-ۿ]/.test(String(text||''))?fallback:text}
+function passMsg(res,lang){
+ if(!res)return '';
+ if(lang!=='ar'||!res.kind||res.kind==='none')return res.msg;
+ if(res.kind==='dup')return PASS_AR.dup;
+ return PASS_AR.created+(res.bucket?PASS_AR.bucket:'');
+}
+function renderAskChips(lang){
+ var list=lang==='ar'?ASK_CHIPS_AR:ASK_CHIPS;
+ $('iv-qchips').innerHTML=list.map(function(q){return '<button type="button" data-in-q="'+esc(q)+'">'+esc(q)+'</button>'}).join('');
+}
+
 var SUM_PLACEHOLDER='<span class="mut">The summary appears here when the interview finishes or a sample loads. Example outline:</span><ol class="in-ph"><li>Banner: RED, AMBER, INCOMPLETE or NONE</li><li>Reasons for the banner</li><li>Medicines, allergies, history, home</li><li>Gaps to clarify</li><li>To-do list with owner and due date</li></ol>';
 // review1 item 14: the engine's fixed reply says "Our team has been alerted". Keep that sentence only when an alert task really exists.
 var ALERTED={en:/Our team has been alerted[^.]*\./,ms:/Pasukan kami telah dimaklumkan[^.]*\./,zh:/我们的团队已收到通知[^。]*。/};
@@ -2912,8 +3552,8 @@ function honestReply(text,alertExists){
 var st=null,shownRed=null,curPid=null,curName='',curShort='',curProc='',curTodos=[],ivN=0,busy=false,store=null,settings={mode:'scripted',proxy:''};
 var halted=false,redTyped=null,showSrc=false,sumLang='en',autoDone=false;
 
-function addMsg(who,text,cls){var c=$('iv-chat');var d=document.createElement('div');d.className='b '+(who==='me'?'me':'bot')+(cls?' '+cls:'');d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
-function addNote(text){var c=$('iv-chat');var d=document.createElement('div');d.className='in-sysnote';d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function addMsg(who,text,cls){var c=$('iv-chat');var d=document.createElement('div');d.className='b '+(who==='me'?'me':'bot')+(cls?' '+cls:'');d.dir='auto';d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function addNote(text){var c=$('iv-chat');var d=document.createElement('div');d.className='in-sysnote';d.dir='auto';d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
 function sim(){return window.PeriHooks?window.PeriHooks.sim():null}
 function ensurePatient(pid,name,short,proc){var S=sim();if(!S)return null;
  if(!IN||!IN.OT){if(!S.P(pid))S.addPatient({id:pid,name:name,short:short,procedure:proc,surgeryIn:14});return S}
@@ -2985,7 +3625,7 @@ function start(){
  $('iv-chat').innerHTML='';$('iv-red').innerHTML='';$('iv-hint').textContent='';
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
  setHeader(curName);
- curFromSample=false;addMsg('bot',GREET[lang]);renderPrompt();refreshOT();
+ curFromSample=false;addMsg('bot',GREET[lang]);renderPrompt();refreshOT();applyLangs();
 }
 function renderPrompt(){
  var chips=$('iv-chips');chips.innerHTML='';
@@ -3004,21 +3644,34 @@ function renderPrompt(){
 // review1 item 9: one red box for the interview and for a loaded sample. The urgent task is created once (intake.toTasks is idempotent).
 function redBox(red,lang,opt){
  opt=targetFor(opt); // round 5: no patient selected goes to the Unassigned bucket
+ var ar=lang==='ar',U=ui(lang);
  var S=ensurePatient(opt.pid,opt.name,opt.short,opt.proc);
  if(S&&!S.alerts.some(function(a){return a.pid===opt.pid&&a.state==='open'&&a.cls===red.level}))S.alert(opt.pid,red.level,red.flags.slice(),'Intake red flag: '+red.flags.join('; '));
  var spec=IN.redTodo(red);
  var made=S?IN.toTasks(S,opt.pid,[spec]):[];
  var exists=hasTask(S,opt.pid,spec.key);
- var status=made.length?'Urgent task created on the Staff board, due now.':exists?'Urgent task is already on the Staff board, due now. Not duplicated.':'The urgent task could not be created. Call the clinic now.';
- var reply=honestReply(red.reply||FALLBACK_RED,exists);
+ var status=made.length?(ar?U.redCreated:'Urgent task created on the Staff board, due now.')
+  :exists?(ar?U.redExists:'Urgent task is already on the Staff board, due now. Not duplicated.')
+  :(ar?U.redFail:'The urgent task could not be created. Call the clinic now.');
+ var reply=honestReply(red.reply||(ar?FALLBACK_RED_AR:FALLBACK_RED),exists,lang);
  var buttons=opt.interview
-  ?'<button class="p" type="button" data-in-act="alert">Alert staff now</button><button type="button" data-in-act="continue">Continue interview anyway</button>'
-  :'<button class="p" type="button" data-in-act="staff">Open staff board</button>';
- $('iv-red').innerHTML='<div class="in-red"><b>Red flag: '+esc(red.level)+'</b><div class="in-words" style="margin-top:4px">'+esc(reply)+'</div><div class="in-note">Flags: '+esc(red.flags.join('; '))+'. Caught by fixed rules, not by a model.</div>'+
+  ?'<button class="p" type="button" data-in-act="alert">'+(ar?U.btnAlert:'Alert staff now')+'</button><button type="button" data-in-act="continue">'+(ar?U.btnContinue:'Continue interview anyway')+'</button>'
+  :'<button class="p" type="button" data-in-act="staff">'+(ar?U.btnStaff:'Open staff board')+'</button>';
+ var head=ar?U.redTitle+': '+LEVEL_AR[red.level]:'Red flag: '+red.level;
+ var flagsTxt=ar?(IN.redLabel?red.flags.map(function(f){return IN.redLabel(f,'ar')}).join('؛ '):red.flags.join('؛ ')):red.flags.join('; ');
+ var note=ar?U.flagsLbl+': '+flagsTxt+'. '+U.detected:'Flags: '+flagsTxt+'. Caught by fixed rules, not by a model.';
+ $('iv-red').innerHTML='<div class="in-red"><b>'+esc(head)+'</b><div class="in-words" style="margin-top:4px">'+esc(reply)+'</div><div class="in-note">'+esc(note)+'</div>'+
   '<div class="in-chips" style="margin-top:8px">'+buttons+'</div><div class="in-alert-note" id="iv-alert-state">'+esc(status)+'</div></div>';
  if(window.PeriHooks)window.PeriHooks.render();
  return reply;
 }
+// Arabic reply: a fixed Arabic fallback when the engine text has no Arabic, and the same alert-claim rule.
+function honestReplyAr(text,alertExists){
+ var out=String(text==null?'':text);
+ if(!/[؀-ۿ]/.test(out))out=FALLBACK_RED_AR;
+ return alertExists?out:out.replace(ALERTED_AR,NO_ALERT_AR);
+}
+function replyFor(text,alertExists,lang){return lang==='ar'?honestReplyAr(text,alertExists):honestReply(text,alertExists)}
 function noteRed(){
  if(!st||!st.red)return;
  var key=st.red.level+'|'+st.red.flags.join(',');if(key===shownRed)return;shownRed=key;
@@ -3031,21 +3684,23 @@ function alertStaff(){
  var T=targetFor(st.pid?{pid:st.pid,name:curName,short:curShort,proc:st.procedure}:null); // round 5
  var S=ensurePatient(T.pid,T.name,T.short,T.proc);
  var made=S?IN.toTasks(S,T.pid,[IN.redTodo(st.red)]):[];
- var el=$('iv-alert-state');if(el)el.textContent=made.length?'Urgent task created on the Staff board, due now.':'Already on the Staff board: urgent, due now. Not duplicated.';
+ var el=$('iv-alert-state');if(el)el.textContent=st.lang==='ar'?(made.length?ui('ar').alertCreated:ui('ar').alertExists):(made.length?'Urgent task created on the Staff board, due now.':'Already on the Staff board: urgent, due now. Not duplicated.');
  if(window.PeriHooks)window.PeriHooks.render();
 }
 function continueInterview(){
  if(!st)return;
  halted=false;$('iv-in').disabled=false;
- $('iv-hint').textContent='Interview resumed. The red flag stays on record.';
+ $('iv-hint').textContent=st.lang==='ar'?ui('ar').resumed:'Interview resumed. The red flag stays on record.';
  if(st.done)afterAnswer();else renderPrompt();
 }
 // Summary forced to RED with the typed text, used while the interview is halted or after a red flag was continued.
 function redify(sum){
  if(!st||!st.red)return sum;
  sum.banner.level='RED';
- var U=ui(st.lang);
- sum.banner.reasons=[U.redLine+' ('+st.red.level+'): '+st.red.flags.join('; ')+(redTyped?'. '+U.typed+': "'+redTyped+'"':'')].concat(sum.banner.reasons);
+ var U=ui(st.lang),ar=st.lang==='ar';
+ var flags=ar?st.red.flags.map(function(f){return IN.redLabel(f,'ar')}).join('؛ '):st.red.flags.join('; ');
+ var lvl=ar?LEVEL_AR[st.red.level]:st.red.level;
+ sum.banner.reasons=[U.redLine+' ('+lvl+'): '+flags+(redTyped?'. '+U.typed+': "'+redTyped+'"':'')].concat(sum.banner.reasons);
  return sum;
 }
 function showHalted(){
@@ -3086,7 +3741,7 @@ function answerWith(raw,label){
    if(sec){
     var finI=SC.combine(rulesI,sec,{lang:st.lang});
     // second check raised the message: fixed same-day text and a staff task; the FAQ answer is withheld, no model reply is shown
-    if(finI.escalated){addMsg('bot',finI.reply);var pqI=passToStaff(text,true,false);addNote(pqI.msg);done();return}
+    if(finI.escalated){addMsg('bot',arText(finI.reply,st.lang,SAME_DAY_AR));var pqI=passToStaff(text,true,false);addNote(passMsg(pqI,st.lang));done();return}
     if(finI.staffTag)tagUnscreened(text);
    }
    return AD.askSafely(getAdapter(),text,ENG.classify,{lang:st.lang,ctx:{procedure:st.procedure},step:nxt?nxt.text:undefined}).then(function(out){
@@ -3096,8 +3751,8 @@ function answerWith(raw,label){
    else if(out&&out.mode==='engine'&&out.text){
     addMsg('bot',out.text+(out.cls==='ROUTE'?' '+ROUTEPASS[st.lang]:''));
     // round 5: the care team task is created now, not only when someone presses Send. EMERGENCY already has its red-flag task.
-    if(out.cls==='ROUTE'){var pr1=passToStaff(text,false,true);addNote(pr1.msg)}
-    else if(out.cls==='SAME-DAY'){var pr2=passToStaff(text,true,false);addNote(pr2.msg)}
+    if(out.cls==='ROUTE'){var pr1=passToStaff(text,false,true);addNote(passMsg(pr1,st.lang))}
+    else if(out.cls==='SAME-DAY'){var pr2=passToStaff(text,true,false);addNote(passMsg(pr2,st.lang))}
    }
    done();
    });
@@ -3109,13 +3764,18 @@ function answerWith(raw,label){
 // A sample patient: summary on the right. A red flag in the sample shows the same red box as the interview, with the same urgent task.
 function loadSample(){
  if(!IN){$('iv-hint').textContent=MISSING;return}
- var idx=+$('iv-samp').value,h=HIS[idx];if(!h)return;
+ var v=String($('iv-samp').value),h=null;
+ // Arabic samples are run through the interview itself ('ar:<n>'); the others are the stored histories.
+ if(v.indexOf('ar:')===0){h=IV&&IV.arSample?IV.arSample(+v.slice(3)):null}else{h=HIS[+v]||null}
+ if(!h)return;
+ var ar=h.lang==='ar';
  st=null;shownRed=null;halted=false;redTyped=null;$('iv-in').disabled=false;
  $('iv-chat').innerHTML='';$('iv-chips').innerHTML='';$('iv-red').innerHTML='';
- addMsg('bot','Sample loaded: '+h.case+' ('+h.procedure+', fictional). Its answers are summarised on the right.');
- curFromSample=true;curPid=h.pid;curProc=h.procedure;curName='Sample '+h.pid+' (fictional)';curShort='S'+(idx+1);
+ addMsg('bot',ar?'تم تحميل العينة: '+(h.caseAr||h.case)+' (الإجراء: '+(PROC_AR[h.procedure]||h.procedure)+'، وهمي). تظهر إجاباتها في الملخص.'
+  :'Sample loaded: '+h.case+' ('+h.procedure+', fictional). Its answers are summarised on the right.');
+ curFromSample=true;curPid=h.pid;curProc=h.procedure;curName='Sample '+h.pid+' (fictional)';curShort='S'+(String(v).indexOf('ar:')===0?+v.slice(3)+1:(+v+1));
  setHeader(curName);
- var ans={pid:h.pid,procedure:h.procedure,lang:h.lang,answers:h.answers,freeText:h.freeText||[]};
+ var ans=h.sample?h:{pid:h.pid,procedure:h.procedure,lang:h.lang,answers:h.answers,freeText:h.freeText||[]};
  curTodos=IN.todos(ans);
  var red=IN.redOf(ans);
  if(red)redBox(red,h.lang,{pid:h.pid,name:curName,short:curShort,proc:h.procedure,interview:false});
@@ -3125,38 +3785,50 @@ function loadSample(){
 
 /* ---------- summary ---------- */
 // Wraps raw field ids such as [meds_text] or (blood_thinner) in a span that is hidden unless "Show sources" is on.
-function srcHtml(text){
- var e=esc(text);
- e=e.replace(/ \[([^\]]+)\]/g,function(m,a){return ' <span class="srcx">['+a+']</span>'});
- e=e.replace(/ \(([a-z][a-z_0-9.]*(?:, ?[a-z][a-z_0-9.]*)*)\)/g,function(m,a){return ' <span class="srcx">('+a+')</span>'});
- return e;
+function srcHtml(text,lang){
+ var s=String(text==null?'':text),ar=lang==='ar';
+ // Source tags such as [meds_text] or (blood_thinner) are hidden unless "Show sources" is on. Arabic keeps them LTR.
+ var parts=s.split(/( \[[^\]]+\]| \([a-z][a-z_0-9.]*(?:, ?[a-z][a-z_0-9.]*)*\))/);
+ return parts.map(function(p,i){
+  if(i%2===1){var inner=p.slice(0,1)===' '?p.slice(1):p;return ' <span class="srcx">'+esc(inner)+'</span>'}
+  if(!ar)return esc(p);
+  // Latin and digit runs are cut out before escaping (so HTML entities are never split), then wrapped as LTR isolates.
+  var runs=[];
+  var marked=p.replace(/[A-Za-z0-9][A-Za-z0-9._%\/:+\-]*(?: [A-Za-z0-9._%\/:+\-]+)*/g,function(m){runs.push(m);return '\u0001'+(runs.length-1)+'\u0002'});
+  return esc(marked).replace(/\u0001(\d+)\u0002/g,function(_,k){return '<bdi dir="ltr">'+esc(runs[+k])+'</bdi>'});
+ }).join('');
 }
 function renderSummary(sum,todos,lang,opt){
- opt=opt||{};sumLang=lang;var U=ui(lang);lastSum=[sum,todos,lang,opt];
- var OU=OTUI[lang]||OTUI.en,S0=sim(),otYmd=(S0&&IN&&IN.OT)?otCurrent(S0):null,pk=ENG&&ENG.PACKS?ENG.PACKS[sum.procedure]:null;
+ opt=opt||{};sumLang=lang;var U=ui(lang),ar=lang==='ar',LI=ar?'rtl':'auto';lastSum=[sum,todos,lang,opt];
+ var OU=ar?OTUI_AR:(OTUI[lang]||OTUI.en),S0=sim(),otYmd=(S0&&IN&&IN.OT)?otCurrent(S0):null,pk=ENG&&ENG.PACKS?ENG.PACKS[sum.procedure]:null;
  var tl=function(t){return U.titles[t]||t};
  var lvl=sum.banner.level;
+ var procLbl=ar?(PROC_AR[sum.procedure]||(pk?pk.label:'')):(pk?pk.label:(sum.procedure||''));
  var h='<div class="sumwrap'+(showSrc?' show-src':'')+'">';
  if(opt.note)h+='<div class="in-alert-note">'+esc(opt.note)+'</div>';
- if(otYmd){var ok=IN.OT.daysFromNow(S0,otYmd);h+='<div class="in-sec"><b>'+esc(OU.proc)+':</b> '+esc(pk?pk.label:(sum.procedure||''))+' · <b>'+esc(OU.ot)+':</b> '+esc(IN.OT.fmtCal(otYmd,lang)+' ('+IN.OT.whenText(ok,lang)+')')+'</div>'}
+ if(otYmd){var ok=IN.OT.daysFromNow(S0,otYmd);h+='<div class="in-sec"><b>'+esc(OU.proc)+':</b> '+esc(procLbl)+' · <b>'+esc(OU.ot)+':</b> '+esc(IN.OT.fmtCal(otYmd,lang)+' ('+IN.OT.whenText(ok,lang)+')')+'</div>'}
  h+='<div class="row" style="justify-content:flex-end"><button type="button" data-in-act="src" aria-pressed="'+(showSrc?'true':'false')+'">'+esc(showSrc?U.hideSrc:U.showSrc)+'</button></div>';
  h+='<div class="in-banner '+esc(lvl)+'">'+esc(U.banner[lvl])+'</div>';
- if(sum.banner.reasons.length)h+='<ul class="in-words in-note" style="padding-left:18px;color:var(--ink)">'+sum.banner.reasons.map(function(r){return '<li>'+srcHtml(r)+'</li>'}).join('')+'</ul>';
- h+='<div class="in-note"><b>'+esc(U.label)+'</b></div>';
- sum.sections.forEach(function(sec){h+='<div class="in-sec"><h3>'+esc(tl(sec.title))+'</h3>'+(sec.lines.length?'<ul class="in-words">'+sec.lines.map(function(l){return '<li>'+srcHtml(l)+'</li>'}).join('')+'</ul>':'<div class="in-note">'+esc(U.nothing)+'</div>')+'</div>'});
- if(sum.gaps.length)h+='<div class="in-sec"><h3>'+esc(U.gaps)+' ('+sum.gaps.length+')</h3><ul class="in-words">'+sum.gaps.map(function(g){return '<li>'+srcHtml(g)+'</li>'}).join('')+'</ul></div>';
- h+='<div class="in-note" style="margin-top:6px">Malay and Chinese text in this summary is a machine draft. A native-speaking clinician must review it before use.</div>';
+ if(sum.banner.reasons.length)h+='<ul class="in-words in-note in-li" style="color:var(--ink)">'+sum.banner.reasons.map(function(r){return '<li dir="'+LI+'">'+srcHtml(r,lang)+'</li>'}).join('')+'</ul>';
+ h+='<div class="in-note"><b>'+esc(ar?sum.label:U.label)+'</b></div>';
+ sum.sections.forEach(function(sec){h+='<div class="in-sec"><h3>'+esc(tl(sec.title))+'</h3>'+(sec.lines.length?'<ul class="in-words in-li">'+sec.lines.map(function(l){return '<li dir="'+LI+'">'+srcHtml(l,lang)+'</li>'}).join('')+'</ul>':'<div class="in-note">'+esc(U.nothing)+'</div>')+'</div>'});
+ if(sum.gaps.length)h+='<div class="in-sec"><h3>'+esc(U.gaps)+' ('+sum.gaps.length+')</h3><ul class="in-words in-li">'+sum.gaps.map(function(g){return '<li dir="'+LI+'">'+srcHtml(g,lang)+'</li>'}).join('')+'</ul></div>';
+ h+='<div class="in-note" style="margin-top:6px">'+esc(ar?U.draftNote:'Malay and Chinese text in this summary is a machine draft. A native-speaking clinician must review it before use.')+'</div>';
  h+='<h2 style="margin:12px 0 4px">'+esc(U.todo)+'</h2>';
- if(!todos.length)h+='<div class="in-note">No to-dos generated from these answers.</div>';
+ if(!todos.length)h+='<div class="in-note">'+esc(ar?'لم تُنشأ مهام من هذه الإجابات.':'No to-dos generated from these answers.')+'</div>';
  todos.forEach(function(t){
   var M=U.todoMeta;
   var due=t.urgent?M.now:(t.dueHours?(lang==='zh'?M.within+t.dueHours+M.hours:M.within+' '+t.dueHours+' '+M.hours):(t.dueDays<0?(-t.dueDays)+' '+M.before:M.surgeryDay));
+  if(ar&&!t.urgent&&!t.dueHours&&t.dueDays<0)due=(-t.dueDays)+' '+M.before;
   if(otYmd&&typeof t.dueDays==='number'&&typeof t.dueHours!=='number'&&!t.urgent)due=IN.OT.fmtCal(IN.OT.addDays(otYmd,t.dueDays),lang)+', '+IN.OT.relOT(t.dueDays,lang);
-  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(t.owner.replace(/_/g,' '))+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx"> · '+esc(M.reason)+': '+esc(t.reason)+'</span></div></div>';
+  var owner=ar?(IN.OWNER_AR[t.owner]||t.owner):t.owner.replace(/_/g,' ');
+  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(owner)+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx"> · '+esc(M.reason)+': '+esc(t.reason)+'</span></div></div>';
  });
- h+='<div class="row" style="margin-top:8px;flex-wrap:wrap;align-items:center"><button class="p" type="button" data-in-act="send">Send to staff board</button><span class="in-note" id="iv-sent"></span></div>';
+ h+='<div class="row" style="margin-top:8px;flex-wrap:wrap;align-items:center"><button class="p" type="button" data-in-act="send">'+esc(ar?'إرسال إلى لوحة الطاقم':'Send to staff board')+'</button><span class="in-note" id="iv-sent"></span></div>';
  h+='</div>';
  $('iv-sum').innerHTML=h;
+ setDir($('iv-sum').closest('.iv-sum'),lang);
+ translateRoot($('iv-sum').closest('.iv-sum'),lang);
 }
 function sendTodos(){
  if(!IN){$('iv-sent').textContent=MISSING;return}
@@ -3183,16 +3855,16 @@ function tagUnscreened(text){
 }
 function passToStaff(q,urgent,clinical){
  var text=String(q).trim();
- if(!IN)return {ok:false,msg:MISSING};
+ if(!IN)return {ok:false,msg:MISSING,kind:'none'};
  // round 5: with no patient selected the question is still a Staff board task, under the Unassigned bucket (never silently nothing)
  var T=targetFor(curPid?{pid:curPid,name:curName,short:curShort,proc:curProc}:null);
  var S=ensurePatient(T.pid,T.name,T.short,T.proc);
- if(!S)return {ok:false,msg:MISSING};
+ if(!S)return {ok:false,msg:MISSING,kind:'none'};
  var r=IN.questionTask(S,T.pid,text,urgent,clinical);
  if(window.PeriHooks)window.PeriHooks.render();
  var bucket=T.pid==='UNASSIGNED';
- if(r.status==='duplicate')return {ok:true,msg:'Already on the Staff board: the same question'+(bucket?' in '+UNASSIGNED_NAME:' for this patient')+'. Not duplicated.'};
- return {ok:true,msg:'Staff board task created'+(bucket?' under '+UNASSIGNED_NAME+'. No patient is selected, so assign it on the board.':'.')};
+ if(r.status==='duplicate')return {ok:true,kind:'dup',bucket:bucket,msg:'Already on the Staff board: the same question'+(bucket?' in '+UNASSIGNED_NAME:' for this patient')+'. Not duplicated.'};
+ return {ok:true,kind:'created',bucket:bucket,msg:'Staff board task created'+(bucket?' under '+UNASSIGNED_NAME+'. No patient is selected, so assign it on the board.':'.')};
 }
 function askCtx(){return {country:$('iv-c-country').value,hospital:$('iv-c-hospital').value,team:$('iv-c-team').value,surgeon:$('iv-c-surgeon').value,procedure:$('iv-c-proc').value||undefined}}
 function ask(q){
@@ -3201,7 +3873,7 @@ function ask(q){
 }
 // Ask box with the second check: the check runs before any answer is shown. A raised question withholds the approved answer.
 function askChecked(q){
- var out=$('iv-ans');out.textContent='Checking your question...';
+ var out=$('iv-ans');out.textContent=$('iv-c-lang').value==='ar'?'جار فحص سؤالك...':'Checking your question...';
  var lang=$('iv-c-lang').value,ctx=askCtx();
  try{
   if(!store){store=KN.createStore();SRCS.sources.forEach(function(s){KN.addSource(store,s)})}
@@ -3216,33 +3888,36 @@ function askChecked(q){
 function askNow(q,pre){
  var out=$('iv-ans');
  if(!KN||!SRCS){out.textContent=MISSING;return}
- if(!String(q||'').trim()){out.textContent='Type a question first.';return}
+ var lang=$('iv-c-lang').value,ar=lang==='ar',U=ui(lang);
+ if(!String(q||'').trim()){out.textContent=ar?'اكتب سؤالك أولا.':'Type a question first.';return}
  try{
   if(!store){store=KN.createStore();SRCS.sources.forEach(function(s){KN.addSource(store,s)})}
-  var ctx=askCtx(),lang=$('iv-c-lang').value,r=KN.answer(store,ctx,q,lang);
-  if(pre&&pre.escalate)r={kind:'ROUTE',cls:'SAME-DAY',reason:pre.reason,text:SC.SAME_DAY_REPLIES[lang]||SC.SAME_DAY_REPLY};
-  var names=['country','hospital','team','surgeon'].map(function(k){return k+': '+(ctx[k]||'none')}).join(' · ')+' · procedure: '+(ctx.procedure||'any');
+  var ctx=askCtx(),r=KN.answer(store,ctx,q,lang);
+  if(pre&&pre.escalate)r={kind:'ROUTE',cls:'SAME-DAY',reason:pre.reason,text:arText(SC.SAME_DAY_REPLIES[lang]||SC.SAME_DAY_REPLY,lang,SAME_DAY_AR)};
   var h='';
   if(r.kind==='ANSWER'){
    h+='<div class="in-words"><b>'+esc(r.text)+'</b></div>';
-   h+='<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>';
+   h+=ar?'<div class="in-cite">المصدر: المستوى '+esc(r.citation.layerLabel||r.citation.layer)+' · الجهة '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>'
+     :'<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>';
    // round 6 (review3 M1): a draft is labelled as a sample, never presented as clinician-approved text
-   h+=r.approved?'<div class="in-cite">Clinician-approved: yes</div>':'<div class="in-cite"><b style="color:var(--em)">SAMPLE draft, not approved</b> · no clinician has approved this text for this clinic.</div>';
+   if(ar)h+=r.approved?'<div class="in-cite">معتمد من طبيب: نعم</div>':'<div class="in-cite"><b style="color:var(--em)">عينة مسودة، غير معتمدة</b> · لم يعتمد أي طبيب هذا النص لهذه العيادة.</div>';
+   else h+=r.approved?'<div class="in-cite">Clinician-approved: yes</div>':'<div class="in-cite"><b style="color:var(--em)">SAMPLE draft, not approved</b> · no clinician has approved this text for this clinic.</div>';
    // review1 item 8: the answer, then the hospital layer it overrides, with owner names
    var ov=KN.overrideLine(store,ctx,r);
    if(ov)h+='<div class="in-over"><b>'+esc(ov.head)+'</b> '+esc(ov.body)+'</div>';
   }else{
    var urgent=r.cls==='EMERGENCY'||r.cls==='SAME-DAY';
-   var pass=passToStaff(q,urgent,/clinical judgement/.test(r.reason));
+   var pass=passToStaff(q,urgent,/clinical judgement|تقدير سريري/.test(r.reason||''));
    if(pre&&pre.staffTag)tagUnscreened(q);
    var H=ASKHEAD;
    h+='<div class="in-words"><b>'+esc(urgent?H.urgent[lang]:pass.ok?H.passed[lang]:H.not[lang])+'</b></div>';
-   h+='<div class="in-words">'+esc(honestReply(r.text,pass.ok))+'</div>';
-   h+='<div class="in-cite">No approved source answers this in the current context. Reason: '+esc(r.reason)+'</div>';
-   h+='<div class="in-cite" id="iv-ask-task">'+esc(pass.msg)+'</div>';
+   h+='<div class="in-words">'+esc(honestReply(r.text,pass.ok,lang))+'</div>';
+   h+=ar?'<div class="in-cite">لا يوجد مصدر معتمد يجيب عن هذا السؤال في السياق الحالي. السبب: '+esc(r.reason)+'</div>'
+     :'<div class="in-cite">No approved source answers this in the current context. Reason: '+esc(r.reason)+'</div>';
+   h+='<div class="in-cite" id="iv-ask-task">'+esc(passMsg(pass,lang))+'</div>';
   }
-  if(pre&&pre.unscreened)h+='<div class="in-cite">'+esc(SC.UNSCREENED_TAG)+'</div>';
-  h+='<div class="in-cite">Context used: '+esc(names)+'</div>';
+  if(pre&&pre.unscreened)h+='<div class="in-cite">'+esc(ar?UNSCREENED_AR:SC.UNSCREENED_TAG)+'</div>';
+  h+='<div class="in-cite">'+(ar?'السياق المستخدم: ':'Context used: ')+esc(ctxNames(ctx,lang))+'</div>';
   out.innerHTML=h;
  }catch(e){out.textContent='Could not answer: '+e.message}
 }
@@ -3263,7 +3938,8 @@ function refreshSettings(){
  $('iv-set-preset-info').textContent=p?'Set on the proxy server only: provider '+p.provider+', base URL '+(p.baseUrl||'(your own)')+', model '+(p.model||'(your own)')+'.':'';
  var scOn=effMode()==='ai'&&!!SC;
  var scMsg=scOn?'Second check: on for Intake, Ask box and Patient phone. The model can raise a message to urgent; it can never lower one. Unscreened messages are tagged on the Staff board.':'Second check: off (rules only). Rules alone were measured at about 56% of urgent messages on an unseen AI-written set; turn on a second check for production.';
- document.querySelectorAll('.sc-status').forEach(function(el){el.textContent=scMsg});
+ var scAr=scOn?'الفحص الثاني: مفعّل للاستقبال وصندوق الأسئلة وهاتف المريض. يمكن للنموذج أن يرفع الرسالة إلى عاجل، لكنه لا يخفضها أبدا. الرسائل غير المفحوصة تُعلَّم على لوحة الطاقم.':'الفحص الثاني: متوقف (القواعد وحدها فقط).';
+ document.querySelectorAll('.sc-status').forEach(function(el){el.textContent=(el.id==='sc-phone'&&window.__plPhoneAr)?scAr:scMsg});
 }
 
 function init(){
@@ -3277,7 +3953,8 @@ function init(){
  $('iv-samp').innerHTML=order.map(function(k){return '<optgroup label="'+esc(PK[k]?PK[k].label:k)+'">'+groups[k].map(function(g){return '<option value="'+g[1]+'">'+esc(g[0].pid+' · '+g[0].case)+'</option>'}).join('')+'</optgroup>'}).join('');
  $('iv-set-preset').innerHTML=AD&&AD.presets?Object.keys(AD.presets).map(function(k){return '<option value="'+k+'">'+esc(AD.presets[k].provider)+'</option>'}).join(''):'';
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
- $('iv-qchips').innerHTML=ASK_CHIPS.map(function(q){return '<button type="button" data-in-q="'+esc(q)+'">'+esc(q)+'</button>'}).join('');
+ if(IV&&IV.arSample){var arG='<optgroup label="العربية (عينات وهمية)">';for(var ai=0;ai<IV.AR_SAMPLE_COUNT;ai++){var ah=IV.arSample(ai);arG+='<option value="ar:'+ai+'">'+esc(ah.pid+' · '+ah.caseAr)+'</option>'}$('iv-samp').insertAdjacentHTML('beforeend',arG+'</optgroup>')}
+ renderAskChips($('iv-c-lang').value);
  if(!IV||!IN){$('iv-hint').textContent=MISSING;$('iv-start').disabled=true;$('iv-sample').disabled=true}
  if(!HIS.length)$('iv-sample').disabled=true;
  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -3303,7 +3980,7 @@ $('iv-chips').addEventListener('click',function(e){var b=e.target.closest?e.targ
 $('iv-form').addEventListener('submit',function(e){e.preventDefault();var v=$('iv-in').value;if(!v.trim())return;$('iv-in').value='';answerWith(v)});
 $('iv-voice').addEventListener('click',function(){
  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;
- try{var rec=new SR();var l=st?st.lang:$('iv-lang').value;rec.lang={en:'en-US',ms:'ms-MY',zh:'zh-CN'}[l]||'en-US';rec.interimResults=false;rec.maxAlternatives=1;
+ try{var rec=new SR();var l=st?st.lang:$('iv-lang').value;rec.lang={en:'en-US',ms:'ms-MY',zh:'zh-CN',ar:'ar-SA'}[l]||'en-US';rec.interimResults=false;rec.maxAlternatives=1;
   rec.onresult=function(ev){$('iv-in').value=ev.results[0][0].transcript;$('iv-hint').textContent='Check the words, then press Send.'};
   rec.onerror=function(){$('iv-hint').textContent='Voice input did not work. Type your answer instead.'};
   rec.start();}catch(err){$('iv-hint').textContent='Voice input is not available here. Type your answer instead.'}
@@ -3323,6 +4000,9 @@ $('iv-sum').addEventListener('click',function(e){var b=e.target.closest?e.target
 $('iv-ot').addEventListener('change',onOT);
 $('iv-askform').addEventListener('submit',function(e){e.preventDefault();ask($('iv-q').value)});
 $('iv-qchips').addEventListener('click',function(e){var b=e.target.closest?e.target.closest('button[data-in-q]'):null;if(!b)return;$('iv-q').value=b.getAttribute('data-in-q');ask(b.getAttribute('data-in-q'))});
+window.__plRefreshSc=function(){refreshSettings()};
+$('iv-lang').addEventListener('change',function(){applyLangs();if(st&&!st.done&&IV&&IN)start()});
+$('iv-c-lang').addEventListener('change',function(){applyLangs();renderAskChips(this.value);if($('iv-ans').textContent)ask($('iv-q').value||'')});
 $('iv-set-mode').addEventListener('change',refreshSettings);
 $('iv-set-preset').addEventListener('change',refreshSettings);
 $('iv-set-proxy').addEventListener('input',refreshSettings);

@@ -46,6 +46,18 @@
       walk_distance_m: '步行距离（米）', payer: '付费方式', preferred_language: '首选语言',
       lumbar_bladder_bowel_change: '小便或大便改变', lumbar_saddle_numbness: '鞍区麻木',
       lumbar_leg_weakness: '腿部无力', night_pain: '夜间疼痛', prior_injections: '既往注射'
+    },
+    // Arabic (ar): machine draft, Gulf-friendly simple MSA. Not clinician-reviewed.
+    ar: {
+      meds_text: 'الأدوية الحالية', blood_thinner: 'مميّع الدم', allergy_text: 'الحساسية (نص حر)',
+      penicillin_allergy: 'حساسية البنسلين', latex_allergy: 'حساسية اللاتكس', diabetes: 'السكري',
+      hba1c: 'HbA1c', heart_disease: 'مرض القلب', lung_disease: 'مرض الرئة', kidney_disease: 'مرض الكلى',
+      anaesthetic_problem: 'مشكلة سابقة مع التخدير', smoker: 'التدخين', alcohol: 'الكحول',
+      prior_surgery_same_joint: 'عملية سابقة على نفس المفصل', mrsa_or_admission_past_year: 'MRSA أو دخول المستشفى خلال السنة',
+      lives_alone: 'يعيش وحده', stairs_home: 'درج في المنزل', mobility_aid: 'أداة مساعدة على المشي',
+      walk_distance_m: 'مسافة المشي بالمتر', payer: 'جهة الدفع', preferred_language: 'اللغة المفضلة',
+      lumbar_bladder_bowel_change: 'تغير في المثانة أو الأمعاء', lumbar_saddle_numbness: 'تنميل منطقة السرج',
+      lumbar_leg_weakness: 'ضعف في الساق', night_pain: 'ألم ليلي', prior_injections: 'حقن سابقة'
     }
   };
   const labelOf = (id, lang) => (QL[lang] && QL[lang][id]) || Q[id] || id;
@@ -71,13 +83,30 @@
       tkr_calf: '手术腿的小腿疼痛或肿胀', sh_fingers: '手术手臂的手指麻木、发冷或发白',
       fa_sore: '手术脚或踝部的开放性伤口、水疱或溃疡', fa_toes: '脚趾发冷、苍白、发蓝或发紫',
       symptoms_now: '现在有胸痛、呼吸困难或意识混乱'
+    },
+    ar: {
+      tkr_calf: 'ألم أو تورم في ساق العملية', sh_fingers: 'أصابع مخدرة أو باردة أو شاحبة في ذراع العملية',
+      fa_sore: 'جرح مفتوح أو بثرة أو قرحة في القدم أو الكاحل المقرر إجراء العملية عليه', fa_toes: 'أصابع قدم باردة أو شاحبة أو زرقاء أو بنفسجية',
+      symptoms_now: 'ألم في الصدر أو ضيق في التنفس أو تشوش الآن'
     }
   };
   // Canonical phrases, used only to obtain the engine's own reply text for a question-level red flag.
   const CANON = {
-    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛' },
-    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧' }
+    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛', ar: 'عندي ألم في الصدر منذ الليلة' },
+    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧', ar: 'عندي حمى منذ الليلة' }
   };
+  // Arabic normalisation for matching: tashkeel and tatweel out, alef / ya / ta-marbuta / hamza carriers unified, Arabic-Indic digits to ASCII.
+  function arNorm(text) {
+    return String(text == null ? '' : text)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ؤ/g, 'و')
+      .replace(/ئ/g, 'ي')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+      .replace(/٫/g, '.').replace(/٬/g, ',');
+  }
   const RANK = { 'SAME-DAY': 2, EMERGENCY: 3 };
   const YN = new Set(['penicillin_allergy', 'latex_allergy', 'diabetes', 'heart_disease', 'lung_disease', 'kidney_disease',
     'anaesthetic_problem', 'smoker', 'prior_surgery_same_joint', 'mrsa_or_admission_past_year', 'lives_alone', 'stairs_home',
@@ -93,34 +122,55 @@
   const WORDS_SECTION = SECTIONS.length - 1;
   const ANAES_GROUP = ['anaesthetic_problem', 'heart_disease', 'lung_disease', 'kidney_disease', 'smoker'];
   // review1 B2: names that count as a blood thinner when they appear in the medicine list or free text
-  const ANTICOAG_NAME = /warfarin|rivaroxaban|apixaban|dabigatran|edoxaban|enoxaparin|clexane|aspirin|clopidogrel|xarelto|eliquis|marevan|coumadin/i;
-  const PENICILLIN_TEXT = /penicillin|penisilin|amoxicillin|amoksisilin|augmentin|ampicillin|pen v|青霉素/i;
+  const ANTICOAG_NAME = /warfarin|rivaroxaban|apixaban|dabigatran|edoxaban|enoxaparin|clexane|aspirin|clopidogrel|xarelto|eliquis|marevan|coumadin|وارفارين|ريفاروكسابان|ابيكسابان|اسبرين|كلوبيدوجريل|انوكسابارين|مميع|مسيل/i;
+  const PENICILLIN_TEXT = /penicillin|penisilin|amoxicillin|amoksisilin|augmentin|ampicillin|pen v|青霉素|بنسلين|اموكسيسيلين|اوغمنتين|امبيسيلين/i;
   // review2 B4 (round 4): drug and latex allergies named in free text
-  const SULFA_RE = /sulfa|sulpha|sulfonamide|sulphonamide|co-?trimoxazole|bactrim|septrin/i;
-  const IODINE_RE = /iodine|iodin|yodium|碘|contrast dye|pewarna kontras/i;
-  const LATEX_RE = /latex|lateks|乳胶/i;
-  const NEG_ALLERGY_RE = /\b(not|no|never|tiada|tak|tidak|without)\b[^.;]{0,12}\ballerg\w*|不过敏|没有过敏|无过敏|没过敏/i;
-  const NONE_START_RE = /^\s*(no|none|nil|tiada|tak ada|tidak ada|无|没有)\b/i;
+  const SULFA_RE = /sulfa|sulpha|sulfonamide|sulphonamide|co-?trimoxazole|bactrim|septrin|سلفا/i;
+  const IODINE_RE = /iodine|iodin|yodium|碘|contrast dye|pewarna kontras|يود|صبغه/i;
+  const LATEX_RE = /latex|lateks|乳胶|لاتكس/i;
+  const NEG_ALLERGY_RE = /\b(not|no|never|tiada|tak|tidak|without)\b[^.;]{0,12}\ballerg\w*|不过敏|没有过敏|无过敏|没过敏|\b(?:لا|ليس|مو|مش|بدون)\b[^.;،]{0,12}حساسي/i;
+  const NONE_START_RE = /^\s*(no|none|nil|tiada|tak ada|tidak ada|无|没有|لا يوجد|ما فيه|مافي)\b/i;
   // review1 item 10 (round 3 B): the worsening amber needs a SYMPTOM word AND a worsening word. Medicine or travel
   // questions ("can I take ibuprofen", "can I fly") have no symptom word and never trigger it.
-  const SYMPTOM_RE = /\b(pain|painful|ache|aching|swelling|swollen|numb|numbness|weakness|weak|fever|discharge|bleeding|redness|tingling|sore|lump|rash|pus|blister|ulcer)\b|sakit|bengkak|kebas|lemah|demam|nanah|痛|肿|麻木|无力|发烧|发热|流脓|渗液|发红/i;
-  const STRONG_WORSE_RE = /\bworse\b|\bworsen\w*|deteriorat\w*|\bspreading\b|semakin|lebih teruk|bertambah|makin|更严重|加重|越来越|变差|恶化/i;
+  const SYMPTOM_RE = /\b(pain|painful|ache|aching|swelling|swollen|numb|numbness|weakness|weak|fever|discharge|bleeding|redness|tingling|sore|lump|rash|pus|blister|ulcer)\b|sakit|bengkak|kebas|lemah|demam|nanah|痛|肿|麻木|无力|发烧|发热|流脓|渗液|发红|الم|وجع|تورم|انتفاخ|خدر|ضعف|حراره|سخونه|نزيف|احمرار|جرح|صديد|بثره/i;
+  const STRONG_WORSE_RE = /\bworse\b|\bworsen\w*|deteriorat\w*|\bspreading\b|semakin|lebih teruk|bertambah|makin|更严重|加重|越来越|变差|恶化|اسوا|اسوء|يزداد|تزداد|ازداد|تزايد|يتفاقم|تفاقم|يتدهور|تدهور/i;
   const WEAK_WORSE_RE = /\bincreas\w*|getting (?:bigger|more)|\bmore (?:pain|painful|swollen|swelling|numb\w*|weak\w*|discharge|bleeding|tender|fever)\b/i;
-  const MED_OR_TRAVEL_RE = /medicin|medication|\bubat\b|\bpills?\b|\btablets?\b|\bdose\b|\bdrug|painkiller|ibuprofen|paracetamol|parasetamol|aspirin|warfarin|\bfly\b|\bflying\b|\bflights?\b|\bdriv|penerbangan|terbang|memandu|药|片|飞机|飞行|驾车|开车/i;
+  const MED_OR_TRAVEL_RE = /medicin|medication|\bubat\b|\bpills?\b|\btablets?\b|\bdose\b|\bdrug|painkiller|ibuprofen|paracetamol|parasetamol|aspirin|warfarin|\bfly\b|\bflying\b|\bflights?\b|\bdriv|penerbangan|terbang|memandu|药|片|飞机|飞行|驾车|开车|دواء|ادويه|حبوب|جرعه|مسكن|اسبرين|طيران|طياره|سفر|قياده|سياقه/i;
   const WORSENING_TEXT = 'Patient reports worsening symptoms: clinician to review';
 
   /* ---------- values: normalise for display; yes/no and field values translated for ms and zh (machine drafts) ---------- */
-  const YNW = { en: { yes: 'yes', no: 'no', unknown: 'unknown', unclear: 'unclear' }, ms: { yes: 'ya', no: 'tidak', unknown: 'tidak tahu', unclear: 'tidak jelas' }, zh: { yes: '是', no: '否', unknown: '不知道', unclear: '不清楚' } };
+  const YNW = { en: { yes: 'yes', no: 'no', unknown: 'unknown', unclear: 'unclear' }, ms: { yes: 'ya', no: 'tidak', unknown: 'tidak tahu', unclear: 'tidak jelas' }, zh: { yes: '是', no: '否', unknown: '不知道', unclear: '不清楚' },
+    ar: { yes: 'نعم', no: 'لا', unknown: 'لا أعرف', unclear: 'غير واضح' } };
   const FIELD_VAL = {
-    alcohol: { ms: { none: 'tidak pernah', occasional: 'kadang-kadang', regular: 'kerap' }, zh: { none: '不饮酒', occasional: '偶尔', regular: '经常' } },
+    alcohol: { ms: { none: 'tidak pernah', occasional: 'kadang-kadang', regular: 'kerap' }, zh: { none: '不饮酒', occasional: '偶尔', regular: '经常' },
+      ar: { none: 'لا أشرب أبدا', occasional: 'أحيانا', regular: 'بانتظام' } },
     payer: { ms: { self: 'bayar sendiri', employer: 'skim syarikat majikan', insurance: 'insurans swasta', government: 'skim kerajaan', other: 'lain-lain' },
-      zh: { self: '自费', employer: '雇主或公司计划', insurance: '私人保险', government: '政府计划', other: '其他' } },
-    preferred_language: { ms: { en: 'Bahasa Inggeris', ms: 'Bahasa Malaysia', zh: 'Bahasa Cina' }, zh: { en: '英文', ms: '马来文', zh: '中文' } },
+      zh: { self: '自费', employer: '雇主或公司计划', insurance: '私人保险', government: '政府计划', other: '其他' },
+      ar: { self: 'دفع ذاتي', employer: 'عبر جهة العمل', insurance: 'تأمين خاص', government: 'برنامج حكومي', other: 'أخرى' } },
+    preferred_language: { ms: { en: 'Bahasa Inggeris', ms: 'Bahasa Malaysia', zh: 'Bahasa Cina', ar: 'Bahasa Arab' }, zh: { en: '英文', ms: '马来文', zh: '中文', ar: '阿拉伯文' },
+      ar: { en: 'الإنجليزية', ms: 'الماليزية', zh: 'الصينية', ar: 'العربية' } },
     walk_distance_m: { ms: { 'under 100 m': 'kurang 100 m', '100-500 m': '100 hingga 500 m', 'over 500 m': 'lebih 500 m', 'cannot walk': 'tidak boleh berjalan' },
-      zh: { 'under 100 m': '不到100米', '100-500 m': '100至500米', 'over 500 m': '超过500米', 'cannot walk': '无法行走' } },
-    hba1c: { ms: { 'not applicable': 'tidak berkenaan (tiada diabetes)', unknown: 'tidak tahu' }, zh: { 'not applicable': '不适用（无糖尿病）', unknown: '不知道' } },
-    allergy_text: { ms: { 'none known': 'tiada diketahui', yes: 'ya' }, zh: { 'none known': '无已知过敏', yes: '是' } }
+      zh: { 'under 100 m': '不到100米', '100-500 m': '100至500米', 'over 500 m': '超过500米', 'cannot walk': '无法行走' },
+      ar: { 'under 100 m': 'أقل من 100 م', '100-500 m': 'من 100 إلى 500 م', 'over 500 m': 'أكثر من 500 م', 'cannot walk': 'لا أستطيع المشي' } },
+    hba1c: { ms: { 'not applicable': 'tidak berkenaan (tiada diabetes)', unknown: 'tidak tahu' }, zh: { 'not applicable': '不适用（无糖尿病）', unknown: '不知道' },
+      ar: { 'not applicable': 'لا ينطبق (لا يوجد سكري)', unknown: 'لا أعرف' } },
+    allergy_text: { ms: { 'none known': 'tiada diketahui', yes: 'ya' }, zh: { 'none known': '无已知过敏', yes: '是' },
+      ar: { 'none known': 'لا توجد حساسية معروفة', yes: 'نعم' } }
   };
+  // Arabic section titles, the notice and the label (machine drafts, not clinician-reviewed).
+  const SECTION_AR = { 'Medicines': 'الأدوية', 'Allergies': 'الحساسية', 'Medical history': 'التاريخ المرضي', 'Home and support': 'المنزل والدعم',
+    'Procedure-specific': 'خاص بالإجراء', "Patient's own words": 'كلمات المريض', 'Recorded, not summarised': 'مسجل، غير ملخص' };
+  const LABEL_AR = 'بلاغ من المريض، يتحقق منه الطبيب السريري';
+  const REC_AR = SECTION_AR['Recorded, not summarised'];
+  // Shown under every summary. English and the Malay and Chinese notice are unchanged; Arabic says a clinician must review it first.
+  const NOTICE = {
+    en: 'Malay and Chinese text in this summary is a machine draft. A native-speaking clinician must review it before use.',
+    ar: 'النص العربي في هذا الملخص مسودة آلية لم تُراجع. يجب أن يراجعه طبيب ناطق بالعربية، ويفضل من دول الخليج، قبل الاستخدام.'
+  };
+  const WD_AR = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  const MON_AR = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+  const OWNER_AR = { surgeon: 'الجراح', anaesthetist: 'طبيب التخدير', preop_nurse: 'ممرض ما قبل العملية', ward_nurse: 'ممرض الجناح',
+    physio: 'أخصائي العلاج الطبيعي', pharmacy: 'الصيدلية', clinic_coordinator: 'منسق العيادة', clinician: 'الطبيب المعالج' };
   const pick = (lang, o) => (o[lang] !== undefined ? o[lang] : o.en);
 
   /* ---------- every sentence the page or the summary shows, by language (machine drafts for ms and zh) ---------- */
@@ -141,8 +191,8 @@
     redOther: (l, label, id) => pick(l, { en: `${label} reported [${id}]`, ms: `${label} dilaporkan [${id}]`, zh: `报告：${label} [${id}]` }),
     wordsTriaged: (l, cls, flags, i) => pick(l, { en: `Patient's words auto-triaged ${cls} (${flags}) [freeText.${i}]`,
       ms: `Kata-kata pesakit diklasifikasikan ${cls} (${flags}) [freeText.${i}]`, zh: `患者自述被自动分级为 ${cls}（${flags}）[freeText.${i}]` }),
-    wordsLine: (l, cls, text, i) => pick(l, { en: `Patient's words (auto-triage ${cls}): "${text}" [freeText.${i}]`,
-      ms: `Kata-kata pesakit (auto-triage ${cls}): "${text}" [freeText.${i}]`, zh: `患者自述（自动分级 ${cls}）："${text}" [freeText.${i}]` }),
+    wordsLine: (l, tags, text, refs) => pick(l, { en: `Patient's words (auto-triage ${tags}): "${text}" [${refs}]`,
+      ms: `Kata-kata pesakit (auto-triage ${tags}): "${text}" [${refs}]`, zh: `患者自述（自动分级 ${tags}）："${text}" [${refs}]` }),
     gapNotAnswered: (l, label, id) => pick(l, { en: `Not answered: ${label} (${id})`, ms: `Belum dijawab: ${label} (${id})`, zh: `未回答：${label}（${id}）` }),
     // round 6 (review3 B7): an impossible value is an AMBER reason, never NONE. The English wording is fixed by the review.
     implausible: (l, what) => pick(l, { en: `implausible value: clinician to verify (${what})`, ms: `nilai tidak munasabah: klinik perlu sahkan (${what}) (draf mesin)`, zh: `数值不合理：需临床人员核实（${what}）（机器草稿）` }),
@@ -170,10 +220,52 @@
     dmConflict: (l, v) => pick(l, { en: `HbA1c ${v} recorded but diabetes answered no: clinician to verify`, ms: `HbA1c ${v} direkod tetapi diabetes dijawab tidak: doktor perlu sahkan`, zh: `记录了糖化血红蛋白 ${v}，但糖尿病回答为“否”：需临床医生核实` }),
     incompleteAllergy: l => pick(l, { en: 'Allergy question missing or unclear [penicillin_allergy]', ms: 'Soalan alahan tiada atau tidak jelas [penicillin_allergy]', zh: '过敏问题缺失或不清楚 [penicillin_allergy]' }),
     incompleteDiabetes: l => pick(l, { en: 'Diabetes question missing or unclear [diabetes]', ms: 'Soalan diabetes tiada atau tidak jelas [diabetes]', zh: '糖尿病问题缺失或不清楚 [diabetes]' }),
-    routeLine: (l, qid, text) => pick(l, { en: `Patient's question during intake (clinician to answer): "${text}" [${qid}]`, ms: `Soalan pesakit semasa pengambilan (doktor perlu jawab): "${text}" [${qid}]`, zh: `患者在问诊中的问题（需临床医生回答）："${text}" [${qid}]` }),
     todoRoute: (l, text) => pick(l, { en: 'Patient question to answer: ' + text, ms: 'Soalan pesakit untuk dijawab: ' + text, zh: '需回答的患者问题：' + text }),
     todoWorsening: l => pick(l, { en: 'Clinician review: patient reports worsening symptoms', ms: 'Semakan doktor: pesakit melaporkan gejala semakin teruk', zh: '临床医生审阅：患者报告症状加重' })
   };
+  // Arabic (ar) for every entry in M: machine draft wording, reviewed:false. Wrapped below so en, ms and zh are unchanged.
+  const CLS_AR = { EMERGENCY: 'طارئ', 'SAME-DAY': 'في نفس اليوم', ROUTE: 'يُحال إلى الفريق', ASK: 'يحتاج توضيحا', ANSWER: 'إجابة' };
+  const clsAr = c => CLS_AR[c] || 'غير مصنف';
+  const M_AR = {
+    btReported: name => 'تم الإبلاغ عن مميّع للدم' + (name ? ': ' + name : ' (الاسم غير مذكور)'),
+    hba1cHigh: (v, thr) => `HbA1c ${v} يساوي الحد ${thr}% أو يتجاوزه`,
+    penReported: () => 'تم الإبلاغ عن حساسية البنسلين',
+    anaesReported: label => `تم الإبلاغ عن: ${label}`,
+    aloneStairs: () => 'يعيش وحده ولديه درج في المنزل',
+    worsening: () => 'يبلغ المريض عن أعراض تزداد سوءا: يراجعها الطبيب',
+    btConflict: () => 'قائمة الأدوية تذكر مميّعا للدم، لكن إجابة نعم/لا لا تتفق معها: يتحقق منها الطبيب',
+    cauda: (label, id) => `احتمال علامة خطر في الذيل الفرسي أو في الجهاز العصبي: تم الإبلاغ عن ${label} [${id}]`,
+    redOther: (label, id) => `تم الإبلاغ عن: ${label} [${id}]`,
+    wordsTriaged: (cls, flags, i) => `تم تصنيف كلمات المريض آليا: ${clsAr(cls)} (${flags}) [freeText.${i}]`,
+    wordsLine: (tags, text, refs) => `كلمات المريض (تصنيف آلي: ${tags}): "${text}" [${refs}]`,
+    gapNotAnswered: (label, id) => `لم تتم الإجابة: ${label} (${id})`,
+    implausible: what => `قيمة غير معقولة: يتحقق منها الطبيب (${what}) (مسودة آلية)`,
+    gapUnclear: (label, id) => `إجابة غير واضحة: ${label} (${id})`,
+    gapBtNoName: () => 'هل تم تحديد اسم مميّع الدم؟ لم يُذكر اسم (blood_thinner)',
+    gapBtCheck: () => 'تحقق: قائمة الأدوية تذكر مميّعا للدم لكن الإجابة عن مميّع الدم "لا" (blood_thinner, meds_text)',
+    gapDmCheck: v => `تحقق: الإجابة عن السكري "لا" لكن HbA1c هو ${v} (diabetes, hba1c)`,
+    gapPenCheck: () => 'تحقق: الحساسية المذكورة في النص تشير إلى دواء من فئة البنسلين لكن حساسية البنسلين "لا" (penicillin_allergy, allergy_text)',
+    gapProc: () => 'لم يُتعرف على الإجراء أو لم يُذكر (procedure)',
+    incompleteBt: () => 'إجابة مميّع الدم ناقصة أو غير واضحة [blood_thinner]',
+    incompleteCount: n => `${n} إجابة ناقصة أو غير واضحة`,
+    todoAnticoagYes: () => 'قرار الطبيب: إيقاف مميّع الدم أو الاستمرار فيه قبل العملية',
+    todoAnticoagConflict: () => 'قرار الطبيب: تأكيد حالة مميّع الدم (قائمة الأدوية والإجابة غير متطابقتين)',
+    todoHba1c: thr => `تحسين HbA1c قبل العملية (عند ${thr}% أو أعلى)`,
+    todoAnaes: () => 'مراجعة التخدير',
+    todoAntibiotic: () => 'خطة المضاد الحيوي حول العملية (حساسية البنسلين)',
+    todoMrsa: () => 'فحص MRSA قبل العملية',
+    todoPhysio: () => 'مراجعة العلاج الطبيعي أو الاجتماعية للمنزل والدرج والحركة',
+    todoPreauth: () => 'تم الحصول على الموافقة المسبقة من التأمين',
+    todoRed: flags => 'مؤشر خطر أثناء الاستقبال: ' + flags,
+    allergyConflict: () => 'ذُكرت حساسية في النص الحر، لكن إجابة الحساسية "لا": يتحقق منها الطبيب',
+    drugAllergy: names => `ذُكرت حساسية دوائية في النص الحر: ${names}`,
+    dmConflict: v => `تم تسجيل HbA1c ${v} لكن إجابة السكري "لا": يتحقق منها الطبيب`,
+    incompleteAllergy: () => 'سؤال الحساسية ناقص أو غير واضح [penicillin_allergy]',
+    incompleteDiabetes: () => 'سؤال السكري ناقص أو غير واضح [diabetes]',
+    todoRoute: text => 'سؤال المريض للإجابة عنه: ' + text,
+    todoWorsening: () => 'مراجعة الطبيب: يبلغ المريض عن أعراض تزداد سوءا'
+  };
+  Object.keys(M_AR).forEach(k => { const en = M[k]; M[k] = (l, ...a) => (l === 'ar' ? M_AR[k](...a) : en(l, ...a)); });
 
   /* ---------- value helpers (never guess: unclear values are shown as given and sent to gaps) ---------- */
   function unpack(input) {
@@ -183,7 +275,7 @@
     }
     return { pid: null, procedure: null, lang: 'en', answers: (input && typeof input === 'object') ? input : {}, freeText: [], routes: [] };
   }
-  function LANG_OK(l) { return l === 'en' || l === 'ms' || l === 'zh'; }
+  function LANG_OK(l) { return l === 'en' || l === 'ms' || l === 'zh' || l === 'ar'; }
   const isMissing = v => v === undefined || v === null || (typeof v === 'string' && v.trim() === '') || (Array.isArray(v) && v.length === 0);
   const display = v => typeof v === 'boolean' ? (v ? 'yes' : 'no') : (v == null ? '' : String(v).trim());
   function yn(v) {
@@ -221,7 +313,7 @@
       const b = bt(v);
       if (b.ans === null) return b.raw;
       const w = YNW[lang][b.ans];
-      return (b.ans === 'yes' && b.name) ? w + ', ' + b.name : w;
+      return (b.ans === 'yes' && b.name) ? w + (lang === 'ar' ? '، ' : ', ') + b.name : w;
     }
     const s = display(v);
     if (lang === 'en') return s;
@@ -245,7 +337,7 @@
   // and a medicine or travel question needs a strong worsening word as well ("can I increase my painkiller" does not count).
   function isWorsening(f) {
     if (f.red) return false;
-    const t = f.text;
+    const t = arNorm(f.text);
     if (!SYMPTOM_RE.test(t)) return false;
     if (STRONG_WORSE_RE.test(t)) return true;
     return WEAK_WORSE_RE.test(t) && !MED_OR_TRAVEL_RE.test(t);
@@ -255,9 +347,10 @@
   function allergyNames(x) {
     const a = x.answers, texts = [];
     const said = display(a.allergy_text);
-    if (said && !NONE_START_RE.test(said)) texts.push(said);
+    if (said && !NONE_START_RE.test(said)) texts.push(arNorm(said));
     [display(a.meds_text)].concat(x.freeText.filter(t => typeof t === 'string')).forEach(t => {
-      if (/allerg|alahan|过敏/i.test(t) && !NEG_ALLERGY_RE.test(t)) texts.push(t);
+      const n = arNorm(t);
+      if (/allerg|alahan|过敏|حساسي/i.test(n) && !NEG_ALLERGY_RE.test(n)) texts.push(n);
     });
     const txt = texts.join(' | '), names = [];
     if (PENICILLIN_TEXT.test(txt)) names.push('penicillin');
@@ -342,7 +435,7 @@
     const pack = eng.PACKS[proc] || null;
     const ambers = [], gaps = [];
     const Y = id => yn(a[id]) === 'yes';
-    const sections = SECTIONS.map(s => ({ title: s.title, lines: [] }));
+    const sections = SECTIONS.map(s => ({ title: titleFor(s.title, lang), lines: [] }));
 
     SECTIONS.forEach((s, si) => s.ids.forEach(id => {
       if (isMissing(a[id])) return;
@@ -362,10 +455,22 @@
     // RED: the same rule as the interview and the urgent task (redOf)
     const red = redOf(input);
     const reds = red ? red.reasons : [];
-    freeTextFlags(x).forEach(f => {
-      sections[WORDS_SECTION].lines.push(M.wordsLine(lang, f.cls, f.text, f.i));
+    // round 7 (polish): each distinct patient statement appears once, with its classes as a tag and every source it came from.
+    // The same text is recorded once per attempt (in free text and in the routed questions), so it is merged here.
+    const words = new Map();
+    const addWords = (text, cls, ref) => {
+      const t = String(text).trim().replace(/\s+/g, ' '), key = t.toLowerCase();
+      if (!words.has(key)) words.set(key, { text: t, classes: [], refs: [] });
+      const e = words.get(key);
+      if (cls && !e.classes.includes(cls)) e.classes.push(cls);
+      if (!e.refs.includes(ref)) e.refs.push(ref);
+    };
+    freeTextFlags(x).forEach(f => addWords(f.text, f.cls, 'freeText.' + f.i));
+    x.routes.filter(clinicalRoute).forEach(r => addWords(r.text, r.cls || 'ROUTE', r.qid));
+    words.forEach(e => {
+      const tags = e.classes.map(c => (lang === 'ar' ? clsAr(c) : c)).join(lang === 'ar' ? '، ' : ', ');
+      sections[WORDS_SECTION].lines.push(M.wordsLine(lang, tags, e.text, e.refs.join(', ')));
     });
-    x.routes.filter(clinicalRoute).forEach(r => sections[WORDS_SECTION].lines.push(M.routeLine(lang, r.qid, r.text)));
 
     // AMBER
     const b = bt(a.blood_thinner);
@@ -384,16 +489,16 @@
     implausibleValues(a, x).forEach(w => ambers.push(M.implausible(lang, w)));
 
     // review1 B2: a blood thinner named in the medicine list or free text must agree with the yes/no answer
-    const btNamed = ANTICOAG_NAME.test(display(a.meds_text)) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(t));
+    const btNamed = ANTICOAG_NAME.test(arNorm(display(a.meds_text))) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(arNorm(t)));
     const btConflict = btNamed && b.ans !== 'yes';
     const btUnresolved = b.ans === null;
     if (btConflict) ambers.push(M.btConflict(lang) + ' [blood_thinner, meds_text]');
 
     // gaps: contradictions and clarifications
     if (b.ans === 'yes' && !b.name) gaps.push(M.gapBtNoName(lang));
-    if (b.ans === 'no' && ANTICOAG_NAME.test(display(a.meds_text))) gaps.push(M.gapBtCheck(lang));
+    if (b.ans === 'no' && ANTICOAG_NAME.test(arNorm(display(a.meds_text)))) gaps.push(M.gapBtCheck(lang));
     if (yn(a.diabetes) === 'no' && isFinite(n) && n >= 6.5) { gaps.push(M.gapDmCheck(lang, display(a.hba1c))); ambers.push(M.dmConflict(lang, display(a.hba1c)) + ' [diabetes, hba1c]'); }
-    if (yn(a.penicillin_allergy) === 'no' && PENICILLIN_TEXT.test(display(a.allergy_text))) gaps.push(M.gapPenCheck(lang));
+    if (yn(a.penicillin_allergy) === 'no' && PENICILLIN_TEXT.test(arNorm(display(a.allergy_text)))) gaps.push(M.gapPenCheck(lang));
 
     // NONE is only possible when every answer is in and no blood-thinner question is open. More than 6 gaps is INCOMPLETE, never NONE.
     const allergyUnresolved = yn(x.answers.penicillin_allergy) === null && eff.names.length === 0;
@@ -427,13 +532,13 @@
           recorded.push(`${q.text}: ${q.shown} [${qid}]`);
         }
       });
-      sections.push({ title: REC_TITLE, lines: recorded });
+      sections.push({ title: lang === 'ar' ? REC_AR : REC_TITLE, lines: recorded });
     }
-    return { pid: x.pid, procedure: proc, banner: { level, reasons }, sections, label: LABEL, gaps };
+    return { pid: x.pid, procedure: proc, banner: { level, reasons }, sections, label: lang === 'ar' ? LABEL_AR : LABEL, gaps };
   }
 
   /* ---------- to-dos (owners: surgeon, anaesthetist, preop_nurse, ward_nurse, physio, pharmacy, clinic_coordinator, clinician) ---------- */
-  function todos(input) {
+  function todosOf(input) {
     const x = unpack(input), a = effectiveAllergy(x).a, out = [], lang = x.lang;
     const Y = id => yn(a[id]) === 'yes';
     const n = num(a.hba1c);
@@ -441,7 +546,7 @@
     const b = bt(a.blood_thinner);
     const thr = eng.THRESH.HbA1c.ge;
 
-    const btNamed = ANTICOAG_NAME.test(display(a.meds_text)) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(t));
+    const btNamed = ANTICOAG_NAME.test(arNorm(display(a.meds_text))) || x.freeText.some(t => typeof t === 'string' && ANTICOAG_NAME.test(arNorm(t)));
     if (b.ans === 'yes') out.push({ key: 'anticoag_decision', title: M.todoAnticoagYes(lang), owner: 'surgeon', dueDays: -14, kind: 'review', reason: 'blood_thinner', needsClinician: true });
     else if (btNamed) out.push({ key: 'anticoag_decision', title: M.todoAnticoagConflict(lang), owner: 'surgeon', dueDays: -14, kind: 'review', reason: 'blood_thinner, meds_text', needsClinician: true });
     if (isFinite(n) && n >= thr) out.push({ key: 'optimise_hba1c', title: M.todoHba1c(lang, thr), owner: 'clinician', dueDays: -14, kind: 'review', reason: 'hba1c', needsClinician: true });
@@ -465,6 +570,17 @@
     return out;
   }
 
+  // Arabic to-dos keep their Arabic title in the summary. The Staff board stays English: toTasks uses staffTitle, the English twin.
+  function todos(input) {
+    const x = unpack(input);
+    const out = todosOf(input);
+    if (x.lang === 'ar') {
+      const en = todosOf(Object.assign({}, x, { lang: 'en' }));
+      out.forEach((t, i) => { if (en[i]) t.staffTitle = en[i].title; });
+    }
+    return out;
+  }
+
   /* ---------- engine integration ---------- */
   function toTasks(sim, pid, list) {
     const p = sim.P ? sim.P(pid) : null;
@@ -478,7 +594,7 @@
       else dueAt = base + t.dueDays * D;
       // otOffsetDays: the to-do's offset from the OT date (negative = before surgery). Only these move when the OT date moves.
       const otOffsetDays = (typeof t.dueDays === 'number' && typeof t.dueHours !== 'number' && !t.urgent) ? t.dueDays : null;
-      made.push(sim.addTask(pid, { type: t.key, title: t.title, owner: t.owner, kind: t.kind, dueAt, reason: t.reason, needsClinician: t.needsClinician, evidence: [], otOffsetDays }));
+      made.push(sim.addTask(pid, { type: t.key, title: t.staffTitle || t.title, owner: t.owner, kind: t.kind, dueAt, reason: t.reason, needsClinician: t.needsClinician, evidence: [], otOffsetDays }));
     });
     if (made.length) OT.syncOT(sim, pid);
     return made;
@@ -487,7 +603,8 @@
   /* ---------- review1 B3/B4: urgent red-flag task and patient-question task ---------- */
   // The urgent task for a red flag. One key per patient (review1 item 9), so repeated presses or two paths never duplicate it.
   function redTodo(red, lang) {
-    const flags = (red.flags || []).join('; ');
+    // Arabic titles show the Arabic label of each flag; the English Staff board title keeps the field ids as before.
+    const flags = (red.flags || []).map(f => (lang === 'ar' ? redLabel(f, 'ar') : f)).join('; ');
     return { key: 'intake_red_flag', title: M.todoRed(lang || 'en', flags), owner: 'clinician', dueDays: 0, kind: 'review',
       reason: (red.refs && red.refs.length ? red.refs : red.flags || []).join(', '), needsClinician: true, urgent: true };
   }
@@ -540,20 +657,21 @@
     const p = parseYmd(ymd); if (!p) return '';
     const wd = new Date(Date.UTC(p.y, p.m - 1, p.d)).getUTCDay();
     if (lang === 'zh') return p.m + '月' + p.d + '日 周' + WD_ZH[wd];
+    if (lang === 'ar') return WD_AR[wd] + ' ' + p.d + ' ' + MON_AR[p.m - 1];
     if (lang === 'ms') return WD_MS[wd] + ' ' + p.d + ' ' + MON_MS[p.m - 1];
     return WD_EN[wd] + ' ' + p.d + ' ' + MON_EN[p.m - 1];
   }
   function relOT(n, lang) {
-    if (n < 0) return pick(lang, { en: (-n) + ' day' + (n === -1 ? '' : 's') + ' before OT', ms: (-n) + ' hari sebelum OT (draf mesin)', zh: '手术前 ' + (-n) + ' 天（机器草稿）' });
-    if (n === 0) return pick(lang, { en: 'OT day', ms: 'hari OT (draf mesin)', zh: '手术当天（机器草稿）' });
-    return pick(lang, { en: n + ' day' + (n === 1 ? '' : 's') + ' after OT', ms: n + ' hari selepas OT (draf mesin)', zh: '手术后 ' + n + ' 天（机器草稿）' });
+    if (n < 0) return pick(lang, { en: (-n) + ' day' + (n === -1 ? '' : 's') + ' before OT', ms: (-n) + ' hari sebelum OT (draf mesin)', zh: '手术前 ' + (-n) + ' 天（机器草稿）', ar: 'قبل العملية بـ ' + (-n) + ' ' + (n === -1 ? 'يوم' : 'أيام') });
+    if (n === 0) return pick(lang, { en: 'OT day', ms: 'hari OT (draf mesin)', zh: '手术当天（机器草稿）', ar: 'يوم العملية' });
+    return pick(lang, { en: n + ' day' + (n === 1 ? '' : 's') + ' after OT', ms: n + ' hari selepas OT (draf mesin)', zh: '手术后 ' + n + ' 天（机器草稿）', ar: 'بعد العملية بـ ' + n + ' ' + (n === 1 ? 'يوم' : 'أيام') });
   }
   // 'today', 'in 1 day', 'in 14 days', '2 days ago'
   function whenText(k, lang) {
     if (isNaN(k)) return '';
-    if (k === 0) return pick(lang, { en: 'today', ms: 'hari ini (draf mesin)', zh: '今天' });
-    if (k < 0) return pick(lang, { en: (-k) + ' day' + (k === -1 ? '' : 's') + ' ago', ms: (-k) + ' hari lalu (draf mesin)', zh: '已过 ' + (-k) + ' 天' });
-    return pick(lang, { en: 'in ' + k + ' day' + (k === 1 ? '' : 's'), ms: 'dalam ' + k + ' hari (draf mesin)', zh: '还有 ' + k + ' 天' });
+    if (k === 0) return pick(lang, { en: 'today', ms: 'hari ini (draf mesin)', zh: '今天', ar: 'اليوم' });
+    if (k < 0) return pick(lang, { en: (-k) + ' day' + (k === -1 ? '' : 's') + ' ago', ms: (-k) + ' hari lalu (draf mesin)', zh: '已过 ' + (-k) + ' 天', ar: 'منذ ' + (-k) + ' ' + (k === -1 ? 'يوم' : 'أيام') });
+    return pick(lang, { en: 'in ' + k + ' day' + (k === 1 ? '' : 's'), ms: 'dalam ' + k + ' hari (draf mesin)', zh: '还有 ' + k + ' 天', ar: 'بعد ' + k + ' ' + (k === 1 ? 'يوم' : 'أيام') });
   }
   // Text for a to-do or task due date, e.g. 'Fri 13 Nov, 5 days before OT'.
   function dueLabel(sim, t, lang) {
@@ -569,10 +687,10 @@
     const k = daysFromNow(sim, ymd);
     const crit = pid ? openCritical(sim, pid) : [];
     const out = { days: k, date: ymd, when: whenText(k, lang), weekday: fmtCal(ymd, lang), blocked: false, blockMsg: null, warn: null, banner: null, critical: crit.map(t => t.title) };
-    if (isNaN(k)) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Choose a valid date.', ms: 'Pilih tarikh yang sah. (draf mesin)', zh: '请选择有效日期。（机器草稿）' }); return out; }
-    if (k < 0) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Blocked: that date has already passed. Choose today or a later date.', ms: 'Disekat: tarikh itu sudah berlalu. Pilih hari ini atau tarikh kemudian. (draf mesin)', zh: '已阻止：该日期已过。请选择今天或之后的日期。（机器草稿）' }); return out; }
-    if (k < 2) out.warn = pick(lang, { en: 'Warning: too late for routine pre-op work-up; clinician to decide.', ms: 'Amaran: terlalu lewat untuk kerja pra-operasi rutin; doktor perlu putuskan. (draf mesin)', zh: '警告：距离手术太近，不适合常规术前检查；由临床医生决定。（机器草稿）' });
-    if (k <= 7 && crit.length) { const n = crit.length; out.banner = pick(lang, { en: 'Surgery at risk: ' + n + ' critical item' + (n === 1 ? '' : 's') + ' open', ms: 'Pembedahan berisiko: ' + n + ' item kritikal belum selesai (draf mesin)', zh: '手术有风险：' + n + ' 项关键事项未完成（机器草稿）' }); }
+    if (isNaN(k)) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Choose a valid date.', ms: 'Pilih tarikh yang sah. (draf mesin)', zh: '请选择有效日期。（机器草稿）', ar: 'اختر تاريخا صحيحا.' }); return out; }
+    if (k < 0) { out.blocked = true; out.blockMsg = pick(lang, { en: 'Blocked: that date has already passed. Choose today or a later date.', ms: 'Disekat: tarikh itu sudah berlalu. Pilih hari ini atau tarikh kemudian. (draf mesin)', zh: '已阻止：该日期已过。请选择今天或之后的日期。（机器草稿）', ar: 'مرفوض: هذا التاريخ قد مضى. اختر اليوم أو تاريخا لاحقا.' }); return out; }
+    if (k < 2) out.warn = pick(lang, { en: 'Warning: too late for routine pre-op work-up; clinician to decide.', ms: 'Amaran: terlalu lewat untuk kerja pra-operasi rutin; doktor perlu putuskan. (draf mesin)', zh: '警告：距离手术太近，不适合常规术前检查；由临床医生决定。（机器草稿）', ar: 'تحذير: قريب جدا من العملية لفحوص ما قبل العملية الروتينية؛ يقرر الطبيب.' });
+    if (k <= 7 && crit.length) { const n = crit.length; out.banner = pick(lang, { en: 'Surgery at risk: ' + n + ' critical item' + (n === 1 ? '' : 's') + ' open', ms: 'Pembedahan berisiko: ' + n + ' item kritikal belum selesai (draf mesin)', zh: '手术有风险：' + n + ' 项关键事项未完成（机器草稿）', ar: 'العملية معرضة للخطر: ' + n + ' بند حرج غير مكتمل' }); }
     return out;
   }
   // Recomputes the OT-linked tasks of one patient from the current surgeryAt. Closed or confirmed tasks are left alone.
@@ -620,6 +738,9 @@
   const OT = { ymdOfLocal, parseYmd, dayNum, addDays, demoDay, calOf, daysFromNow, daysToOT, otDate, fmtCal, relOT, whenText, dueLabel,
     openCritical, otStatus, syncOT, setOT, CRITICAL_KEYS };
 
-  const api = { summarise, todos, toTasks, Q, QL, labelOf, redOf, redTodo, questionTask, isWorsening: f => isWorsening(f), WORSENING_TEXT, RED_QIDS, REC_TITLE, valueText, OT };
+  function titleFor(t, lang) { return lang === 'ar' ? (SECTION_AR[t] || t) : t; }
+  function redLabel(id, lang) { return (RED_LABEL[lang] && RED_LABEL[lang][id]) || RED_LABEL.en[id] || labelOf(id, lang); }
+  const api = { summarise, todos, toTasks, Q, QL, labelOf, redOf, redTodo, questionTask, isWorsening: f => isWorsening(f), WORSENING_TEXT, RED_QIDS, REC_TITLE, valueText, OT,
+    NOTICE, SECTION_AR, LABEL_AR, REC_AR, OWNER_AR, WD_AR, MON_AR, redLabel, arNorm };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTAKE = api;
 })(this);

@@ -38,7 +38,10 @@
       "owner": "Sample Ortho Ward Team",
       "title": "FICTIONAL SAMPLE – Ward team notes (en)",
       "lang": "en",
-      "procedures": ["TKR", "THR"],
+      "procedures": [
+        "TKR",
+        "THR"
+      ],
       "text": "[topic=wound_care]\nWard team: the nurse will check and change your dressing before discharge."
     },
     {
@@ -48,6 +51,41 @@
       "lang": "en",
       "procedures": [],
       "text": "[topic=shower]\nSurgeon override (FICTIONAL): you may shower from day 2 if the dressing is dry."
+    },
+    {
+      "layer": "country",
+      "owner": "Sample Emirate Health Authority",
+      "title": "FICTIONAL SAMPLE – Country guidance (ar)",
+      "lang": "ar",
+      "procedures": [],
+      "text": "[topic=wound_care]\nأبقِ الضمادة جافة، ولا تُزِلها إلا إذا طلب منك فريق الرعاية ذلك.\n\n[topic=shower]\nعادةً يُسمح بالاستحمام عندما تكون الضمادة الضد للماء سليمة (المعيار الوطني).\n\n[topic=blood_thinner_stop approved=false]\nلا توقف المميّع للدم ولا تعد تناوله من تلقاء نفسك. (FICTIONAL SAMPLE – مسودة وهمية، غير معتمدة سريريا)"
+    },
+    {
+      "layer": "hospital",
+      "owner": "Sample General Hospital",
+      "title": "FICTIONAL SAMPLE – Hospital discharge guide (ar)",
+      "lang": "ar",
+      "procedures": [],
+      "text": "[topic=follow_up]\nموعد المراجعة الأولى في عيادة الجراحة يكون بعد نحو أسبوعين من العملية.\n\n[topic=shower]\nتوجيهات المستشفى: انتظر 48 ساعة قبل الاستحمام.\n\n[topic=driving approved=false]\nتعتمد القيادة على نوع عمليتك وعلى مدى تعافيك. (FICTIONAL SAMPLE – مسودة وهمية، غير معتمدة سريريا)"
+    },
+    {
+      "layer": "team",
+      "owner": "Sample Ortho Ward Team",
+      "title": "FICTIONAL SAMPLE – Ward team notes (ar)",
+      "lang": "ar",
+      "procedures": [
+        "TKR",
+        "THR"
+      ],
+      "text": "[topic=wound_care]\nفريق الجناح: ستفحص الممرضة الضمادة وتغيّرها قبل خروجك."
+    },
+    {
+      "layer": "surgeon",
+      "owner": "Dr Sample Surgeon",
+      "title": "FICTIONAL SAMPLE – Surgeon note (ar)",
+      "lang": "ar",
+      "procedures": [],
+      "text": "[topic=shower]\nتجاوز الجراح (وهمي): يمكنك الاستحمام من اليوم الثاني إذا كانت الضمادة جافة."
     }
   ]
 }

@@ -8,19 +8,32 @@
 
   const engine = (typeof require === 'function') ? require('../engine.js') : root.PeriLoop;
   const IDMAP = (typeof require === 'function') ? require('./idmap.js') : root.PL_IDMAP;
-  const LANGS = ['en', 'ms', 'zh'];
+  const LANGS = ['en', 'ms', 'zh', 'ar'];
   const PROCEDURES = ['TKR', 'THR', 'ACL', 'LUMBAR', 'SHOULDER', 'FOOTANKLE'];
   const LEVEL_RANK = { 'SAME-DAY': 2, EMERGENCY: 3 };
   // Canonical phrases used only to obtain the engine's own reply text for question-level red flags.
   const CANON = {
-    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛' },
-    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧' }
+    EMERGENCY: { en: 'chest pain', ms: 'saya sakit dada sejak semalam', zh: '胸口痛', ar: 'عندي ألم في الصدر منذ الليلة' },
+    'SAME-DAY': { en: 'fever reported', ms: 'saya demam sejak semalam', zh: '发烧', ar: 'عندي حمى منذ الليلة' }
   };
-  const YES_RE = /^\s*(yes|yeah|yep|ya|ada|y|是的?|有|对)(?![a-z])/i;
-  const NO_RE = /^\s*(no|nope|tidak|tak|tiada|takde|否|不是|不|没有|没|无)(?![a-z])/i;
-  const UNK_RE = /unknown|don'?t know|not sure|tidak tahu|tak tahu|不知道|不清楚|不确定/i;
+  // Arabic normalisation for typed answers: tashkeel and tatweel out, alef / ya / ta-marbuta unified, Arabic-Indic digits to ASCII.
+  function arNorm(text) {
+    return String(text == null ? '' : text)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱ]/g, 'ا')
+      .replace(/ى/g, 'ي')
+      .replace(/ة/g, 'ه')
+      .replace(/ؤ/g, 'و')
+      .replace(/ئ/g, 'ي')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+      .replace(/٫/g, '.').replace(/٬/g, ',');
+  }
+  // Patterns below run on arNorm(text), so Arabic alternatives are written without hamza, alef maqsura or ta-marbuta.
+  const YES_RE = /^\s*(yes|yeah|yep|ya|ada|y|是的?|有|对|نعم|ايوه|ايوا)(?![a-zء-ي])/i;
+  const NO_RE = /^\s*(no|nope|tidak|tak|tiada|takde|否|不是|不|没有|没|无|لا|مو|مش|ليس)(?![a-zء-ي])/i;
+  const UNK_RE = /unknown|don'?t know|not sure|tidak tahu|tak tahu|不知道|不清楚|不确定|ما ادري|مو متاكد|مش متاكد|لا اعرف|غير متاكد|مش عارف|ما اعرف/i;
   // round 6 (review3 M3): on a number question a typed 'no' means no value to give. It is recorded as unknown (a gap), never as a number.
-  const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇)\s*[.!。]?\s*$/i;
+  const NUM_NONE_RE = /^\s*(no|none|nil|tidak|tak|tiada|takde|没有|没|无|冇|لا|لا يوجد|ما فيه|مافي|ما في|لاشي)\s*[.!。]?\s*$/i;
 
   /* ---------- builders ---------- */
   function O(value, en, ms, zh) { return { value, label: { en, ms, zh } }; }
@@ -242,9 +255,79 @@
     ]
   };
 
+  /* ---------- Arabic (ar): machine draft, Gulf-friendly simple MSA, reviewed:false. Every question and option has one. ---------- */
+  // Each entry: [question text] or [question text, { option value: label }] for choice questions.
+  const AR_Q = {
+    sex: ['ما هو جنسك؟', { female: 'أنثى', male: 'ذكر', prefer_not: 'أفضل عدم الإفصاح' }],
+    medicines: ['اذكر كل الأدوية التي تتناولها الآن، بما في ذلك الفيتامينات والمنتجات العشبية. اذكر الجرعات إن كنت تعرفها.'],
+    blood_thinners: ['هل تتناول مميّعا للدم، مثل الأسبرين أو الوارفارين أو الريفاروكسابان أو الأبيكسابان؟'],
+    blood_thinner_detail: ['أيّ منها، وبأي جرعة، ومتى كانت آخر مرة تناولته؟'],
+    allergies: ['هل لديك حساسية من الأدوية أو اللاتكس أو اليود (بما في ذلك صبغة الأشعة)؟'],
+    allergy_detail: ['اذكر كل حساسية وما الذي حدث، مثلا: البنسلين: طفح جلدي.'],
+    diabetes: ['هل لديك مرض السكري؟'],
+    hba1c: ['ما هي آخر نتيجة لتحليل HbA1c (%)؟ اكتب "لا أعرف" إذا لم تكن تعرفها.'],
+    heart_lung: ['هل لديك مرض في القلب أو في الرئة، مثل فشل القلب أو الذبحة الصدرية أو الربو أو مرض الانسداد الرئوي المزمن (COPD)؟'],
+    kidney: ['هل لديك مرض في الكلى، أو تحتاج إلى غسيل الكلى؟'],
+    anaesthetic: ['هل سبق لك، أو لأحد أقاربك المقربين، أن واجه مشكلة مع التخدير أو التهدئة؟'],
+    anaesthetic_detail: ['ماذا حدث، ومن الذي تعرض لذلك؟'],
+    smoking: ['هل تدخن، أو تستخدم السجائر الإلكترونية أو الفيب؟', { never: 'لا، أبدا', former: 'توقفت عن ذلك', current: 'ما زلت أدخن أو أستخدم الفيب' }],
+    alcohol: ['كم مرة تشرب الكحول؟', { none: 'لا أشرب أبدا', occasional: 'أحيانا', regular: 'بانتظام' }],
+    same_joint: ['هل سبق أن أجريت أي عملية سابقة على نفس المفصل أو المنطقة؟'],
+    same_joint_detail: ['ما نوع تلك العملية، ومتى أجريتها؟'],
+    hospital_mrsa: ['خلال السنة الماضية، هل دخلت المستشفى، أو أُخبرت أنك تحمل بكتيريا MRSA؟'],
+    pregnancy: ['هل أنتِ حامل، أو ربما تكونين حاملا؟'],
+    symptoms_now: ['الآن، هل لديك ألم في الصدر أو ضيق في التنفس أو تشوش في الوعي؟'],
+    home_help: ['من سيساعدك في المنزل خلال أول أسبوعين بعد العملية؟', { family: 'العائلة', alone: 'سأكون وحدي', helper: 'مساعدة مدفوعة الأجر', unsure: 'لست متأكدا بعد' }],
+    lives_alone: ['هل تعيش وحدك؟'],
+    stairs: ['كم عدد درجات السلم داخل منزلك، مثلا للوصول إلى غرفة النوم أو الحمام؟ اكتب 0 إذا لم يوجد سلم.'],
+    mobility_aid: ['هل تستخدم أي شيء لمساعدتك على المشي؟', { none: 'لا أستخدم شيئا', stick: 'عصا', frame: 'مشاية (إطار للمشي)', crutches: 'عكازان', wheelchair: 'كرسي متحرك' }],
+    payer: ['كيف سيتم دفع تكلفة هذا العلاج؟', { self: 'دفع ذاتي', employer: 'عبر جهة العمل أو برنامج الشركة', insurance: 'تأمين خاص', government: 'برنامج حكومي', other: 'أخرى' }],
+    contact_language: ['ما اللغة التي تفضل أن نستخدمها عند التواصل معك؟', { en: 'الإنجليزية', ms: 'الماليزية', zh: 'الصينية', ar: 'العربية' }],
+    final_note: ['هل هناك أي شيء آخر تريد أن يعرفه الفريق، أو أي عرض يقلقك؟'],
+    tkr_walk: ['إلى أي مسافة تستطيع المشي قبل أن تضطرك الركبة إلى التوقف؟', { under_100: 'أقل من 100 متر', '100_500': 'من 100 إلى 500 متر', over_500: 'أكثر من 500 متر', cannot: 'لا أستطيع المشي' }],
+    tkr_night: ['هل يوقظك ألم الركبة في الليل؟'],
+    tkr_injection: ['هل أخذت حقنة ستيرويد أو أي حقنة أخرى في الركبة خلال الأشهر الستة الماضية؟'],
+    tkr_calf: ['هل لديك ألم أو تورم في الساق في الرجل المقرر إجراء العملية عليها الآن؟'],
+    thr_socks: ['هل تستطيع لبس الجوارب والحذاء بنفسك؟', { independent: 'نعم، بنفسي', with_help: 'فقط بمساعدة', cannot: 'لا، لا أستطيع' }],
+    thr_limp: ['هل تعرج عند المشي؟'],
+    thr_injection: ['هل أخذت حقنة في الورك خلال الأشهر الستة الماضية؟'],
+    thr_leg_length: ['هل لاحظت أن إحدى الرجلين تبدو أقصر من الأخرى؟'],
+    acl_giving_way: ['هل تنخلع الركبة أو تفقد ثباتها عند الدوران أو اللف أو النزول على الدرج؟'],
+    acl_weeks: ['منذ كم أسبوعا حدثت الإصابة؟ اكتب "لا أعرف" إذا لم تكن متأكدا.'],
+    acl_other: ['هل سبق أن أصبت بإصابة أخرى في الركبة، مثل تمزق الغضروف الهلالي؟'],
+    acl_sport: ['ما الرياضة أو النشاط الذي تريد أن تعود إليه؟'],
+    lum_leg_weak: ['هل لاحظت ضعفا جديدا، أو يزداد سوءا، في رجل واحدة أو في الرجلين؟'],
+    lum_bladder: ['هل حدث أي تغيير جديد في التبول، أو في التحكم في البول، أو في التحكم في الأمعاء؟'],
+    lum_saddle: ['هل لاحظت تنميلا حول فتحة الشرج أو منطقة الأعضاء التناسلية أو الجزء الداخلي من الفخذين؟'],
+    lum_distance: ['إلى أين يمتد ألم ساقك؟', { back_only: 'الظهر فقط، دون ألم في الساق', buttock: 'الأرداف', thigh: 'الفخذ', below_knee: 'أسفل الركبة' }],
+    lum_claudication: ['هل يسبب المشي ألما في الساق يخف عندما تجلس أو تنحني إلى الأمام؟'],
+    sh_night: ['هل يبقيك ألم الكتف مستيقظا، خاصة عند النوم على ذلك الجانب؟'],
+    sh_overhead: ['إلى أي مدى تستطيع رفع الذراع المقرر إجراء العملية عليها فوق رأسك؟', { full: 'بالكامل، دون مساعدة', partial: 'جزئيا', none: 'لا أستطيع إطلاقا' }],
+    sh_dominant: ['بأي يد تكتب؟', { right: 'اليمنى', left: 'اليسرى' }],
+    sh_fingers: ['هل أصابع الذراع المقرر إجراء العملية عليها مخدرة أو باردة أو شاحبة الآن؟'],
+    fa_shoes: ['ما نوع الحذاء الذي تستطيع لبسه الآن؟', { normal: 'حذائي المعتاد', wide: 'فقط أحذية واسعة أو خاصة', none: 'لا أستطيع لبس الحذاء' }],
+    fa_sore: ['هل يوجد جرح مفتوح أو بثرة أو قرحة على القدم أو الكاحل المقرر إجراء العملية عليه؟'],
+    fa_toes: ['هل أصابع القدم في ذلك الجانب باردة أو شاحبة أو زرقاء أو بنفسجية؟'],
+    fa_falls: ['هل سقطت خلال الأشهر الستة الماضية؟']
+  };
+  // Option added for every language (contact language now includes Arabic).
+  const CONTACT_AR_OPTION = [O('ar', 'Arabic', 'Bahasa Arab', '阿拉伯语')];
+
   /* ---------- lookup ---------- */
   const BANK = {};
-  COMMON.concat(...PROCEDURES.map(p => BY_PROC[p])).forEach(q => { BANK[q.id] = q; });
+  COMMON.concat(...PROCEDURES.map(p => BY_PROC[p])).forEach(q => {
+    if (q.id === 'contact_language') q.options.push(...CONTACT_AR_OPTION);
+    const a = AR_Q[q.id];
+    if (!a) throw new Error('no ar text for question ' + q.id);
+    q.text.ar = a[0];
+    if (q.type === 'choice') {
+      q.options.forEach(o => {
+        if (!a[1] || typeof a[1][o.value] !== 'string') throw new Error('no ar label for ' + q.id + '.' + o.value);
+        o.label.ar = a[1][o.value];
+      });
+    }
+    BANK[q.id] = q;
+  });
 
   /* ---------- helpers ---------- */
   function clone(x) { return JSON.parse(JSON.stringify(x)); }
@@ -274,27 +357,30 @@
     return value === rf;
   }
   function matchOption(q, raw) {
-    const s = raw.trim().toLowerCase();
+    const s = arNorm(raw).trim().toLowerCase();
+    const L = x => arNorm(x).toLowerCase();
     for (const o of q.options) {
-      const exact = [o.value, o.label.en, o.label.ms, o.label.zh].map(x => String(x).toLowerCase());
+      const exact = [o.value, o.label.en, o.label.ms, o.label.zh, o.label.ar].map(x => L(x));
       if (exact.includes(s)) return o.value;
     }
     for (const o of q.options) {
-      const inside = [o.label.en, o.label.ms, o.label.zh].map(x => x.toLowerCase())
+      const inside = [o.label.en, o.label.ms, o.label.zh, o.label.ar].map(x => L(x))
         .filter(l => l.length >= 2 || /[一-鿿]/.test(l));
       if (inside.some(l => s.includes(l))) return o.value;
     }
     return null;
   }
   function parseNumber(raw) {
-    if (UNK_RE.test(raw)) return 'unknown';
-    const m = String(raw).match(/-?\d+(?:\.\d+)?/);
+    const n = arNorm(raw); // Arabic-Indic digits and the Arabic decimal mark become ASCII first
+    if (UNK_RE.test(n)) return 'unknown';
+    const m = n.match(/-?\d+(?:\.\d+)?/);
     return m ? parseFloat(m[0]) : null;
   }
   function parseYesNo(raw, original) {
     if (typeof original === 'boolean') return original ? 'yes' : 'no';
-    if (YES_RE.test(raw)) return 'yes';
-    if (NO_RE.test(raw)) return 'no';
+    const n = arNorm(raw);
+    if (YES_RE.test(n)) return 'yes';
+    if (NO_RE.test(n)) return 'no';
     return null;
   }
   function pruneSkipped(s) {
@@ -338,11 +424,11 @@
     // 2. Interpret the answer for this question.
     let value = null; let parsed = true;
     if (typeof answerValue === 'boolean' && q.type === 'yesno') value = parseYesNo(text, answerValue);
-    else if (q.type === 'yesno') value = UNK_RE.test(text) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
+    else if (q.type === 'yesno') value = UNK_RE.test(arNorm(text)) ? 'unknown' : parseYesNo(text, null); // round 6: unknown is a recorded answer, never a forced yes or no
     else if (q.type === 'choice') value = text ? matchOption(q, text) : null;
     else if (q.type === 'number') {
       const n = parseNumber(text);
-      if (n === 'unknown' || (n === null && NUM_NONE_RE.test(text))) value = 'unknown';
+      if (n === 'unknown' || (n === null && NUM_NONE_RE.test(arNorm(text)))) value = 'unknown';
       else if (typeof n === 'number' && n >= q.min && n <= q.max) value = n;
     } else if (q.type === 'text') value = text || null;
 
@@ -390,10 +476,10 @@
   function shownOf(q, v, lang) {
     if (q.type === 'choice') { const o = q.options.find(x => x.value === v); return o ? o.label[lang] : String(v); }
     if (q.type === 'yesno') {
-      const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' } }[lang];
+      const w = { en: { yes: 'Yes', no: 'No' }, ms: { yes: 'Ya', no: 'Tidak' }, zh: { yes: '是', no: '否' }, ar: { yes: 'نعم', no: 'لا' } }[lang];
       return w[v] || String(v);
     }
-    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道' }[lang];
+    if (v === 'unknown') return { en: 'unknown', ms: 'tidak tahu', zh: '不知道', ar: 'لا أعرف' }[lang];
     return String(v);
   }
   function toAnswers(state) {
@@ -412,6 +498,39 @@
     };
   }
 
-  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK };
+  /* ---------- Arabic sample patients (fictional). Each script is typed through next(), so the answers are the interview's own. ---------- */
+  const AR_SAMPLES = [
+    { pid: 'AR-S1', case: 'Knee replacement, diabetes, blood thinner, penicillin allergy (fictional)', caseAr: 'استبدال مفصل الركبة مع السكري ومميّع للدم وحساسية البنسلين (وهمي)', procedure: 'TKR',
+      script: { sex: 'أنثى', medicines: 'باراسيتامول 500 ملغ عند الحاجة', blood_thinners: 'نعم', blood_thinner_detail: 'أسبرين 75 ملغ، آخر جرعة أمس',
+        allergies: 'نعم', allergy_detail: 'البنسلين: طفح جلدي', diabetes: 'نعم', hba1c: '٩٫١', tkr_walk: 'من 100 إلى 500 متر',
+        tkr_night: 'نعم', final_note: 'الألم في الركبة يزداد في الليل' } },
+    { pid: 'AR-S2', case: 'Lumbar, new numbness in the saddle area (fictional)', caseAr: 'أسفل الظهر مع تنميل جديد في منطقة السرج (وهمي)', procedure: 'LUMBAR',
+      script: { lum_saddle: 'نعم', lum_distance: 'الأرداف', final_note: 'لا شيء آخر' } },
+    { pid: 'AR-S3', case: 'Hip replacement, lives alone with stairs at home (fictional)', caseAr: 'استبدال مفصل الورك، يعيش وحده ولديه درج في المنزل (وهمي)', procedure: 'THR',
+      script: { home_help: 'سأكون وحدي', lives_alone: 'نعم', stairs: '١٢', mobility_aid: 'عكازان', payer: 'تأمين خاص', thr_limp: 'نعم',
+        final_note: 'لا شيء آخر' } }
+  ];
+  function defaultAr(q) {
+    if (q.type === 'yesno') return 'لا';
+    if (q.type === 'choice') return q.options[0].label.ar;
+    if (q.type === 'number') return 5;
+    return 'لا شيء';
+  }
+  // One Arabic sample run through the interview, returned in the shape the page loads (toAnswers plus case and pid).
+  function arSample(index) {
+    const S = AR_SAMPLES[index];
+    if (!S) return null;
+    let s = build(S.procedure, 'ar', S.pid); let guard = 0;
+    while (!s.done && guard++ < 200) {
+      const q = BANK[s.current];
+      const a = Object.prototype.hasOwnProperty.call(S.script, q.id) ? S.script[q.id] : defaultAr(q);
+      s = next(s, a);
+      if (s.reprompt) break;
+    }
+    return Object.assign(toAnswers(s), { case: S.case, caseAr: S.caseAr, pid: S.pid, sample: true, complete: s.done === true, reprompt: !!s.reprompt });
+  }
+  const AR_SAMPLE_COUNT = AR_SAMPLES.length;
+
+  const api = { COMMON, BY_PROC, PROCEDURES, LANGS, build, next, isComplete, toAnswers, prompt, BANK, arSample, AR_SAMPLE_COUNT, arNorm };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PL_INTERVIEW = api;
 })(this);

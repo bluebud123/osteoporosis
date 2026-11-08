@@ -19,7 +19,8 @@ PeriLoop is a prototype that gives each step an owner, a due time, and a route t
 - Turns an abnormal result into a HOLD with an owner. Late items are re-pinged to the owner and nudged to the patient, then escalated after a cap of 3.
 - Sorts each message or result into an outcome class: EMERGENCY, SAME-DAY, HOLD, OVERDUE, ROUTE, ASK and ANSWER. The engine also returns ACK (a benign acknowledgement) and OK (nothing to act on). Closing a task is a separate step, not a class. Fixed rules run first.
 - Intake tab, OT date: records the operating theatre (OT) date. Impossible or unpadded dates are refused. Critical items open within 7 days of the OT date flag the surgery as at risk. 80 checks in `mod/otdate.test.js` pass.
-- Intake tab, pre-op interview: a patient interview for each of the six procedure types, in English, Bahasa Malaysia and Chinese. The Bahasa Malaysia and Chinese wording is a machine draft pending native review.
+- Intake tab, pre-op interview: a patient interview for each of the six procedure types, in English, Bahasa Malaysia, Chinese and Arabic. The Bahasa Malaysia, Chinese and Arabic wording is machine-drafted and needs native review. Arabic review should be by a native Arabic-speaking clinician, ideally from the Gulf.
+- Arabic (ar), the fourth language: the interview, doctor summary, to-do list, Ask box, patient phone replies, red-flag rules and model-reply guard all have Arabic. Arabic text switches the Intake cards to right-to-left layout. The Staff board stays in English. Arabic voice input is not tested: the Use voice button passes Arabic to the browser's speech recognition where it is supported, and no test covers the result.
 - Intake tab, doctor summary: rule-based, no model. It lists the answers and flags contradictions (for example, an allergy named in free text while the box says "no") and incompleteness (unanswered or unclear questions).
 - Intake tab, to-do list: generated from the summary and sent to the Staff board task engine in one step. Repeated sends are de-duplicated.
 - Intake tab, Ask box: answers questions about the surgery from layered sources (country, hospital, team, surgeon). Each answer shows its source layer and owner. Clinical questions such as blood thinners, antibiotics, flying and stopping injections go to a clinician. In model mode, emergency, same-day and clinical-judgement routes never reach a model.
@@ -32,7 +33,7 @@ PeriLoop is a prototype that gives each step an owner, a due time, and a route t
 |---|---|---|
 | 1. End-to-end visibility of each case | Each patient has a checklist showing every shared and procedure item, with owner, due time and status. The pre-op interview produces a doctor summary and a to-do list for each patient. | Overview (per-patient checklists); Intake (doctor summary); Staff board |
 | 2. Ownership and timely progression | Every item has an owner and a due time. Late items are re-pinged, nudged to the patient, then escalated after 3 attempts. Interview to-dos are created as Staff board tasks with an owner and a due time. | Staff board; Tests tab (30 fictional cases with expected outcomes) |
-| 3. Patient-centred communication | Patient replies are fixed text (draft) in English, Bahasa Malaysia and Chinese. The Ask box answers from layered sources and shows a citation. Clinical questions are not answered by the bot; they go to a clinician. Some Ask box answers are sample drafts, labelled "SAMPLE draft, not approved" (see section 6.8). | Patient phone; Intake (Ask box) |
+| 3. Patient-centred communication | Patient replies are fixed text (draft) in English, Bahasa Malaysia, Chinese and Arabic. Arabic replies have not had native review. The Ask box answers from layered sources and shows a citation. Clinical questions are not answered by the bot; they go to a clinician. Some Ask box answers are sample drafts, labelled "SAMPLE draft, not approved" (see section 6.8). | Patient phone; Intake (Ask box) |
 | 4. Cross-provider consultation | Not yet done. Integration with Malaffi (Abu Dhabi health information exchange) and Sahatna is planned, not built. | Not in the prototype |
 | 5. Safe, human-governed escalation | Fixed red-flag rules run before anything else. A red flag in the interview stops the interview and creates an urgent task. Unknown questions and unrecognised messages with alarm words go to a clinician. Unacknowledged alerts are re-paged up to 3 times, then an on-call fallback is used. | Staff board; Intake; Tests tab |
 | 6. Closure and impact measures | A task closes only with attached evidence plus a clinician, or a documented clinician decision with a reason. "ok" is refused. Impact measurement: not yet done. | Staff board (closure); impact measures not yet done |
@@ -47,8 +48,8 @@ Weights are not disclosed.
 |---|---|---|
 | Health impact and clinical relevance | Covers six elective orthopaedic procedure types. Models pre-op screening, the interview, the OT date, and closure of shared steps. | No measured reduction in missed steps. No published-rate figure for missed steps yet. No clinician labelling beyond the author. No surgeon sign-off of the rules or the question tree. |
 | Technical depth and architecture | Deterministic rules engine, with procedure packs held as data. Outcome classes with fixed rules first. Layered knowledge store with citations. Adapter that separates the model provider from the rules. Raise-only second check. Runs in the browser, with a proxy design for the model. | No real database or login. No Malaffi or Sahatna integration. The proxy has not been run against a live provider. |
-| Working solution and demo quality | Working single-page prototype with six parts, a 30-case test runner, and 16 automated test suites that pass (section 6.1). | Live demo link, login credentials and video: not yet done. |
-| Responsible AI, safety and data governance | Fixed rules first. Scripted default. The second check can only raise urgency. An output guard checks any model reply before it is shown. Clinical questions routed to a clinician. Synthetic data only. | Rules alone caught 42 of 75 urgent messages in the blind set (56.0%). Second clinician blind labelling not done. Not tested on real patient messages, which the challenge does not allow. Model mode not run against a live provider. |
+| Working solution and demo quality | Working single-page prototype with six parts, a 30-case test runner, and 18 automated test suites that pass (section 6.1). | Live demo link, login credentials and video: not yet done. |
+| Responsible AI, safety and data governance | Fixed rules first. Scripted default. The second check can only raise urgency. An output guard checks any model reply before it is shown. Clinical questions routed to a clinician. Synthetic data only. | Rules alone caught 42 of 75 urgent messages in the blind set (56.0%), and 27 of 60 in the Arabic blind set (45.0%). Second clinician blind labelling not done. Not tested on real patient messages, which the challenge does not allow. Model mode not run against a live provider. |
 | Scalability and deployment readiness | Procedure packs are data, so new procedure types can be added as data. Model provider can be changed by configuration. | No real messaging channel. No real database or login. No integration with existing health systems. No data protection assessment for the UAE. |
 | Commercial viability and path to pilot | Unit of value: one operation episode, paid for by a hospital, starting with a pilot. Pilot site planned at a clinic with an existing Telegram FAQ and red-flag bot. | No revenue figure. Written permission from the employer (Ministry of Health, Malaysia) and the clinic: not yet obtained. |
 
@@ -56,8 +57,8 @@ Weights are not disclosed.
 
 - Synthetic data only. The prototype uses fictional patients. The test messages are written by an AI model, not by patients.
 - Scripted by default. Patient replies are fixed text (draft). The model mode is off unless configured.
-- Fixed rules come before anything else. Red flags are caught first, in English, Bahasa Malaysia and Chinese. Red-flag vocabulary covers stroke signs, seizure, fainting, vomiting blood, anaphylaxis, overdose, self-harm and heavy bleeding, among others.
-- Rules alone are partial. In the blind set, they escalated 42 of 75 urgent messages. A second check is needed in production. In AI mode it can only raise a message's urgency, and it has not been validated against clinicians.
+- Fixed rules come before anything else. Red flags are caught first, in English, Bahasa Malaysia, Chinese and Arabic. Red-flag vocabulary covers stroke signs, seizure, fainting, vomiting blood, anaphylaxis, overdose, self-harm and heavy bleeding, among others.
+- Rules alone are partial. In the blind set, they escalated 42 of 75 urgent messages. In the Arabic blind set, they escalated 27 of 60. A second check is needed in production. In AI mode it can only raise a message's urgency, and it has not been validated against clinicians.
 - Model mode is guarded. Emergency, same-day and clinical-judgement routes are classified before any model call and never reach the model. A model reply is checked before it is shown. A reply that reassures, or that makes a clinical decision, is replaced with the scripted text.
 - Data protection: in AI mode, the patient message text goes to the configured provider, through the proxy. The demo uses synthetic data only. Real patients would need a provider that data-protection rules allow. No UAE data-protection assessment has been done.
 - Clinical questions with no approved answer are routed to a clinician. A question that matches an approved topic, such as showering with a dressing, can still reach the model in model mode, and some benign questions can still receive a sample draft answer. These are known limits.
@@ -90,6 +91,8 @@ All numbers below are from the prototype's own tests and blind sets. They are no
 | mod/review1b.test.js | Review fixes: worsening rule, red sample, overrides | 22 PASS, 0 FAIL |
 | mod/round3.test.js | Every question across six procedures, in en, ms and zh | 239 PASS, 0 FAIL |
 | mod/second_check.test.js | Second check: raise-only, strict parse, timeout, unscreened handling | 26 PASS, 0 FAIL |
+| mod/arabic_engine.test.js | Arabic red flags, route rules, FAQ answers, model-reply guard | 538 PASS, 0 FAIL |
+| mod/arabic_content.test.js | Arabic interview bank, summary, to-do titles, Ask box routes, RTL CSS, page wiring | 80 PASS, 0 FAIL |
 
 These tests were written by the author alongside the engine. Passing them shows the rules behave as the author intended. It does not show clinical accuracy.
 
@@ -152,6 +155,30 @@ Caveats, which apply to every number in this section:
 - Rules plus the check work only in AI mode, through a proxy. In the default demo mode, the rules run alone and the Settings card says so.
 - The proxy owns the prompt. The proxy has been tested end to end against a stub upstream, not against a real provider. Rate limits are in memory per instance.
 
+### 6.5a Arabic blind set (unseen5_ar): 120 messages
+
+- 120 AI-written messages: 60 urgent and 60 normal, in Gulf, Egyptian, Levantine and Modern Standard Arabic (MSA). The author states they were written without sight of the rules. The dialect text is an imitation, not real patient text. The "urgent" labels are AI judgement, not clinician labels.
+- Language detected as Arabic for 120 of 120 messages. Urgent answered by the bot: 0 of 60, in both printed outputs.
+- The printed outputs are `mod/unseen5_ar_firstpass.txt` (rules only) and `mod/second_check/ar_combined_firstpass.txt` (second check alone, and rules OR second check). The scoring script was not re-run for this document.
+
+| Measure | Rules only | Haiku second check only | Rules OR Haiku (raise-only) |
+|---|---|---|---|
+| Urgent caught | 27/60 (45.0%, CI 33.1-57.5) | 60/60 (100.0%, CI 94.0-100.0) | 60/60 (100.0%, CI 94.0-100.0) |
+| Normal falsely escalated | 6/60 (10.0%, CI 4.7-20.1) | 6/60 (10.0%, CI 4.7-20.1) | 11/60 (18.3%, CI 10.6-29.9) |
+
+Rules only, urgent caught by dialect: Gulf 7/20 (35.0%), Egyptian 5/15 (33.3%), Levantine 9/15 (60.0%), MSA 6/10 (60.0%). The second check alone caught all urgent messages in each dialect (20/20, 15/15, 15/15, 10/10). Intervals by dialect are in the printed output.
+
+The second check alone: 0 missed of 60, interval 94-100%.
+
+Caveats, which apply to every number in this section:
+
+- The same model family wrote the messages and judged them. That is a likely source of agreement. This is not recorded in the printed files.
+- The second-check prompt is biased to "urgent when unsure".
+- The labels are AI judgement. No clinician has labelled them.
+- The 100% is 60 of 60, with the interval above. It is not a claim of perfect sensitivity.
+- Rules alone did not escalate 33 of the 60 urgent messages.
+- No record shows the rules were frozen before this run, so treat this set as possibly tuned-on.
+
 ### 6.6 Model-output harness (AI-mode intake guard)
 
 A Haiku stand-in played the model, because no provider key was available. Requests and replies were scored by the guard and by independent heuristic checks.
@@ -169,7 +196,8 @@ Three independent AI-agent reviews (`review1.md`, `review2.md`, `review3.md`) an
 
 ### 6.8 Known open items after round 6
 
-- Bahasa Malaysia and Chinese wording has not had native review. The wording is machine draft.
+- Bahasa Malaysia, Chinese and Arabic wording has not had native review. The wording is machine draft. All Arabic needs a native Arabic-speaking clinician, ideally from the Gulf.
+- Arabic voice input is not tested.
 - Some minor items from review 2 (m1 to m6) remain open. Some display text, such as red-flag reason labels, stays in English in Bahasa Malaysia and Chinese.
 - Review 3 minor items: the Settings proxy input is below a 40 px tap target; typing 99 for HbA1c gives a generic message, not a range message; some English route text remains in Malay and Chinese Ask replies.
 - The "no redness, discharge" wound phrasing with a comma still escalates. This is the safe side, and it is a known limit.
@@ -178,8 +206,8 @@ Three independent AI-agent reviews (`review1.md`, `review2.md`, `review3.md`) an
 
 ### 6.9 Not yet done
 
-- Second clinician blind labelling, and surgeon sign-off of the rules and the question tree.
-- Native Bahasa Malaysia and Chinese review.
+- Second clinician blind labelling of the 150 and 120 blind messages, and surgeon sign-off of the rules and the question tree.
+- Native Bahasa Malaysia, Chinese and Arabic review (Arabic by a clinician, ideally from the Gulf).
 - Testing on real patient messages (not allowed in this challenge).
 - Any measured reduction in missed steps.
 - A live model provider run. Model mode and the second check have only been tested against a stub or stand-in.
@@ -190,8 +218,8 @@ Three independent AI-agent reviews (`review1.md`, `review2.md`, `review3.md`) an
 
 ## 7. Path to pilot: next steps
 
-1. Get a second clinician to label the 150 blind messages and the 30 cases, blind. Resolve disagreements with a surgeon. Get surgeon sign-off of the rules and the interview question tree.
-2. Get native Bahasa Malaysia and Chinese review of the interview and reply wording.
+1. Get a second clinician to label the 150 and 120 blind messages and the 30 cases, blind. Resolve disagreements with a surgeon. Get surgeon sign-off of the rules and the interview question tree.
+2. Get native Bahasa Malaysia, Chinese and Arabic review of the interview and reply wording (Arabic by a clinician, ideally from the Gulf).
 3. Build a fresh, unseen message set after the rules are frozen. Measure rules alone and rules plus the second check, and report both.
 4. Run the proxy against a real provider, with a shared rate-limit store and a data-protection assessment, before any real message is processed.
 5. Add a published-rate figure for missed steps, with sources.

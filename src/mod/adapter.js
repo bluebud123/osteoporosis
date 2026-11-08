@@ -62,7 +62,77 @@
   var NEG_EN = /\b(?:I|we)\s+(?:cannot|can'?t|can not|am unable to|am not able to|won'?t|will not|do not|don'?t)\s+(?:advise|advice|give (?:you )?(?:any |a |an |medical |clinical |the )?(?:advice|diagnos\w*|prognos\w*|recommendation|opinion|answer|normal ranges?)|tell you (?:what|whether|which|if|how)|say (?:whether|what|if|which|how)|check|confirm|interpret|diagnos\w*|decide|judge|know|answer|recommend)\b[^,.;:!?]{0,90}/gi;
   var NEG_MS = /\b(?:saya|kami)\s+(?:tidak|tak)\s+(?:dapat|boleh|mampu)\s+(?:memberi|beri|mengesahkan|menilai|menentukan|memberitahu|menerangkan|mengesyorkan|menyemak)\b[^,.;:!?。]{0,90}/gi;
   var NEG_ZH = /(?:我|我们)(?:无法|不能|不可以|没法|不便)[^，,。；;！!？?]{0,60}/g;
-  var NEG_ALL = [NEG_EN, NEG_MS, NEG_ZH];
+  /* ---------- round 7: Arabic guard (ar). Same rules as en, ms, zh. Draft vocabulary, not clinician validated. ----------
+   * Replies are normalised first (arNorm), so the Arabic patterns are written in normalised form (ا ي ه, no tashkeel).
+   * Summaries are accepted by structure: a third-person sentence whose content words all restate the patient's own words.
+   * Instructions, reassurance, diagnosis and dosing are blocked in Arabic exactly as in the other languages. */
+  var AL = 'ء-ي';
+  var AB = '(?<![' + AL + '])', AE = '(?![' + AL + '])';
+  var AR_LETTER = /[ء-يٱ-ۓۺ-ۿ]/;
+  function hasAr(s) { return AR_LETTER.test(String(s)); }
+  function arNorm(s) {
+    return String(s)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱٲٳ]/g, 'ا')
+      .replace(/[ىیئ]/g, 'ي')
+      .replace(/ک/g, 'ك').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
+      .replace(/[٠-٩]/g, function (d) { return String(d.charCodeAt(0) - 0x0660); })
+      .replace(/[۰-۹]/g, function (d) { return String(d.charCodeAt(0) - 0x06F0); })
+      .replace(/٫/g, '.').replace(/٬/g, '');
+  }
+  function arRe(src, flags) { return new RegExp(arNorm(src), flags || ''); }
+  // negated refusal: "لا أستطيع الإجابة ..." is removed before the advice / reassurance / diagnosis checks
+  var NEG_AR = arRe(AB + '(?:لا|ما|مو|مش|ليس|لم|مب|بدون|ولا)\\s*(?:استطيع|اقدر|يمكنني|اقدم|اعطي|انصح|اشخص|اؤكد|اجيب|اعلق|اقول|اجزم|اعرف|اتحقق)' + AE + '[^،.;:!?؟]{0,90}', 'gi');
+  var INSTR_AR_VERB = '(?:خذ|خذي|خذوا|تناول|تناولي|توقف|توقفي|اوقف|اوقفي|تتوقف|تتوقفي|تاخذ|تاخذي|تتناول|تستمر|تتابع|تبدا|تكرر|تضاعف|تقلل|تزيد|تشرب|ابدا|ابدئي|استمر|استمري|تابع|تابعي|كرر|زد|قلل|قللي|ضاعف|ضاعفي|تجاهل|امسك|تجنب|اعط|اعطي|لا تاخذ|لا تتوقف|لا توقف|لا تتناول|لا تاخذي|لا تتوقفي|اشرب|استخدم|استخدمي)';
+  var AR_MED_OBJ = '(?:وارفرين|وارفارين|ريفاروكسابان|ابيكسابان|دابيغاتران|اليكويس|هيبارين|كلكسان|اسبرين|مسيل|مميع|بنادول|باراسيتامول|ايبوبروفين|ديكلوفيناك|مضاد|دوا|دواء|ادويه|ادوية|حبوب|حبه|حبة|حبات|حبتين|حقنه|حقنة|ابره|ابرة|ترامادول|مورفين|كودين|انسولين|ميتفورمين|جرعه|جرعة|مسكن|مسكنات|كورتيزون|امبوكسيلين|اموكسيسيلين)';
+  var INSTR_AR_RE = arRe(AB + INSTR_AR_VERB + AE + '[^.?!؟]{0,40}' + AR_MED_OBJ + '|' + AB + AR_MED_OBJ + '[^.?!؟]{0,30}' + AB + INSTR_AR_VERB);
+  var AR_MED_RE = arRe(AR_MED_OBJ);
+  var AR_DIRECTIVE_RE = arRe('اسال|اتكلم|تواصل|راجع|اسأل|ينفع|يجوز|ممكن');
+  var AR_MED_NAME_RE = arRe(AB + '(?:وارفرين|وارفارين|ريفاروكسابان|ابيكسابان|اسبرين|بنادول|باراسيتامول|ايبوبروفين|ديكلوفيناك|هيبارين|مضاد حيوي|مضادات حيوية|مسيل الدم|مميع)');
+  var AR_DOSE_RE = arRe('(?:\\d+(?:\\.\\d+)?|واحد|واحده|اثنين|اثنتين|حبتين|ثلاث|ثلاثه|اربع|اربعه|خمس|نص|نصف)\\s*(?:حبه|حبة|حبات|حبوب|ملغ|مغ|ملي|مل|ميلي|وحده|وحدات|كبسول|كبسوله|قرص|اقراص|جرعه|جرعة)|مرتين (?:في|ب)?اليوم|مره (?:في|ب)?اليوم|ثلاث مرات|كل \\d+ ساعه|جرعه|جرعة|حبتين');
+  var AR_DX = 'نقرس|التهاب|جلطه|تجلط|كسر|نزيف|عدوى|جرثوم|سرطان|السكري|سكري|هشاشه|ديسك|انزلاق غضروفي|تمزق|مرض|عرق النسا|فيروس|انفلونزا|ربو|ورم خبيث';
+  var DX_ASSERT_AR = arRe('(?:هذا|هذه|هذي|ذلك|هذول)\\s*(?:غالبا|ربما|على الارجح|يبدو|يشبه|يكون|هو|انه|انها)?\\s*(?:هو\\s*)?(?:ك|ب|ل)?(?:' + AR_DX + ')');
+  var DX_ASSERT_AR2 = arRe('(?:ممكن|ربما|قد|غالبا)\\s*(?:يكون|تكون|هو|هي)\\s*(?:ك|ب|ل)?(?:' + AR_DX + ')');
+  var DIAG_YOU_AR = arRe('(?:انت|انتي|انتم)\\s*(?:مصاب|مصابه|عندك|عندكي)|(?:عندك|عندكي|عندكم)\\s*(?:ال)?(?:' + AR_DX + ')|مصاب ب(?:' + AR_DX + ')');
+  var AR_DIAG_WORD = arRe('تشخيص|مرضك|تشخيصك|تشخيصه|تشخيصها');
+  var ADVICE_AR = arRe(AB + '(?:يجب عليك|يجب ان تذهب|لازم|لابد|ينبغي عليك|انصحك|انصح|الافضل ان|من الافضل|لا تحتاج|ما تحتاج|لا داعي ان تراجع|ابقى في البيت|ابقي في البيت|لا تروح|لا تذهب|لا تراجع|اذهب|اذهبي)' + AE);
+  var REASSURE_AR = arRe(AB + '(?:لا داعي للقلق|لا داعي للخوف|لا تقلق|لا تقلقي|ما تقلق|لا تخف|لا تخافي|ما فيه شي|ما فيه شيء|مافيه شي|مافيه شيء|لا شي خطير|لا بأس|لا باس|شي بسيط|شيء بسيط|يزول|سيزول|راح يزول|سيختفي|يختفي|راح يختفي|ليس خطيرا|مو خطير|ليس خطير|لا يضر|ما يضر|عادي|عاديه|عادية|هذا عادي|امن|امنه)' + AE);
+  var REASSURE_AR2 = /(?<!غير )(?<!مو )(?<!ليس )(?<!ليست )(?:طبيعي|طبيعيه|طبيعية)/;
+  var AR_CLIN = ['سكري', 'السكري', 'ربو', 'الربو', 'نقرس', 'عدوى', 'التهاب', 'جلطه', 'تجلط', 'كسر', 'نزيف', 'سرطان', 'ورم', 'حساسيه', 'بنسلين', 'تخدير', 'فشل كلوي', 'الكلى', 'غسيل كلى', 'القلب', 'قلب', 'ضغط الدم', 'وارفرين', 'ريفاروكسابان', 'اسبرين', 'بنادول', 'باراسيتامول', 'ايبوبروفين', 'تدخين', 'تدخن', 'سجاير', 'كحول', 'مضاد حيوي', 'مضادات حيوية', 'مسيل الدم', 'مميع', 'ديسك', 'الرباط', 'الغضروف'];
+  var CLINICIAN_AR = arRe('الطبيب|الطبيبه|الطبيبة|الفريق|الصيدلي|الممرض|الممرضه|الاطباء');
+  // Arabic function words and redirect words. Content words outside this list must be grounded in the patient's text.
+  var AR_FRAME = ('في من على الى عن مع و او ان لا ما هذا هذه ذلك التي الذي هو هي انت انتي انا نحن كل بعض يمكن يرجى الرجاء ارجو سوف سيراجع سيقوم سيتصل يتصل تتصل فريق طبي طبيب طبيبه ممرض ممرضه صيدلي مختص مختصين حالتك رعايه اسعاف طوارئ اتصل اتصلي تواصل اتصال بك لك لكم عليك شخص مراجعه اجابه سوال اذا لو قبل بعد لان ثم قد كما ليس نعم شكرا المريض المريضه يقول تقول قال قالت انه انها بان اكيد بالتاكيد تماما هنا الان يكون تكون فيه فيها الاجابه السوال الاتصال').split(' ');
+  AR_FRAME = AR_FRAME.map(function (w) { return arNorm(w); });
+  function arWords(s) { return arNorm(s).split(/[^ء-ي]+/).filter(function (w) { return w.length >= 2; }); }
+  function arIsFrame(w) {
+    var c = [w, w.replace(/^(?:وال|بال|لل|ال)/, ''), w.replace(/^[وبلفك]/, ''), w.replace(/^[وبلفك]ال/, '')];
+    return c.some(function (x) { return AR_FRAME.indexOf(x) >= 0; });
+  }
+  function arContentWords(s) { return arWords(s).filter(function (w) { return !arIsFrame(w); }); }
+  function arBigrams(w) { var o = []; for (var i = 0; i + 1 < w.length; i++) o.push(w.substr(i, 2)); return o; }
+  function arStem(w) { return w.replace(/^(?:وال|بال|لل|ال)/, ''); }
+  function arWordGrounded(w, srcWords) {
+    var wb = arBigrams(w);
+    var wn = arStem(w);
+    return srcWords.some(function (x0) {
+      var x = arStem(x0);
+      // a shared stem (ساق / ساقها / ساقي) or enough shared bigrams
+      var n = 0; while (n < wn.length && n < x.length && wn.charAt(n) === x.charAt(n)) n++;
+      if (n >= 3 || (n === wn.length && n >= 2)) return true;
+      var xb = arBigrams(x);
+      var hit = wb.filter(function (b) { return xb.indexOf(b) >= 0; }).length;
+      return hit / wb.length >= 0.6;
+    });
+  }
+  function arGroundedSummary(s, src, min) {
+    var words = arContentWords(s);
+    if (!words.length) return true;
+    var srcWords = arWords(src);
+    var ok = words.filter(function (w) { return arWordGrounded(w, srcWords); }).length;
+    return ok / words.length >= min;
+  }
+
+  var NEG_ALL = [NEG_EN, NEG_MS, NEG_ZH, NEG_AR];
   function stripNeg(s) { var out = String(s); NEG_ALL.forEach(function (re) { out = out.replace(re, ' '); }); return out; }
   var ADVICE_RE = /\b(?:you should|you must|you need to|you ought|you have to|you had better|i advise|i recommend|i suggest|we advise|we recommend|you do not need|you don'?t need|you need not|no need to|don'?t go|do not go|stay at home|wait at home|it is safe|okay to|ok to|fine to|go ahead with|go for it|you can wait|best to|better to|should|must|ought to)\b|\b(?:anda|kamu)\s+(?:patut|perlu|mesti|harus|sepatutnya|boleh teruskan|tidak perlu|tak perlu)\b|\btidak perlu (?:jumpa|pergi|ke)\b|\bjangan pergi\b|\bsebaiknya\b|\bdisyorkan\b|你应该|你应当|您应该|您应当|必须|最好|不必去|不用去|不要去|在家等|可以在家|可以等|不需要去|不用急诊|不必急诊/i;
   var NEED_TO_CARE_RE = /\bneed to (?:contact|call|tell|speak|raise|ask|discuss|talk|see)\b/gi;
@@ -87,7 +157,7 @@
   var ZH_NUM = { '一': '1', '二': '2', '两': '2', '三': '3', '四': '4', '五': '5', '六': '6', '七': '7', '八': '8', '九': '9', '十': '10' };
   var EN_NUM = { one: '1', two: '2', three: '3', four: '4', five: '5', satu: '1', dua: '2', tiga: '3', empat: '4', lima: '5' };
   var ESC_RE = /contact|call|emergency|urgent|999|seek|hospital|care team|medical team|clinic|hubungi|kecemasan|pasukan|急诊|急救|联系|拨打|医护团队|就医|就诊|医疗团队/i;
-  var COND_RE = /\b(?:if|when|unless)\b|如果|若|jika|kalau|sekiranya|apabila/i;
+  var COND_RE = /\b(?:if|when|unless)\b|如果|若|jika|kalau|sekiranya|apabila|إذا|اذا|لو/i;
   var CLINICIAN_RE = /clinician|doctor|care team|medical team|nurse|pharmacist|doktor|pasukan|jururawat|临床医生|医生|医护团队|医疗团队|药剂师|护士/i;
   var QSTART_RE = /^(?:do|does|did|have|has|had|can|could|would|will|is|are|was|were|any|if|whether|what|which|who|where|when|why|how|apakah|adakah|berapa|bila|bilakah|di mana|mengapa|siapa|bagaimana|是否|有没有|您有没有|你有没有|您是否|你是否|请问|什么|哪|谁|为什么|多少|几|发生)/i;
   var DOSE_NUM_RE = /\b\d+(?:\.\d+)?\s*(?:mg|mcg|µg|ug|g|ml|iu|units?|tablets?|tabs?|pills?|capsules?|puffs?|sachets?|biji|keping|butir|kapsul|sudu|titik)\b|\b(?:one|two|three|four|five|half|satu|dua|tiga|empat|lima|setengah)\s+(?:tablets?|tabs?|pills?|capsules?|biji|keping|butir|kapsul|sudu)\b|(?:\d+(?:\.\d+)?|[一二两三四五六七八九十])\s*(?:片|粒|颗|毫克|克)|几片|多少片|几粒|多少粒|\b(?:once|twice)\s+(?:a |per |each )?(?:day|daily|night)\b|\bper day\b/gi;
@@ -124,10 +194,16 @@
   function isContentWord(w) { return EN_STOP.indexOf(w) < 0 && MS_STOP.indexOf(w) < 0; }
   function isFrame(s) {
     if (hasCJK(s)) return zhContent(s).length === 0;
+    if (hasAr(s)) return arContentWords(s).length === 0 && enTokens(s).filter(isContentWord).length === 0;
     return enTokens(s).filter(isContentWord).length === 0;
   }
   // A declarative sentence must restate the patient's own words: en/ms by token overlap, zh by character bigrams.
-  function groundedSummary(s, src) {
+  // Arabic sentences are grounded word by word (bigram overlap); any English words in them are checked as before.
+  function groundedSummary(s, src, min) {
+    if (hasAr(s)) return arGroundedSummary(s, src, min || 0.6) && (enTokens(s).filter(isContentWord).length === 0 || groundedSummaryEn(s, src));
+    return groundedSummaryEn(s, src);
+  }
+  function groundedSummaryEn(s, src) {
     if (hasCJK(s)) {
       var sb = bigrams(zhContent(s)), srcB = bigrams(zhContent(src));
       if (!sb.length) return true;
@@ -152,34 +228,39 @@
     var en = s.match(CLIN_EN_RE) || [];
     for (var i = 0; i < en.length; i++) if (srcSq.indexOf(squash(en[i])) < 0) return false;
     for (var j = 0; j < CLIN_ZH.length; j++) if (s.indexOf(CLIN_ZH[j]) >= 0 && src.indexOf(CLIN_ZH[j]) < 0) return false;
+    for (var a = 0; a < AR_CLIN.length; a++) if (s.indexOf(AR_CLIN[a]) >= 0 && src.indexOf(AR_CLIN[a]) < 0) return false;
     return true;
   }
-  function isQuestion(s) { return /[?？]["')\]]*\s*$/.test(s); }
+  function isQuestion(s) { return /[?？؟]["')\]]*\s*$/.test(s); }
   function splitSentences(r) {
     return r.split(/\n+/).reduce(function (a, line) {
-      return a.concat(line.split(/(?<=[!?。！？])\s*|(?<=\.)\s+/));
+      return a.concat(line.split(/(?<=[!?。！？؟])\s*|(?<=\.)\s+/));
     }, []).map(function (s) { return s.trim(); }).filter(Boolean);
   }
   function instrHit(s) {
-    return INSTR_EN_RE.test(s) || INSTR_EN_REV_RE.test(s) || INSTR_MS_RE.test(s) || INSTR_ZH_RE.test(s) || DO_NOT_RE.test(s) || YOU_CAN_RE.test(s);
+    return INSTR_EN_RE.test(s) || INSTR_EN_REV_RE.test(s) || INSTR_MS_RE.test(s) || INSTR_ZH_RE.test(s) || DO_NOT_RE.test(s) || YOU_CAN_RE.test(s) || INSTR_AR_RE.test(s);
   }
-  function isThirdPerson(s) { return /^(?:the patient|pesakit|patient|they|he|she)\b/i.test(s) || /^患者/.test(s); }
+  // Third-person subject of a summary (en, ms, zh, ar). It only lets an instruction-like sentence through when restates() also holds.
+  var AR_PATIENT_RE = /^(?:المريض|المريضه|مريض|مريضه|الشخص)(?![ء-ي])/;
+  function isThirdPerson(s) { return /^(?:the patient|pesakit|patient|they|he|she|dia|beliau)\b/i.test(s) || /^(?:患者|病人|佢|他|她)/.test(s) || AR_PATIENT_RE.test(s); }
+  // A restatement: every content word of the sentence (or 60% for en/ms, 90% for zh/ar) is in the patient's words, and no clinical term is new.
+  function restates(s, src) { return groundedSummary(s, src, hasAr(s) || hasCJK(s) ? 0.9 : 0.6) && clinicalGrounded(s, src); }
   function removeQForm(s) { return s.replace(/\b(?:do|does|did|can|could|would|will|any|if|whether|have|when|unless|in case)\s+you\s+have\b/gi, ' '); }
   function isEscalation(s) { return ESC_RE.test(s) && COND_RE.test(s); }
 
   // Returns {ok:true} or {ok:false, reason}. classify is optional: when given, assertions and medicine-directed questions are classified too.
   function guardReply(reply, userText, classify) {
-    var r = String(reply == null ? '' : reply).trim();
+    var r = arNorm(String(reply == null ? '' : reply)).trim();
     var fail = function (reason) { return { ok: false, reason: reason }; };
     if (!r) return fail('empty');
     if (r.length > 600) return fail('too_long');
-    var src = patientSource(userText);
+    var src = arNorm(patientSource(userText));
 
     // 1. whole-reply checks on the reply with negated refusals removed
     var scan = stripNeg(r);
-    if (ADVICE_RE.test(scan.replace(NEED_TO_CARE_RE, ' '))) return fail('advice');
-    if (REASSURE_RE.test(scan)) return fail('reassurance');
-    if (DX_ASSERT_EN.test(scan) || DX_ASSERT_ZH.test(scan)) return fail('diagnosis');
+    if (ADVICE_RE.test(scan.replace(NEED_TO_CARE_RE, ' ')) || ADVICE_AR.test(scan)) return fail('advice');
+    if (REASSURE_RE.test(scan) || REASSURE_AR.test(scan) || REASSURE_AR2.test(scan)) return fail('reassurance');
+    if (DX_ASSERT_EN.test(scan) || DX_ASSERT_ZH.test(scan) || DX_ASSERT_AR.test(scan) || DX_ASSERT_AR2.test(scan)) return fail('diagnosis');
 
     // 2. sentence checks
     var sentences = splitSentences(r);
@@ -190,20 +271,23 @@
       var q = isQuestion(s);
       var noNeg = stripNeg(s);
       if (!q && DIAG_WORD.test(noNeg)) return fail('diagnosis');
+      if (!q && (AR_DIAG_WORD.test(noNeg) || DIAG_YOU_AR.test(noNeg))) return fail('diagnosis');
       if (!(q && QSTART_RE.test(s)) && !COND_RE.test(noNeg)) {
         if (DIAG_YOU_EN.test(removeQForm(noNeg))) return fail('diagnosis');
         if (!q && DIAG_YOU_ZH.test(noNeg)) return fail('diagnosis');
       }
       if (q) {
         if (DOSE_NUM_RE.test(s)) { DOSE_NUM_RE.lastIndex = 0; return fail('dose'); }
+        if (AR_DOSE_RE.test(s)) return fail('dose');
         DOSE_NUM_RE.lastIndex = 0;
-        if (instrHit(s) && QSTRONG_RE.test(s)) return fail('instruction');
-        if (MED_ANY_RE.test(s) && WEAK_DIRECTIVE_RE.test(s)) directiveQ.push(s);
+        if (instrHit(s) && (QSTRONG_RE.test(s) || hasAr(s))) return fail('instruction');
+        if ((MED_ANY_RE.test(s) || AR_MED_RE.test(s)) && (WEAK_DIRECTIVE_RE.test(s) || AR_DIRECTIVE_RE.test(s))) directiveQ.push(s);
         continue;
       }
       // declarative
-      if (instrHit(s) && !(isThirdPerson(s) && clinicalGrounded(s, src))) return fail('instruction');
+      if (instrHit(s) && !(isThirdPerson(s) && restates(s, src))) return fail('instruction');
       if (DOSE_BARE_RE.test(s) && !DOSE_BARE_RE.test(src)) return fail('dose');
+      if (AR_DOSE_RE.test(s) && !AR_DOSE_RE.test(src)) return fail('dose');
       var doseTok = s.match(DOSE_NUM_RE) || [];
       var srcSq = squash(src);
       if (doseTok.some(function (t) { return srcSq.indexOf(squash(t)) < 0; })) return fail('dose');
@@ -239,7 +323,7 @@
     }
 
     // 5. a refusal or redirect may not name a medicine in a statement
-    if ((hasNeg(r) || CLINICIAN_RE.test(r)) && sentences.some(function (x) { return !isQuestion(x) && MED_NAME_RE.test(x); })) return fail('medicine_in_redirect');
+    if ((hasNeg(r) || CLINICIAN_RE.test(r) || CLINICIAN_AR.test(r)) && sentences.some(function (x) { return !isQuestion(x) && (MED_NAME_RE.test(x) || AR_MED_NAME_RE.test(x)); })) return fail('medicine_in_redirect');
     return { ok: true };
   }
   function hasNeg(s) { return NEG_ALL.some(function (re) { re.lastIndex = 0; var h = re.test(s); re.lastIndex = 0; return h; }); }

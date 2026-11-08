@@ -52,7 +52,7 @@
   };
 
   /* ---------- text helpers ---------- */
-  function lang(t) { if (/[一-鿿]/.test(t)) return 'zh'; const m = (t.toLowerCase().match(/\b(saya|kaki|luka|bila|boleh|dan|sakit|yang|betis|bengkak|sejak|semalam|ada|tidak|mandi|balutan)\b/g) || []).length; return m >= 2 ? 'ms' : 'en'; }
+  function lang(t) { if (/[一-鿿]/.test(t)) return 'zh'; if (/[ء-يٱ-ۓۺ-ۿ]/.test(t)) return 'ar'; const m = (t.toLowerCase().match(/\b(saya|kaki|luka|bila|boleh|dan|sakit|yang|betis|bengkak|sejak|semalam|ada|tidak|mandi|balutan)\b/g) || []).length; return m >= 2 ? 'ms' : 'en'; }
   const NEG = /(\bno\b|\bnot\b|\bwithout\b|\bnor\b|\bnil\b|tiada|tidak|tak ada|takde|没有|沒有|无)[^.;,]{0,12}$/;
   // round 6: a Chinese negation directly in front of the finding (不是中风, 不闷, 没痛) also negates it
   const ADJ_NEG_RE = /(不是|没有|沒有|没|不|唔|冇|无|無)$/;
@@ -172,12 +172,150 @@
     });
   }
 
+  /* ---------- round 7: Arabic (ar). ADDED only; no existing rule or wording changes. ----------
+     arNorm() runs on every text in classify(), so the Arabic patterns below are written in normalised form: bare alef,
+     ya, ha, no tashkeel. Arabic-Indic and Persian digits become ASCII (38, ٣٨ and ۳۸ match the same rule).
+     Negation mirrors positiveFindings(): a cue (لا، ما، مو، ما عندي، ولا ...) negates a finding when only list words sit between.
+     A compound finding (body word + symptom word) uses arNear(): the negation is read at the symptom word.
+     DRAFT: Modern Standard Arabic with Gulf/Emirati forms and some Egyptian and Levantine. Not clinician validated. */
+  const AL = 'ء-ي';
+  const AB = '(?<![' + AL + '])', AE = '(?![' + AL + '])';
+  const PFX = '(?:ال|بال|لل|وال|ب|ل|و|ف|ك)?';
+  function arNorm(s) {
+    return String(s)
+      .replace(/[ً-ٰٟـ]/g, '')
+      .replace(/[آأإٱٲٳ]/g, 'ا')
+      .replace(/[ىیئ]/g, 'ي')
+      .replace(/ک/g, 'ك').replace(/ؤ/g, 'و').replace(/ة/g, 'ه')
+      .replace(/[٠-٩]/g, d => String(d.charCodeAt(0) - 0x0660))
+      .replace(/[۰-۹]/g, d => String(d.charCodeAt(0) - 0x06F0))
+      .replace(/٫/g, '.').replace(/٬/g, '');
+  }
+  function arRe(src, flags) { return new RegExp(arNorm(src), flags || ''); }
+  function cx(words) { return arRe(AB + PFX + '(?:' + words + ')'); }
+  const AR_CUE = arRe(AB + '(?:و)?(?:لا يوجد|لا توجد|ما عندي|ماعندي|ما عنده|ما عندها|ليس عندي|مو عندي|من غير|من دون|مافي|ما في|ماكو|مافيش|ما فيش|مافيه|ما فيه|مافيها|ما فيها|ما احس|ما احسه|ما احسها|ولا|لا|ما|مو|مب|مش|ليس|ليست|لست|لم|لن|بدون|عدم)' + AE, 'g');
+  const AR_GAP = /^(?:\s|و|او|ولا|لا|حتى|اي|ايه|نوع|من|فيه|فيها|في|عندي|عنده|عندها|شي|شيء|مو|ما|ليس|لم|مب|مش|احس|حاس|حاسه|اشعر|ب|وكمان)*$/;
+  // Returns the findings that are not negated. A cue must end before the finding and only list words may sit between them.
+  function arPositive(text, findRe) {
+    const s = String(text), evs = []; let m;
+    const cre = new RegExp(AR_CUE.source, 'g');
+    while ((m = cre.exec(s))) evs.push({ cue: true, start: m.index, end: m.index + m[0].length });
+    const fre = new RegExp(findRe.source, 'g');
+    while ((m = fre.exec(s))) { if (m[0] === '') fre.lastIndex++; else evs.push({ cue: false, start: m.index, end: m.index + m[0].length }); }
+    evs.sort((a, b) => a.start - b.start || (a.cue ? 1 : -1));
+    const out = []; let from = null;
+    for (const e of evs) {
+      if (e.cue) { from = e.end; continue; }
+      const negated = from !== null && from <= e.start && AR_GAP.test(s.slice(from, e.start));
+      if (!negated) out.push(e);
+      from = negated ? e.end : null;
+    }
+    return out;
+  }
+  function arPos(t, re) { return arPositive(t, re).length > 0; }
+  // A symptom word counts only when a body word (ctx) sits within win characters of it, and it is not negated.
+  function arNear(t, ctxRe, findRe, win) {
+    const ctx = new RegExp(ctxRe.source);
+    return arPositive(t, findRe).some(f => ctx.test(t.slice(Math.max(0, f.start - win), Math.min(t.length, f.end + win))));
+  }
+
+  // Emergency: direct phrases (raw) and body-word + symptom pairs (near)
+  const AR_RAW = [
+    { label: 'breathlessness', re: arRe(AB + '(?:ما اقدر اتنفس|مو قادر اتنفس|ما قدرت اتنفس|لا استطيع التنفس|ما استطيع التنفس|صعوبه (?:في |ب)?التنفس|صعوبه (?:في )?النفس|ضيق (?:في )?التنفس|ضيق نفس|ضيق في النفس|انقطاع النفس|اختناق|اختنق|مخنوق|مختنق|لهاث|يلهث|تلهث|الهث|نهجان|مانع الهوا|نفس قصير|اتنفس بصعوبه|ما اقدر اخذ نفس|مو قادر اخذ نفس|اتنفس بتعب)') },
+    { label: 'coughing blood', re: arRe('(?:اسعل|سعلت|سعال|اكح|كحيت|كحه|كحة|بصقت|ابصق|بصاق|قحه|قحة)[^.;،؟!]{0,20}(?:دم|دما|دماء|دموي)' + AE + '|(?:دم|دما)[^.;،؟!]{0,15}(?:بلغم|سعال|كحه|كحة|بصاق|ابصق)') },
+    { label: 'collapse, unresponsive or no reaction', re: arRe(AB + '(?:اغمي|انغمي|اغمى|يغمى|فاقد الوعي|فاقده الوعي|فاقدة الوعي|فقد الوعي|فقدت الوعي|فقد وعيه|فقدت وعيها|مو واعي|مو واعيه|مو واعية|غير واعي|غير واعيه|غايب عن الوعي|غايبه عن الوعي|غايبة عن الوعي)|' + AB + '(?:هو|هي|ابوي|ابويه|ابوها|امي|امه|امها|زوجي|زوجتي|زوجه|زوجها|مرتي|جوزي|اخوي|اختي|ولدي|بنتي|ابني|المريض|المريضه|الشخص|والدي|والدتي)[^.;،؟!]{0,25}(?:ما|مو|لا) ?(?:يرد|ترد|يصحى|تصحى|يتجاوب|تتجاوب|يستجيب|تستجيب|يتكلم|تتكلم|يسمع|تسمع|يتحرك|تتحرك)|(?:طاح|طحت|وقع|وقعت|انهار|انهارت|سقط|سقطت)[^.;،؟!]{0,25}(?:ما|مو|لا) ?(?:يرد|ترد|يصحى|تصحى|يتجاوب|تتجاوب|يتكلم|تتكلم)') },
+    { label: 'confusion/drowsiness', re: arRe(AB + '(?:يهذي|تهذي|يهذر|تهذر|يخرف|تخرف|مشوش|مشوشه|مشوشة|تشوشت|مرتبك|مرتبكه|مرتبكة)|' + AB + '(?:هو|هي|ابوي|امي|المريض|المريضه|زوجي|زوجتي|مرتي|جوزي)[^.;،؟!]{0,20}(?:ما|مو|لا) ?(?:يعرف|تعرف|يدري|تدري) (?:وين|اين|ايش|اسمه|اسمها|اهله|اهلها|شو)|(?:كلامه|كلامها) ما له (?:معنى|معني)|(?:يسال|تسال) وين') },
+    { label: 'stroke signs: slurred or lost speech', re: arRe(AB + '(?:كلامه ثقيل|كلامها ثقيل|كلامه تقيل|كلامها تقيل|كلامه مو واضح|كلامها مو واضح|كلام مو واضح|كلامي ثقيل|كلامي مو واضح|ما يقدر يتكلم|ما تقدر تتكلم|ما يقدر يحكي|ما تقدر تحكي|يتكلم بصعوبه|تتكلم بصعوبه|ينطق بصعوبه|تنطق بصعوبه|لسانه ثقيل|لسانها ثقيل|لساني ثقيل|لسانه تقيل|لسانها تقيل|لساني تقيل|يلوي لسانه|يتلعثم|تتلعثم|ما يطلع كلامه|ما تطلع كلامها|فقد الكلام|فقدت الكلام)') },
+    { label: 'seizure, fit or convulsion', re: arRe(AB + 'صرع' + AE + '|' + AB + '(?:نوبه صرع|يتشنج كله|يتشنج كلها|يتشنج جسمه|يتشنج جسمها|تتشنج كلها|تشنجات كامله|تشنجات متكرره|اختلاج|رجفه كامله|يرتعش كله|يرتجف كله|تشنج كامل)') },
+    { label: 'vomiting blood', re: arRe('(?:يقيء|تقيء|قيء|استفرغ|استفرغت|استفراغ|رجعت|ترجع|يرجع|رميت|يرمي|قاء|يتقيا|تتقيا|اتقيا|تقيا)[^.;،؟!]{0,15}(?:دم|دما|دماء|دموي)' + AE + '|(?:دم|دما)[^.;،؟!]{0,8}(?:قيء|استفراغ|يتقيا|تتقيا|ارجع|رجعت)') },
+    { label: 'black tarry stool', re: arRe(AB + '(?:براز|غايط|برازي|غايطي|تغوطت|تبرزت|بوبي)[^.;،؟!]{0,12}(?:اسود|سوده|سوداء|قطران|قطراني|مثل القطران)|(?:اسود|سوده|سوداء|قطراني)[^.;،؟!]{0,8}(?:براز|غايط|برازي|غايطي)|قطراني') },
+    { label: 'throat closing or lip/tongue swelling (possible anaphylaxis)', re: arRe(AB + '(?:حساسيه|تحسس|تحسسيه)[^.;،؟!]{0,20}(?:صدمه|اختناق|ما اقدر|ضيق نفس)|' + AB + 'صدمه تحسسيه|انافيلاكسيس|انافلاكسيس|انفلاكسيس') },
+    { label: 'possible overdose', re: arRe(AB + '(?:اخذت|شربت|اكلت|بلعت|تناولت)[^.;،؟!]{0,10}(?:زياده|زايده|كثير|كثيره|كميه كبيره|عدد كبير|علبه كامله|علب|كل الحبوب|كل الدوا|الحبوب كلها|الدوا كله)[^.;،؟!]{0,20}(?:دوا|دواء|ادويه|حبوب|حبه|حبات|بنادول|باراسيتامول|علب)' + '|' + AB + '(?:اخذت|شربت|اكلت|بلعت|تناولت)[^.;،؟!]{0,10}(?:دوا|دواء|ادويه|حبوب|حبه|حبات|بنادول|باراسيتامول)[^.;،؟!]{0,10}(?:كثير|كثيره|زياده|زايده|كامله|كامل)' + '|' + AB + '(?:اخذت|شربت|اكلت|بلعت|تناولت) (?:\\d{2,}|عشرين|ثلاثين|اربعين|خمسين|عشره|عشر)[^.;،؟!]{0,12}(?:حبه|حبة|حبات|حبوب|دوا|دواء|بنادول|باراسيتامول|ادويه|علب)' + '|' + AB + '(?:جرعه زياده|جرعه زايده|جرعه زائده|جرعه مضاعفه|تجاوزت الجرعه|اخذت ضعف|اخذت الجرعه مرتين|اكثر من المفروض|اكثر من الجرعه|اخذت حبوب بالغلط|اخذت الدوا بالغلط|اخذت بالغلط|اكلت بالغلط)' + '|' + AB + '(?:اخذت كل الحبوب|اكلت كل الحبوب|شربت كل الدوا|اخذت كل الدوا|اخذت الدوا كله|اكلت الدوا كله|شربت الدوا كله|اخذت علبه كامله)') },
+    { label: 'bladder or bowel control lost, or saddle numbness', re: arRe('(?:ما|مو|لا) ?(?:اقدر|قادر|استطيع) ?(?:اتبول|ابول|اتبرز|اتغوط|اطلع البول|اطلع الغايط|اعصر)|(?:ما|مو) ?(?:يقدر|تقدر) ?(?:يتبول|تتبول|يتبرز|تتبرز|يتغوط|تتغوط)|احتباس (?:بول|البول)|انحباس البول|انحبس البول|انحبست البول|ما (?:يطلع|طلع|تطلع|طلعت) (?:البول|الغايط|البراز)|تبولت على نفسي|تبولت في الفراش|تغوطت على نفسي|سلس (?:بول|البول|غايط|براز)|ما اقدر امسك (?:البول|الغايط|البراز)|ما (?:اقدر|اتحكم) (?:اتحكم )?(?:بالبول|في البول|بالغايط|في الغايط|بالبراز)|فقدت السيطره على (?:البول|الغايط|البراز)') },
+  ];
+  const AR_NEAR = [
+    { label: 'chest pain', ctx: cx('صدر|قلب'), find: arRe(AB + '(?:الم|الالم)' + AE + '|وجع|يوجع|يعور|ضيق|يضغط|ضاغط|مضغوط|ضغط على|ثقيل|ثقل|انقباض|يخنق|يقبض|مؤلم|يؤلم|يتالم'), win: 40 },
+    { label: 'blue or purple lips (cyanosis)', ctx: cx('شفايف|شفاه|شفه|شفت|لسان|اظافر|اظفار'), find: arRe('ازرق|زرق|بنفسج|رمادي'), win: 16 },
+    { label: 'stroke signs: face drooping', ctx: cx('وجه|فم|ملامح'), find: arRe('نازل|ينزل|مايل|معوج|مشوه|ينسحب|تنسحب|نص وجه|نصف وجه'), win: 25 },
+    { label: 'heavy bleeding that will not stop', ctx: cx('نزيف|ينزف|تنزف|نزف|نزفت|دم'), find: arRe('شديد|قوي|قوه|كثير|غزير|ما يوقف|ما يتوقف|مو راضي يوقف|ما يقف'), win: 20 },
+    { label: 'heavy bleeding that will not stop', ctx: cx('ضماد|ضمادة|شاش|بندج|جبيره|جبس|بلاستر|جرح|غرزه|خياطه'), find: arRe('مبلول|مغرق|مشبع|غرقان|مليان|منقوع'), win: 30 },
+    { label: 'throat closing or lip/tongue swelling (possible anaphylaxis)', ctx: cx('لسان|شفايف|شفه|شفت|حلق|حنجر|وجه|وش'), find: arRe('منتفخ|ورم|متورم|انتفاخ|مسدود|ينسد|ينغلق|مقفول|ضيق'), win: 20 },
+    { label: 'bladder or bowel control lost, or saddle numbness', ctx: cx('موخر|دبر|شرج|بين رجلي|بين فخذي|منطقه الجلوس|المنطقه الحساسه|الحوض|العانه|الاعضاء التناسليه|الفخذ الداخلي|السرج|منطقه حساسه'), find: arRe('خدر|مخدر|تنميل|' + AB + 'ما احس(?! ?ب?(?:خدر|تنميل))'), win: 30 },
+    { label: 'limb circulation/nerve', ctx: cx('اصابع|اصبع|رجل|ساق|ايد|يد|قدم|اطراف|كف'), find: arRe('زرق|ازرق|ابيض|بيضاء|بيضا|بارد|ميت|بنفسج|رمادي|شاحب|تغير لون|مخدر|خدرانه|متخدر|خدرت|تنمل|' + AB + 'ما احس(?! ?ب?(?:خدر|تنميل))|ما اقدر احرك|ما اتحرك|ما تتحرك|ما يتحرك|لون غريب'), win: 25 }
+  ];
+  const AR_ARM_CTX = cx('ايد|يد|ذراع'), AR_ARM_WEAK = arRe(AB + '(?:ضعيف|ضعف|خدر|خدرت|تنمل|مشلول|ما يقدر يرفع|ما تقدر ترفع|ما يتحرك|ما تتحرك|ما يحرك|ما تحرك|مو قادر يرفع|مو قادره ترفع)');
+  const AR_LEG_CTX = cx('رجل|ساق'), AR_LEG_WEAK = arRe(AB + '(?:ضعيف|ضعف|خدر|خدرت|تنمل|مشلول|ما يقدر يمشي|ما تقدر تمشي|مو قادر امشي|ما اقدر امشي)');
+  const AR_STROKE_COMP = arRe(AB + '(?:فجاه|فجاة|مفاجي|جهه وحده|جهة وحدة|جهه واحده|جهة واحدة|جانب واحد|جنب واحد|نص جسمه|نص جسمها|نص جسمي|دوخه|دوخة|دايخ|دايخه|دوار|وجهه|وجهها|فمه|فمها|كلامه|كلامها)');
+  const AR_OP = arRe(AB + '(?:عمليه|عمليتي|جراحه|منظار|بعد العمليه|بعد الجراحه)');
+  const AR_SPINE = arRe('ظهر|عمود|فقر|ديسك|انزلاق');
+  const AR_SELF_RE = arRe('(?:(?<!ما )(?<!مو )(?:ابي|ابغى|اريد) (?:ان )?(?:اموت|الموت)|ابي انتحر|ابغى انتحر|اريد الانتحار|افكر (?:في |ب)?(?:ال)?انتحار|انتحار|اقتل نفسي|اقتل روحي|انهي حياتي|انهاء حياتي|ما ابي اعيش|ما ابغى اعيش|ما اريد ان اعيش|لا اريد ان اعيش|مابي اعيش|ما عاد ابي اعيش|تعبت من الحياه|اريد ان ارتاح للابد|اذي نفسي|اوذي نفسي)');
+  function arFlags(t) {
+    const hits = [];
+    const add = l => { if (hits.indexOf(l) < 0) hits.push(l); };
+    AR_RAW.forEach(u => { if (arPos(t, u.re)) add(u.label); });
+    AR_NEAR.forEach(u => { if (arNear(t, u.ctx, u.find, u.win)) add(u.label); });
+    const armHit = arNear(t, AR_ARM_CTX, AR_ARM_WEAK, 30), legHit = arNear(t, AR_LEG_CTX, AR_LEG_WEAK, 30);
+    const comp = arPos(t, AR_STROKE_COMP), op = arPos(t, AR_OP), spine = arPos(t, AR_SPINE);
+    if ((armHit && (!op || comp)) || (legHit && (comp || spine))) add('stroke signs: arm or leg weakness or numbness');
+    return hits;
+  }
+
+  // Same day: wound change, fever, calf or leg pain or swelling
+  const AR_WOUND_CTX = cx('جرح|جرحي|جرحه|ضماد|ضمادة|شاش|بندج|بلاستر|غرزه|خياطه|ندبه|عمليه|عمليتي');
+  const AR_WOUND_STRONG = arRe(AB + '(?:صديد|قيح)');
+  const AR_WOUND_WEAK = arRe('احمرار|احمر|حمراء|حمرا|مفتوح|انفتح|تفتح|افراز|سائل|يسيل|تسرب|رائحه|ريحه|نتن|اصفر|صفراء|منتفخ|ورم|متورم|مبلول');
+  const AR_FEVER_NUM = arRe('(?:حرارت|حراره|حمى|سخونه|درجه)[^.;،؟!]{0,15}?(3\\d(?:[.,]\\d)?|4[0-2](?:[.,]\\d)?)');
+  const AR_FEVER_UNIT = arRe('(?<![\\d.,])(3[89](?:[.,]\\d)?|40(?:[.,]\\d)?)\\s*(?:درجه|درجات|مئويه)');
+  // the finding is the fever word itself, so a cue such as "ما عندي" sits in front of it and negates it; "حرارتي طبيعية" is not a finding
+  const AR_FEVER_WORD = arRe(AB + '(?:حمى|سخونه|سخن|سخنت|حراره|حرارتي|حرارته|حرارتها|حرارتك)(?! ?(?:طبيعي|طبيعيه|طبيعية|عاديه|عادية|كويسه|كويسة|زينه))');
+  const AR_CALF_CTX = cx('ساق|سمانه|بطه|رجل|رجولي|رجليه');
+  const AR_CALF_FIND = arRe(AB + '(?:الم|الالم)' + AE + '|ورم|تورم|متورم|منتفخ|انتفاخ|وجع|يوجع|توجع|مؤلم|حساس');
+  function arTemp(t) { const m = t.match(AR_FEVER_NUM) || t.match(AR_FEVER_UNIT); return m ? parseFloat(m[1].replace(',', '.')) : null; }
+  function arSameDay(t) {
+    const sd = [];
+    if (arPos(t, AR_WOUND_STRONG) || arNear(t, AR_WOUND_CTX, AR_WOUND_WEAK, 60)) sd.push('wound change');
+    const tv = arTemp(t);
+    if (tv !== null) { if (tv >= 38.0) sd.push('fever ' + tv); }
+    else if (arPos(t, AR_FEVER_WORD)) sd.push('fever reported');
+    if (arNear(t, AR_CALF_CTX, AR_CALF_FIND, 40)) sd.push('calf/leg pain or swelling');
+    return sd;
+  }
+
+  // Clinical judgement (ROUTE) and worsening: plain tests, since a wrong route is still answered by a clinician
+  const AR_ROUTE_RE = arRe('مسيل الدم|مميع الدم|مميعات|مسيلات|وارفرين|وارفارين|ريفاروكسابان|ابيكسابان|دابيغاتران|اليكويس|هيبارين|كلكسان|اسبرين|مضاد حيوي|مضادات حيوية|مضاد|حقنه|حقنة|حقن|ابره|طيران|طياره|سفر|سافر|مسافر|رحله|دوا|دواء|ادويه|ادوية|حبوب|جرعه|اوقف|ايبوبروفين|ديكلوفيناك|بنادول|باراسيتامول|كورتيزون|مسكن|مسكنات');
+  const AR_WORSEN_RE = arRe('(?:يزداد|تزداد|يزيد|تزيد|زاد|زادت|اسوا|اسوء|يشتد|تشتد|اشد|اكثر)[^.;،؟!]{0,25}(?:الم|الالم|وجع|يوجع|يوجعني|يعور|يؤلم|ضيق)|(?:الم|الالم|وجع|يوجع|يوجعني|يعور|يؤلم)[^.;،؟!]{0,25}(?:اكثر|اشد|اسوا|يزداد|يزيد|يشتد|تزداد|زاد)');
+  function arRoute(t) { return AR_ROUTE_RE.test(t); }
+  function arRouteNet(t) { return /حقن|ابره/.test(t) ? ['bleeding elsewhere', 'black stools'] : /مضاد/.test(t) ? ['redness', 'discharge', 'fever', 'wound opening'] : []; }
+  function arWorsening(t) { return AR_WORSEN_RE.test(t); }
+  const AR_ACK_RE = arRe('^\\s*(?:انا )?(?:تمام|زين|بخير|كويس|الحمدلله|مشكور|شكرا|شكرا جزيلا|ممتاز|واضح|ok|okay)[\\s.!؟?]*$');
+  const AR_ACK_REPLY = 'شكرا، تم التسجيل. راسلنا في أي وقت إذا تغيّر شيء.';
+  const AR_ASK_RE = arRe('مو زين|مو بخير|مش كويس|مو كويس|مو مرتاح|مو مرتاحه|تعبان|تعبانه|ما احس بخير|مب زين|مب كويس|ما انا بخير|مو طيب|مش زين|مش تمام|تعبت');
+  const AR_ALARM = arRe(AB + '(?:فجاه|فجاة|مفاجئ|مفاجي|خدر|ازرق|زرقاء|اسوا|اسوء|سوء|شديد جدا|ما اقدر|لا اقدر|مو قادر|ما استطيع|لا استطيع)');
+
+  // Replies, in Arabic. The emergency reply gives no phone number: the patient is told to call the emergency services.
+  Object.assign(T.EMERGENCY, { ar: 'قد يكون هذا حالة طارئة. اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى أقرب قسم للطوارئ. تم إبلاغ فريقنا.' });
+  Object.assign(T['SAME-DAY'], { ar: 'يحتاج هذا إلى تقييم من طبيب اليوم. تم إبلاغ فريقنا وسيتصل بك. إذا ساءت حالتك، اذهب إلى قسم الطوارئ.' });
+  Object.assign(T.ROUTE, { ar: 'سيرد عليك أحد الأطباء. لا نستطيع الإجابة عن هذا السؤال تلقائيا.' });
+  Object.assign(T.ASK, { ar: 'أخبرنا بما هو غير جيد: ألم، أم الجرح، أم التنفس، أم تورم الساق، أم الحمى؟ إذا كان لديك ضيق في التنفس أو ألم في الصدر، اتصل بخدمات الطوارئ الآن.' });
+  SELF_HARM_REPLY.ar = 'اتصل بخدمات الطوارئ الآن، أو اذهب فورا إلى شخص تثق به ويستطيع أن يكون معك الآن. لا تنتظر.';
+  // FAQ answers in Arabic. DRAFT translations of the approved English answers. No new clinical content. Pending clinical review.
+  FAQ.shower.ans.ar = 'يمكنك الاستحمام بعد أن تكون الضمادة المقاومة للماء سليمة وحوافها جافة؛ أبقِ الماء بعيدا عن الجرح غير المحمي. (ترجمة مسودة، تحتاج العيادة إلى الموافقة.)';
+  FAQ.shower.arRe = arRe('استحم|دش|شاور|اغتسل'); FAQ.shower.arNeeds = arRe('مقاوم');
+  FAQ.bruising.ans.ar = 'الكدمات التي تنتشر إلى أسفل الطرف شائعة في الأسبوعين الأولين. (ترجمة مسودة.)';
+  FAQ.bruising.arRe = arRe('كدم|كدمه|كدمات|تكدم|سحجه');
+  FAQ.low_temp.ans.ar = 'الحرارة أقل من 38.0 درجة شائعة في أول 48 ساعة. أعد القياس بعد 4 ساعات واتصل بنا إذا وصلت إلى 38.0 درجة أو أكثر. (عتبة مسودة، يؤكدها المستشفى.)';
+  FAQ.low_temp.arRe = arRe('(?:حرارت|حراره|حمى|سخونه)[^.;،؟!]{0,15}?3[67](?:[.,]\\d)?');
+  FAQ.drive_knee.ans.ar = 'توجيهات القيادة بعد استبدال الركبة تأتي من جراحك في موعد المراجعة. (ترجمة مسودة.)';
+  FAQ.drive_knee.arRe = arRe('سياق|سواق|اسوق|اقود|القياده|قياده|السياره|سياره');
+  FAQ.drive_acl.ans.ar = 'القيادة بعد إعادة بناء الرباط الصليبي تعتمد على الساق التي أجريت لها الجراحة وعلى تحكمك في دواسات السيارة؛ سيؤكد ذلك أخصائي العلاج الطبيعي. (ترجمة مسودة.)';
+  FAQ.drive_acl.arRe = FAQ.drive_knee.arRe;
+
   /* ---------- classifier (Tier 1: before any model; v1 has no model) ---------- */
   function classify(text, ctx) {
-    ctx = ctx || {}; const t = String(text).toLowerCase(); const flags = []; const L = lang(text); const pack = PACKS[ctx.procedure] || { redFlags: [], faq: [] };
+    ctx = ctx || {}; const t = arNorm(String(text)).toLowerCase(); const flags = []; const L = lang(text); const pack = PACKS[ctx.procedure] || { redFlags: [], faq: [] };
     // EMERGENCY: self-harm first, with its own fixed reply (review2 B1)
     const selfText = t.replace(/\bdo not (want|wish)\b/g, "don't $1"); // 'not' would otherwise negate 'want to live'
-    if (pos(selfText, SELF_HARM_RE) || SELF_HARM_RAW_RE.test(t)) return out('EMERGENCY', ['self-harm statement'], L, ctx, { reply: SELF_HARM_REPLY[L] || SELF_HARM_REPLY.en });
+    if (pos(selfText, SELF_HARM_RE) || SELF_HARM_RAW_RE.test(t) || AR_SELF_RE.test(t)) return out('EMERGENCY', ['self-harm statement'], L, ctx, { reply: SELF_HARM_REPLY[L] || SELF_HARM_REPLY.en });
     const breath = /catch(ing)? (his|her|my|their)? ?breath|gasp|struggl\w* to breathe|breath(ing)? (very )?(fast|hard|rapid)|can'?t get (enough )?air|short(ness)? of breath|呼吸(很|太)?急|气短|一直喘|走两步就喘|喘|breathless|(can'?t|cannot) breathe|breathe properly|chest (is )?tight|tight chest|difficulty breathing|sesak nafas|semput|呼吸困难|喘不过气|气促/;
     const chest = /chest.{0,30}(pain|hurt|squeez|tight|heavy|crush)|pain in (my )?chest|sakit dada|dada.{0,12}(sakit|sempit|berat)|胸(?!口?(不|没|唔|冇|无))口?.{0,4}(痛|闷)|胸闷|放射/;
     const cough = /cough(ed|ing)? (up )?(a bit of )?blood|batuk berdarah|咳血/;
@@ -191,6 +329,7 @@
     if (pos(t, unresp)) flags.push('reduced consciousness');
     if (pos(t, /confus(ed|ion)|very sleepy|drowsy|disorient|keliru|意识模糊|糊涂/)) flags.push('confusion/drowsiness');
     urgentFlags(t).forEach(f => { if (flags.indexOf(f) < 0) flags.push(f); });
+    arFlags(t).forEach(f => { if (flags.indexOf(f) < 0) flags.push(f); }); // round 7: Arabic
     if (flags.length) return out('EMERGENCY', flags, L, ctx);
     // SAME-DAY
     const sd = [];
@@ -198,7 +337,11 @@
     let tv = temp(t); if (tv === null) { const m2 = t.match(/(?<![\d.])(3[89](?:\.\d)?|40(?:\.\d)?)(?![\d])/); if (m2 && /temp|therm|suhu|体温|fever|demam|panas|\bhot\b|烫|发烧|烧到/.test(t)) tv = parseFloat(m2[1]); }
     if (tv !== null && tv >= 38.0) sd.push('fever ' + tv); else if (tv === null && pos(t, /\bfever\b|demam|发烧|发热|高烧|烧到|burning up|very hot|badan panas|rasa panas/)) sd.push('fever reported');
     if (calfFinding(t)) sd.push('calf/leg pain or swelling'); // round 6: finding-level negation, so 'calf is not swollen and no pain' is not an alarm
+    arSameDay(t).forEach(f => { if (!(f.indexOf('fever') === 0 && sd.some(x => x.indexOf('fever') === 0)) && sd.indexOf(f) < 0) sd.push(f); }); // round 7: Arabic
     if (sd.length) return out('SAME-DAY', sd, L, ctx);
+    // round 7: Arabic clinical judgement (blood thinners, antibiotics, injections, travel, medicine questions) and worsening pain
+    if (arRoute(t)) return out('ROUTE', ['clinical judgement'], L, ctx, { safetyNet: arRouteNet(t), noAnswer: true });
+    if (arWorsening(t)) return out('ROUTE', ['worsening trend'], L, ctx, { reviewWithinHrs: 48, safetyNet: ['fever', 'wound change', 'new swelling'], noAnswer: true });
     // ROUTE: clinical judgement, never answered
     if (pos(t, /blood thinner|anticoag|\bdoac\b|warfarin|rivaroxaban|apixaban|enoxaparin|clexane|injection|ibuprofen|diclofenac|antibiotic|prescri|\bdose\b|stop (taking|my|them)|can i stop|\bfly(ing)?\b|flight|travel|penerbangan|terbang|飞机|止痛药/)) {
       const net = /injection/.test(t) ? ['bleeding elsewhere', 'black stools'] : /antibiotic|scar|scratch/.test(t) ? ['redness', 'discharge', 'fever', 'wound opening'] : [];
@@ -206,11 +349,14 @@
     }
     if (pos(t, /(more|worse|again|increas|bertambah|加重|更痛).{0,40}(night|pain|hurt|sakit|痛)|(pain|hurt\w*).{0,40}(more|worse|again)/)) return out('ROUTE', ['worsening trend'], L, ctx, { reviewWithinHrs: 48, safetyNet: ['fever', 'wound change', 'new swelling'], noAnswer: true });
     // ANSWER from the approved store only
-    for (const k of (pack.faq || [])) { const f = FAQ[k]; if (f.re.test(t) && (!f.needs || f.needs.test(t))) { return out('ANSWER', [k], L, ctx, { reply: f.ans[L] || f.ans.en, safetyNet: safetyNet(t), faq: k }); } }
+    for (const k of (pack.faq || [])) { const f = FAQ[k]; if ((f.re.test(t) || (f.arRe && f.arRe.test(t))) && (!f.needs || f.needs.test(t) || (f.arNeeds && f.arNeeds.test(t)))) { return out('ANSWER', [k], L, ctx, { reply: f.ans[L] || f.ans.en, safetyNet: safetyNet(t), faq: k }); } }
+    if (AR_ACK_RE.test(t)) return out('ACK', ['benign'], L, ctx, { reply: AR_ACK_REPLY }); // round 7
     if (/^\s*(i'?m |i am )?(ok|okay|fine|good|baik)\b[\s.!]*$/.test(t)) return out('ACK', ['benign'], L, ctx, { reply: 'Thanks, noted. Message us any time if anything changes.' });
+    if (AR_ASK_RE.test(t)) return out('ASK', ['vague'], L, ctx); // round 7
     if (/not (so )?(good|well)|unwell|tak sihat|不太好|不舒服/.test(t)) return out('ASK', ['vague'], L, ctx);
     const t2 = t.replace(/tak teruk( sangat)?|not (too |that |very )?(bad|severe)|不严重|不太严重/g, '');
     if (ctx.mode !== 'intake' && positiveFindings(t2, /(?<![a-z])(?:sudden|suddenly|cannot|can'?t|unable|numb|blue|severe|worse|worsening|teruk|tiba-tiba|tak boleh|kebas)(?![a-z])|突然|严重|不能|无法|麻木|厉害/).length) return out('SAME-DAY', ['unrecognised alarm words: human review today'], L, ctx); // round 6: negated words ('no numbness') do not count
+    if (ctx.mode !== 'intake' && arPos(t, AR_ALARM)) return out('SAME-DAY', ['unrecognised alarm words: human review today'], L, ctx); // round 7: same rule as the other languages
     return out('ROUTE', ['no approved answer'], L, ctx, { noAnswer: true }); // never guess
   }
   function safetyNet(t) { const answered = {}, asked = []; const q = { 'calf pain/swelling': /no (calf|leg) (pain|swelling)/, fever: /no fever|tiada demam|没有发烧/, breathlessness: /no (breathless|shortness)/ }; for (const k in q) { if (q[k].test(t)) answered[k] = 'no'; else asked.push(k); } return { answered, asked }; }
@@ -326,6 +472,6 @@
       });
     }
   }
-  const api = { Sim, classify, PACKS, SHARED, THRESH, CFG, FAQ, NEXT_LEVELS };
+  const api = { Sim, classify, PACKS, SHARED, THRESH, CFG, FAQ, NEXT_LEVELS, arNorm };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.PeriLoop = api;
 })(typeof window !== 'undefined' ? window : globalThis);

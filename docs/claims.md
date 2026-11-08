@@ -24,9 +24,12 @@ Evidence key (this pass, `cd /home/claude/periloop`, run on 2026-11-08):
 - RV1B: `node mod/review1b.test.js`, 22 PASS, 0 FAIL.
 - R3: `node mod/round3.test.js`, 239 PASS, 0 FAIL.
 - SC: `node mod/second_check.test.js`, 26 PASS, 0 FAIL.
+- ARC: `node mod/arabic_engine.test.js`, 538 PASS, 0 FAIL.
+- ARCC: `node mod/arabic_content.test.js`, 80 PASS, 0 FAIL.
+- AR5: `mod/unseen5_ar_firstpass.txt` and `mod/second_check/ar_combined_firstpass.txt`, read as printed output. Their scoring script was not run in this pass (not on the permitted run list), so every AR row that quotes these figures is UNVERIFIED.
 - EV4: `node eval4.js` output equals `mod/unseen4_firstpass.txt` (diff, identical).
 - EV4C: `node eval4_combined.js` output equals `mod/second_check/combined_firstpass.txt` (diff, identical).
-- Files read: engine.js (grep and line reads), mod/intake.js (grep), mod/second_check.js, mod/adapter.NOTE.md, mod/haiku_harness.README.md, mod/public_figures.md, mod/unseen3_firstpass.txt, mod/unseen4.json (header), review1.md, review2.md, review3.md, src.html (grep and line reads).
+- Files read: engine.js (grep and line reads), mod/intake.js (grep), mod/second_check.js, mod/adapter.NOTE.md, mod/haiku_harness.README.md, mod/public_figures.md, mod/unseen3_firstpass.txt, mod/unseen4.json (header), review1.md, review2.md, review3.md, src.html (grep and line reads), index.html (grep of the voice and RTL lines), review3.md (grep for Arabic: no entries), mod/unseen5_ar_firstpass.txt, mod/second_check/ar_combined_firstpass.txt, mod/adapter.NOTE.md.
 
 Browser behaviour (clicks on the live page) was not re-run in this pass. Claims about what appears on screen are VERIFIED only where the source shows the text. Otherwise they are UNVERIFIED.
 
@@ -35,6 +38,9 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 - The "eight outcome classes" list is corrected. The engine does not emit a CLOSE class. It emits ACK and OK, which the old list did not name. See B10.
 - "Ten further suites" is now sixteen (new: chat_ratelimit, guard2, otdate, proxy_e2e, regress3, second_check). See B66.
 - "Two review reports, five fix rounds" is now three reviews and six rounds (review3.md, round 6). See B93.
+- Arabic (ar) added as the fourth language. Suites grew from sixteen to eighteen (new: arabic_engine 538 checks, arabic_content 80 checks). See B66, ARC, ARCC and the AR rows.
+- Arabic blind set (unseen5_ar, 120 messages) added. Its figures are as printed. The scoring script was not re-run, so those rows are UNVERIFIED.
+- The request said "no Arabic voice input". The source maps Arabic to the browser's speech recognition (ar-SA) in the Use voice button, so the docs say Arabic voice input is not tested. See AR05.
 - The unseen4 set and second-check results are new. The harness set 1 and set 2 numbers were reported by the author and are not in the review set. See B88 to B90.
 
 ## brief.md
@@ -52,8 +58,8 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | B09 | Late items are re-pinged to the owner, nudged to the patient, then escalated after a cap of 3. | engine.js line 5 CFG: rePingCap 3, nudgeCap 3, rePingEvery 1, nudgeEvery 24; lines 313 and 321 use the caps; T overdue 8/8. | VERIFIED |
 | B10 | Sorts each message or result into an outcome class: EMERGENCY, SAME-DAY, HOLD, OVERDUE, ROUTE, ASK and ANSWER. The engine also returns ACK and OK. Closing a task is a separate step, not a class. | Class strings found in engine.js and mod/intake.js: EMERGENCY line 180, SAME-DAY line 201, ROUTE 205, ANSWER 209, ACK 210, ASK 211, OK 262, HOLD 256, OVERDUE (intake.js line 295). No CLOSE class string in engine.js, intake.js or interview.js. Closure is a task state (`state !== 'closed'`). | VERIFIED (corrected) |
 | B11 | Fixed rules run first. | engine.js classify checks red flags before routes (lines 180-214); adapter.js classifies before any model call; ADP 18/0. | VERIFIED |
-| B12 | Intake interview covers six procedure types in English, Bahasa Malaysia and Chinese. | ITV 43/0; R3 239/0 (every question across six procedures, en, ms, zh). | VERIFIED |
-| B13 | Malay and Chinese interview wording is a machine draft pending native review. | mod/intake.js line 3 ("ms and zh values ... are machine drafts"); review2.md round 5 open item. | VERIFIED |
+| B12 | Intake interview covers six procedure types in English, Bahasa Malaysia, Chinese and Arabic. | ITV 43/0; R3 239/0 (every question across six procedures, en, ms, zh); ARCC 80/0 (every question has Arabic text; all six procedures build in ar). | VERIFIED |
+| B13 | Malay, Chinese and Arabic interview wording is a machine draft pending native review. | mod/intake.js line 3 ("ms and zh values ... are machine drafts") and review2.md round 5 open item for ms and zh; ARCC 80/0 "Arabic text is reviewed:false on every question" for ar. | VERIFIED |
 | B14 | The doctor summary is rule-based, with no model. | mod/intake.js: 0 matches for adapter, fetch, askSafely (grep). Interview and knowledge read in an earlier pass. | VERIFIED |
 | B15 | The doctor summary flags contradictions. | CON 17/0. | VERIFIED |
 | B16 | The doctor summary flags incompleteness (unanswered or unclear questions). | intake.js lines 312 and 359 (gaps, "Not answered"); R3 239/0. | VERIFIED |
@@ -69,7 +75,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | B26 | The second check cannot lower a message's urgency. | second_check.js combine (line 112); SC 26/0 (raise-only checks). | VERIFIED |
 | B27 | The scripted demo does not run the second check. | src.html line 733 names AI mode only. The "no network calls" claim is not made in the docs (browser not re-run this pass). | VERIFIED (source) |
 | B28 | Requirement 2: late items are re-pinged, nudged, then escalated after 3 attempts. | Same evidence as B09. | VERIFIED |
-| B29 | Requirement 3: patient replies are fixed text (draft) in English, Bahasa Malaysia and Chinese. | Red-flag replies in en, ms, zh: NEG 42/0, RG2 494/0. Fixed text for every reply in all three languages not enumerated. | UNVERIFIED (full reply set) |
+| B29 | Requirement 3: patient replies are fixed text (draft) in English, Bahasa Malaysia, Chinese and Arabic. | Red-flag replies in en, ms, zh: NEG 42/0, RG2 494/0. Replies in ar: ARC 538/0 (EMERGENCY replies and FAQ ANSWER rows with lang ar). Fixed text for every reply in all four languages not enumerated. | UNVERIFIED (full reply set) |
 | B30 | Some Ask box answers are sample drafts labelled "SAMPLE draft, not approved". | src.html line 704 and knowledge.js line 12 carry the label; mod/review1b.test.js lines 148-149 check it. | VERIFIED |
 | B31 | Requirement 4: Malaffi and Sahatna integration is planned, not built. | src.html contains "Sahatna" (grep, count 1); line 146 "it is not built here" (earlier pass). | VERIFIED |
 | B32 | Requirement 5: a red flag in the interview stops the interview and creates an urgent task. | mod/interview.js applyRed; RV1B 22/0; RG1 22/0. | VERIFIED |
@@ -90,7 +96,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | B47 | No data protection assessment has been done for the UAE. | No assessment in any file read. | VERIFIED |
 | B48 | Synthetic data only; all patients are fictional. | FIC- ids in mod/histories.json and src.html. | VERIFIED |
 | B49 | The unseen4 test messages were written by an AI model, not by patients. | mod/unseen4.json header: "AI-written, not from patients; authored blind to the rules". | VERIFIED |
-| B50 | Red flags are caught first, in English, Bahasa Malaysia and Chinese. | NEG 42/0; RG2 494/0; RG3 181/0 (cyanosis, collapse, bladder, overdose in en, ms, zh). | VERIFIED |
+| B50 | Red flags are caught first, in English, Bahasa Malaysia, Chinese and Arabic. | NEG 42/0; RG2 494/0; RG3 181/0 (cyanosis, collapse, bladder, overdose in en, ms, zh); ARC 538/0 (EMERGENCY classes in ar). | VERIFIED |
 | B51 | Red-flag vocabulary covers stroke signs, seizure, fainting, vomiting blood, anaphylaxis, overdose, self-harm and heavy bleeding, among others. | engine.js term counts: stroke 9, seizure 1, faint 2, vomit 1, anaphyl 2, overdose 2, self-harm (SELF_HARM_RE) 7 mentions, bleed 3. | VERIFIED |
 | B52 | Model mode is guarded; a model reply is checked before it is shown. | ADP 18/0; G2 121/0. | VERIFIED |
 | B53 | A reply that reassures, or makes a clinical decision, is replaced with scripted text. | G2 121/0 (40 adversarial replies stay blocked); adapter.js guardReply. | VERIFIED |
@@ -105,8 +111,8 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | B62 | Rules alone are partial, and a second check is needed in production. | B61 (42 of 75 caught); "needed" is the author's conclusion from B61. | VERIFIED (data); the conclusion is the author's |
 | B63 | The second check has not been validated against clinicians. | No clinician-labelled file in the review set. | VERIFIED (absence) |
 | B64 | The 30 test cases all pass; the test suites show the rules behave as intended, not that they are clinically accurate. | T 30/30; the suites are author-written (scope statement). | VERIFIED |
-| B65 | Test suite results in section 6.1 (test.js and 16 mod suites) all pass with 0 failures. | T; ADP 18; CR 5; CON 17; G2 121; INT 258; ITV 43; KNO 18; NEG 42; OTD 80; PE 19; RG1 22; RG2 494; RG3 181; RV1B 22; R3 239; SC 26. All run this pass, all exit 0. | VERIFIED |
-| B66 | Sixteen suites in mod/ (excluding test.js). | ls mod/*.test.js: 16 files. | VERIFIED |
+| B65 | Test suite results in section 6.1 (test.js and 18 mod suites) all pass with 0 failures. | T; ADP 18; CR 5; CON 17; G2 121; INT 258; ITV 43; KNO 18; NEG 42; OTD 80; PE 19; RG1 22; RG2 494; RG3 181; RV1B 22; R3 239; SC 26; ARC 538; ARCC 80. All run this pass, all exit 0. | VERIFIED |
+| B66 | Eighteen suites in mod/ (excluding test.js). | ls-equivalent run of mod/*.test.js: 18 files (the 16 earlier suites plus arabic_engine and arabic_content), each run this pass. | VERIFIED |
 | B67 | Hand-written cases: 30 cases with expected outcomes; the author wrote the cases and the engine together. | T 30/30; author statement for the writing order. | VERIFIED (pass); UNVERIFIED (writing order) |
 | B68 | Haiku labelled the 30 cases blind and agreed on 24 of 30; C02, C13, C17, C19, C26, C29 differ. | Carried over from the previous version. No labels file in the review set. | UNVERIFIED |
 | B69 | With 7 of 7 escalations, the one-sided 95% lower bound on sensitivity is about 65%. | Arithmetic: 0.05^(1/7) = 0.652. | VERIFIED |
@@ -143,7 +149,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | B100 | HbA1c "99" gets a generic reprompt, not a range message. | review3.md minor, "Not fixed". | UNVERIFIED (not re-run) |
 | B101 | Some English route text remains in Malay and Chinese Ask replies. | review3.md round 6 "Not fixed". | UNVERIFIED (not re-run) |
 | B102 | A wound phrase with a comma ("no redness, discharge") still escalates. | review2.md round 5 open item. | VERIFIED (documented; review2.md) |
-| B103 | Not yet done: second clinician labelling; surgeon sign-off; native ms and zh review; real patient messages; measured reduction in missed steps; live model or second-check run; Malaffi and Sahatna; real channel; real database or login; UAE data protection assessment. | Absence in files; B31, B36, B42, B47. | VERIFIED |
+| B103 | Not yet done: second clinician labelling; surgeon sign-off; native ms, zh and ar review; real patient messages; measured reduction in missed steps; live model or second-check run; Malaffi and Sahatna; real channel; real database or login; UAE data protection assessment. | Absence in files; B31, B36, B42, B47. | VERIFIED |
 | B104 | Path to pilot steps (labels, sign-off, fresh set, live run, data-protection assessment, published rate). | Author plan. | UNVERIFIED (plan) |
 | B105 | Permission from the employer and the pilot clinic is still needed before any pilot. | Author statement. | UNVERIFIED |
 | B106 | Public figures are placeholder sizing only. | mod/public_figures.md summary point 3. | VERIFIED |
@@ -164,7 +170,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | R02 | Open index.html; no install, no server, no login; default mode runs scripted with no AI model. | index.html single page; src.html line 121; B02. | VERIFIED |
 | R03 | Overview has a seven-scene guided story. | src.html has seven scene entries (earlier pass); review3 "DEMO has 7 steps". | VERIFIED |
 | R04 | Intake: pick a sample patient or start the interview; Send to staff board creates tasks. | src.html Intake card (earlier pass); click-through not re-run. | UNVERIFIED (behaviour) |
-| R05 | Intake: six procedure types in en, ms and zh. | B12. | VERIFIED |
+| R05 | Intake: six procedure types in en, ms, zh and ar. | B12; ARCC 80/0. | VERIFIED |
 | R06 | Intake: OT date is refused if impossible or unpadded; critical items within 7 days flag the surgery at risk. | B108, B109. | VERIFIED |
 | R07 | Doctor summary is rule-based, with contradiction and incompleteness flags. | B14, B15, B16. | VERIFIED |
 | R08 | Example flag: an allergy named in free text while the box says "no". | CON penicillin-in-free-text case (never NONE); review2.md round 4 B4. | VERIFIED |
@@ -181,7 +187,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | R19 | Procedure packs are data; adding a pack means adding data, not changing the engine. | interview.js BY_PROC data; adding a pack was not tested. | UNVERIFIED |
 | R20 | Model provider swappable by configuration; default scripted; proxy keeps keys out of the browser; proxy not deployed and not run against a live provider. | B23, B24; adapter.NOTE.md item 1 (no key in browser). "Not deployed": author statement. | VERIFIED (config, proxy stub); UNVERIFIED (not deployed) |
 | R21 | Second check: can raise urgency, cannot lower it; AI mode only; patient text goes to the provider through the proxy. | B25, B26, B60. | VERIFIED |
-| R22 | 30/30 cases pass; sixteen further suites pass with 0 failures; 494 in regress2, 258 in intake, 80 in otdate, 26 in second_check. | T; B65. | VERIFIED |
+| R22 | 30/30 cases pass; eighteen further suites pass with 0 failures; 494 in regress2, 258 in intake, 80 in otdate, 26 in second_check, 538 in arabic_engine, 80 in arabic_content. | T; B65; ARC; ARCC. | VERIFIED |
 | R23 | The tests show the rules behave as intended, not that they are clinically accurate. | B64. | VERIFIED |
 | R24 | 30 hand-written cases, all pass; author wrote cases and engine together. | B67. | VERIFIED (pass); UNVERIFIED (writing order) |
 | R25 | Haiku labelled the 30 cases blind and agreed on 24 of 30. | B68. | UNVERIFIED |
@@ -196,7 +202,7 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | R34 | Three independent AI-agent reviews and six fix rounds (review1.md, review2.md, review3.md); reviewers are AI agents, not clinicians. | B92; reviewer identity B93. | VERIFIED (count); UNVERIFIED (reviewer identity) |
 | R35 | One major, on benign questions answered with draft text, is only partly fixed. | B96. | VERIFIED |
 | R36 | With 7 of 7 escalations on hand-written cases, lower bound about 65%. | B69. | VERIFIED |
-| R37 | Not done: second clinician labelling; surgeon sign-off; native ms and zh review; real patient messages; measured reduction in missed steps; live provider run of model mode or second check; Malaffi and Sahatna; real channel; real database or login; UAE data protection. | B103. | VERIFIED |
+| R37 | Not done: second clinician labelling; surgeon sign-off; native ms, zh and ar review; real patient messages; measured reduction in missed steps; live provider run of model mode or second check; Malaffi and Sahatna; real channel; real database or login; UAE data protection. | B103. | VERIFIED |
 | R38 | Known limits: approved-topic questions to model in model mode; some benign questions get sample draft; comma wound phrase still escalates. | B55, B56, B102. | VERIFIED |
 | R39 | Malaffi and Sahatna would be a standards-based adapter on result and appointment feeds (plan, not built). | src.html contains "Sahatna" (grep); the "adapter on the result and appointment feeds" wording (earlier pass, src.html line 146). | VERIFIED |
 | R40 | Pilot at a clinic with a Telegram FAQ and red-flag triage bot; permission not obtained. | B46, B105. | UNVERIFIED |
@@ -213,8 +219,8 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | V01 | "Every patient in this demo is fictional." | B48. | VERIFIED |
 | V02 | "The interview covers six procedure types." | B12. | VERIFIED |
 | V03 | "This one is a knee replacement." (sample) | src.html lines 232-233: Mdm Aisha is a knee replacement; sample choice to confirm on the live page. | UNVERIFIED (sample not clicked) |
-| V04 | "Answers can be given in English, Bahasa Malaysia or Chinese." | B12. | VERIFIED |
-| V05 | "the Malay and Chinese wording is a machine draft pending native review." | B13. | VERIFIED |
+| V04 | "Answers can be given in English, Bahasa Malaysia, Chinese or Arabic." | B12. | VERIFIED |
+| V05 | "the Malay, Chinese and Arabic wording is a machine draft pending native review." | B13. | VERIFIED |
 | V06 | "The OT date is here too." (on-screen OT date field) | B108 (OT date feature, OTD 80/0). On-screen placement not clicked. | UNVERIFIED (on-screen placement) |
 | V07 | "Critical items open within seven days of surgery flag it at risk." | B109. | VERIFIED |
 | V08 | "The summary is rule-based, with no AI model, and the Settings card says so." | B14; B13 (Settings text, src.html line 121). | VERIFIED |
@@ -229,6 +235,31 @@ Browser behaviour (clicks on the live page) was not re-run in this pass. Claims 
 | V17 | "Unanswered alerts are re-paged, then passed to an on-call fallback." | B33 (engine caps, lines 5-8, 313). | VERIFIED (engine); UNVERIFIED (on-screen) |
 | V18 | "Rules alone caught 42 of 75 urgent test messages written by AI." | B61 (EV4), B49, B79. | VERIFIED |
 | V19 | "So a second check is needed in production, and it is not yet validated by clinicians." | B62, B63. | VERIFIED |
-| V20 | "Not done: clinician labelling, surgeon sign-off, a real channel, database or login, and any measure of missed steps." | B103. | VERIFIED |
+| V20 | "Not done: clinician labelling, native Arabic review, surgeon sign-off, a real channel, database or login, and any measure of missed steps." | B103. | VERIFIED |
 | V21 | Video says the demo runs scripted, with no AI model, so the second check is not in the recording. | B02, B27 (browser not re-run), B85. | VERIFIED (source); UNVERIFIED (recording content) |
 | V22 | The How it works tab shows the limits. | src.html line 155 is the How it works section; the limits text not read. | UNVERIFIED |
+
+## Arabic additions (ar), added 2026-11-08
+
+| ID | Claim | Evidence | Status |
+|---|---|---|---|
+| AR01 | Arabic (ar) is the fourth language in the interview, doctor summary, to-do list, Ask box, patient phone replies, red-flag rules and model-reply guard. | ARCC 80/0 (ar text on every question; six procedures build in ar; Arabic summary and to-do checks; Arabic Ask routes and citations; both language pickers offer العربية). ARC 538/0 (ar red flags, FAQ answers, route rules, guard). | VERIFIED |
+| AR02 | Patient phone replies are in Arabic when the patient writes Arabic; the language is detected from the message. | ARC 538/0 (FAQ ANSWER rows with lang ar; ar route and emergency replies); engine.js lang() line 55. Browser click on the phone not run. | VERIFIED (engine path); UNVERIFIED (live phone) |
+| AR03 | Arabic text switches the Intake cards to a right-to-left layout. | ARCC check "RTL rules use logical properties" (80/0) confirms the [dir=rtl] rules exist. The switch itself is setDir in index.html line 3507, read in source only. | UNVERIFIED (rendered layout not checked) |
+| AR04 | The Staff board stays in English, including Arabic to-do titles. | ARCC "Arabic to-dos keep English titles for the Staff board" (80/0). Rest of the board UI not rendered. | VERIFIED (to-do titles); UNVERIFIED (rest of board) |
+| AR05 | Arabic voice input is not tested. The Use voice button passes Arabic to the browser's speech recognition (ar-SA) where supported. | index.html line 3972 (rec.lang ar-SA, read by grep). No test in ARC or ARCC covers voice. The brief's "no Arabic voice input" is not accurate as code. | VERIFIED (source and absence of tests) |
+| AR06 | All Arabic wording is machine-drafted and needs review by a native Arabic-speaking clinician, ideally Gulf. | ARCC "Arabic text is reviewed:false on every question" (80/0); ARCC "Arabic summary notice asks a native Arabic-speaking (Gulf) clinician to review" (80/0). | VERIFIED |
+| AR07 | No native Arabic review has been done. | Absence in the files read; ARCC reviewed:false flags. | VERIFIED (absence) |
+| AR08 | Red-flag rules, route rules, FAQ answers and model-reply guard in Arabic: 538 checks, 0 fail. | mod/arabic_engine.test.js, run this pass. | VERIFIED |
+| AR09 | Blind Arabic set: 120 AI-written messages (60 urgent, 60 normal), in Gulf, Egyptian, Levantine and MSA, written without sight of the rules. | mod/unseen5_ar_firstpass.txt (printed output; urgent by dialect 20, 15, 15, 10 = 60). "Written without sight of the rules" and the dialect split are from the author's brief; mod/unseen5_ar.json not read in this pass. | UNVERIFIED |
+| AR10 | Language detected as Arabic for 120 of 120 messages. | mod/unseen5_ar_firstpass.txt last lines ("lang detected as ar: 120/120"). | UNVERIFIED (printed; not re-run) |
+| AR11 | Rules only: 27 of 60 urgent escalated (45.0%, CI 33.1-57.5); Gulf 7 of 20. | mod/unseen5_ar_firstpass.txt ("urgent caught", "urgent gulf"). | UNVERIFIED (printed; not re-run) |
+| AR12 | Rules only: 6 of 60 normal falsely escalated; 0 urgent answered by the bot. | mod/unseen5_ar_firstpass.txt ("normal falsely escalated", "urgent answered by bot: 0"). | UNVERIFIED (printed; not re-run) |
+| AR13 | Haiku second check alone: 60 of 60 urgent caught (100.0%, CI 94.0-100.0); 6 of 60 false alarms. Quoted as "0 missed of 60, interval 94-100%". | mod/second_check/ar_combined_firstpass.txt, block "Haiku second check only". | UNVERIFIED (printed; not re-run) |
+| AR14 | Rules OR Haiku: 60 of 60 urgent caught; 11 of 60 normal flagged (CI 10.6-29.9). | mod/second_check/ar_combined_firstpass.txt, block "rules OR Haiku". | UNVERIFIED (printed; not re-run) |
+| AR15 | Caveat: the same model family wrote and judged the Arabic messages. | Author brief only. Not recorded in the printed files. | UNVERIFIED (author statement) |
+| AR16 | Caveat: the second-check prompt is biased to "urgent when unsure". | mod/second_check.js SYSTEM_PROMPT (B83). That the Arabic run used this prompt is the author's statement. | VERIFIED (prompt); UNVERIFIED (use in the Arabic run) |
+| AR17 | Caveat: labels are AI judgement, not clinician labels; the dialect text is imitation, not real patient text. | Author brief. No clinician label field in the printed files. | UNVERIFIED (author statement) |
+| AR18 | The 100% is 60 of 60 with its interval, not a claim of perfect sensitivity. Rules alone did not escalate 33 of the 60 urgent messages. | Arithmetic on AR11 and AR13 (60 minus 27 = 33). | VERIFIED (arithmetic on printed figures) |
+| AR19 | No record shows the rules were frozen before the Arabic blind run, so the set may be tuned-on. | Absence in the files read. File times: unseen5_ar_firstpass.txt 12:54, arabic_engine.test.js 12:53. File times do not prove the order. | VERIFIED (absence); the caution is the author's |
+| AR20 | Arabic test counts: arabic_engine 538 PASS, 0 FAIL; arabic_content 80 PASS, 0 FAIL. | mod/arabic_engine.test.js and mod/arabic_content.test.js, run this pass. | VERIFIED |

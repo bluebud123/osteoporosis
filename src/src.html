@@ -38,7 +38,7 @@ table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-top:1px 
 @media(max-width:520px){.crow{grid-template-columns:1fr 1fr}.crow .bar{grid-column:1/3}}
 .pcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:8px}.pc{border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--bg)}.track{display:flex;margin:8px 0 10px}.track span{flex:1;text-align:center;font-size:11px;padding:4px 2px;background:var(--card);border:1px solid var(--line);color:var(--mut);position:relative}.track span:first-child{border-radius:8px 0 0 8px}.track span:last-child{border-radius:0 8px 8px 0}.track .past{background:var(--acc2)}.track .here{background:var(--acc);color:#fff;font-weight:700}.track em{position:absolute;left:0;right:0;top:100%;font-size:10px;font-style:normal;color:var(--acc);white-space:nowrap}.rw{display:flex;gap:8px;padding:6px 0;border-top:1px solid var(--line);margin-top:2px}.rw:first-of-type{border-top:none}.ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:700;color:#fff;font-size:13px}.ic.r{background:var(--em)}.ic.a{background:var(--sd)}.ic.g{background:var(--ok)}
 .story{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px}@media(min-width:700px){.story{grid-template-columns:1fr 1fr}}.story>div{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg)}.story h3{margin:0 0 4px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.story .narr{grid-column:1/-1;font-size:16px;background:var(--acc2)}.story li{margin:2px 0}
-.in-banner{border-left:4px solid currentColor;padding:8px 10px;margin:6px 0;background:var(--bg);border-radius:6px;font-weight:600;overflow-wrap:anywhere}.in-banner.RED{color:var(--em)}.in-banner.AMBER{color:var(--sd)}.in-banner.NONE{color:var(--ok)}
+.in-banner{border-inline-start:4px solid currentColor;padding:8px 10px;margin:6px 0;background:var(--bg);border-radius:6px;font-weight:600;overflow-wrap:anywhere}.in-banner.RED{color:var(--em)}.in-banner.AMBER{color:var(--sd)}.in-banner.NONE{color:var(--ok)}
 .in-red{border:2px solid var(--em);background:color-mix(in srgb,var(--em) 10%,var(--card));border-radius:10px;padding:8px 10px;margin:8px 0;overflow-wrap:anywhere}
 .b.in-redb{border-color:var(--em);box-shadow:inset 3px 0 0 var(--em)}
 .in-form{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}.in-form label,.in-set label{display:grid;gap:4px;font-size:13px;color:var(--mut);min-width:0}
@@ -46,7 +46,7 @@ table{border-collapse:collapse;width:100%;font-size:13.5px}td,th{border-top:1px 
 .in-words{overflow-wrap:anywhere;word-break:break-word}.in-note{font-size:12.5px;color:var(--mut);overflow-wrap:anywhere}
 .in-sec{border-top:1px solid var(--line);padding:6px 0}.in-sec h3{margin:0 0 2px;font-size:12.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}.in-sec ul{margin:0;padding-left:18px}
 .in-todo{padding:6px 0;border-top:1px solid var(--line);overflow-wrap:anywhere}
-.in-cite{font-size:12.5px;color:var(--mut);margin-top:4px;overflow-wrap:anywhere}.in-over{margin-top:8px;padding:6px 8px;border-left:3px solid var(--sd);background:var(--bg);border-radius:6px;font-size:13.5px;overflow-wrap:anywhere}
+.in-cite{font-size:12.5px;color:var(--mut);margin-top:4px;overflow-wrap:anywhere}.in-over{margin-top:8px;padding:6px 8px;border-inline-start:3px solid var(--sd);background:var(--bg);border-radius:6px;font-size:13.5px;overflow-wrap:anywhere}
 .in-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.in-chips button{font-size:12.5px;padding:4px 8px;max-width:100%;text-align:left}
 details.card summary{cursor:pointer;font-weight:600}
 .in-banner.INCOMPLETE{color:var(--mut)}
@@ -61,6 +61,16 @@ details.card summary{cursor:pointer;font-weight:600}
 input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--ro);outline-offset:1px}
 #iv-chat{height:auto;min-height:220px;max-height:60vh}
 #hdr-pt{font-size:13px}
+/* Arabic (ar): right-to-left with logical properties. Arabic system fonts only (no downloads). Numbers and Latin snippets stay LTR. */
+.in-li,.in-ph,.in-sec ul{padding-inline-start:18px}
+[dir=rtl]{font-family:"Noto Naskh Arabic","Noto Sans Arabic",Segoe UI,Tahoma,Arial,sans-serif;line-height:1.9}
+[dir=rtl] button,[dir=rtl] input,[dir=rtl] select{font-family:inherit;line-height:1.6}
+.b,.in-words,.in-note,.in-cite,.in-todo,.in-over,.in-banner,.in-sec li,.in-red,.in-alert-note{unicode-bidi:plaintext;text-align:start}
+.srcx,bdi{unicode-bidi:isolate;direction:ltr}
+[dir=rtl] li{unicode-bidi:normal}
+input[type=text]{unicode-bidi:plaintext}
+.in-ot input[type=date]{direction:ltr}
+[dir=rtl] .in-chips button{text-align:right}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]) button.p,:root:not([data-theme=light]) nav button.on,:root:not([data-theme=light]) .b.me,:root:not([data-theme=light]) .track .here{color:#0b1a17}}
 :root[data-theme=dark] button.p,:root[data-theme=dark] nav button.on,:root[data-theme=dark] .b.me,:root[data-theme=dark] .track .here{color:#0b1a17}
 button,select,input[type=text],input[type=number]{min-height:40px}
@@ -85,7 +95,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="chips" id="chips"></div>
 <form class="row" id="f"><input type="text" id="msg" placeholder="Type a message in English, Bahasa Malaysia or Chinese" aria-label="Message"><button class="p">Send</button></form>
 <div class="mut" style="margin-top:6px">Replies come from fixed approved text. Nothing here is generated by a model.</div>
-<div class="in-note sc-status" style="margin-top:6px"></div></div>
+<div class="in-note sc-status" id="sc-phone" style="margin-top:6px"></div></div>
 <div class="card"><h2>Your plan</h2><div id="plan"></div></div></div></section>
 <section id="v-staff" class="hidden"><div class="grid two">
 <div class="card"><h2>Alerts (staff group)</h2><div id="alerts"></div></div>
@@ -103,7 +113,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <div class="in-form" style="margin-top:8px">
 <label>Fictional patient<select id="iv-pat"></select></label>
 <label>Procedure<select id="iv-proc"></select></label>
-<label>Language<select id="iv-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option></select></label>
+<label>Language<select id="iv-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option><option value="ar">العربية</option></select></label>
 </div>
 <div class="in-ot" id="iv-ot-box">
 <label>Operation (OT) date<input type="date" id="iv-ot" aria-describedby="iv-ot-info iv-ot-msg"></label>
@@ -138,7 +148,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 <label>Team<select id="iv-c-team"><option value="">None</option><option value="Sample Ortho Ward Team" selected>Sample Ortho Ward Team</option></select></label>
 <label>Surgeon<select id="iv-c-surgeon"><option value="">None</option><option value="Dr Sample Surgeon" selected>Dr Sample Surgeon</option></select></label>
 <label>Procedure<select id="iv-c-proc"><option value="">Any</option><option value="TKR" selected>TKR</option><option value="THR">THR</option><option value="LUMBAR">LUMBAR</option></select></label>
-<label>Answer language<select id="iv-c-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option></select></label>
+<label>Answer language<select id="iv-c-lang"><option value="en">English</option><option value="ms">Bahasa Malaysia</option><option value="zh">中文</option><option value="ar">العربية</option></select></label>
 </div>
 <div class="in-note" style="margin-top:6px">Set the surgeon to None to see the hospital answer instead.</div>
 <form class="row" id="iv-askform" style="margin-top:8px"><input type="text" id="iv-q" aria-label="Your question" placeholder="For example: When can I shower?"><button class="p" type="submit">Ask</button></form>
@@ -165,7 +175,7 @@ button,select,input[type=text],input[type=number]{min-height:40px}
 (function(){
 var PL=window.PeriLoop,PC=window.PeriCases,$=function(i){return document.getElementById(i)};
 var s,cur,ids;
-var SAMPLES=[['Calf swollen (EN)','My left calf is swollen and painful since last night.'],['Bengkak (BM)','Kaki kiri saya bengkak dan sakit di betis sejak semalam.'],['伤口红 (ZH)','手术后伤口有点红，还有一点水流出来，需要紧张吗？'],['Breathless','Suddenly short of breath and my chest hurts when I breathe in.'],['Bruising','My knee is bruised down to my ankle. No calf pain, no fever.'],['Shower?','When can I shower? My wound has a waterproof dressing.'],['Blood thinner?','Do I still take my blood thinner tonight?'],['Flying?',"I'm flying to Penang in 3 weeks, is that OK?"],['Vague','Doc, not so good lah since last night.']];
+var SAMPLES=[['Calf swollen (EN)','My left calf is swollen and painful since last night.'],['Bengkak (BM)','Kaki kiri saya bengkak dan sakit di betis sejak semalam.'],['伤口红 (ZH)','手术后伤口有点红，还有一点水流出来，需要紧张吗？'],['Breathless','Suddenly short of breath and my chest hurts when I breathe in.'],['Bruising','My knee is bruised down to my ankle. No calf pain, no fever.'],['Shower?','When can I shower? My wound has a waterproof dressing.'],['Blood thinner?','Do I still take my blood thinner tonight?'],['Flying?',"I'm flying to Penang in 3 weeks, is that OK?"],['Vague','Doc, not so good lah since last night.'],['ساق متورمة (AR)','ساقي اليسرى متورمة ومؤلمة منذ الليلة.'],['ضيق في التنفس (AR)','فجأة أشعر بضيق في التنفس وألم في صدري عند الشهيق.'],['الاستحمام؟ (AR)','متى أستطيع الاستحمام؟ الضمادة مقاومة للماء.']];
 
 function wilson(k,n){if(!n)return[0,0];var z=1.96,p=k/n,d=1+z*z/n,c=p+z*z/(2*n),a=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n));return[Math.max(0,(c-a)/d),Math.min(1,(c+a)/d)]}
 var STG=[['Screening','Results and holds'],['Pre-op prep','Briefing, plan, pre-auth'],['Surgery','Day 0'],['Early recovery','Days 1-6: injections, wound, red flags'],['Recovery','Days 7-14: physio, review'],['Follow-up','Visit booked and attended']];
@@ -262,8 +272,9 @@ function render(){
  var w=$('who');w.innerHTML='';Object.keys(s.patients).forEach(function(k){var o=document.createElement('option');o.value=k;o.textContent=s.patients[k].name+' · '+(PL.PACKS[s.patients[k].procedure]||{label:'no procedure'}).label;if(k===cur)o.selected=true;w.appendChild(o)});
  var c=$('chat');c.innerHTML='';var msgs=(s.chatlog||[]).filter(function(m){return m.pid===cur});
  s.outbox.filter(function(m){return m.pid===cur}).forEach(function(m){msgs.push(m)});msgs.sort(function(a,b){return a.t-b.t||0});
- (s.chatAll||[]).filter(function(m){return m.pid===cur}).forEach(function(m){var d=document.createElement('div');d.className='b '+(m.who==='me'?'me':'bot');d.textContent=m.text;c.appendChild(d)});
+ (s.chatAll||[]).filter(function(m){return m.pid===cur}).forEach(function(m){var d=document.createElement('div');d.className='b '+(m.who==='me'?'me':'bot');d.dir='auto';d.textContent=m.text;c.appendChild(d)});
  c.scrollTop=c.scrollHeight;
+window.__plPhoneAr=/[\u0600-\u06FF]/.test(c.textContent);if(window.__plRefreshSc)window.__plRefreshSc();
  var pl=$('plan');pl.innerHTML='';s.tasksOf(cur).filter(function(t){return t.auto||true}).forEach(function(t){var d=document.createElement('div');d.className='task';var due=Math.round((t.dueAt-s.P(cur).surgeryAt)/24);d.innerHTML='<div><b>'+esc(t.title)+'</b>'+(t.claimNote?'<div class="in-words">'+esc(t.claimNote)+'</div>':'')+'<div class="mut">Owner: '+esc(t.owner.replace(/_/g,' '))+' · due '+(due>0?'post-op day '+due:'day '+due)+'</div></div><div style="text-align:right"><span class="tag '+t.state+'">'+t.state.replace(/_/g,' ')+'</span>'+((t.state==='open'||t.state==='overdue')?'<div><button data-claim="'+t.id+'" data-who="patient">I have done this (staff will verify)</button></div>':'')+'</div>';pl.appendChild(d)});
  var al=$('alerts');al.innerHTML=s.alerts.length?'':'<div class="mut">No alerts. Send a message from the Patient phone tab.</div>';
  s.alerts.slice().reverse().forEach(function(a){var d=document.createElement('div');d.className='alert '+a.cls+(unresp(a)?' unresp':'');var steps=(a.escalations||[]).map(function(e){return (NEXT_LBL[e.to]||e.to)+' at h'+e.at}).join(', ');d.innerHTML='<span class="tag">'+a.cls+'</span>'+(unresp(a)?' <span class="tag" style="background:var(--em);color:var(--bg)"><b>UNRESPONDED EMERGENCY</b></span>':'')+' <b>'+esc(s.P(a.pid).name.replace(' (fictional)',''))+'</b> · '+esc(a.topic)+'<div>'+esc(a.flags.join(', '))+'</div><div class="mut">“'+esc(a.msgs[a.msgs.length-1])+'”</div><div class="mut">Pings '+a.pings+'/'+s.cfg.rePingCap+(a.nobodyResponded?' · <b>nobody responded, on-call fallback</b>':'')+(steps?' · next level paged: '+esc(steps):'')+(a.ackedBy?' · acknowledged by '+esc(a.ackedBy):'')+'</div>'+(a.state==='open'?'<button data-ack="'+a.id+'">Acknowledge</button>':'');al.appendChild(d)});
@@ -373,6 +384,99 @@ var UI={
   blocked:'模型回复已被安全过滤器拦截'}
 };
 function ui(l){return UI[l]||UI.en}
+/* ---------- Arabic (ar) interface: machine-draft wording, not clinician-reviewed. Gulf-friendly simple MSA. ---------- */
+YESNO.ar=[['yes','نعم'],['no','لا']];
+UNK_LBL.ar='لا أعرف / غير متأكد';
+HINT.choice.ar='اختر خيارا، أو اكتب.';HINT.number.ar='اكتب رقما، أو "لا أعرف".';HINT.text.ar='اكتب إجابتك.';
+DRAFT.ar=' (مسودة آلية، تحتاج مراجعة)';
+GREET.ar='سأطرح عليك بعض الأسئلة قبل عمليتك. خذ وقتك. يمكنك الكتابة أو اختيار أحد الخيارات.';
+ROUTEPASS.ar='لقد أحلت سؤالك إلى فريق الرعاية الخاص بك.';
+REPROMPT.ar='لم أفهم ذلك. يرجى الإجابة بالطريقة التي يطلبها السؤال.';
+DONE.ar='شكرا لك. سيراجع فريق العيادة إجاباتك. هذا ليس تشخيصا.';
+ASKHEAD.urgent.ar='عاجل: اتبع هذا الآن';ASKHEAD.passed.ar='أُحيل إلى فريق الرعاية';ASKHEAD.not.ar='لم يُحَل بعد';
+var OTUI_AR={proc:'الإجراء',ot:'موعد العملية (OT)'};
+var ALERTED_AR=/[^.؟!\n]*(?:فريق|طاقم)[^.؟!\n]*(?:إخطار|اخطار|إبلاغ|ابلاغ|تنبيه|أبلغ|أُبلغ)[^.؟!\n]*[.؟!]?/;
+var NO_ALERT_AR='يرجى الاتصال بالعيادة أو التوجه إلى قسم الطوارئ الآن.';
+var FALLBACK_RED_AR='تم اكتشاف مؤشر خطر. يجب أن يراجعه الطبيب الآن.';
+var SAME_DAY_AR='يرجى الاتصال بالعيادة اليوم، أو التوجه إلى قسم الطوارئ إذا ساءت حالتك.';
+var ASK_CHIPS_AR=['متى أستطيع الاستحمام؟','متى موعد المراجعة؟','هل أستمر في تناول المميّع الليلة؟','هل أستطيع السفر بالطائرة بعد 3 أسابيع؟'];
+var PROC_AR={TKR:'تبديل مفصل الركبة',THR:'تبديل مفصل الورك',ACL:'إصلاح الرباط الصليبي الأمامي',LUMBAR:'جراحة أسفل الظهر',SHOULDER:'جراحة الكتف',FOOTANKLE:'جراحة القدم والكاحل'};
+var LEVEL_AR={EMERGENCY:'طارئ','SAME-DAY':'في نفس اليوم'};
+var UNSCREENED_AR='لم تُفحص هذه الرسالة بالفحص الثاني.';
+var PASS_AR={created:'تم إنشاء مهمة للفريق على لوحة الطاقم.',bucket:' ضمن "لم يُحدد مريض". لم يُختر مريض، لذا عيّنها على اللوحة.',dup:'المهمة موجودة بالفعل على لوحة الطاقم: السؤال نفسه. لم تُكرر.'};
+var CTX_AR={country:'الدولة',hospital:'المستشفى',team:'الفريق',surgeon:'الجراح',procedure:'الإجراء',none:'لا يوجد',any:'أي'};
+UI.ar={
+ banner:{RED:'عاجل: يلزم أولا مراجعة سريرية عاجلة من الطبيب. لا تعتبر هذا الملخص مكتملا. هذا ليس إذناً بالسلامة.',AMBER:'يحتاج مراجعة: يلزم أن يراجعه الطبيب قبل العملية. هذا ليس إذناً بالسلامة.',INCOMPLETE:'ناقص: إجابات كثيرة ناقصة. هذا ليس إذناً بالسلامة.',NONE:'لا تنبيهات من القواعد الثابتة: لم تجد القواعد الثابتة أي محفزات. هذا ليس إذناً بالسلامة.'},
+ titles:{},redLine:'مؤشر خطر أثناء الاستقبال',typed:'المكتوب',
+ todoMeta:{owner:'المسؤول',due:'الموعد',now:'الآن',within:'خلال',hours:'ساعة',before:'يوم قبل العملية',surgeryDay:'يوم العملية',decide:'يقرره الطبيب',reason:'السبب'},
+ label:'بلاغ من المريض، يتحقق منه الطبيب السريري',nothing:'لم يُبلَّغ عن شيء.',gaps:'نقاط تحتاج إلى توضيح',todo:'قائمة المهام',showSrc:'إظهار المصادر',hideSrc:'إخفاء المصادر',
+ stopped:'توقفت المقابلة بعد مؤشر خطر، ولن تُطرح الأسئلة المتبقية. هذا الملخص غير مكتمل.',
+ paused:'توقفت المقابلة مؤقتا بعد مؤشر خطر. استخدم "تنبيه الطاقم الآن" أو "المتابعة رغم ذلك".',
+ blocked:'حجبت فلاتر السلامة رد النموذج',
+ draftNote:'النص العربي في هذا الملخص مسودة آلية لم تُراجع. يجب أن يراجعه طبيب ناطق بالعربية، ويفضل من دول الخليج، قبل الاستخدام.',
+ btnAlert:'تنبيه الطاقم الآن',btnContinue:'المتابعة رغم ذلك',btnStaff:'فتح لوحة الطاقم',
+ redTitle:'مؤشر خطر',flagsLbl:'المؤشرات',detected:'اكتُشف بالقواعد الثابتة، وليس بنموذج.',
+ redCreated:'تم إنشاء مهمة عاجلة على لوحة الطاقم، مستحقة الآن.',redExists:'المهمة العاجلة موجودة بالفعل على لوحة الطاقم، ولم تُكرر.',redFail:'تعذر إنشاء المهمة العاجلة. اتصل بالعيادة الآن.',
+ resumed:'تم استئناف المقابلة. يبقى مؤشر الخطر مسجلا.',
+ alertCreated:'مهمة عاجلة على لوحة الطاقم، مستحقة الآن.',alertExists:'مهمة عاجلة موجودة بالفعل على لوحة الطاقم، ولم تُكرر.'
+};
+// Static Intake labels (exact English text in the page, matched after trimming). Settings and the summary body stay as they are.
+var CHROME_AR={
+ 'Pre-operative intake':'الاستقبال قبل العملية','(fictional patients only)':'(مرضى وهميون فقط)',
+ 'Questions come one at a time. They ask; they never advise.':'تُطرح الأسئلة واحدا تلو الآخر. تسأل فقط، ولا تقدم نصيحة.',
+ 'Answer in your own words or tap a choice. Every typed answer goes through the fixed red-flag rules first.':'أجب بكلماتك أو اختر خيارا. تمر كل إجابة مكتوبة أولا على قواعد مؤشرات الخطر الثابتة.',
+ 'A red flag stops the interview. Staff are alerted, and the summary turns red.':'يوقف مؤشر الخطر المقابلة. ينبَّه الطاقم، ويتحول الملخص إلى الأحمر.',
+ 'Fictional patient':'مريض وهمي','Procedure':'الإجراء','Language':'اللغة','Operation (OT) date':'تاريخ العملية (OT)',
+ 'Start interview':'ابدأ المقابلة','Load a sample patient':'تحميل مريض تجريبي','Send':'إرسال','Ask':'اسأل','Use voice':'استخدم الصوت',
+ 'Ask about your surgery':'اسأل عن عمليتك',
+ 'Answers come only from the sample sources, using the most specific layer that applies. Clinical questions with no approved source are passed to your care team.':'تأتي الإجابات من المصادر التجريبية فقط، وتُستخدم أدق طبقة تنطبق. الأسئلة السريرية التي لا يوجد لها مصدر معتمد تُحال إلى فريق الرعاية.',
+ 'Country':'الدولة','Hospital':'المستشفى','Team':'الفريق','Surgeon':'الجراح','Answer language':'لغة الإجابة',
+ 'Set the surgeon to None to see the hospital answer instead.':'اختر "لا شيء" للجراح لرؤية إجابة المستشفى بدلا من ذلك.',
+ 'Doctor summary':'ملخص الطبيب','None':'لا يوجد','Any':'أي'
+};
+var PH_AR={'Type an answer in English, Bahasa Malaysia or Chinese':'اكتب إجابتك','For example: When can I shower?':'مثال: متى أستطيع الاستحمام؟'};
+// Translates the static Intake labels inside one card. Dynamic areas (chat, summary body, answers, red box, chips, settings) are skipped.
+function translateRoot(root,lang){
+ if(!root)return;
+ var ar=lang==='ar',w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null),nodes=[],n;
+ while((n=w.nextNode()))nodes.push(n);
+ nodes.forEach(function(t){
+  var p=t.parentNode;
+  if(!p||(p.closest&&p.closest('#iv-sum,#iv-chat,#iv-ans,#iv-red,#iv-chips,#iv-qchips,.iv-set')))return;
+  var raw=t.__en!==undefined?t.__en:t.nodeValue,key=raw.trim();
+  if(ar&&CHROME_AR[key]){if(t.__en===undefined)t.__en=raw;t.nodeValue=raw.replace(key,CHROME_AR[key])}
+  else if(t.__en!==undefined){t.nodeValue=t.__en;t.__en=undefined}
+ });
+ root.querySelectorAll('input[placeholder]').forEach(function(el){
+  if(el.closest('.iv-set,#iv-sum,#iv-chat'))return;
+  if(el.dataset.phEn===undefined)el.dataset.phEn=el.getAttribute('placeholder');
+  el.setAttribute('placeholder',ar&&PH_AR[el.dataset.phEn]?PH_AR[el.dataset.phEn]:el.dataset.phEn);
+ });
+}
+function setDir(el,lang){if(!el)return;if(lang==='ar')el.setAttribute('dir','rtl');else el.removeAttribute('dir')}
+// Direction and static labels for the three Intake cards. Each card follows its own language selector.
+function applyLangs(){
+ var li=$('iv-lang')?$('iv-lang').value:'en',lc=$('iv-c-lang')?$('iv-c-lang').value:'en';
+ var iv=document.querySelector('.iv-int'),ask=document.querySelector('.iv-ask'),sum=document.querySelector('.iv-sum');
+ setDir(iv,li);setDir(ask,lc);setDir(sum,sumLang);
+ translateRoot(iv,li);translateRoot(ask,lc);translateRoot(sum,sumLang);
+}
+function ctxNames(ctx,lang){
+ var ar=lang==='ar';
+ return ['country','hospital','team','surgeon'].map(function(k){return (ar?CTX_AR[k]:k)+': '+(ctx[k]||(ar?CTX_AR.none:'none'))}).join(' · ')+' · '+(ar?CTX_AR.procedure:'procedure')+': '+(ctx.procedure||(ar?CTX_AR.any:'any'));
+}
+function arText(text,lang,fallback){return lang==='ar'&&!/[؀-ۿ]/.test(String(text||''))?fallback:text}
+function passMsg(res,lang){
+ if(!res)return '';
+ if(lang!=='ar'||!res.kind||res.kind==='none')return res.msg;
+ if(res.kind==='dup')return PASS_AR.dup;
+ return PASS_AR.created+(res.bucket?PASS_AR.bucket:'');
+}
+function renderAskChips(lang){
+ var list=lang==='ar'?ASK_CHIPS_AR:ASK_CHIPS;
+ $('iv-qchips').innerHTML=list.map(function(q){return '<button type="button" data-in-q="'+esc(q)+'">'+esc(q)+'</button>'}).join('');
+}
+
 var SUM_PLACEHOLDER='<span class="mut">The summary appears here when the interview finishes or a sample loads. Example outline:</span><ol class="in-ph"><li>Banner: RED, AMBER, INCOMPLETE or NONE</li><li>Reasons for the banner</li><li>Medicines, allergies, history, home</li><li>Gaps to clarify</li><li>To-do list with owner and due date</li></ol>';
 // review1 item 14: the engine's fixed reply says "Our team has been alerted". Keep that sentence only when an alert task really exists.
 var ALERTED={en:/Our team has been alerted[^.]*\./,ms:/Pasukan kami telah dimaklumkan[^.]*\./,zh:/我们的团队已收到通知[^。]*。/};
@@ -386,8 +490,8 @@ function honestReply(text,alertExists){
 var st=null,shownRed=null,curPid=null,curName='',curShort='',curProc='',curTodos=[],ivN=0,busy=false,store=null,settings={mode:'scripted',proxy:''};
 var halted=false,redTyped=null,showSrc=false,sumLang='en',autoDone=false;
 
-function addMsg(who,text,cls){var c=$('iv-chat');var d=document.createElement('div');d.className='b '+(who==='me'?'me':'bot')+(cls?' '+cls:'');d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
-function addNote(text){var c=$('iv-chat');var d=document.createElement('div');d.className='in-sysnote';d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function addMsg(who,text,cls){var c=$('iv-chat');var d=document.createElement('div');d.className='b '+(who==='me'?'me':'bot')+(cls?' '+cls:'');d.dir='auto';d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
+function addNote(text){var c=$('iv-chat');var d=document.createElement('div');d.className='in-sysnote';d.dir='auto';d.textContent=text;c.appendChild(d);c.scrollTop=c.scrollHeight}
 function sim(){return window.PeriHooks?window.PeriHooks.sim():null}
 function ensurePatient(pid,name,short,proc){var S=sim();if(!S)return null;
  if(!IN||!IN.OT){if(!S.P(pid))S.addPatient({id:pid,name:name,short:short,procedure:proc,surgeryIn:14});return S}
@@ -459,7 +563,7 @@ function start(){
  $('iv-chat').innerHTML='';$('iv-red').innerHTML='';$('iv-hint').textContent='';
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
  setHeader(curName);
- curFromSample=false;addMsg('bot',GREET[lang]);renderPrompt();refreshOT();
+ curFromSample=false;addMsg('bot',GREET[lang]);renderPrompt();refreshOT();applyLangs();
 }
 function renderPrompt(){
  var chips=$('iv-chips');chips.innerHTML='';
@@ -478,21 +582,34 @@ function renderPrompt(){
 // review1 item 9: one red box for the interview and for a loaded sample. The urgent task is created once (intake.toTasks is idempotent).
 function redBox(red,lang,opt){
  opt=targetFor(opt); // round 5: no patient selected goes to the Unassigned bucket
+ var ar=lang==='ar',U=ui(lang);
  var S=ensurePatient(opt.pid,opt.name,opt.short,opt.proc);
  if(S&&!S.alerts.some(function(a){return a.pid===opt.pid&&a.state==='open'&&a.cls===red.level}))S.alert(opt.pid,red.level,red.flags.slice(),'Intake red flag: '+red.flags.join('; '));
  var spec=IN.redTodo(red);
  var made=S?IN.toTasks(S,opt.pid,[spec]):[];
  var exists=hasTask(S,opt.pid,spec.key);
- var status=made.length?'Urgent task created on the Staff board, due now.':exists?'Urgent task is already on the Staff board, due now. Not duplicated.':'The urgent task could not be created. Call the clinic now.';
- var reply=honestReply(red.reply||FALLBACK_RED,exists);
+ var status=made.length?(ar?U.redCreated:'Urgent task created on the Staff board, due now.')
+  :exists?(ar?U.redExists:'Urgent task is already on the Staff board, due now. Not duplicated.')
+  :(ar?U.redFail:'The urgent task could not be created. Call the clinic now.');
+ var reply=honestReply(red.reply||(ar?FALLBACK_RED_AR:FALLBACK_RED),exists,lang);
  var buttons=opt.interview
-  ?'<button class="p" type="button" data-in-act="alert">Alert staff now</button><button type="button" data-in-act="continue">Continue interview anyway</button>'
-  :'<button class="p" type="button" data-in-act="staff">Open staff board</button>';
- $('iv-red').innerHTML='<div class="in-red"><b>Red flag: '+esc(red.level)+'</b><div class="in-words" style="margin-top:4px">'+esc(reply)+'</div><div class="in-note">Flags: '+esc(red.flags.join('; '))+'. Caught by fixed rules, not by a model.</div>'+
+  ?'<button class="p" type="button" data-in-act="alert">'+(ar?U.btnAlert:'Alert staff now')+'</button><button type="button" data-in-act="continue">'+(ar?U.btnContinue:'Continue interview anyway')+'</button>'
+  :'<button class="p" type="button" data-in-act="staff">'+(ar?U.btnStaff:'Open staff board')+'</button>';
+ var head=ar?U.redTitle+': '+LEVEL_AR[red.level]:'Red flag: '+red.level;
+ var flagsTxt=ar?(IN.redLabel?red.flags.map(function(f){return IN.redLabel(f,'ar')}).join('؛ '):red.flags.join('؛ ')):red.flags.join('; ');
+ var note=ar?U.flagsLbl+': '+flagsTxt+'. '+U.detected:'Flags: '+flagsTxt+'. Caught by fixed rules, not by a model.';
+ $('iv-red').innerHTML='<div class="in-red"><b>'+esc(head)+'</b><div class="in-words" style="margin-top:4px">'+esc(reply)+'</div><div class="in-note">'+esc(note)+'</div>'+
   '<div class="in-chips" style="margin-top:8px">'+buttons+'</div><div class="in-alert-note" id="iv-alert-state">'+esc(status)+'</div></div>';
  if(window.PeriHooks)window.PeriHooks.render();
  return reply;
 }
+// Arabic reply: a fixed Arabic fallback when the engine text has no Arabic, and the same alert-claim rule.
+function honestReplyAr(text,alertExists){
+ var out=String(text==null?'':text);
+ if(!/[؀-ۿ]/.test(out))out=FALLBACK_RED_AR;
+ return alertExists?out:out.replace(ALERTED_AR,NO_ALERT_AR);
+}
+function replyFor(text,alertExists,lang){return lang==='ar'?honestReplyAr(text,alertExists):honestReply(text,alertExists)}
 function noteRed(){
  if(!st||!st.red)return;
  var key=st.red.level+'|'+st.red.flags.join(',');if(key===shownRed)return;shownRed=key;
@@ -505,21 +622,23 @@ function alertStaff(){
  var T=targetFor(st.pid?{pid:st.pid,name:curName,short:curShort,proc:st.procedure}:null); // round 5
  var S=ensurePatient(T.pid,T.name,T.short,T.proc);
  var made=S?IN.toTasks(S,T.pid,[IN.redTodo(st.red)]):[];
- var el=$('iv-alert-state');if(el)el.textContent=made.length?'Urgent task created on the Staff board, due now.':'Already on the Staff board: urgent, due now. Not duplicated.';
+ var el=$('iv-alert-state');if(el)el.textContent=st.lang==='ar'?(made.length?ui('ar').alertCreated:ui('ar').alertExists):(made.length?'Urgent task created on the Staff board, due now.':'Already on the Staff board: urgent, due now. Not duplicated.');
  if(window.PeriHooks)window.PeriHooks.render();
 }
 function continueInterview(){
  if(!st)return;
  halted=false;$('iv-in').disabled=false;
- $('iv-hint').textContent='Interview resumed. The red flag stays on record.';
+ $('iv-hint').textContent=st.lang==='ar'?ui('ar').resumed:'Interview resumed. The red flag stays on record.';
  if(st.done)afterAnswer();else renderPrompt();
 }
 // Summary forced to RED with the typed text, used while the interview is halted or after a red flag was continued.
 function redify(sum){
  if(!st||!st.red)return sum;
  sum.banner.level='RED';
- var U=ui(st.lang);
- sum.banner.reasons=[U.redLine+' ('+st.red.level+'): '+st.red.flags.join('; ')+(redTyped?'. '+U.typed+': "'+redTyped+'"':'')].concat(sum.banner.reasons);
+ var U=ui(st.lang),ar=st.lang==='ar';
+ var flags=ar?st.red.flags.map(function(f){return IN.redLabel(f,'ar')}).join('؛ '):st.red.flags.join('; ');
+ var lvl=ar?LEVEL_AR[st.red.level]:st.red.level;
+ sum.banner.reasons=[U.redLine+' ('+lvl+'): '+flags+(redTyped?'. '+U.typed+': "'+redTyped+'"':'')].concat(sum.banner.reasons);
  return sum;
 }
 function showHalted(){
@@ -560,7 +679,7 @@ function answerWith(raw,label){
    if(sec){
     var finI=SC.combine(rulesI,sec,{lang:st.lang});
     // second check raised the message: fixed same-day text and a staff task; the FAQ answer is withheld, no model reply is shown
-    if(finI.escalated){addMsg('bot',finI.reply);var pqI=passToStaff(text,true,false);addNote(pqI.msg);done();return}
+    if(finI.escalated){addMsg('bot',arText(finI.reply,st.lang,SAME_DAY_AR));var pqI=passToStaff(text,true,false);addNote(passMsg(pqI,st.lang));done();return}
     if(finI.staffTag)tagUnscreened(text);
    }
    return AD.askSafely(getAdapter(),text,ENG.classify,{lang:st.lang,ctx:{procedure:st.procedure},step:nxt?nxt.text:undefined}).then(function(out){
@@ -570,8 +689,8 @@ function answerWith(raw,label){
    else if(out&&out.mode==='engine'&&out.text){
     addMsg('bot',out.text+(out.cls==='ROUTE'?' '+ROUTEPASS[st.lang]:''));
     // round 5: the care team task is created now, not only when someone presses Send. EMERGENCY already has its red-flag task.
-    if(out.cls==='ROUTE'){var pr1=passToStaff(text,false,true);addNote(pr1.msg)}
-    else if(out.cls==='SAME-DAY'){var pr2=passToStaff(text,true,false);addNote(pr2.msg)}
+    if(out.cls==='ROUTE'){var pr1=passToStaff(text,false,true);addNote(passMsg(pr1,st.lang))}
+    else if(out.cls==='SAME-DAY'){var pr2=passToStaff(text,true,false);addNote(passMsg(pr2,st.lang))}
    }
    done();
    });
@@ -583,13 +702,18 @@ function answerWith(raw,label){
 // A sample patient: summary on the right. A red flag in the sample shows the same red box as the interview, with the same urgent task.
 function loadSample(){
  if(!IN){$('iv-hint').textContent=MISSING;return}
- var idx=+$('iv-samp').value,h=HIS[idx];if(!h)return;
+ var v=String($('iv-samp').value),h=null;
+ // Arabic samples are run through the interview itself ('ar:<n>'); the others are the stored histories.
+ if(v.indexOf('ar:')===0){h=IV&&IV.arSample?IV.arSample(+v.slice(3)):null}else{h=HIS[+v]||null}
+ if(!h)return;
+ var ar=h.lang==='ar';
  st=null;shownRed=null;halted=false;redTyped=null;$('iv-in').disabled=false;
  $('iv-chat').innerHTML='';$('iv-chips').innerHTML='';$('iv-red').innerHTML='';
- addMsg('bot','Sample loaded: '+h.case+' ('+h.procedure+', fictional). Its answers are summarised on the right.');
- curFromSample=true;curPid=h.pid;curProc=h.procedure;curName='Sample '+h.pid+' (fictional)';curShort='S'+(idx+1);
+ addMsg('bot',ar?'تم تحميل العينة: '+(h.caseAr||h.case)+' (الإجراء: '+(PROC_AR[h.procedure]||h.procedure)+'، وهمي). تظهر إجاباتها في الملخص.'
+  :'Sample loaded: '+h.case+' ('+h.procedure+', fictional). Its answers are summarised on the right.');
+ curFromSample=true;curPid=h.pid;curProc=h.procedure;curName='Sample '+h.pid+' (fictional)';curShort='S'+(String(v).indexOf('ar:')===0?+v.slice(3)+1:(+v+1));
  setHeader(curName);
- var ans={pid:h.pid,procedure:h.procedure,lang:h.lang,answers:h.answers,freeText:h.freeText||[]};
+ var ans=h.sample?h:{pid:h.pid,procedure:h.procedure,lang:h.lang,answers:h.answers,freeText:h.freeText||[]};
  curTodos=IN.todos(ans);
  var red=IN.redOf(ans);
  if(red)redBox(red,h.lang,{pid:h.pid,name:curName,short:curShort,proc:h.procedure,interview:false});
@@ -599,38 +723,50 @@ function loadSample(){
 
 /* ---------- summary ---------- */
 // Wraps raw field ids such as [meds_text] or (blood_thinner) in a span that is hidden unless "Show sources" is on.
-function srcHtml(text){
- var e=esc(text);
- e=e.replace(/ \[([^\]]+)\]/g,function(m,a){return ' <span class="srcx">['+a+']</span>'});
- e=e.replace(/ \(([a-z][a-z_0-9.]*(?:, ?[a-z][a-z_0-9.]*)*)\)/g,function(m,a){return ' <span class="srcx">('+a+')</span>'});
- return e;
+function srcHtml(text,lang){
+ var s=String(text==null?'':text),ar=lang==='ar';
+ // Source tags such as [meds_text] or (blood_thinner) are hidden unless "Show sources" is on. Arabic keeps them LTR.
+ var parts=s.split(/( \[[^\]]+\]| \([a-z][a-z_0-9.]*(?:, ?[a-z][a-z_0-9.]*)*\))/);
+ return parts.map(function(p,i){
+  if(i%2===1){var inner=p.slice(0,1)===' '?p.slice(1):p;return ' <span class="srcx">'+esc(inner)+'</span>'}
+  if(!ar)return esc(p);
+  // Latin and digit runs are cut out before escaping (so HTML entities are never split), then wrapped as LTR isolates.
+  var runs=[];
+  var marked=p.replace(/[A-Za-z0-9][A-Za-z0-9._%\/:+\-]*(?: [A-Za-z0-9._%\/:+\-]+)*/g,function(m){runs.push(m);return '\u0001'+(runs.length-1)+'\u0002'});
+  return esc(marked).replace(/\u0001(\d+)\u0002/g,function(_,k){return '<bdi dir="ltr">'+esc(runs[+k])+'</bdi>'});
+ }).join('');
 }
 function renderSummary(sum,todos,lang,opt){
- opt=opt||{};sumLang=lang;var U=ui(lang);lastSum=[sum,todos,lang,opt];
- var OU=OTUI[lang]||OTUI.en,S0=sim(),otYmd=(S0&&IN&&IN.OT)?otCurrent(S0):null,pk=ENG&&ENG.PACKS?ENG.PACKS[sum.procedure]:null;
+ opt=opt||{};sumLang=lang;var U=ui(lang),ar=lang==='ar',LI=ar?'rtl':'auto';lastSum=[sum,todos,lang,opt];
+ var OU=ar?OTUI_AR:(OTUI[lang]||OTUI.en),S0=sim(),otYmd=(S0&&IN&&IN.OT)?otCurrent(S0):null,pk=ENG&&ENG.PACKS?ENG.PACKS[sum.procedure]:null;
  var tl=function(t){return U.titles[t]||t};
  var lvl=sum.banner.level;
+ var procLbl=ar?(PROC_AR[sum.procedure]||(pk?pk.label:'')):(pk?pk.label:(sum.procedure||''));
  var h='<div class="sumwrap'+(showSrc?' show-src':'')+'">';
  if(opt.note)h+='<div class="in-alert-note">'+esc(opt.note)+'</div>';
- if(otYmd){var ok=IN.OT.daysFromNow(S0,otYmd);h+='<div class="in-sec"><b>'+esc(OU.proc)+':</b> '+esc(pk?pk.label:(sum.procedure||''))+' · <b>'+esc(OU.ot)+':</b> '+esc(IN.OT.fmtCal(otYmd,lang)+' ('+IN.OT.whenText(ok,lang)+')')+'</div>'}
+ if(otYmd){var ok=IN.OT.daysFromNow(S0,otYmd);h+='<div class="in-sec"><b>'+esc(OU.proc)+':</b> '+esc(procLbl)+' · <b>'+esc(OU.ot)+':</b> '+esc(IN.OT.fmtCal(otYmd,lang)+' ('+IN.OT.whenText(ok,lang)+')')+'</div>'}
  h+='<div class="row" style="justify-content:flex-end"><button type="button" data-in-act="src" aria-pressed="'+(showSrc?'true':'false')+'">'+esc(showSrc?U.hideSrc:U.showSrc)+'</button></div>';
  h+='<div class="in-banner '+esc(lvl)+'">'+esc(U.banner[lvl])+'</div>';
- if(sum.banner.reasons.length)h+='<ul class="in-words in-note" style="padding-left:18px;color:var(--ink)">'+sum.banner.reasons.map(function(r){return '<li>'+srcHtml(r)+'</li>'}).join('')+'</ul>';
- h+='<div class="in-note"><b>'+esc(U.label)+'</b></div>';
- sum.sections.forEach(function(sec){h+='<div class="in-sec"><h3>'+esc(tl(sec.title))+'</h3>'+(sec.lines.length?'<ul class="in-words">'+sec.lines.map(function(l){return '<li>'+srcHtml(l)+'</li>'}).join('')+'</ul>':'<div class="in-note">'+esc(U.nothing)+'</div>')+'</div>'});
- if(sum.gaps.length)h+='<div class="in-sec"><h3>'+esc(U.gaps)+' ('+sum.gaps.length+')</h3><ul class="in-words">'+sum.gaps.map(function(g){return '<li>'+srcHtml(g)+'</li>'}).join('')+'</ul></div>';
- h+='<div class="in-note" style="margin-top:6px">Malay and Chinese text in this summary is a machine draft. A native-speaking clinician must review it before use.</div>';
+ if(sum.banner.reasons.length)h+='<ul class="in-words in-note in-li" style="color:var(--ink)">'+sum.banner.reasons.map(function(r){return '<li dir="'+LI+'">'+srcHtml(r,lang)+'</li>'}).join('')+'</ul>';
+ h+='<div class="in-note"><b>'+esc(ar?sum.label:U.label)+'</b></div>';
+ sum.sections.forEach(function(sec){h+='<div class="in-sec"><h3>'+esc(tl(sec.title))+'</h3>'+(sec.lines.length?'<ul class="in-words in-li">'+sec.lines.map(function(l){return '<li dir="'+LI+'">'+srcHtml(l,lang)+'</li>'}).join('')+'</ul>':'<div class="in-note">'+esc(U.nothing)+'</div>')+'</div>'});
+ if(sum.gaps.length)h+='<div class="in-sec"><h3>'+esc(U.gaps)+' ('+sum.gaps.length+')</h3><ul class="in-words in-li">'+sum.gaps.map(function(g){return '<li dir="'+LI+'">'+srcHtml(g,lang)+'</li>'}).join('')+'</ul></div>';
+ h+='<div class="in-note" style="margin-top:6px">'+esc(ar?U.draftNote:'Malay and Chinese text in this summary is a machine draft. A native-speaking clinician must review it before use.')+'</div>';
  h+='<h2 style="margin:12px 0 4px">'+esc(U.todo)+'</h2>';
- if(!todos.length)h+='<div class="in-note">No to-dos generated from these answers.</div>';
+ if(!todos.length)h+='<div class="in-note">'+esc(ar?'لم تُنشأ مهام من هذه الإجابات.':'No to-dos generated from these answers.')+'</div>';
  todos.forEach(function(t){
   var M=U.todoMeta;
   var due=t.urgent?M.now:(t.dueHours?(lang==='zh'?M.within+t.dueHours+M.hours:M.within+' '+t.dueHours+' '+M.hours):(t.dueDays<0?(-t.dueDays)+' '+M.before:M.surgeryDay));
+  if(ar&&!t.urgent&&!t.dueHours&&t.dueDays<0)due=(-t.dueDays)+' '+M.before;
   if(otYmd&&typeof t.dueDays==='number'&&typeof t.dueHours!=='number'&&!t.urgent)due=IN.OT.fmtCal(IN.OT.addDays(otYmd,t.dueDays),lang)+', '+IN.OT.relOT(t.dueDays,lang);
-  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(t.owner.replace(/_/g,' '))+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx"> · '+esc(M.reason)+': '+esc(t.reason)+'</span></div></div>';
+  var owner=ar?(IN.OWNER_AR[t.owner]||t.owner):t.owner.replace(/_/g,' ');
+  h+='<div class="in-todo"><b>'+esc(t.title)+'</b><div class="in-note">'+esc(M.owner)+': '+esc(owner)+' · '+esc(M.due)+' '+esc(due)+(t.needsClinician?' · '+esc(M.decide):'')+'<span class="srcx"> · '+esc(M.reason)+': '+esc(t.reason)+'</span></div></div>';
  });
- h+='<div class="row" style="margin-top:8px;flex-wrap:wrap;align-items:center"><button class="p" type="button" data-in-act="send">Send to staff board</button><span class="in-note" id="iv-sent"></span></div>';
+ h+='<div class="row" style="margin-top:8px;flex-wrap:wrap;align-items:center"><button class="p" type="button" data-in-act="send">'+esc(ar?'إرسال إلى لوحة الطاقم':'Send to staff board')+'</button><span class="in-note" id="iv-sent"></span></div>';
  h+='</div>';
  $('iv-sum').innerHTML=h;
+ setDir($('iv-sum').closest('.iv-sum'),lang);
+ translateRoot($('iv-sum').closest('.iv-sum'),lang);
 }
 function sendTodos(){
  if(!IN){$('iv-sent').textContent=MISSING;return}
@@ -657,16 +793,16 @@ function tagUnscreened(text){
 }
 function passToStaff(q,urgent,clinical){
  var text=String(q).trim();
- if(!IN)return {ok:false,msg:MISSING};
+ if(!IN)return {ok:false,msg:MISSING,kind:'none'};
  // round 5: with no patient selected the question is still a Staff board task, under the Unassigned bucket (never silently nothing)
  var T=targetFor(curPid?{pid:curPid,name:curName,short:curShort,proc:curProc}:null);
  var S=ensurePatient(T.pid,T.name,T.short,T.proc);
- if(!S)return {ok:false,msg:MISSING};
+ if(!S)return {ok:false,msg:MISSING,kind:'none'};
  var r=IN.questionTask(S,T.pid,text,urgent,clinical);
  if(window.PeriHooks)window.PeriHooks.render();
  var bucket=T.pid==='UNASSIGNED';
- if(r.status==='duplicate')return {ok:true,msg:'Already on the Staff board: the same question'+(bucket?' in '+UNASSIGNED_NAME:' for this patient')+'. Not duplicated.'};
- return {ok:true,msg:'Staff board task created'+(bucket?' under '+UNASSIGNED_NAME+'. No patient is selected, so assign it on the board.':'.')};
+ if(r.status==='duplicate')return {ok:true,kind:'dup',bucket:bucket,msg:'Already on the Staff board: the same question'+(bucket?' in '+UNASSIGNED_NAME:' for this patient')+'. Not duplicated.'};
+ return {ok:true,kind:'created',bucket:bucket,msg:'Staff board task created'+(bucket?' under '+UNASSIGNED_NAME+'. No patient is selected, so assign it on the board.':'.')};
 }
 function askCtx(){return {country:$('iv-c-country').value,hospital:$('iv-c-hospital').value,team:$('iv-c-team').value,surgeon:$('iv-c-surgeon').value,procedure:$('iv-c-proc').value||undefined}}
 function ask(q){
@@ -675,7 +811,7 @@ function ask(q){
 }
 // Ask box with the second check: the check runs before any answer is shown. A raised question withholds the approved answer.
 function askChecked(q){
- var out=$('iv-ans');out.textContent='Checking your question...';
+ var out=$('iv-ans');out.textContent=$('iv-c-lang').value==='ar'?'جار فحص سؤالك...':'Checking your question...';
  var lang=$('iv-c-lang').value,ctx=askCtx();
  try{
   if(!store){store=KN.createStore();SRCS.sources.forEach(function(s){KN.addSource(store,s)})}
@@ -690,33 +826,36 @@ function askChecked(q){
 function askNow(q,pre){
  var out=$('iv-ans');
  if(!KN||!SRCS){out.textContent=MISSING;return}
- if(!String(q||'').trim()){out.textContent='Type a question first.';return}
+ var lang=$('iv-c-lang').value,ar=lang==='ar',U=ui(lang);
+ if(!String(q||'').trim()){out.textContent=ar?'اكتب سؤالك أولا.':'Type a question first.';return}
  try{
   if(!store){store=KN.createStore();SRCS.sources.forEach(function(s){KN.addSource(store,s)})}
-  var ctx=askCtx(),lang=$('iv-c-lang').value,r=KN.answer(store,ctx,q,lang);
-  if(pre&&pre.escalate)r={kind:'ROUTE',cls:'SAME-DAY',reason:pre.reason,text:SC.SAME_DAY_REPLIES[lang]||SC.SAME_DAY_REPLY};
-  var names=['country','hospital','team','surgeon'].map(function(k){return k+': '+(ctx[k]||'none')}).join(' · ')+' · procedure: '+(ctx.procedure||'any');
+  var ctx=askCtx(),r=KN.answer(store,ctx,q,lang);
+  if(pre&&pre.escalate)r={kind:'ROUTE',cls:'SAME-DAY',reason:pre.reason,text:arText(SC.SAME_DAY_REPLIES[lang]||SC.SAME_DAY_REPLY,lang,SAME_DAY_AR)};
   var h='';
   if(r.kind==='ANSWER'){
    h+='<div class="in-words"><b>'+esc(r.text)+'</b></div>';
-   h+='<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>';
+   h+=ar?'<div class="in-cite">المصدر: المستوى '+esc(r.citation.layerLabel||r.citation.layer)+' · الجهة '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>'
+     :'<div class="in-cite">Source: layer '+esc(r.citation.layer)+' · owner '+esc(r.citation.owner)+' · '+esc(r.citation.title)+'</div>';
    // round 6 (review3 M1): a draft is labelled as a sample, never presented as clinician-approved text
-   h+=r.approved?'<div class="in-cite">Clinician-approved: yes</div>':'<div class="in-cite"><b style="color:var(--em)">SAMPLE draft, not approved</b> · no clinician has approved this text for this clinic.</div>';
+   if(ar)h+=r.approved?'<div class="in-cite">معتمد من طبيب: نعم</div>':'<div class="in-cite"><b style="color:var(--em)">عينة مسودة، غير معتمدة</b> · لم يعتمد أي طبيب هذا النص لهذه العيادة.</div>';
+   else h+=r.approved?'<div class="in-cite">Clinician-approved: yes</div>':'<div class="in-cite"><b style="color:var(--em)">SAMPLE draft, not approved</b> · no clinician has approved this text for this clinic.</div>';
    // review1 item 8: the answer, then the hospital layer it overrides, with owner names
    var ov=KN.overrideLine(store,ctx,r);
    if(ov)h+='<div class="in-over"><b>'+esc(ov.head)+'</b> '+esc(ov.body)+'</div>';
   }else{
    var urgent=r.cls==='EMERGENCY'||r.cls==='SAME-DAY';
-   var pass=passToStaff(q,urgent,/clinical judgement/.test(r.reason));
+   var pass=passToStaff(q,urgent,/clinical judgement|تقدير سريري/.test(r.reason||''));
    if(pre&&pre.staffTag)tagUnscreened(q);
    var H=ASKHEAD;
    h+='<div class="in-words"><b>'+esc(urgent?H.urgent[lang]:pass.ok?H.passed[lang]:H.not[lang])+'</b></div>';
-   h+='<div class="in-words">'+esc(honestReply(r.text,pass.ok))+'</div>';
-   h+='<div class="in-cite">No approved source answers this in the current context. Reason: '+esc(r.reason)+'</div>';
-   h+='<div class="in-cite" id="iv-ask-task">'+esc(pass.msg)+'</div>';
+   h+='<div class="in-words">'+esc(honestReply(r.text,pass.ok,lang))+'</div>';
+   h+=ar?'<div class="in-cite">لا يوجد مصدر معتمد يجيب عن هذا السؤال في السياق الحالي. السبب: '+esc(r.reason)+'</div>'
+     :'<div class="in-cite">No approved source answers this in the current context. Reason: '+esc(r.reason)+'</div>';
+   h+='<div class="in-cite" id="iv-ask-task">'+esc(passMsg(pass,lang))+'</div>';
   }
-  if(pre&&pre.unscreened)h+='<div class="in-cite">'+esc(SC.UNSCREENED_TAG)+'</div>';
-  h+='<div class="in-cite">Context used: '+esc(names)+'</div>';
+  if(pre&&pre.unscreened)h+='<div class="in-cite">'+esc(ar?UNSCREENED_AR:SC.UNSCREENED_TAG)+'</div>';
+  h+='<div class="in-cite">'+(ar?'السياق المستخدم: ':'Context used: ')+esc(ctxNames(ctx,lang))+'</div>';
   out.innerHTML=h;
  }catch(e){out.textContent='Could not answer: '+e.message}
 }
@@ -737,7 +876,8 @@ function refreshSettings(){
  $('iv-set-preset-info').textContent=p?'Set on the proxy server only: provider '+p.provider+', base URL '+(p.baseUrl||'(your own)')+', model '+(p.model||'(your own)')+'.':'';
  var scOn=effMode()==='ai'&&!!SC;
  var scMsg=scOn?'Second check: on for Intake, Ask box and Patient phone. The model can raise a message to urgent; it can never lower one. Unscreened messages are tagged on the Staff board.':'Second check: off (rules only). Rules alone were measured at about 56% of urgent messages on an unseen AI-written set; turn on a second check for production.';
- document.querySelectorAll('.sc-status').forEach(function(el){el.textContent=scMsg});
+ var scAr=scOn?'الفحص الثاني: مفعّل للاستقبال وصندوق الأسئلة وهاتف المريض. يمكن للنموذج أن يرفع الرسالة إلى عاجل، لكنه لا يخفضها أبدا. الرسائل غير المفحوصة تُعلَّم على لوحة الطاقم.':'الفحص الثاني: متوقف (القواعد وحدها فقط).';
+ document.querySelectorAll('.sc-status').forEach(function(el){el.textContent=(el.id==='sc-phone'&&window.__plPhoneAr)?scAr:scMsg});
 }
 
 function init(){
@@ -751,7 +891,8 @@ function init(){
  $('iv-samp').innerHTML=order.map(function(k){return '<optgroup label="'+esc(PK[k]?PK[k].label:k)+'">'+groups[k].map(function(g){return '<option value="'+g[1]+'">'+esc(g[0].pid+' · '+g[0].case)+'</option>'}).join('')+'</optgroup>'}).join('');
  $('iv-set-preset').innerHTML=AD&&AD.presets?Object.keys(AD.presets).map(function(k){return '<option value="'+k+'">'+esc(AD.presets[k].provider)+'</option>'}).join(''):'';
  $('iv-sum').innerHTML=SUM_PLACEHOLDER;
- $('iv-qchips').innerHTML=ASK_CHIPS.map(function(q){return '<button type="button" data-in-q="'+esc(q)+'">'+esc(q)+'</button>'}).join('');
+ if(IV&&IV.arSample){var arG='<optgroup label="العربية (عينات وهمية)">';for(var ai=0;ai<IV.AR_SAMPLE_COUNT;ai++){var ah=IV.arSample(ai);arG+='<option value="ar:'+ai+'">'+esc(ah.pid+' · '+ah.caseAr)+'</option>'}$('iv-samp').insertAdjacentHTML('beforeend',arG+'</optgroup>')}
+ renderAskChips($('iv-c-lang').value);
  if(!IV||!IN){$('iv-hint').textContent=MISSING;$('iv-start').disabled=true;$('iv-sample').disabled=true}
  if(!HIS.length)$('iv-sample').disabled=true;
  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -777,7 +918,7 @@ $('iv-chips').addEventListener('click',function(e){var b=e.target.closest?e.targ
 $('iv-form').addEventListener('submit',function(e){e.preventDefault();var v=$('iv-in').value;if(!v.trim())return;$('iv-in').value='';answerWith(v)});
 $('iv-voice').addEventListener('click',function(){
  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return;
- try{var rec=new SR();var l=st?st.lang:$('iv-lang').value;rec.lang={en:'en-US',ms:'ms-MY',zh:'zh-CN'}[l]||'en-US';rec.interimResults=false;rec.maxAlternatives=1;
+ try{var rec=new SR();var l=st?st.lang:$('iv-lang').value;rec.lang={en:'en-US',ms:'ms-MY',zh:'zh-CN',ar:'ar-SA'}[l]||'en-US';rec.interimResults=false;rec.maxAlternatives=1;
   rec.onresult=function(ev){$('iv-in').value=ev.results[0][0].transcript;$('iv-hint').textContent='Check the words, then press Send.'};
   rec.onerror=function(){$('iv-hint').textContent='Voice input did not work. Type your answer instead.'};
   rec.start();}catch(err){$('iv-hint').textContent='Voice input is not available here. Type your answer instead.'}
@@ -797,6 +938,9 @@ $('iv-sum').addEventListener('click',function(e){var b=e.target.closest?e.target
 $('iv-ot').addEventListener('change',onOT);
 $('iv-askform').addEventListener('submit',function(e){e.preventDefault();ask($('iv-q').value)});
 $('iv-qchips').addEventListener('click',function(e){var b=e.target.closest?e.target.closest('button[data-in-q]'):null;if(!b)return;$('iv-q').value=b.getAttribute('data-in-q');ask(b.getAttribute('data-in-q'))});
+window.__plRefreshSc=function(){refreshSettings()};
+$('iv-lang').addEventListener('change',function(){applyLangs();if(st&&!st.done&&IV&&IN)start()});
+$('iv-c-lang').addEventListener('change',function(){applyLangs();renderAskChips(this.value);if($('iv-ans').textContent)ask($('iv-q').value||'')});
 $('iv-set-mode').addEventListener('change',refreshSettings);
 $('iv-set-preset').addEventListener('change',refreshSettings);
 $('iv-set-proxy').addEventListener('input',refreshSettings);

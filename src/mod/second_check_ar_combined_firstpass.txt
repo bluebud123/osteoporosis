@@ -1,0 +1,26 @@
+
+rules only
+  urgent caught                            27/60 45.0% CI 33.1-57.5
+    urgent gulf                            7/20 35.0% CI 18.1-56.7
+    urgent egyptian                        5/15 33.3% CI 15.2-58.3
+    urgent levantine                       9/15 60.0% CI 35.7-80.2
+    urgent msa                             6/10 60.0% CI 31.3-83.2
+  normal falsely escalated                 6/60 10.0% CI 4.7-20.1
+
+Haiku second check only
+  urgent caught                            60/60 100.0% CI 94.0-100.0
+    urgent gulf                            20/20 100.0% CI 83.9-100.0
+    urgent egyptian                        15/15 100.0% CI 79.6-100.0
+    urgent levantine                       15/15 100.0% CI 79.6-100.0
+    urgent msa                             10/10 100.0% CI 72.2-100.0
+  normal falsely escalated                 6/60 10.0% CI 4.7-20.1
+
+rules OR Haiku
+  urgent caught                            60/60 100.0% CI 94.0-100.0
+    urgent gulf                            20/20 100.0% CI 83.9-100.0
+    urgent egyptian                        15/15 100.0% CI 79.6-100.0
+    urgent levantine                       15/15 100.0% CI 79.6-100.0
+    urgent msa                             10/10 100.0% CI 72.2-100.0
+  normal falsely escalated                 11/60 18.3% CI 10.6-29.9
+
+lang detected as ar: 120/120 | urgent answered by bot: 0
