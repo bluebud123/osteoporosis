@@ -339,7 +339,7 @@ async function route(req, res) {
   if (m === 'POST' && p === '/api/live/send') {
     var tp = store.db.patients.find(function (x) { return x.id === body.pid && x.active; }); if (!tp) return send(res, 404, { error: 'not_found' });
     var tx = String(body.text || '').trim(); if (!tx) return send(res, 400, { error: 'empty' });
-    await patientMessage(tp, tx, 'replayed by ' + user.name + (body.libId ? ' (library ' + String(body.libId).slice(0, 12) + ')' : '')); store.save(); return send(res, 200, { ok: true });
+    await patientMessage(tp, tx, (body.libId ? 'replayed by ' : 'typed in Live view by ') + user.name + (body.libId ? ' (library ' + String(body.libId).slice(0, 12) + ')' : '')); store.save(); return send(res, 200, { ok: true });
   }
   if (m === 'GET' && p === '/api/trace') {
     var pid5 = url.searchParams.get('pid'); var ms5 = store.db.messages.filter(function (x) { return x.pid === pid5; });

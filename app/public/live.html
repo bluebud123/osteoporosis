@@ -39,7 +39,8 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--mut)}
 <label class="mut">Patient <select id="ps"></select></label>
 <label class="mut">Test message <select id="lf"><option value="">All</option><option value="urgent">urgent</option><option value="normal">normal</option></select> <select id="ll"><option value="">All languages</option><option value="en">en</option><option value="ms">ms</option><option value="zh">zh</option><option value="ar">ar</option></select></label>
 <select id="lib" style="max-width:360px"></select><button class="btn" id="sendlib">Send as this patient</button>
-<span class="mut" id="truth" style="font-size:12px"></span></header>
+<span class="mut" id="truth" style="font-size:12px"></span>
+<form id="tf" style="display:flex;gap:8px;width:100%;margin-top:4px"><input id="ti" style="flex:1" maxlength="1000" autocomplete="off" placeholder="Type here as the patient (works even if the chat window on the left is blank), then press Enter"><button class="btn" id="tsend">Send as patient</button></form></header>
 <div class="cols">
  <section class="col"><h3>1 · Patient <span class="mut" style="text-transform:none;letter-spacing:0">what the patient sees. Type here too.</span></h3><iframe id="pf" title="Patient chat"></iframe></section>
  <section class="col"><h3>2 · AI and rules pipeline <span class="mut" style="text-transform:none;letter-spacing:0" id="ptitle"></span></h3><div class="body" id="pipe"></div></section>
@@ -85,6 +86,7 @@ function renderStaff(){if(!cur)return;Promise.all([api('/api/patients/'+cur),api
 })}
 $('#ps').onchange=pick;$('#lf').onchange=libList;$('#ll').onchange=libList;$('#lib').onchange=libPick;
 $('#sendlib').onclick=function(){var x=lib.find(function(y){return y.id===$('#lib').value});if(!x||!cur)return;$('#sendlib').disabled=true;api('/api/live/send',{pid:cur,text:x.text,libId:x.id}).then(function(){$('#sendlib').disabled=false;renderPipe();renderStaff()})};
+$('#tf').onsubmit=function(e){e.preventDefault();var t=$('#ti').value.trim();if(!t||!cur)return;$('#ti').value='';api('/api/live/send',{pid:cur,text:t}).then(function(){renderPipe();renderStaff();try{$('#pf').contentWindow.location.reload()}catch(x){}})};
 api('/api/library').then(function(l){lib=l;libList()});
 loadPatients();
 setInterval(function(){if(document.hidden||!cur)return;renderPipe();var a=document.activeElement;if(!a||a.id!=='sr')renderStaff()},2000);

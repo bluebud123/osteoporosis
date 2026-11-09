@@ -124,11 +124,11 @@ mock.listen(9199, async function () {
   var tr = (await G('/api/trace?pid=' + demoP.id, doc)).json;
   ok(tr.length === 1 && tr[0].trace.length === 7 && tr[0].trace.map(function (s) { return s.n; }).join('') === '1234567', 'trace has all 7 steps in order', tr[0] && tr[0].trace.length);
   ok(tr[0].trace[3].status === 'raise' && /URGENT/.test(tr[0].trace[3].detail), 'trace shows the AI second check raising to same-day');
-  ok(/replayed by/.test(tr[0].via), 'replayed messages are marked as replays');
+  ok(/replayed by/.test(tr[0].via), 'library replays are marked as replays');
   await P('/api/live/send', { pid: demoP.id, text: 'hello', libId: 'T2' }, doc);
   var tr2 = (await G('/api/trace?pid=' + demoP.id, doc)).json; ok(tr2[0].trace[5].status === 'pass' && /AI-written reply/.test(tr2[0].trace[5].detail + tr2[0].trace[5].title) , 'trace shows the AI reply accepted by the guard', tr2[0].trace[5]);
   await P('/api/live/send', { pid: demoP.id, text: 'BADREPLY hello' }, doc);
-  var tr3 = (await G('/api/trace?pid=' + demoP.id, doc)).json; ok(/BLOCKED/.test(tr3[0].trace[5].detail) && tr3[0].trace[5].status === 'warn', 'trace shows the guard BLOCKING an unsafe model reply', tr3[0].trace[5]);
+  var tr3 = (await G('/api/trace?pid=' + demoP.id, doc)).json; ok(/typed in Live view/.test(tr3[0].via), 'messages typed in the Live view are marked as such'); ok(/BLOCKED/.test(tr3[0].trace[5].detail) && tr3[0].trace[5].status === 'warn', 'trace shows the guard BLOCKING an unsafe model reply', tr3[0].trace[5]);
   var det = (await G('/api/patients/' + demoP.id, doc)).json; ok(det.intake && typeof det.intake === 'object', 'demo patient has intake answers');
   ok((await G('/live')).status === 200, 'live page is served');
 
