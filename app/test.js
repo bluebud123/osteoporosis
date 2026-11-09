@@ -111,11 +111,32 @@ mock.listen(9199, async function () {
   var allAi = (await G('/api/patients/' + pid, doc)).json.messages.filter(function (m) { return m.who === 'ai'; });
   ok(allAi.every(function (m) { return !/normal|don't worry/i.test(m.text); }), 'no AI message contains reassurance');
 
+
+  // ---- demo cases, library, trace ----
+  var allPts = (await G('/api/patients', doc)).json;
+  ok(allPts.filter(function (x) { return x.demo; }).length === 30, 'the 30 fictional demo cases are loaded on first run', allPts.length);
+  ok(allPts.some(function (x) { return x.demo && x.overdue > 0; }) && allPts.some(function (x) { return x.demo && x.overdue === 0; }), 'demo cases are spread across the journey (some overdue, some not)');
+  ok((await P('/api/demo/load', {}, doc)).json.added === 0, 'loading demo cases twice adds nothing');
+  ok((await P('/api/demo/load', {}, nur)).status === 403, 'nurse cannot reload demo cases');
+  var libr = (await G('/api/library', doc)).json; ok(libr.length === 360 && libr.some(function (x) { return x.lang === 'ar'; }) && libr.some(function (x) { return x.truth === 'urgent'; }), 'test-message library has 360 messages (en, ms, zh, ar)', libr.length);
+  var demoP = allPts.find(function (x) { return x.demo; });
+  await P('/api/live/send', { pid: demoP.id, text: 'my leg feels strange and tight since this morning', libId: 'T1' }, doc);
+  var tr = (await G('/api/trace?pid=' + demoP.id, doc)).json;
+  ok(tr.length === 1 && tr[0].trace.length === 7 && tr[0].trace.map(function (s) { return s.n; }).join('') === '1234567', 'trace has all 7 steps in order', tr[0] && tr[0].trace.length);
+  ok(tr[0].trace[3].status === 'raise' && /URGENT/.test(tr[0].trace[3].detail), 'trace shows the AI second check raising to same-day');
+  ok(/replayed by/.test(tr[0].via), 'replayed messages are marked as replays');
+  await P('/api/live/send', { pid: demoP.id, text: 'hello', libId: 'T2' }, doc);
+  var tr2 = (await G('/api/trace?pid=' + demoP.id, doc)).json; ok(tr2[0].trace[5].status === 'pass' && /AI-written reply/.test(tr2[0].trace[5].detail + tr2[0].trace[5].title) , 'trace shows the AI reply accepted by the guard', tr2[0].trace[5]);
+  await P('/api/live/send', { pid: demoP.id, text: 'BADREPLY hello' }, doc);
+  var tr3 = (await G('/api/trace?pid=' + demoP.id, doc)).json; ok(/BLOCKED/.test(tr3[0].trace[5].detail) && tr3[0].trace[5].status === 'warn', 'trace shows the guard BLOCKING an unsafe model reply', tr3[0].trace[5]);
+  var det = (await G('/api/patients/' + demoP.id, doc)).json; ok(det.intake && typeof det.intake === 'object', 'demo patient has intake answers');
+  ok((await G('/live')).status === 200, 'live page is served');
+
   // ---- persistence ----
   srv.close(); delete require.cache[require.resolve('./server.js')]; delete require.cache[require.resolve('./store.js')];
   var S2 = require('./server.js'), srv2 = S2.createServer(); await new Promise(function (r) { srv2.listen(0, r); });
   var port2 = srv2.address().port, c2 = (await call(port2, 'POST', '/api/login', { username: 'doctor', password: 'doctor-demo-1' })).cookie;
-  var pts = (await call(port2, 'GET', '/api/patients', null, c2)).json; ok(pts.length === 2, 'data survives a restart', pts.length);
+  var pts = (await call(port2, 'GET', '/api/patients', null, c2)).json; ok(pts.length === 32, 'data survives a restart (30 demo + 2 added)', pts.length);
   ok((await call(port2, 'GET', '/healthz')).status === 200, 'health check');
   srv2.close(); mock.close();
   console.log('\n' + pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0);

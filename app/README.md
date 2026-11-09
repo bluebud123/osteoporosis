@@ -7,6 +7,8 @@ Demo logins: `doctor` / `doctor-demo-1`, `nurse` / `nurse-demo-1` (change them i
 **Test:** `node test.js` (no network or key needed; uses a stand-in model).
 
 ## What it does
+- **Live view** (opens first): patient chat, the AI and rules pipeline step by step, and the staff panel side by side. Anything typed as the patient shows up in all three. A library of 360 test messages (English, Malay, Chinese, Arabic; labels written by AI, not clinicians) can be replayed as any patient.
+- **30 fictional demo patients** are loaded on first run (from the project's test material), spread across the journey, with intake answers.
 - **Patients:** add a patient (short name, record number, procedure, operation date). The checklist is created from the pathway rules. Each patient gets a private chat link.
 - **Rules (doctor):** edit the checklist items, owners and due days; add extra red-flag phrases (they can only raise urgency); write clinic-approved answers for common questions.
 - **Inbox / Alerts:** urgent messages first. Acknowledge records who and when. Reply as a named person; while a person is handling a patient, the assistant stays quiet (urgent messages are still answered).

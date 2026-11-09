@@ -43,6 +43,7 @@ function init() {
   };
   audit('system', 'first run: demo accounts created');
   store.save();
+  if (process.env.PERILOOP_NO_SEED !== '1') seedDemo('system');
 }
 function audit(who, what) { store.db.audit.push({ at: Date.now(), who: who, what: what }); if (store.db.audit.length > 2000) store.db.audit.splice(0, 500); }
 
@@ -85,8 +86,8 @@ async function secondCheck(text, key) {
   } catch (e) { return { verdict: 'unscreened', reason: 'second check error' }; }
 }
 async function aiReply(text, history, lang, key) {
-  if (!aiConfigured()) return '';
-  try { var j = await aiCall({ mode: 'reply', text: text, history: history, lang: lang }, key); return typeof j.text === 'string' ? j.text : ''; } catch (e) { return ''; }
+  if (!aiConfigured()) return { text: '', skipped: 'AI not configured' };
+  try { var j = await aiCall({ mode: 'reply', text: text, history: history, lang: lang }, key); return { text: typeof j.text === 'string' ? j.text : '', blocked: j.blocked || '', error: j.error || '' }; } catch (e) { return { text: '', error: 'call failed' }; }
 }
 
 /* ---------- patients, tasks ---------- */
@@ -108,7 +109,31 @@ function ptView(p) {
   var alerts = store.db.alerts.filter(function (a) { return a.pid === p.id && !a.ackAt; });
   var needs = store.db.messages.filter(function (m) { return m.pid === p.id && m.needsStaff && !m.handled; });
   return { id: p.id, name: p.name, rn: p.rn, procedure: p.procedure, procLabel: (store.db.rules.pathway.procedures[p.procedure] || {}).label || p.procedure, otDate: p.otDate, lang: p.lang, active: p.active, threadOpen: !!p.threadOpen,
-    open: open.length, overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length, openAlerts: alerts.length, needsReply: needs.length, linked: !!p.firstSeen };
+    open: open.length, overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length, openAlerts: alerts.length, needsReply: needs.length, linked: !!p.firstSeen, demo: !!p.demo, demoCase: p.demoCase || '', expect: p.expect || '' };
+}
+
+
+/* ---------- fictional demo cases (from the project's own test material) ---------- */
+function seedDemo(user) {
+  var hist; try { hist = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed', 'histories.json'), 'utf8')); } catch (e) { return 0; }
+  var added = 0, now = Date.now();
+  hist.forEach(function (h, i) {
+    var rn = String(h.pid).toUpperCase();
+    if (store.db.patients.some(function (x) { return x.rn === rn; })) return;
+    if (!store.db.rules.pathway.procedures[h.procedure]) return;
+    // spread across the journey: some before surgery, some after
+    var offsets = [21, 14, 9, 5, 2, 0, -1, -3, -6, -10];
+    var off = offsets[i % offsets.length];
+    var d = new Date(now + off * DAY); var ot = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    var short = ('Fict ' + String(h.pid).replace('FIC-', '')).slice(0, 20);
+    var pt = { id: uid(), name: short, rn: rn, procedure: h.procedure, otDate: ot, lang: LANGS[h.lang] ? h.lang : 'en', token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: now, addedBy: user || 'system', demo: true, demoCase: h.case, expect: h.expect, intake: h.answers };
+    store.db.patients.push(pt); createTasks(pt);
+    // earlier items already done for most demo patients, so the board is realistic: a few stay overdue on purpose
+    if (i % 4 !== 0) store.db.tasks.forEach(function (t) { if (t.pid === pt.id && t.dueAt < now - 2 * DAY && t.due <= -8) { t.state = 'done'; t.evidence = 'Demo data: completed'; t.doneBy = 'Demo'; t.doneAt = now - 3 * DAY; } });
+    added++;
+  });
+  if (added) { audit(user || 'system', 'loaded ' + added + ' fictional demo patients'); store.save(); }
+  return added;
 }
 
 /* ---------- the patient message pipeline ---------- */
@@ -122,51 +147,70 @@ function raiseAlert(pt, cls, text, reason) {
   store.db.alerts.push(a); return a;
 }
 
-async function patientMessage(pt, rawText) {
+async function patientMessage(pt, rawText, via) {
   var text = String(rawText || '').replace(/\s+/g, ' ').trim().slice(0, 1000);
   if (!text) return;
-  // identifiers are masked before anything is stored or sent to a model
-  var safe = text.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, '[email]').replace(/(?<!\d)\d{6}-?\d{2}-?\d{4}(?!\d)/g, '[id]').replace(/\+?\d[\d\s()-]{7,}\d/g, function (m) { var n = m.replace(/\D/g, '').length; return n >= 9 && n <= 15 ? '[phone]' : m; });
+  var trace = [], t0 = Date.now(), tick = Date.now();
+  function step(n, title, status, detail) { var now = Date.now(); trace.push({ n: n, title: title, status: status, detail: detail, ms: now - tick }); tick = now; }
+  // 1. identifiers are masked before anything is stored or sent to a model
+  var masked = 0;
+  var safe = text.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, function () { masked++; return '[email]'; }).replace(/(?<!\d)\d{6}-?\d{2}-?\d{4}(?!\d)/g, function () { masked++; return '[id]'; }).replace(/\+?\d[\d\s()-]{7,}\d/g, function (m) { var n = m.replace(/\D/g, '').length; if (n >= 9 && n <= 15) { masked++; return '[phone]'; } return m; });
   pt.firstSeen = pt.firstSeen || Date.now();
-  var inMsg = addMsg(pt.id, 'patient', safe);
+  step(1, 'Receive and mask', masked ? 'raise' : 'pass', masked ? masked + ' identifier(s) masked before storing or sending anywhere' : 'No phone, IC or email found');
+  var inMsg = addMsg(pt.id, 'patient', safe, via ? { via: via } : {});
+  // 2. fixed red-flag rules
   var rules = E.classify(safe, { procedure: pt.procedure });
   var lang = rules.lang || pt.lang || 'en'; if (!T('FOOT', lang) || !LANGS[lang]) lang = 'en';
   var cls = rules.cls, flags = (rules.flags || []).slice(), reason = '';
-
-  // clinic extra red-flag phrases (can only raise, never lower)
-  var nt = norm(safe);
+  var rulesCls = rules.cls;
+  step(2, 'Fixed red-flag rules (written by people, no AI)', (cls === 'EMERGENCY' || cls === 'SAME-DAY') ? 'raise' : 'pass', 'Result: ' + cls + (flags.length ? ' · ' + flags.join('; ') : '') + ' · language detected: ' + lang);
+  // 3. clinic extra phrases (can only raise)
+  var nt = norm(safe), hitRf = null;
   store.db.rules.redflags.forEach(function (rf) {
-    if (rf.phrase && nt.indexOf(norm(rf.phrase)) >= 0 && urgentRank[rf.cls] > urgentRank[cls]) { cls = rf.cls; flags.push('clinic rule: ' + rf.phrase); reason = 'Clinic rule: "' + rf.phrase + '"'; }
+    if (rf.phrase && nt.indexOf(norm(rf.phrase)) >= 0 && urgentRank[rf.cls] > urgentRank[cls]) { cls = rf.cls; flags.push('clinic rule: ' + rf.phrase); reason = 'Clinic rule: "' + rf.phrase + '"'; hitRf = rf; }
   });
+  step(3, 'Clinic extra phrases (can only raise)', hitRf ? 'raise' : 'pass', hitRf ? 'Matched "' + hitRf.phrase + '" -> ' + hitRf.cls : store.db.rules.redflags.length + ' phrase(s) checked, none matched');
   var urgent = cls === 'EMERGENCY' || cls === 'SAME-DAY';
-  var secondUsed = false;
-  if (!urgent) {
-    var sec = await secondCheck(safe, pt.id);
-    secondUsed = sec.verdict !== 'unscreened';
-    if (sec.verdict === 'urgent') { cls = 'SAME-DAY'; urgent = true; flags.push('second check: ' + sec.reason); reason = 'AI second check: ' + sec.reason; }
-    else if (sec.verdict === 'unscreened' && aiConfigured()) { inMsg.unscreened = true; }
+  var secondUsed = false, sec = null;
+  // 4. model second check
+  if (urgent) step(4, 'AI second check', 'skip', 'Skipped: rules already say ' + cls + '. The AI is never needed to confirm an emergency.');
+  else if (!aiConfigured()) step(4, 'AI second check', 'skip', 'AI is not connected on the server, so rules only.');
+  else {
+    sec = await secondCheck(safe, pt.id); secondUsed = sec.verdict !== 'unscreened';
+    if (sec.verdict === 'urgent') { cls = 'SAME-DAY'; urgent = true; flags.push('second check: ' + sec.reason); reason = 'AI second check: ' + sec.reason; step(4, 'AI second check', 'raise', 'Model says URGENT: "' + sec.reason + '". The class is raised to SAME-DAY. The model can raise, never lower.'); }
+    else if (sec.verdict === 'routine') step(4, 'AI second check', 'pass', 'Model says routine. The rules class is unchanged (' + cls + ').');
+    else { inMsg.unscreened = true; step(4, 'AI second check', 'warn', 'Model unavailable or invalid: message marked "AI check unavailable" for staff. The rules result stands.'); }
   }
   inMsg.cls = cls; inMsg.flags = flags;
+  step(5, 'Decision', urgent ? 'raise' : 'pass', 'Final class: ' + cls + (rulesCls !== cls ? ' (rules said ' + rulesCls + ')' : ''));
 
+  function finish(label, status, detail, staffEffect) {
+    step(6, 'Reply path', status, label + (detail ? ' · ' + detail : ''));
+    step(7, 'Effect for staff', staffEffect.indexOf('Nothing') === 0 ? 'pass' : 'raise', staffEffect);
+    inMsg.trace = trace; inMsg.totalMs = Date.now() - t0;
+  }
   if (cls === 'EMERGENCY' || cls === 'SAME-DAY') {
-    raiseAlert(pt, cls, safe, reason || flags.join('; '));
+    var al = raiseAlert(pt, cls, safe, reason || flags.join('; '));
     inMsg.needsStaff = true;
     addMsg(pt.id, 'bot', T(cls === 'EMERGENCY' ? 'EMERGENCY' : 'SAMEDAY', lang), { cls: cls });
+    finish(cls === 'EMERGENCY' ? 'Fixed emergency text (call 999 / go to the Emergency Department, no promise of a reply)' : 'Fixed same-day text (call the clinic today, not monitored around the clock)', 'pass', 'AI not used for the patient reply', 'Alert ' + (al.count > 1 ? 'merged (x' + al.count + ')' : 'raised') + ' on the Today page and in Alerts; message in the Inbox');
     return;
   }
-  if (pt.threadOpen) { inMsg.needsStaff = true; return; }       // a person is handling this patient: the assistant stays quiet
-  if (cls === 'ANSWER') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ANSWER' }); return; }
-  if (cls === 'ACK') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ACK' }); return; }
-  // clinic-approved answers written by a doctor (keywords -> fixed text). Only reached when nothing urgent was found.
+  if (pt.threadOpen) { inMsg.needsStaff = true; finish('Silent: a person is handling this patient, so the assistant does not answer', 'pass', '', 'Message goes to the Inbox for the staff member'); return; }
+  if (cls === 'ANSWER') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ANSWER' }); finish('Built-in draft answer (fixed text)', 'pass', '', 'Nothing for staff'); return; }
+  if (cls === 'ACK') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ACK' }); finish('Acknowledgement (fixed text)', 'pass', '', 'Nothing for staff'); return; }
+  // clinic-approved answers written by a doctor
   var faq = store.db.rules.faqs.find(function (f) { return f.keywords.some(function (k) { return k && nt.indexOf(norm(k)) >= 0; }); });
-  if (faq && flags.join(' ').indexOf('clinical judgement') < 0) { addMsg(pt.id, 'bot', faq.answer, { cls: 'ANSWER', faq: true, approvedBy: faq.addedBy }); return; }
+  var clinical = flags.join(' ').indexOf('clinical judgement') >= 0;
+  if (faq && !clinical) { addMsg(pt.id, 'bot', faq.answer, { cls: 'ANSWER', faq: true, approvedBy: faq.addedBy }); finish('Clinic-approved answer by ' + faq.addedBy + ' (shown exactly as written)', 'pass', '', 'Nothing for staff'); return; }
   // ROUTE: no approved answer. Staff will see it.
   inMsg.needsStaff = true;
-  var clinical = flags.join(' ').indexOf('clinical judgement') >= 0;
+  if (clinical) { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE', clinical: true }); finish('Clinical question: never answered by the assistant, fixed handover text', 'pass', 'AI is not called for clinical questions', 'Inbox item marked clinical question'); return; }
+  if (!secondUsed) { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE' }); finish('Fixed handover text', 'pass', 'AI reply not attempted because the second check did not run', 'Message in the Inbox'); return; }
   var hist = store.db.messages.filter(function (m) { return m.pid === pt.id && (m.who === 'patient' || m.who === 'ai' || m.who === 'bot'); }).slice(-7, -1).map(function (m) { return { role: m.who === 'patient' ? 'user' : 'assistant', content: m.text }; });
-  var ai = (!clinical && secondUsed) ? await aiReply(safe, hist, lang, pt.id) : '';
-  if (ai) addMsg(pt.id, 'ai', ai + ' ' + T('FOOT', lang), { cls: 'ROUTE' });
-  else addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE', clinical: clinical });
+  var ai = await aiReply(safe, hist, lang, pt.id);
+  if (ai.text) { addMsg(pt.id, 'ai', ai.text + ' ' + T('FOOT', lang), { cls: 'ROUTE' }); finish('AI-written reply, shown after the output guard accepted it', 'pass', 'Guard: no advice, no reassurance, no diagnosis, no dose, no invented numbers', 'Message also in the Inbox for a person'); }
+  else { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE' }); finish('AI reply not used: fixed handover text shown instead', 'warn', ai.blocked ? 'Output guard BLOCKED the model reply: ' + ai.blocked : (ai.error || ai.skipped || 'model returned nothing'), 'Message in the Inbox'); }
 }
 
 /* ---------- http helpers ---------- */
@@ -178,7 +222,7 @@ function readBody(req) { return new Promise(function (resolve) { var chunks = []
 var hits = new Map();
 function limited(key, max, ms) { var now = Date.now(), r = hits.get(key); if (!r || now > r.reset) { r = { n: 0, reset: now + ms }; hits.set(key, r); } r.n++; if (hits.size > 5000) hits.forEach(function (v, k) { if (now > v.reset) hits.delete(k); }); return r.n > max; }
 var MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css' };
-function serveFile(res, name) { var f = path.join(PUBLIC, name); fs.readFile(f, function (e, b) { if (e) { res.writeHead(404); res.end('Not found'); return; } res.writeHead(200, { 'content-type': MIME[path.extname(f)] || 'application/octet-stream', 'cache-control': 'no-store', 'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'" }); res.end(b); }); }
+function serveFile(res, name) { var f = path.join(PUBLIC, name); fs.readFile(f, function (e, b) { if (e) { res.writeHead(404); res.end('Not found'); return; } res.writeHead(200, { 'content-type': MIME[path.extname(f)] || 'application/octet-stream', 'cache-control': 'no-store', 'x-frame-options': 'SAMEORIGIN', 'referrer-policy': 'no-referrer', 'content-security-policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'self'" }); res.end(b); }); }
 
 function patientByToken(tok) { return store.db.patients.find(function (p) { return p.active && p.token === tok; }); }
 function needDoctor(u) { return u && u.role === 'doctor'; }
@@ -188,6 +232,7 @@ async function route(req, res) {
   var url = new URL(req.url, 'http://x'), p = url.pathname, m = req.method;
   if (m === 'GET' && (p === '/' || p === '/staff')) return serveFile(res, 'staff.html');
   if (m === 'GET' && p.indexOf('/p/') === 0) return serveFile(res, 'patient.html');
+  if (m === 'GET' && p === '/live') return serveFile(res, 'live.html');
   if (m === 'GET' && p === '/healthz') return send(res, 200, { ok: true });
   if (!p.startsWith('/api/')) { res.writeHead(404); return res.end('Not found'); }
 
@@ -259,7 +304,7 @@ async function route(req, res) {
     var pat = store.db.patients.find(function (x) { return x.id === pp[1] && x.active; }); if (!pat) return send(res, 404, { error: 'not_found' });
     var sub = pp[2] || '';
     if (m === 'GET' && !sub) {
-      return send(res, 200, { patient: ptView(pat), link: '/p/' + pat.token,
+      return send(res, 200, { patient: ptView(pat), intake: pat.intake || null, link: '/p/' + pat.token,
         tasks: store.db.tasks.filter(function (t) { return t.pid === pat.id; }).sort(function (a, b) { return a.dueAt - b.dueAt; }).map(taskView),
         messages: store.db.messages.filter(function (x) { return x.pid === pat.id; }),
         alerts: store.db.alerts.filter(function (a) { return a.pid === pat.id; }) });
@@ -282,6 +327,25 @@ async function route(req, res) {
       if (DOCTOR_OWNERS[t.owner] && user.role !== 'doctor') return send(res, 403, { error: 'doctor_only', message: 'Only a doctor can close this clinical decision.' });
       t.state = 'done'; t.evidence = ev.slice(0, 500); t.doneBy = user.name; t.doneAt = Date.now(); audit(user.username, 'closed task "' + t.title + '" for ' + pat.rn); store.save(); return send(res, 200, { ok: true });
     }
+  }
+
+
+  // ---- demo cases, test-message library, live trace ----
+  if (m === 'POST' && p === '/api/demo/load') { if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' }); return send(res, 200, { added: seedDemo(user.username) }); }
+  if (m === 'GET' && p === '/api/library') {
+    var lib = []; try { lib = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed', 'messages.json'), 'utf8')); } catch (e) { lib = []; }
+    return send(res, 200, lib);
+  }
+  if (m === 'POST' && p === '/api/live/send') {
+    var tp = store.db.patients.find(function (x) { return x.id === body.pid && x.active; }); if (!tp) return send(res, 404, { error: 'not_found' });
+    var tx = String(body.text || '').trim(); if (!tx) return send(res, 400, { error: 'empty' });
+    await patientMessage(tp, tx, 'replayed by ' + user.name + (body.libId ? ' (library ' + String(body.libId).slice(0, 12) + ')' : '')); store.save(); return send(res, 200, { ok: true });
+  }
+  if (m === 'GET' && p === '/api/trace') {
+    var pid5 = url.searchParams.get('pid'); var ms5 = store.db.messages.filter(function (x) { return x.pid === pid5; });
+    var out5 = [];
+    ms5.forEach(function (x, i) { if (x.who !== 'patient' || !x.trace) return; var replies = []; for (var j = i + 1; j < ms5.length && ms5[j].who !== 'patient'; j++) replies.push({ who: ms5[j].who, text: ms5[j].text, faq: !!ms5[j].faq, staffName: ms5[j].staffName }); out5.push({ id: x.id, text: x.text, at: x.at, via: x.via || '', cls: x.cls, trace: x.trace, totalMs: x.totalMs, replies: replies }); });
+    return send(res, 200, out5.slice(-12).reverse());
   }
 
   if (m === 'GET' && p === '/api/inbox') {

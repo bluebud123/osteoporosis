@@ -11,7 +11,7 @@ if ($env:PROVIDER_KEY) { $env:PROVIDER_BASE_URL = "https://api.deepseek.com"; $e
 $env:PORT = "8080"
 $p = Start-Process node -ArgumentList "server.js" -PassThru -NoNewWindow
 Start-Sleep 2
-Start-Process "http://localhost:8080"
+Start-Process "http://localhost:8080/#live"
 Read-Host "PeriLoop Console is running. Press Enter here to stop"
 Stop-Process -Id $p.Id
 Remove-Item Env:PROVIDER_KEY -ErrorAction SilentlyContinue

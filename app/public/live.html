@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PeriLoop Live view</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#16202a;--mut:#5b6b7a;--line:#dde3e9;--acc:#0f766e;--red:#b42318;--redbg:#fdecea;--amb:#b45309;--ambbg:#fff4e0;--grn:#15803d;--grnbg:#e6f6ec;--blu:#1d4ed8;--blubg:#e8efff}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#17212b;--ink:#e7edf3;--mut:#9aabba;--line:#2a3846;--acc:#2dd4bf;--red:#ff8a80;--redbg:#3a1e1c;--amb:#fbbf24;--ambbg:#3a2d12;--grn:#4ade80;--grnbg:#16301f;--blu:#93b4ff;--blubg:#1a2744}}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font:14px/1.4 Inter,system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}
+button,input,select,textarea{font:inherit;color:inherit}
+header{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:var(--card);border-bottom:1px solid var(--line)}
+header b{font-size:16px}header a{color:var(--mut)}
+select,input,textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600}.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}.btn.sm{padding:3px 9px;font-size:12px}
+.cols{flex:1;display:grid;grid-template-columns:minmax(300px,1fr) minmax(380px,1.35fr) minmax(300px,1fr);gap:10px;padding:10px;min-height:0}
+.col{display:flex;flex-direction:column;min-height:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.col>h3{margin:0;padding:9px 12px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.col .body{flex:1;overflow:auto;padding:10px 12px;min-height:0}
+iframe{border:0;width:100%;height:100%;flex:1}
+.step{display:grid;grid-template-columns:26px 1fr auto;gap:8px;padding:8px;border-radius:10px;border:1px solid var(--line);margin-bottom:7px;opacity:0;transform:translateY(6px);transition:all .3s}
+.step.show{opacity:1;transform:none}
+.step .n{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;background:var(--bg);color:var(--mut)}
+.step.pass{border-color:var(--grn)}.step.pass .n{background:var(--grnbg);color:var(--grn)}
+.step.raise{border-color:var(--red);background:var(--redbg)}.step.raise .n{background:var(--red);color:#fff}
+.step.warn{border-color:var(--amb);background:var(--ambbg)}.step.warn .n{background:var(--amb);color:#fff}
+.step.skip{border-style:dashed;opacity:.7}.step.skip.show{opacity:.7}
+.step b{display:block}.step .d{color:var(--mut);font-size:13px;margin-top:2px}.step .ms{font-size:11px;color:var(--mut);white-space:nowrap}
+.q{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.chip{display:inline-block;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:700;background:var(--bg);color:var(--mut)}
+.chip.red{background:var(--redbg);color:var(--red)}.chip.amb{background:var(--ambbg);color:var(--amb)}.chip.grn{background:var(--grnbg);color:var(--grn)}.chip.blu{background:var(--blubg);color:var(--blu)}
+.rep{margin-top:6px;padding:7px 9px;border-radius:9px;background:var(--card);border:1px solid var(--line);font-size:13px}
+.rep.ai{border-color:var(--blu)}.rep.staff{border-color:var(--grn);background:var(--grnbg)}
+.msg{padding:6px 9px;border-radius:11px;margin:5px 0;max-width:92%;white-space:pre-wrap;word-break:break-word;font-size:13px}
+.msg.patient{background:var(--acc);color:#fff;margin-left:auto}.msg.bot,.msg.ai{background:var(--bg);border:1px solid var(--line)}.msg.staff{background:var(--grnbg);border:1px solid var(--grn)}
+.msg small{display:block;opacity:.7;font-size:10px}
+details{margin-top:8px}summary{cursor:pointer;color:var(--mut)}
+.mut{color:var(--mut)}.legend li{margin:3px 0}
+@media(max-width:1000px){.cols{grid-template-columns:1fr;overflow:auto}.col{min-height:520px}}
+</style></head><body>
+<header><b>PeriLoop · Live view</b><a href="/">← Console</a>
+<label class="mut">Patient <select id="ps"></select></label>
+<label class="mut">Test message <select id="lf"><option value="">All</option><option value="urgent">urgent</option><option value="normal">normal</option></select> <select id="ll"><option value="">All languages</option><option value="en">en</option><option value="ms">ms</option><option value="zh">zh</option><option value="ar">ar</option></select></label>
+<select id="lib" style="max-width:360px"></select><button class="btn" id="sendlib">Send as this patient</button>
+<span class="mut" id="truth" style="font-size:12px"></span></header>
+<div class="cols">
+ <section class="col"><h3>1 · Patient <span class="mut" style="text-transform:none;letter-spacing:0">what the patient sees. Type here too.</span></h3><iframe id="pf" title="Patient chat"></iframe></section>
+ <section class="col"><h3>2 · AI and rules pipeline <span class="mut" style="text-transform:none;letter-spacing:0" id="ptitle"></span></h3><div class="body" id="pipe"></div></section>
+ <section class="col"><h3>3 · Staff <span id="sbadge"></span></h3><div class="body" id="staff"></div></section>
+</div>
+<script>
+var cur=null,lastId=null,lib=[],pts=[];
+function $(s){return document.querySelector(s)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function api(p,b){var o=b===undefined?{}:{method:'POST',headers:{'content-type':'application/json','x-requested-with':'periloop'},body:JSON.stringify(b)};return fetch(p,o).then(function(r){if(r.status===401){location.href='/';throw 0}return r.json()})}
+function fmt(t){return new Date(t).toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+var ALGO=[['1','Receive and mask','Phone, IC and email are replaced before anything is stored or sent to a model.'],['2','Fixed red-flag rules','Written by people. Catches emergencies in English, Malay and Chinese. Always runs first. No AI.'],['3','Clinic extra phrases','Phrases the doctor added. Can only raise urgency.'],['4','AI second check','Only if rules found nothing urgent. The model reads the message and says urgent or routine. It can only raise to same-day, never lower.'],['5','Decision','The highest class wins.'],['6','Reply path','Urgent: fixed text. Clinical question: fixed text. Approved answer: shown exactly. Otherwise a short AI reply, only after the output guard accepts it.'],['7','Effect for staff','Alert, inbox item, or nothing.']];
+function loadPatients(){return api('/api/patients').then(function(p){pts=p;var sel=$('#ps');sel.innerHTML=p.map(function(x){return '<option value="'+x.id+'">'+esc(x.name)+' · '+esc(x.rn)+'</option>'}).join('');var q=new URLSearchParams(location.search).get('pid');cur=(q&&p.find(function(x){return x.id===q}))?q:(p[0]&&p[0].id);if(cur)sel.value=cur;if(cur)pick()})}
+function pick(){cur=$('#ps').value;lastId=null;api('/api/patients/'+cur).then(function(d){$('#pf').src=d.link;$('#ptitle').textContent=d.patient.name+' · '+d.patient.procLabel;renderPipe(true);renderStaff()})}
+function libList(){var f=$('#lf').value,l=$('#ll').value;var items=lib.filter(function(x){return (!f||x.truth===f)&&(!l||x.lang===l)});$('#lib').innerHTML=items.slice(0,400).map(function(x){return '<option value="'+esc(x.id)+'">'+esc(x.id)+' · '+esc(x.truth)+' · '+esc(x.text.slice(0,70))+'</option>'}).join('');libPick()}
+function libPick(){var x=lib.find(function(y){return y.id===$('#lib').value});$('#truth').textContent=x?'Label (AI-written, not clinician-labelled): '+x.truth:''}
+function stepHtml(s){return '<div class="step '+s.status+'"><div class="n">'+s.n+'</div><div><b>'+esc(s.title)+'</b><div class="d">'+esc(s.detail)+'</div></div><div class="ms">'+s.ms+' ms</div></div>'}
+function repHtml(r){var lab=r.who==='ai'?'AI-written reply':r.who==='staff'?'Staff: '+esc(r.staffName):r.faq?'Approved answer':'Fixed text';return '<div class="rep '+r.who+'"><span class="chip '+(r.who==='ai'?'blu':r.who==='staff'?'grn':'')+'">'+lab+'</span> '+esc(r.text)+'</div>'}
+function clsChip(c){return c==='EMERGENCY'?'<span class="chip red">EMERGENCY</span>':c==='SAME-DAY'?'<span class="chip amb">SAME-DAY</span>':'<span class="chip">'+esc(c||'')+'</span>'}
+function renderPipe(first){if(!cur)return;api('/api/trace?pid='+cur).then(function(t){
+ if(!t.length){$('#pipe').innerHTML='<p class="mut">No messages yet. Type in the patient column, or pick a test message above and press Send. Each message is shown here step by step.</p>'+algoHtml();return}
+ var latest=t[0],isNew=latest.id!==lastId;
+ if(!isNew&&!first)return;lastId=latest.id;
+ var html='<div class="q"><b>Latest message</b> '+clsChip(latest.cls)+' <span class="mut">'+fmt(latest.at)+' · '+latest.totalMs+' ms total'+(latest.via?' · '+esc(latest.via):'')+'</span><div style="margin-top:4px">"'+esc(latest.text)+'"</div></div><div id="steps">'+latest.trace.map(stepHtml).join('')+'</div>'+latest.replies.map(repHtml).join('');
+ html+='<details><summary>Earlier messages ('+(t.length-1)+')</summary>'+t.slice(1).map(function(m){return '<div class="q"><div>'+clsChip(m.cls)+' "'+esc(m.text)+'" <span class="mut">'+fmt(m.at)+'</span></div><details><summary>steps</summary>'+m.trace.map(stepHtml).join('').replace(/class="step /g,'class="step show ')+'</details>'+m.replies.map(repHtml).join('')+'</div>'}).join('')+'</details>'+algoHtml();
+ $('#pipe').innerHTML=html;$('#pipe').scrollTop=0;
+ var els=document.querySelectorAll('#steps .step');els.forEach(function(e,i){setTimeout(function(){e.classList.add('show')},isNew&&!first?i*320:0)});
+ renderStaff();
+})}
+function algoHtml(){return '<details open><summary>How the algorithm works</summary><ol class="legend">'+ALGO.map(function(a){return '<li><b>'+esc(a[1])+'.</b> <span class="mut">'+esc(a[2])+'</span></li>'}).join('')+'</ol><p class="mut" style="font-size:12px">Green = passed or no concern. Red = raised urgency. Amber = something unavailable. Dashed = skipped.</p></details>'}
+function renderStaff(){if(!cur)return;Promise.all([api('/api/patients/'+cur),api('/api/summary')]).then(function(r){var d=r[0],p=d.patient;
+ var al=d.alerts.filter(function(a){return !a.ackAt});
+ $('#sbadge').innerHTML=(al.length?'<span class="chip red">'+al.length+' alert</span> ':'')+(p.needsReply?'<span class="chip amb">'+p.needsReply+' waiting</span>':'<span class="chip grn">clear</span>');
+ var typed=($('#sr')||{}).value||'',focus=document.activeElement&&document.activeElement.id==='sr';
+ var h='<div class="q"><b>'+esc(p.name)+'</b> · '+esc(p.rn)+'<br><span class="mut">'+esc(p.procLabel)+' · operation '+esc(p.otDate)+' · '+p.open+' open tasks'+(p.overdue?' · <b style="color:var(--red)">'+p.overdue+' overdue</b>':'')+'</span></div>';
+ h+=al.map(function(a){return '<div class="step raise show" style="grid-template-columns:1fr auto"><div><b>'+esc(a.cls)+' alert'+(a.count>1?' ×'+a.count:'')+'</b><div class="d">"'+esc(a.text)+'" · '+fmt(a.at)+'</div></div><button class="btn sm" data-ack="'+a.id+'">Acknowledge</button></div>'}).join('')||'<div class="mut" style="margin-bottom:8px">No open alerts for this patient.</div>';
+ h+='<div style="font-weight:600;margin:8px 0 2px">Conversation '+(p.threadOpen?'<span class="chip grn">staff handling</span>':'<span class="chip">assistant active</span>')+'</div><div id="th" style="max-height:230px;overflow:auto">'+d.messages.slice(-14).map(function(m){var who=m.who==='patient'?'Patient':m.who==='ai'?'AI':m.who==='bot'?(m.faq?'Approved answer':'Fixed text'):esc(m.staffName);return '<div class="msg '+m.who+'">'+esc(m.text)+'<small>'+who+' · '+fmt(m.at)+'</small></div>'}).join('')+'</div>';
+ h+='<textarea id="sr" rows="2" style="width:100%;margin-top:8px" placeholder="Reply as staff. The patient sees your name and role."></textarea><div style="margin-top:6px"><button class="btn sm" id="sbtn">Send reply</button> <button class="btn ghost sm" id="hb">Hand back to assistant</button> <a href="/" class="mut" style="font-size:12px" id="op">open in Console</a></div>';
+ $('#staff').innerHTML=h;$('#sr').value=typed;if(focus)$('#sr').focus();var th=$('#th');if(th)th.scrollTop=1e9;
+ document.querySelectorAll('[data-ack]').forEach(function(b){b.onclick=function(){api('/api/alerts/'+b.dataset.ack+'/ack',{}).then(renderStaff)}});
+ $('#sbtn').onclick=function(){var t=$('#sr').value.trim();if(t)api('/api/patients/'+cur+'/reply',{text:t}).then(renderStaff)};
+ $('#hb').onclick=function(){api('/api/patients/'+cur+'/handback',{}).then(renderStaff)};
+})}
+$('#ps').onchange=pick;$('#lf').onchange=libList;$('#ll').onchange=libList;$('#lib').onchange=libPick;
+$('#sendlib').onclick=function(){var x=lib.find(function(y){return y.id===$('#lib').value});if(!x||!cur)return;$('#sendlib').disabled=true;api('/api/live/send',{pid:cur,text:x.text,libId:x.id}).then(function(){$('#sendlib').disabled=false;renderPipe();renderStaff()})};
+api('/api/library').then(function(l){lib=l;libList()});
+loadPatients();
+setInterval(function(){if(document.hidden||!cur)return;renderPipe();var a=document.activeElement;if(!a||a.id!=='sr')renderStaff()},2000);
+</script></body></html>
