@@ -249,7 +249,9 @@
   function isEscalation(s) { return ESC_RE.test(s) && COND_RE.test(s); }
 
   // Returns {ok:true} or {ok:false, reason}. classify is optional: when given, assertions and medicine-directed questions are classified too.
-  function guardReply(reply, userText, classify) {
+  // Chat mode (gopts.chat): a few assistant-about-itself sentences need not restate the patient's words. All other checks still apply.
+  var CHAT_OK_RE = /^(?:(?:hello|hi|hey|good (?:morning|afternoon|evening)|thank you|thanks|selamat \w+|hai|helo|terima kasih|你好|您好|谢谢)\b[^.!?]*|i(?:'m| am) (?:the |a )?(?:friendly )?(?:text |ward |chat )?assistant\b[^.!?]*|i can (?:pass|take|share|help|note|tell you about|answer questions about)\b[^.!?]*|i(?:'m| am) sorry (?:to hear|you)[^.!?]*|i cannot (?:answer|advise)[^.!?]*|i can(?:'|no)t (?:answer|advise)[^.!?]*|a clinician will (?:review|read|reply)[^.!?]*|the care team (?:can|will)[^.!?]*|saya boleh [^.!?]*|我可以[^.!?]*)[.!?]*$/i;
+  function guardReply(reply, userText, classify, gopts) {
     var r = arNorm(String(reply == null ? '' : reply)).trim();
     var fail = function (reason) { return { ok: false, reason: reason }; };
     if (!r) return fail('empty');
@@ -297,6 +299,7 @@
         if (!clinicalGrounded(stripped, src)) return fail('invented_term');
         continue;
       }
+      if (gopts && gopts.chat && CHAT_OK_RE.test(s.trim())) continue;
       assertions.push(stripped);
     }
 
@@ -399,7 +402,9 @@
       if (proxyUrl) {
         url = proxyUrl;
         // second_check: the proxy owns the prompt, so only the patient text is sent (never a system message).
-        body = opts.proxyMode === 'second_check'
+        body = opts.proxyMode === 'reply'
+          ? { mode: 'reply', text: String(opts.text == null ? '' : opts.text), history: opts.history || [], lang: opts.lang || 'en' }
+          : opts.proxyMode === 'second_check'
           ? { mode: 'second_check', text: String(opts.text == null ? '' : opts.text) }
           : { messages: msgs, json: true, lang: opts.lang || 'en' };
       } else {
