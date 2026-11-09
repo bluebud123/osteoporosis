@@ -10,6 +10,8 @@ chk('greeting', 'Hello! I can pass a message to your care team. What would you l
 chk('empathy+question', "I'm sorry you feel worried. Can you tell me where on your leg and since when?", 'I am worried about my leg', true);
 chk('capability', 'I can share ward information, like showering or follow-up.', 'what can you do', true);
 chk('redirect', 'I cannot answer that. A clinician will review it.', 'is my wound ok', true);
+chk('acknowledge+question', 'That sounds uncomfortable. When did it start, and is it getting worse?', 'is it normal that my knee is swollen', true);
+chk('thanks+question', 'Thanks for asking. Which side is it on?', 'pain', true);
 // must be blocked (allow-list lookalikes carrying advice, reassurance, doses, diagnoses)
 chk('reassure-lookalike', 'I can tell you that this is normal.', 'my leg is tight', false);
 chk('stop-med', 'I can help you stop taking the rivaroxaban today.', 'blood thinner', false);
@@ -19,6 +21,7 @@ chk('dont-worry', "Don't worry, the care team will fix it.", 'scared', false);
 chk('instruction', 'I can note that you should elevate your leg and rest.', 'swollen', false);
 chk('number-invented', 'I can pass a message, the ward number is 04 222 3333.', 'phone', false);
 chk('promise-safe', 'You are fine, no need to come in.', 'fever', false);
+chk('sounds-then-reassure', 'That sounds uncomfortable, but it is normal after surgery.', 'swollen knee', false);
 chk('plain-advice', 'You should take paracetamol and rest.', 'pain', false);
 console.log('chat_reply guard: ' + (n - fails) + '/' + n);
 process.exit(fails ? 1 : 0);

@@ -11,6 +11,8 @@ var Store = require('./store.js');
 var E = require('./lib/engine.js');
 var SC = require('./lib/second_check.js');
 var proxy = require('./lib/server/chat.js');
+var P = require('./periop.js');
+var AI = require('./ai.js');
 
 var PORT = Number(process.env.PORT || 8080);
 var DATA_DIR = process.env.PERILOOP_DATA || path.join(__dirname, 'data');
@@ -34,7 +36,7 @@ function mkUser(username, name, role, pw) { var salt = crypto.randomBytes(12).to
 function uid() { return crypto.randomBytes(6).toString('hex'); }
 
 function init() {
-  if (store.db) { store.db.rules.faqs = store.db.rules.faqs || []; return; }
+  if (store.db) { store.db.rules.faqs = store.db.rules.faqs || []; migrate(); return; }
   store.db = {
     users: [mkUser('doctor', 'Dr Demo', 'doctor', 'doctor-demo-1'), mkUser('nurse', 'Nurse Demo', 'nurse', 'nurse-demo-1')],
     patients: [], tasks: [], messages: [], alerts: [], audit: [],
@@ -43,6 +45,7 @@ function init() {
   };
   audit('system', 'first run: demo accounts created');
   store.save();
+  migrate();
   if (process.env.PERILOOP_NO_SEED !== '1') seedDemo('system');
 }
 function audit(who, what) { store.db.audit.push({ at: Date.now(), who: who, what: what }); if (store.db.audit.length > 2000) store.db.audit.splice(0, 500); }
@@ -85,9 +88,9 @@ async function secondCheck(text, key) {
     return JSON.parse(j.text);
   } catch (e) { return { verdict: 'unscreened', reason: 'second check error' }; }
 }
-async function aiReply(text, history, lang, key) {
+async function aiReply(text, history, lang, key, ctx, clinical) {
   if (!aiConfigured()) return { text: '', skipped: 'AI not configured' };
-  try { var j = await aiCall({ mode: 'reply', text: text, history: history, lang: lang }, key); return { text: typeof j.text === 'string' ? j.text : '', blocked: j.blocked || '', error: j.error || '' }; } catch (e) { return { text: '', error: 'call failed' }; }
+  try { var j = await aiCall({ mode: 'reply', text: text, history: history, lang: lang, context: ctx || undefined, clinical: clinical ? true : undefined }, key); return { text: typeof j.text === 'string' ? j.text : '', blocked: j.blocked || '', error: j.error || '' }; } catch (e) { return { text: '', error: 'call failed' }; }
 }
 
 /* ---------- patients, tasks ---------- */
@@ -109,7 +112,7 @@ function ptView(p) {
   var alerts = store.db.alerts.filter(function (a) { return a.pid === p.id && !a.ackAt; });
   var needs = store.db.messages.filter(function (m) { return m.pid === p.id && m.needsStaff && !m.handled; });
   return { id: p.id, name: p.name, rn: p.rn, procedure: p.procedure, procLabel: (store.db.rules.pathway.procedures[p.procedure] || {}).label || p.procedure, otDate: p.otDate, lang: p.lang, active: p.active, threadOpen: !!p.threadOpen,
-    open: open.length, overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length, openAlerts: alerts.length, needsReply: needs.length, linked: !!p.firstSeen, demo: !!p.demo, demoCase: p.demoCase || '', expect: p.expect || '' };
+    open: open.length, overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length, openAlerts: alerts.length, needsReply: needs.length, linked: !!p.firstSeen, como: P.comorbidities(p.intake).map(function (c) { return c.label; }), flags: store.db.detections.filter(function (d) { return d.pid === p.id && d.state === 'open'; }).length, redFlags: store.db.detections.filter(function (d) { return d.pid === p.id && d.state === 'open' && d.level === 'red'; }).length, demo: !!p.demo, demoCase: p.demoCase || '', expect: p.expect || '' };
 }
 
 
@@ -123,18 +126,104 @@ function seedDemo(user) {
     if (!store.db.rules.pathway.procedures[h.procedure]) return;
     // spread across the journey: some before surgery, some after
     var offsets = [21, 14, 9, 5, 2, 0, -1, -3, -6, -10];
-    var off = offsets[i % offsets.length];
+    var off = offsets[i % offsets.length]; if (P.TKR_SEED[rn]) off = P.TKR_SEED[rn].otOff;
     var d = new Date(now + off * DAY); var ot = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     var short = ('Fict ' + String(h.pid).replace('FIC-', '')).slice(0, 20);
     var pt = { id: uid(), name: short, rn: rn, procedure: h.procedure, otDate: ot, lang: LANGS[h.lang] ? h.lang : 'en', token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: now, addedBy: user || 'system', demo: true, demoCase: h.case, expect: h.expect, intake: h.answers };
     store.db.patients.push(pt); createTasks(pt);
     // earlier items already done for most demo patients, so the board is realistic: a few stay overdue on purpose
     if (i % 4 !== 0) store.db.tasks.forEach(function (t) { if (t.pid === pt.id && t.dueAt < now - 2 * DAY && t.due <= -8) { t.state = 'done'; t.evidence = 'Demo data: completed'; t.doneBy = 'Demo'; t.doneAt = now - 3 * DAY; } });
+    seedPeriop(pt);
     added++;
   });
   if (added) { audit(user || 'system', 'loaded ' + added + ' fictional demo patients'); store.save(); }
   return added;
 }
+
+
+/* ---------- perioperative parameters: readings, automatic detection, brief, profile ---------- */
+function migrate() {
+  var d = store.db; d.readings = d.readings || []; d.detections = d.detections || [];
+  if (!d.rules.periop) d.rules.periop = P.defaultRules();
+  var n = 0; d.patients.forEach(function (pt) { if (pt.demo && P.TKR_SEED[pt.rn] && !d.readings.some(function (r) { return r.pid === pt.id; })) { seedPeriop(pt); n++; } });
+  if (n) { audit('system', 'added fictional TKR parameters for ' + n + ' demo patients'); store.save(); }
+}
+function dateStr(ms) { var d = new Date(ms); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function seedPeriop(pt) {
+  var cfg = P.TKR_SEED[pt.rn]; if (!cfg) return;
+  var now = Date.now(), ot = now + cfg.otOff * DAY;
+  if (pt.otDate !== dateStr(ot)) { pt.otDate = dateStr(ot); var o = otTime(pt.otDate); store.db.tasks.forEach(function (t) { if (t.pid === pt.id) t.dueAt = o + t.due * DAY; }); }
+  var otm = otTime(pt.otDate);
+  if (otm < now) store.db.tasks.forEach(function (t) { if (t.pid === pt.id && !t.auto && t.due < 0 && t.state === 'open') { t.state = 'done'; t.evidence = 'Demo data: completed before surgery'; t.doneBy = 'Demo'; t.doneAt = otm - DAY; } });
+  P.seedReadings(pt.id, pt.rn, otm, uid, now).forEach(function (r) { store.db.readings.push(r); detectAndAct(pt, r, 'seeded demo values', true); });
+}
+function latestReadings(pt) {
+  var by = {}; store.db.readings.filter(function (r) { return r.pid === pt.id; }).sort(function (a, b) { return a.at - b.at; }).forEach(function (r) { by[r.param] = r; });
+  return by;
+}
+function detectAndAct(pt, reading, who, quiet) {
+  var ot = otTime(pt.otDate);
+  var prev = store.db.readings.filter(function (r) { return r.pid === pt.id && r.param === reading.param && r.at < reading.at && r.id !== reading.id; }).sort(function (a, b) { return b.at - a.at; })[0];
+  var ev = P.evaluate(store.db.rules.periop, reading, ot, prev), now = Date.now(), made = [];
+  var hitIds = ev.hits.map(function (h) { return h.id; });
+  store.db.detections.forEach(function (d) { if (d.pid === pt.id && d.param === reading.param && d.state === 'open' && hitIds.indexOf(d.ruleId) < 0) { d.state = 'cleared'; d.clearedAt = now; } });
+  ev.hits.forEach(function (h) {
+    var ex = store.db.detections.find(function (d) { return d.pid === pt.id && d.ruleId === h.id && d.state === 'open'; });
+    if (ex) { ex.value = reading.value; ex.rid = reading.id; ex.lastAt = now; ex.repeats = (ex.repeats || 1) + 1; ex.steps = ev.steps; return; }
+    var title = h.msg + ' (' + P.PARAMS[h.param].label + ' ' + P.fmtVal(h.param, reading.value) + ')';
+    var owner = h.level === 'red' ? 'surgeon' : h.owner;
+    var det = { id: uid(), pid: pt.id, rid: reading.id, param: h.param, value: reading.value, ruleId: h.id, level: h.level, msg: h.msg, title: title, owner: owner, at: now, readingAt: reading.at, state: 'open', steps: ev.steps, actions: [], source: who || 'entered' };
+    var task = { id: uid(), pid: pt.id, title: 'Auto-detected: ' + title, owner: owner, kind: 'auto', due: 0, dueAt: now, state: 'open', createdAt: now, auto: true, detId: det.id };
+    store.db.tasks.push(task); det.taskId = task.id; det.actions.push('Task created for ' + (OWNERS[owner] || owner));
+    if (h.level === 'red') {
+      var al = { id: uid(), pid: pt.id, cls: 'SAME-DAY', text: 'Auto-detected from parameters: ' + title, reason: 'Parameter rule: ' + h.param + ' ' + h.op + ' ' + h.value, at: now, count: 1, auto: true, detId: det.id };
+      store.db.alerts.push(al); det.alertId = al.id; det.actions.push('Same-day alert raised for staff');
+    }
+    store.db.detections.push(det); made.push(det);
+  });
+  return { evaluation: ev, detections: made };
+}
+function patientCtx(pt) {
+  var day = P.dayRel(otTime(pt.otDate), Date.now());
+  var pend = store.db.tasks.filter(function (t) { return t.pid === pt.id && t.state === 'open' && !t.auto && !DOCTOR_OWNERS[t.owner]; }).length;
+  return { procedure: (store.db.rules.pathway.procedures[pt.procedure] || {}).label || pt.procedure, phase: day < 0 ? 'before surgery' : 'after surgery', days: -day, pending: pend };
+}
+function buildBrief(pt) {
+  var now = Date.now(), ot = otTime(pt.otDate), day = P.dayRel(ot, now), phone = store.db.settings.clinicPhone;
+  var open = store.db.tasks.filter(function (t) { return t.pid === pt.id && t.state === 'open' && !t.auto; }).sort(function (a, b) { return a.dueAt - b.dueAt; });
+  var pending = open.map(function (t) { return { title: t.title, owner: OWNERS[t.owner] || t.owner, dueAt: t.dueAt, overdue: t.dueAt < now, doctorOnly: !!DOCTOR_OWNERS[t.owner] }; });
+  var dets = store.db.detections.filter(function (d) { return d.pid === pt.id && d.state === 'open'; }).sort(function (a, b) { return (b.level === 'red') - (a.level === 'red'); });
+  var latest = latestReadings(pt), como = P.comorbidities(pt.intake);
+  var msgs = store.db.messages.filter(function (m) { return m.pid === pt.id && m.who === 'patient'; });
+  var recent = msgs.slice(-4).map(function (m) { return { text: m.text, cls: m.cls || '', at: m.at }; });
+  var lastMsg = msgs[msgs.length - 1];
+  var first = String(pt.name || '').split(' ').slice(-1)[0] || 'there';
+  var facts = ['Patient: ' + pt.name + ', ' + (patientCtx(pt).procedure) + ', operation ' + P.fmtD(ot) + ' (' + (day < 0 ? (-day) + ' days to go' : day === 0 ? 'today' : 'day ' + day + ' after surgery') + ')',
+    'Comorbidities: ' + (como.length ? como.map(function (c) { return c.label; }).join('; ') : 'none recorded'),
+    'Pending items: ' + (pending.length ? pending.slice(0, 8).map(function (p) { return p.title + (p.overdue ? ' (overdue)' : ''); }).join('; ') : 'none'),
+    'Open automatic flags: ' + (dets.length ? dets.map(function (d) { return d.level.toUpperCase() + ' ' + d.title; }).join('; ') : 'none'),
+    'Latest readings: ' + (Object.keys(latest).length ? Object.keys(latest).map(function (k) { return P.PARAMS[k].label + ' ' + P.fmtVal(k, latest[k].value); }).join('; ') : 'none')].join('\n');
+  var draft, red = dets.some(function (d) { return d.level === 'red'; }), urgentMsg = lastMsg && (lastMsg.cls === 'EMERGENCY' || lastMsg.cls === 'SAME-DAY');
+  var preop = pending.filter(function (p) { return !p.doctorOnly; });
+  if (red || urgentMsg) draft = 'Hello ' + first + ', thank you for telling us. I would like to review this with you today. Please call the clinic on ' + phone + ' so we can speak. If you feel worse or unwell, please go to the nearest Emergency Department.';
+  else if (day < 0 && preop.length) draft = 'Hello ' + first + ', thank you for your message. Before your operation on ' + P.fmtD(ot) + ' we still need: ' + preop.slice(0, 4).map(function (p) { return p.title; }).join('; ') + '. The team will help you with these. Please call ' + phone + ' if you have questions.';
+  else draft = 'Hello ' + first + ', thank you for your message. We have seen it and will reply during clinic hours. If you feel worse or something new worries you, please call ' + phone + '.';
+  return { day: day, phase: day < 0 ? 'before surgery' : 'after surgery', otDate: pt.otDate, comorbidities: como, pending: pending, flags: dets.map(function (d) { return { id: d.id, level: d.level, title: d.title, owner: OWNERS[d.owner] || d.owner, at: d.at, actions: d.actions }; }), recent: recent, latest: Object.keys(latest).map(function (k) { return { param: k, label: P.PARAMS[k].label, value: P.fmtVal(k, latest[k].value), at: latest[k].at }; }), facts: facts, draft: draft, lastMessage: lastMsg ? lastMsg.text : '' };
+}
+var bg = new Set();
+function bgProfile(pt, s8, inMsg) {
+  var msgs = store.db.messages.filter(function (m) { return m.pid === pt.id; });
+  var det = P.detProfile(msgs, Date.now()), b = buildBrief(pt);
+  pt.profile = Object.assign(pt.profile || {}, { det: det, comorbidities: b.comorbidities.map(function (c) { return c.label; }), pending: b.pending.length, openFlags: b.flags.length, updatedAt: Date.now() });
+  var texts = msgs.filter(function (m) { return m.who === 'patient'; }).map(function (m) { return m.text; });
+  var p = AI.profile(b.facts, texts, 'profile ' + pt.rn).then(function (r) {
+    if (r.text) { pt.profile.summary = r.text; pt.profile.aiAt = Date.now(); s8.detail = 'Facts updated from the record and chat. AI wrote the staff summary (' + AI.activity(1)[0].ms + ' ms).'; }
+    else s8.detail = 'Facts updated from the record and chat. ' + (r.skipped ? 'AI not connected, no written summary.' : 'AI summary unavailable this time.');
+    s8.status = 'pass'; store.save();
+  }).catch(function () {}).then(function () { bg.delete(p); });
+  bg.add(p);
+}
+function drain() { return Promise.all(Array.from(bg)); }
 
 /* ---------- the patient message pipeline ---------- */
 var urgentRank = { 'ACK': 0, 'ANSWER': 0, 'ROUTE': 1, 'SAME-DAY': 2, 'EMERGENCY': 3 };
@@ -187,7 +276,9 @@ async function patientMessage(pt, rawText, via) {
   function finish(label, status, detail, staffEffect) {
     step(6, 'Reply path', status, label + (detail ? ' · ' + detail : ''));
     step(7, 'Effect for staff', staffEffect.indexOf('Nothing') === 0 ? 'pass' : 'raise', staffEffect);
-    inMsg.trace = trace; inMsg.totalMs = Date.now() - t0;
+    inMsg.totalMs = Date.now() - t0;
+    var s8 = { n: 8, title: 'Update patient profile (after the reply, in the background)', status: 'warn', detail: 'Updating the profile from the record and this chat...', ms: 0 }; trace.push(s8); inMsg.trace = trace;
+    bgProfile(pt, s8, inMsg);
   }
   if (cls === 'EMERGENCY' || cls === 'SAME-DAY') {
     var al = raiseAlert(pt, cls, safe, reason || flags.join('; '));
@@ -197,6 +288,8 @@ async function patientMessage(pt, rawText, via) {
     return;
   }
   if (pt.threadOpen) { inMsg.needsStaff = true; finish('Silent: a person is handling this patient, so the assistant does not answer', 'pass', '', 'Message goes to the Inbox for the staff member'); return; }
+  var ra = P.recordAnswer(safe, { pt: pt, tasks: store.db.tasks.filter(function (t) { return t.pid === pt.id && !t.auto; }), otMs: otTime(pt.otDate), now: Date.now(), phone: store.db.settings.clinicPhone, doctorOwners: DOCTOR_OWNERS });
+  if (ra) { addMsg(pt.id, 'bot', ra.text, { cls: 'ANSWER', record: true }); finish('Answered from the clinic record (' + ra.kind + '): exact data from this patient\'s own plan, no AI wording, no advice', 'pass', 'Operation ' + P.fmtD(otTime(pt.otDate)), 'Nothing for staff'); return; }
   if (cls === 'ANSWER') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ANSWER' }); finish('Built-in draft answer (fixed text)', 'pass', '', 'Nothing for staff'); return; }
   if (cls === 'ACK') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ACK' }); finish('Acknowledgement (fixed text)', 'pass', '', 'Nothing for staff'); return; }
   // clinic-approved answers written by a doctor
@@ -205,10 +298,15 @@ async function patientMessage(pt, rawText, via) {
   if (faq && !clinical) { addMsg(pt.id, 'bot', faq.answer, { cls: 'ANSWER', faq: true, approvedBy: faq.addedBy }); finish('Clinic-approved answer by ' + faq.addedBy + ' (shown exactly as written)', 'pass', '', 'Nothing for staff'); return; }
   // ROUTE: no approved answer. Staff will see it.
   inMsg.needsStaff = true;
-  if (clinical) { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE', clinical: true }); finish('Clinical question: never answered by the assistant, fixed handover text', 'pass', 'AI is not called for clinical questions', 'Inbox item marked clinical question'); return; }
+  if (clinical) {
+    var cai = secondUsed ? await aiReply(safe, store.db.messages.filter(function (m) { return m.pid === pt.id && (m.who === 'patient' || m.who === 'ai' || m.who === 'bot'); }).slice(-7, -1).map(function (m) { return { role: m.who === 'patient' ? 'user' : 'assistant', content: m.text }; }), lang, pt.id, patientCtx(pt), true) : { text: '' };
+    if (cai.text) { addMsg(pt.id, 'ai', cai.text + ' ' + (lang === 'en' ? 'I have passed this to the clinic team and a clinician will answer. ' : '') + T('FOOT', lang), { cls: 'ROUTE', clinical: true }); finish('Clinical question: the assistant gives NO advice. It asked one clarifying question and passed the message to a clinician', 'pass', 'Guard: must be a question, no advice or reassurance', 'Inbox item marked clinical question; the answer to the question will help the clinician'); }
+    else { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE', clinical: true }); finish('Clinical question: never answered by the assistant, fixed handover text', 'pass', cai.blocked ? 'AI question blocked by the guard: ' + cai.blocked : 'AI not used', 'Inbox item marked clinical question'); }
+    return;
+  }
   if (!secondUsed) { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE' }); finish('Fixed handover text', 'pass', 'AI reply not attempted because the second check did not run', 'Message in the Inbox'); return; }
   var hist = store.db.messages.filter(function (m) { return m.pid === pt.id && (m.who === 'patient' || m.who === 'ai' || m.who === 'bot'); }).slice(-7, -1).map(function (m) { return { role: m.who === 'patient' ? 'user' : 'assistant', content: m.text }; });
-  var ai = await aiReply(safe, hist, lang, pt.id);
+  var ai = await aiReply(safe, hist, lang, pt.id, patientCtx(pt), false);
   if (ai.text) { addMsg(pt.id, 'ai', ai.text + ' ' + T('FOOT', lang), { cls: 'ROUTE' }); finish('AI-written reply, shown after the output guard accepted it', 'pass', 'Guard: no advice, no reassurance, no diagnosis, no dose, no invented numbers', 'Message also in the Inbox for a person'); }
   else { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE' }); finish('AI reply not used: fixed handover text shown instead', 'warn', ai.blocked ? 'Output guard BLOCKED the model reply: ' + ai.blocked : (ai.error || ai.skipped || 'model returned nothing'), 'Message in the Inbox'); }
 }
@@ -307,13 +405,28 @@ async function route(req, res) {
       return send(res, 200, { patient: ptView(pat), intake: pat.intake || null, link: '/p/' + pat.token,
         tasks: store.db.tasks.filter(function (t) { return t.pid === pat.id; }).sort(function (a, b) { return a.dueAt - b.dueAt; }).map(taskView),
         messages: store.db.messages.filter(function (x) { return x.pid === pat.id; }),
-        alerts: store.db.alerts.filter(function (a) { return a.pid === pat.id; }) });
+        alerts: store.db.alerts.filter(function (a) { return a.pid === pat.id; }),
+        readings: store.db.readings.filter(function (r) { return r.pid === pat.id; }).sort(function (a, b) { return a.at - b.at; }), detections: store.db.detections.filter(function (d) { return d.pid === pat.id; }).sort(function (a, b) { return b.at - a.at; }),
+        brief: buildBrief(pat), profile: pat.profile || null, aiOn: aiConfigured(), params: P.PARAMS });
     }
     if (m === 'POST' && sub === 'reply') {
       var txt = String(body.text || '').trim().slice(0, 1000); if (!txt) return send(res, 400, { error: 'empty' });
       addMsg(pat.id, 'staff', txt, { staffName: user.name, staffRole: user.role === 'doctor' ? 'Doctor' : 'Nurse', by: user.username });
       store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; });
       pat.threadOpen = true; audit(user.username, 'replied to ' + pat.rn); store.save(); return send(res, 200, { ok: true });
+    }
+    if (m === 'POST' && sub === 'readings') {
+      var pr = String(body.param || ''), def = P.PARAMS[pr]; if (!def) return send(res, 400, { error: 'param', message: 'Pick a parameter.' });
+      var val = body.value;
+      if (def.categorical) { if (def.categorical.indexOf(String(val)) < 0) return send(res, 400, { error: 'value', message: 'Pick one of: ' + def.categorical.join(', ') }); val = String(val); }
+      else { val = Number(val); if (!isFinite(val) || val < 0 || val > 1000) return send(res, 400, { error: 'value', message: 'Enter a number.' }); }
+      var rd = { id: uid(), pid: pat.id, param: pr, value: val, at: Date.now(), source: 'entered by ' + user.name };
+      store.db.readings.push(rd); var dr = detectAndAct(pat, rd, 'entered by ' + user.name); audit(user.username, 'entered ' + pr + ' for ' + pat.rn); store.save();
+      return send(res, 200, { reading: rd, detections: dr.detections, steps: dr.evaluation.steps, hits: dr.evaluation.hits.map(function (h) { return { level: h.level, msg: h.msg }; }) });
+    }
+    if (m === 'POST' && sub === 'draft') {
+      var br = buildBrief(pat), r2 = await AI.draft(br.facts, br.lastMessage || '(no message yet)', 'draft for ' + pat.rn);
+      return send(res, 200, { ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft });
     }
     if (m === 'POST' && sub === 'handback') { pat.threadOpen = false; addMsg(pat.id, 'bot', 'Handing you back to the assistant for general questions.', { cls: 'ACK' }); audit(user.username, 'handed back ' + pat.rn); store.save(); return send(res, 200, { ok: true }); }
     if (m === 'POST' && sub === 'dismiss') { store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; }); store.save(); return send(res, 200, { ok: true }); }
@@ -325,7 +438,7 @@ async function route(req, res) {
       var ev = String(body.evidence || '').trim();
       if (ev.length < 3) return send(res, 400, { error: 'evidence', message: 'Write what was done or the result (at least a few words). A task is closed with evidence, never with a bare tick.' });
       if (DOCTOR_OWNERS[t.owner] && user.role !== 'doctor') return send(res, 403, { error: 'doctor_only', message: 'Only a doctor can close this clinical decision.' });
-      t.state = 'done'; t.evidence = ev.slice(0, 500); t.doneBy = user.name; t.doneAt = Date.now(); audit(user.username, 'closed task "' + t.title + '" for ' + pat.rn); store.save(); return send(res, 200, { ok: true });
+      t.state = 'done'; t.evidence = ev.slice(0, 500); t.doneBy = user.name; t.doneAt = Date.now(); if (t.detId) store.db.detections.forEach(function (d) { if (d.id === t.detId && d.state === 'open') { d.state = 'actioned'; d.actionedBy = user.name; d.actionedAt = Date.now(); } }); audit(user.username, 'closed task "' + t.title + '" for ' + pat.rn); store.save(); return send(res, 200, { ok: true });
     }
   }
 
@@ -340,6 +453,18 @@ async function route(req, res) {
     var tp = store.db.patients.find(function (x) { return x.id === body.pid && x.active; }); if (!tp) return send(res, 404, { error: 'not_found' });
     var tx = String(body.text || '').trim(); if (!tx) return send(res, 400, { error: 'empty' });
     await patientMessage(tp, tx, (body.libId ? 'replayed by ' : 'typed in Live view by ') + user.name + (body.libId ? ' (library ' + String(body.libId).slice(0, 12) + ')' : '')); store.save(); return send(res, 200, { ok: true });
+  }
+  if (m === 'GET' && p === '/api/params') return send(res, 200, { params: P.PARAMS, rules: store.db.rules.periop });
+  if (m === 'GET' && p === '/api/detections') {
+    var dl = store.db.detections.slice().sort(function (a, b) { return b.at - a.at; }).slice(0, 60).map(function (d) { var q = store.db.patients.find(function (x) { return x.id === d.pid; }); return Object.assign({}, d, { patient: q ? q.name : '?', rn: q ? q.rn : '', ownerLabel: OWNERS[d.owner] || d.owner }); });
+    return send(res, 200, dl);
+  }
+  if (m === 'GET' && p === '/api/ai/activity') return send(res, 200, { on: aiConfigured(), log: AI.activity(60) });
+  if (m === 'POST' && p === '/api/demo/reset') {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    var ids = {}; store.db.patients.forEach(function (x) { if (x.demo) ids[x.id] = 1; });
+    ['patients', 'tasks', 'messages', 'alerts', 'readings', 'detections'].forEach(function (k) { store.db[k] = store.db[k].filter(function (x) { return !ids[x.pid || x.id]; }); });
+    var n2 = seedDemo(user.username); audit(user.username, 'reset demo data'); store.save(); return send(res, 200, { added: n2 });
   }
   if (m === 'GET' && p === '/api/trace') {
     var pid5 = url.searchParams.get('pid'); var ms5 = store.db.messages.filter(function (x) { return x.pid === pid5; });
@@ -433,7 +558,7 @@ function createServer() {
   init();
   return http.createServer(function (req, res) { route(req, res).catch(function (e) { console.log('error', e && e.message); try { send(res, 500, { error: 'server_error' }); } catch (x) { /* ignore */ } }); });
 }
-module.exports = { createServer: createServer, init: init, store: store };
+module.exports = { createServer: createServer, init: init, store: store, drain: drain };
 if (require.main === module) {
   createServer().listen(PORT, function () {
     console.log('PeriLoop Console: http://localhost:' + PORT + '   (staff)');

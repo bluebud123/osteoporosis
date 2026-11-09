@@ -47,7 +47,7 @@ details{margin-top:8px}summary{cursor:pointer;color:var(--mut)}
  <section class="col"><h3>3 · Staff <span id="sbadge"></span></h3><div class="body" id="staff"></div></section>
 </div>
 <script>
-var cur=null,lastId=null,lib=[],pts=[];
+var cur=null,lastId=null,lastSig=null,lib=[],pts=[];
 function $(s){return document.querySelector(s)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function api(p,b){var o=b===undefined?{}:{method:'POST',headers:{'content-type':'application/json','x-requested-with':'periloop'},body:JSON.stringify(b)};return fetch(p,o).then(function(r){if(r.status===401){location.href='/';throw 0}return r.json()})}
@@ -62,14 +62,16 @@ function repHtml(r){var lab=r.who==='ai'?'AI-written reply':r.who==='staff'?'Sta
 function clsChip(c){return c==='EMERGENCY'?'<span class="chip red">EMERGENCY</span>':c==='SAME-DAY'?'<span class="chip amb">SAME-DAY</span>':'<span class="chip">'+esc(c||'')+'</span>'}
 function renderPipe(first){if(!cur)return;api('/api/trace?pid='+cur).then(function(t){
  if(!t.length){$('#pipe').innerHTML='<p class="mut">No messages yet. Type in the patient column, or pick a test message above and press Send. Each message is shown here step by step.</p>'+algoHtml();return}
- var latest=t[0],isNew=latest.id!==lastId;
- if(!isNew&&!first)return;lastId=latest.id;
+ var latest=t[0],sig=latest.id+'|'+((latest.trace||[]).slice(-1)[0]||{}).detail,isNew=latest.id!==lastId;
+ if(sig===lastSig&&!first)return;lastSig=sig;lastId=latest.id;
  var html='<div class="q"><b>Latest message</b> '+clsChip(latest.cls)+' <span class="mut">'+fmt(latest.at)+' · '+latest.totalMs+' ms total'+(latest.via?' · '+esc(latest.via):'')+'</span><div style="margin-top:4px">"'+esc(latest.text)+'"</div></div><div id="steps">'+latest.trace.map(stepHtml).join('')+'</div>'+latest.replies.map(repHtml).join('');
  html+='<details><summary>Earlier messages ('+(t.length-1)+')</summary>'+t.slice(1).map(function(m){return '<div class="q"><div>'+clsChip(m.cls)+' "'+esc(m.text)+'" <span class="mut">'+fmt(m.at)+'</span></div><details><summary>steps</summary>'+m.trace.map(stepHtml).join('').replace(/class="step /g,'class="step show ')+'</details>'+m.replies.map(repHtml).join('')+'</div>'}).join('')+'</details>'+algoHtml();
- $('#pipe').innerHTML=html;$('#pipe').scrollTop=0;
+ html+='<details><summary>AI activity log (every AI call, newest first)</summary><div id="aiact" class="mut" style="font-size:12px">loading...</div></details>';
+ $('#pipe').innerHTML=html;$('#pipe').scrollTop=0;aiAct();
  var els=document.querySelectorAll('#steps .step');els.forEach(function(e,i){setTimeout(function(){e.classList.add('show')},isNew&&!first?i*320:0)});
  renderStaff();
 })}
+function aiAct(){api('/api/ai/activity').then(function(a){var el=$('#aiact');if(!el)return;el.innerHTML=(a.on?'':'<b>AI is not connected on the server.</b><br>')+(a.log.length?a.log.map(function(e){return fmt(e.at)+' · '+esc(e.kind)+' · '+(e.ok?'ok':'no')+' · '+e.ms+' ms · '+esc(e.detail)}).join('<br>'):'No AI calls yet.')})}
 function algoHtml(){return '<details open><summary>How the algorithm works</summary><ol class="legend">'+ALGO.map(function(a){return '<li><b>'+esc(a[1])+'.</b> <span class="mut">'+esc(a[2])+'</span></li>'}).join('')+'</ol><p class="mut" style="font-size:12px">Green = passed or no concern. Red = raised urgency. Amber = something unavailable. Dashed = skipped.</p></details>'}
 function renderStaff(){if(!cur)return;Promise.all([api('/api/patients/'+cur),api('/api/summary')]).then(function(r){var d=r[0],p=d.patient;
  var al=d.alerts.filter(function(a){return !a.ackAt});
@@ -77,12 +79,22 @@ function renderStaff(){if(!cur)return;Promise.all([api('/api/patients/'+cur),api
  var typed=($('#sr')||{}).value||'',focus=document.activeElement&&document.activeElement.id==='sr';
  var h='<div class="q"><b>'+esc(p.name)+'</b> · '+esc(p.rn)+'<br><span class="mut">'+esc(p.procLabel)+' · operation '+esc(p.otDate)+' · '+p.open+' open tasks'+(p.overdue?' · <b style="color:var(--red)">'+p.overdue+' overdue</b>':'')+'</span></div>';
  h+=al.map(function(a){return '<div class="step raise show" style="grid-template-columns:1fr auto"><div><b>'+esc(a.cls)+' alert'+(a.count>1?' ×'+a.count:'')+'</b><div class="d">"'+esc(a.text)+'" · '+fmt(a.at)+'</div></div><button class="btn sm" data-ack="'+a.id+'">Acknowledge</button></div>'}).join('')||'<div class="mut" style="margin-bottom:8px">No open alerts for this patient.</div>';
+ var b=d.brief;h+='<div class="q" style="border-color:var(--blu)"><b>AI assist for the doctor</b> <span class="chip blu">'+esc(b.phase)+'</span><div style="margin-top:5px">'+(b.comorbidities.length?b.comorbidities.map(function(c){return '<span class="chip'+(c.important?' amb':'')+'">'+esc(c.label)+'</span>'}).join(' '):'<span class="mut">no comorbidities recorded</span>')+'</div>'
+ +(b.flags.length?'<div style="margin-top:6px">'+b.flags.slice(0,5).map(function(f){return '<div><span class="chip '+(f.level==='red'?'red':'amb')+'">'+f.level.toUpperCase()+'</span> '+esc(f.title)+'</div>'}).join('')+'</div>':'<div class="mut" style="margin-top:5px">No automatic flags.</div>')
+ +'<div style="margin-top:6px"><b>Pending:</b> '+(b.pending.length?b.pending.slice(0,5).map(function(t){return (t.overdue?'<span style="color:var(--red)">':'<span>')+esc(t.title)+'</span>'}).join('; ')+(b.pending.length>5?' +'+(b.pending.length-5)+' more':''):'<span class="mut">none</span>')+'</div>'
+ +(d.profile&&d.profile.det&&d.profile.det.messages?'<div style="margin-top:6px"><b>Profile:</b> '+(d.profile.det.topics||[]).map(function(t){return '<span class="chip">'+esc(t)+'</span>'}).join(' ')+(d.profile.summary?'<div class="mut" style="white-space:pre-wrap;font-size:12px;margin-top:3px">'+esc(d.profile.summary)+'</div>':'')+'</div>':'')
+ +'<div style="margin-top:7px"><button class="btn sm" id="sg">Suggest reply</button> <span class="mut" id="sgn" style="font-size:12px"></span></div></div>';
+ h+='<div class="q"><b>Simulate a ward reading</b> <span class="mut">(fictional)</span><div style="display:flex;gap:6px;margin-top:5px;flex-wrap:wrap"><select id="rp">'+Object.keys(d.params).map(function(k){return '<option value="'+k+'">'+esc(d.params[k].label)+'</option>'}).join('')+'</select><span id="rvw"><input id="rv" size="6" inputmode="decimal"></span><button class="btn sm" id="ra">Add</button></div><div id="rres" style="font-size:12px;margin-top:5px"></div></div>';
  h+='<div style="font-weight:600;margin:8px 0 2px">Conversation '+(p.threadOpen?'<span class="chip grn">staff handling</span>':'<span class="chip">assistant active</span>')+'</div><div id="th" style="max-height:230px;overflow:auto">'+d.messages.slice(-14).map(function(m){var who=m.who==='patient'?'Patient':m.who==='ai'?'AI':m.who==='bot'?(m.faq?'Approved answer':'Fixed text'):esc(m.staffName);return '<div class="msg '+m.who+'">'+esc(m.text)+'<small>'+who+' · '+fmt(m.at)+'</small></div>'}).join('')+'</div>';
  h+='<textarea id="sr" rows="2" style="width:100%;margin-top:8px" placeholder="Reply as staff. The patient sees your name and role."></textarea><div style="margin-top:6px"><button class="btn sm" id="sbtn">Send reply</button> <button class="btn ghost sm" id="hb">Hand back to assistant</button> <a href="/" class="mut" style="font-size:12px" id="op">open in Console</a></div>';
  $('#staff').innerHTML=h;$('#sr').value=typed;if(focus)$('#sr').focus();var th=$('#th');if(th)th.scrollTop=1e9;
  document.querySelectorAll('[data-ack]').forEach(function(b){b.onclick=function(){api('/api/alerts/'+b.dataset.ack+'/ack',{}).then(renderStaff)}});
  $('#sbtn').onclick=function(){var t=$('#sr').value.trim();if(t)api('/api/patients/'+cur+'/reply',{text:t}).then(renderStaff)};
  $('#hb').onclick=function(){api('/api/patients/'+cur+'/handback',{}).then(renderStaff)};
+ $('#sg').onclick=function(){$('#sg').disabled=true;$('#sgn').textContent='AI thinking...';api('/api/patients/'+cur+'/draft',{}).then(function(r){$('#sr').value=r.ai||r.rules;$('#sgn').textContent=(r.ai?'AI draft':'Rule-based draft')+' placed below. Edit, then send. Never auto-sent.';$('#sg').disabled=false;aiAct()})};
+ function swap(){var k=$('#rp').value,def=d.params[k];$('#rvw').innerHTML=def.categorical?'<select id="rv">'+def.categorical.map(function(c){return '<option>'+esc(c)+'</option>'}).join('')+'</select>':'<input id="rv" size="6" inputmode="decimal">'}
+ $('#rp').onchange=swap;if(window.__rp){$('#rp').value=window.__rp;swap()}
+ $('#ra').onclick=function(){window.__rp=$('#rp').value;api('/api/patients/'+cur+'/readings',{param:$('#rp').value,value:$('#rv').value}).then(function(r){$('#rres').innerHTML=(r.steps||[]).map(function(s){return '<div>'+s.n+'. '+esc(s.title)+': '+esc(s.detail)+'</div>'}).join('')+(r.detections&&r.detections.length?'<div><b>System action:</b> '+r.detections.map(function(x){return esc(x.actions.join(' · '))}).join(' ; ')+'</div>':'');setTimeout(renderStaff,2200)}).catch(function(){$('#rres').textContent='Enter a valid value.'})};
 })}
 $('#ps').onchange=pick;$('#lf').onchange=libList;$('#ll').onchange=libList;$('#lib').onchange=libPick;
 $('#sendlib').onclick=function(){var x=lib.find(function(y){return y.id===$('#lib').value});if(!x||!cur)return;$('#sendlib').disabled=true;api('/api/live/send',{pid:cur,text:x.text,libId:x.id}).then(function(){$('#sendlib').disabled=false;renderPipe();renderStaff()})};

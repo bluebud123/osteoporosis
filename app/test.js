@@ -11,6 +11,9 @@ function ok(c, label, extra) { if (c) { pass++; console.log('PASS', label); } el
 var mock = http.createServer(function (q, r) { var b = ''; q.on('data', function (c) { b += c; }); q.on('end', function () {
   var j = JSON.parse(b), sys = j.messages[0].content, last = j.messages[j.messages.length - 1].content, c;
   if (/triage second-check/.test(sys)) c = JSON.stringify({ verdict: /strange|tight|numb/i.test(last) ? 'urgent' : 'routine', reason: 'possible limb concern' });
+  else if (/only a clinician can answer/.test(sys)) c = 'Thanks for asking. When did this start?';
+  else if (/staff-only profile/.test(sys)) c = 'Summary: asks routine questions.\nCommunication: brief.\nApproach: be clear.';
+  else if (/ONE suggested reply/.test(sys)) c = 'Hello, thank you for your message. Dr will review and call you.';
   else if (/BADREPLY/.test(last)) c = "That is completely normal, don't worry.";
   else c = 'Hello! I can pass a message to your care team or share ward information, like showering or follow-up. What would you like to ask?';
   r.writeHead(200, { 'content-type': 'application/json' }); r.end(JSON.stringify({ choices: [{ message: { content: c } }] })); }); });
@@ -54,7 +57,7 @@ mock.listen(9199, async function () {
   // ---- patient plays ----
   async function say(t) { await P('/api/p/' + tok + '/message', { text: t }); var m = (await G('/api/p/' + tok + '/messages')).json.messages; return m[m.length - 1]; }
   var r1 = await say('hello'); ok(r1.who === 'ai' && /care team/.test(r1.text), 'hello -> AI-written friendly reply', r1);
-  var r2 = await say('can I stop my blood thinner?'); ok(r2.who === 'bot' && /clinician has to answer/.test(r2.text), 'clinical question -> fixed text, never AI', r2);
+  var r2 = await say('can I stop my blood thinner?'); ok(r2.who === 'ai' && /\?/.test(r2.text) && /clinician will answer/.test(r2.text) && !/normal|safe|stop taking/i.test(r2.text), 'clinical question -> AI asks ONE clarifying question, gives no advice, hands to a clinician', r2);
   var r3 = await say('I have chest pain and cannot breathe'); ok(r3.who === 'bot' && /999/.test(r3.text) && !/notified|alerted|get back/.test(r3.text), 'emergency -> 999 template, no promise of a reply', r3);
   var r4 = await say('my leg feels strange and tight since this morning'); ok(r4.who === 'bot' && /call the clinic today/.test(r4.text), 'AI second check raises to same-day (fixed text)', r4);
   var r5 = await say('when can I shower?'); ok(r5.who === 'ai' || r5.who === 'bot', 'unknown question before any approved answer -> never a made-up answer', r5);
@@ -122,7 +125,7 @@ mock.listen(9199, async function () {
   var demoP = allPts.find(function (x) { return x.demo; });
   await P('/api/live/send', { pid: demoP.id, text: 'my leg feels strange and tight since this morning', libId: 'T1' }, doc);
   var tr = (await G('/api/trace?pid=' + demoP.id, doc)).json;
-  ok(tr.length === 1 && tr[0].trace.length === 7 && tr[0].trace.map(function (s) { return s.n; }).join('') === '1234567', 'trace has all 7 steps in order', tr[0] && tr[0].trace.length);
+  ok(tr.length === 1 && tr[0].trace.length === 8 && tr[0].trace.map(function (s) { return s.n; }).join('') === '12345678', 'trace has all 8 steps in order (step 8 = profile update)', tr[0] && tr[0].trace.length);
   ok(tr[0].trace[3].status === 'raise' && /URGENT/.test(tr[0].trace[3].detail), 'trace shows the AI second check raising to same-day');
   ok(/replayed by/.test(tr[0].via), 'library replays are marked as replays');
   await P('/api/live/send', { pid: demoP.id, text: 'hello', libId: 'T2' }, doc);
@@ -131,6 +134,31 @@ mock.listen(9199, async function () {
   var tr3 = (await G('/api/trace?pid=' + demoP.id, doc)).json; ok(/typed in Live view/.test(tr3[0].via), 'messages typed in the Live view are marked as such'); ok(/BLOCKED/.test(tr3[0].trace[5].detail) && tr3[0].trace[5].status === 'warn', 'trace shows the guard BLOCKING an unsafe model reply', tr3[0].trace[5]);
   var det = (await G('/api/patients/' + demoP.id, doc)).json; ok(det.intake && typeof det.intake === 'object', 'demo patient has intake answers');
   ok((await G('/live')).status === 200, 'live page is served');
+
+
+  // ---- interactive answers, cardiac rule, parameters, brief, profile ----
+  var r6 = await say('what should I prepare before my operation?'); ok(r6.who === 'bot' && /clinic record/.test(r6.text) && /\n- /.test(r6.text), 'prepare question -> answered from the clinic record (checklist)', r6);
+  var r7 = await say('when is my surgery?'); ok(r7.who === 'bot' && /clinic record/.test(r7.text) && /operation is on/.test(r7.text), 'operation date -> from the record', r7);
+  var r8 = await say('since last night got a tight feeling in chest and my left arm tingly'); ok(r8.who === 'bot' && /999/.test(r8.text), 'chest tightness + left-arm tingling -> EMERGENCY (999), not just same-day', r8);
+  var all = (await G('/api/patients', doc)).json, t2 = all.find(function (x) { return x.rn === 'FIC-TKR-02'; }), t4 = all.find(function (x) { return x.rn === 'FIC-TKR-04'; }), t5 = all.find(function (x) { return x.rn === 'FIC-TKR-05'; });
+  ok(t2 && t2.como.some(function (c) { return /blood thinner/i.test(c); }) && t2.como.some(function (c) { return /Diabetes/.test(c); }), 'TKR-02 shows its own comorbidities (blood thinner, diabetes)', t2 && t2.como);
+  var d2b = (await G('/api/patients/' + t2.id, doc)).json;
+  ok(d2b.readings.length >= 8 && d2b.detections.filter(function (x) { return x.level === 'amber'; }).length >= 5, 'TKR-02 pre-op bloods auto-detected several amber flags', d2b.detections.length);
+  ok(d2b.detections.every(function (x) { return x.actions.length && x.steps && x.steps.length === 4; }), 'each detection records what was done and the 4 evaluation steps');
+  ok(d2b.tasks.some(function (x) { return x.auto && /Auto-detected/.test(x.title); }), 'detections created tasks for the right owner');
+  var d5 = (await G('/api/patients/' + t5.id, doc)).json; ok(d5.detections.some(function (x) { return x.level === 'red' && x.param === 'calf_diff'; }) && d5.alerts.some(function (a) { return a.auto; }), 'TKR-05 calf swelling -> red detection AND an alert');
+  var d4 = (await G('/api/patients/' + t4.id, doc)).json; ok(d4.detections.some(function (x) { return x.param === 'temp' && x.level === 'red'; }) && !d4.detections.some(function (x) { return x.param === 'temp' && x.level === 'amber' && x.state === 'open'; }), 'TKR-04 fever escalated to red; the earlier amber is not left open');
+  ok((await P('/api/patients/' + pid + '/readings', { param: 'hb', value: 'abc' }, nur)).status === 400, 'non-numeric reading refused');
+  var rd1 = await P('/api/patients/' + pid + '/readings', { param: 'hb', value: 9.4 }, nur); ok(rd1.status === 200 && rd1.json.detections.length === 1 && rd1.json.detections[0].level === 'red', 'nurse enters Hb 9.4 -> red detection created', rd1.json);
+  var rd2 = await P('/api/patients/' + pid + '/readings', { param: 'hb', value: 13.1 }, nur); var d6 = (await G('/api/patients/' + pid, nur)).json;
+  ok(rd2.status === 200 && d6.detections.find(function (x) { return x.param === 'hb'; }).state === 'cleared', 'a normal repeat reading clears the flag');
+  var rd3 = await P('/api/patients/' + pid + '/readings', { param: 'temp', value: 39 }, nur); ok(rd3.json.detections.length === 0, 'temperature rules do not fire before surgery (phase aware)', rd3.json.hits);
+  var br = (await G('/api/patients/' + t2.id, doc)).json.brief; ok(br.pending.length > 0 && /blood thinner/i.test(br.facts) && /^Hello/.test(br.draft) && br.flags.length > 3, 'doctor brief lists pending items, comorbidities, flags and a draft');
+  var dr = await P('/api/patients/' + t2.id + '/draft', {}, doc); ok(dr.json.ai && dr.json.rules, 'AI suggested reply for the doctor (plus rules fallback)', dr.json);
+  await S.drain(); var d7 = (await G('/api/patients/' + pid, nur)).json; ok(d7.profile && d7.profile.det.messages >= 5 && /Summary/.test(d7.profile.summary || ''), 'patient profile built after chats (facts + AI summary)', d7.profile);
+  var act = (await G('/api/ai/activity', doc)).json; ok(act.log.some(function (e) { return e.kind === 'patient profile'; }) && act.log.some(function (e) { return e.kind === 'suggested reply'; }), 'AI activity log records profile and draft calls');
+  ok((await P('/api/demo/reset', {}, nur)).status === 403, 'only a doctor can reset demo data');
+  var rs = await P('/api/demo/reset', {}, doc); ok(rs.json.added === 30, 'doctor resets demo data -> 30 cases back', rs.json);
 
   // ---- persistence ----
   srv.close(); delete require.cache[require.resolve('./server.js')]; delete require.cache[require.resolve('./store.js')];
