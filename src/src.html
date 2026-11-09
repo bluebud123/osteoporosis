@@ -1070,6 +1070,7 @@ $('iv-qchips').addEventListener('click',function(e){var b=e.target.closest?e.tar
 window.__plRefreshSc=function(){refreshSettings()};
 $('iv-lang').addEventListener('change',function(){applyLangs();if(st&&!st.done&&IV&&IN)start()});
 $('iv-c-lang').addEventListener('change',function(){applyLangs();renderAskChips(this.value);if($('iv-ans').textContent)ask($('iv-q').value||'')});
+try{if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)){$('iv-set-mode').value='ai';$('iv-set-proxy').value='http://localhost:8787'}}catch(e){}
 $('iv-set-mode').addEventListener('change',refreshSettings);
 $('iv-set-preset').addEventListener('change',refreshSettings);
 $('iv-set-proxy').addEventListener('input',refreshSettings);
