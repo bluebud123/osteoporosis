@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PeriLoop Console</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#16202a;--mut:#5b6b7a;--line:#dde3e9;--acc:#0f766e;--acc2:#0b5f58;--red:#b42318;--redbg:#fdecea;--amb:#b45309;--ambbg:#fff4e0;--grn:#15803d;--grnbg:#e6f6ec}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1720;--card:#17212b;--ink:#e7edf3;--mut:#9aabba;--line:#2a3846;--acc:#2dd4bf;--acc2:#5eead4;--red:#ff8a80;--redbg:#3a1e1c;--amb:#fbbf24;--ambbg:#3a2d12;--grn:#4ade80;--grnbg:#16301f}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.45 Inter,system-ui,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh}
+nav{background:var(--card);border-right:1px solid var(--line);padding:16px 12px;position:sticky;top:0;height:100vh}
+nav h1{font-size:17px;margin:0 8px 14px}nav h1 small{display:block;font-weight:400;color:var(--mut);font-size:12px}
+nav button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;padding:9px 10px;margin:2px 0;border:0;background:none;border-radius:8px;cursor:pointer}
+nav button.on{background:var(--acc);color:#fff}nav button:hover:not(.on){background:var(--bg)}
+.badge{background:var(--red);color:#fff;border-radius:10px;font-size:12px;padding:0 7px;min-width:20px;text-align:center}
+nav .who{position:absolute;bottom:14px;left:12px;right:12px;font-size:13px;color:var(--mut)}
+main{padding:22px 26px;max-width:1100px}
+h2{margin:0 0 4px;font-size:22px}.sub{color:var(--mut);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}.stat b{display:block;font-size:28px}.stat span{color:var(--mut);font-size:13px}
+.stat.red b{color:var(--red)}.stat.amb b{color:var(--amb)}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+tr.click{cursor:pointer}tr.click:hover{background:var(--bg)}
+.chip{display:inline-block;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;background:var(--bg);color:var(--mut)}
+.chip.red{background:var(--redbg);color:var(--red)}.chip.amb{background:var(--ambbg);color:var(--amb)}.chip.grn{background:var(--grnbg);color:var(--grn)}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600}.btn:hover{background:var(--acc2)}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}.btn.danger{background:var(--red)}.btn.sm{padding:4px 10px;font-size:13px}
+input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%}
+label{display:block;font-size:13px;color:var(--mut);margin:0 0 10px}label input,label select{margin-top:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}.row>*{flex:1;min-width:130px}.row>.fix{flex:0 0 auto;min-width:0}
+.msg{padding:8px 11px;border-radius:12px;margin:6px 0;max-width:80%;white-space:pre-wrap;word-break:break-word}
+.msg.patient{background:var(--acc);color:#fff;margin-left:auto}.msg.bot,.msg.ai{background:var(--bg);border:1px solid var(--line)}.msg.staff{background:var(--grnbg);border:1px solid var(--grn)}
+.msg small{display:block;opacity:.75;font-size:11px;margin-top:3px}
+.err{color:var(--red);font-size:13px;margin:6px 0}.ok{color:var(--grn);font-size:13px;margin:6px 0}
+.banner{background:var(--ambbg);color:var(--amb);padding:8px 26px;font-size:13px;border-bottom:1px solid var(--line)}
+.over{color:var(--red);font-weight:600}.mut{color:var(--mut)}
+.login{max-width:360px;margin:12vh auto;padding:0 16px}
+code{background:var(--bg);padding:1px 6px;border-radius:5px;font-size:13px}
+@media(max-width:760px){.app{grid-template-columns:1fr}nav{position:static;height:auto;display:flex;flex-wrap:wrap;gap:4px}nav h1{width:100%}nav .who{position:static;width:100%}main{padding:14px}}
+</style></head><body>
+<div id="root"></div>
+<script>
+var ME=null,view='today',cur=null,poll=null;
+function $(s,r){return (r||document).querySelector(s)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function api(path,body){var o=body===undefined?{}:{method:'POST',headers:{'content-type':'application/json','x-requested-with':'periloop'},body:JSON.stringify(body)};return fetch(path,o).then(function(r){return r.json().then(function(j){if(r.status===401&&path!=='/api/login'){ME=null;login();throw new Error('login')}if(!r.ok)throw j;return j})})}
+function fmt(t){var d=new Date(t);return d.toLocaleDateString(undefined,{day:'numeric',month:'short'})+' '+d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'})}
+function fmtD(t){return new Date(t).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'})}
+function dueTxt(t){var h=(t.dueAt-Date.now())/3600000;if(t.state==='done')return 'done';if(h<0)return 'overdue '+(h>-48?Math.round(-h)+' h':Math.round(-h/24)+' d');return h<48?'due in '+Math.round(h)+' h':'due in '+Math.round(h/24)+' d'}
+function clsChip(c){return c==='EMERGENCY'?'<span class="chip red">EMERGENCY</span>':c==='SAME-DAY'?'<span class="chip amb">SAME-DAY</span>':'<span class="chip">Question</span>'}
+
+function login(){
+ $('#root').innerHTML='<div class="login"><h2>PeriLoop Console</h2><p class="sub">Perioperative follow-up for staff</p><div class="card"><label>Username<input id="u" autocomplete="username"></label><label>Password<input id="p" type="password" autocomplete="current-password"></label><div id="e" class="err"></div><button class="btn" id="go" style="width:100%">Log in</button></div><div id="demo" class="mut" style="font-size:13px"></div></div>';
+ fetch('/api/demo').then(function(r){return r.json()}).then(function(j){if(j.demo)$('#demo').innerHTML='Demo accounts (synthetic data only):<br><code>doctor</code> / <code>doctor-demo-1</code><br><code>nurse</code> / <code>nurse-demo-1</code>'});
+ function go(){api('/api/login',{username:$('#u').value,password:$('#p').value}).then(boot).catch(function(e){$('#e').textContent=e.error==='too_many_attempts'?'Too many attempts. Wait a few minutes.':'Wrong username or password.'})}
+ $('#go').onclick=go;$('#p').onkeydown=function(e){if(e.key==='Enter')go()};
+}
+function boot(){api('/api/me').then(function(m){ME=m;shell();show('today')}).catch(function(){})}
+var counts={};
+function shell(){
+ $('#root').innerHTML=(ME.settings.demoBanner?'<div class="banner">Demo system. Use fictional patients only. Nothing here is clinically validated.</div>':'')+'<div class="app"><nav><h1>PeriLoop<small>Console</small></h1><div id="nv"></div><div class="who">'+esc(ME.name)+' · '+esc(ME.role)+'<br><a href="#" id="lo" style="color:var(--mut)">Log out</a></div></nav><main id="main"></main></div>';
+ $('#lo').onclick=function(e){e.preventDefault();api('/api/logout',{}).then(function(){login()})};
+ nav();
+}
+function nav(){
+ var items=[['today','Today'],['patients','Patients'],['inbox','Inbox',counts.needsReply],['alerts','Alerts',counts.openAlerts],['rules','Rules'],['settings','Settings']];
+ $('#nv').innerHTML=items.map(function(i){return '<button data-v="'+i[0]+'" class="'+(view===i[0]?'on':'')+'">'+i[1]+(i[2]?'<span class="badge">'+i[2]+'</span>':'')+'</button>'}).join('');
+ document.querySelectorAll('#nv button').forEach(function(b){b.onclick=function(){show(b.dataset.v)}});
+}
+function refreshCounts(){return api('/api/summary').then(function(s){counts=s;nav();return s})}
+function show(v,arg){view=v;cur=arg||null;clearInterval(poll);nav();({today:vToday,patients:vPatients,inbox:vInbox,alerts:vAlerts,rules:vRules,settings:vSettings,patient:vPatient})[v]();
+ if(v==='inbox'||v==='alerts'||v==='today'||v==='patient'){poll=setInterval(function(){if(document.hidden)return;if(v==='patient'){if(!document.activeElement||document.activeElement.tagName!=='TEXTAREA'&&document.activeElement.tagName!=='INPUT')vPatient(true)}else if(!document.activeElement||!/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))({today:vToday,inbox:vInbox,alerts:vAlerts})[v]()},6000)}
+}
+function main(h){$('#main').innerHTML=h}
+
+function vToday(){
+ Promise.all([refreshCounts(),api('/api/alerts'),api('/api/patients')]).then(function(r){
+  var s=r[0],al=r[1].filter(function(a){return !a.ackAt}),pts=r[2];
+  var risky=pts.filter(function(p){return p.overdue||p.openAlerts||p.needsReply}).sort(function(a,b){return b.openAlerts-a.openAlerts||b.overdue-a.overdue});
+  main('<h2>Today</h2><p class="sub">What needs a person, right now.</p>'+(s.setup?'<div class="card" style="border-color:var(--amb)"><b>Before real use:</b> the clinic phone and hours that patients are told are not set yet. A doctor sets them in Settings.</div>':'')+(!s.ai?'<div class="card"><b>AI is off.</b> The system works on rules only. See README to turn it on.</div>':'')+'<div class="grid"><div class="stat '+(s.openAlerts?'red':'')+'"><b>'+s.openAlerts+'</b><span>Open alerts</span></div><div class="stat '+(s.needsReply?'amb':'')+'"><b>'+s.needsReply+'</b><span>Messages waiting</span></div><div class="stat '+(s.overdue?'amb':'')+'"><b>'+s.overdue+'</b><span>Overdue tasks</span></div><div class="stat"><b>'+s.patients+'</b><span>Patients</span></div></div><div style="height:14px"></div>'
+  +'<div class="card"><h3 style="margin-top:0">Alerts to acknowledge</h3>'+(al.length?'<table>'+al.map(function(a){return '<tr><td>'+clsChip(a.cls)+'</td><td><b>'+esc(a.name)+'</b> · '+esc(a.rn)+'<br><span class="mut">"'+esc(a.text)+'"</span>'+(a.count>1?' <span class="chip">×'+a.count+'</span>':'')+'<br><span class="mut" style="font-size:12px">'+fmt(a.at)+' · '+esc(a.reason||'')+'</span></td><td style="text-align:right"><button class="btn sm" data-ack="'+a.id+'">Acknowledge</button> <button class="btn sm ghost" data-open="'+a.pid+'">Open</button></td></tr>'}).join('')+'</table>':'<span class="mut">None. Quiet is not proof of safety: check the Inbox and overdue tasks.</span>')+'</div>'
+  +'<div class="card"><h3 style="margin-top:0">Patients needing attention</h3>'+(risky.length?ptTable(risky):'<span class="mut">Nobody overdue, no waiting messages.</span>')+'</div>');
+  wireAck();wireRows();
+ }).catch(function(){});
+}
+function wireAck(){document.querySelectorAll('[data-ack]').forEach(function(b){b.onclick=function(){api('/api/alerts/'+b.dataset.ack+'/ack',{}).then(function(){show(view,cur)})}});document.querySelectorAll('[data-open]').forEach(function(b){b.onclick=function(){show('patient',b.dataset.open)}})}
+function wireRows(){document.querySelectorAll('tr[data-pid]').forEach(function(r){r.onclick=function(){show('patient',r.dataset.pid)}})}
+function ptTable(pts){return '<table><tr><th>Patient</th><th>Procedure</th><th>Operation</th><th>Tasks</th><th>Flags</th></tr>'+pts.map(function(p){return '<tr class="click" data-pid="'+p.id+'"><td><b>'+esc(p.name)+'</b><br><span class="mut">'+esc(p.rn)+'</span></td><td>'+esc(p.procLabel)+'</td><td>'+esc(p.otDate)+'</td><td>'+p.open+' open'+(p.overdue?' · <span class="over">'+p.overdue+' overdue</span>':'')+'</td><td>'+(p.openAlerts?'<span class="chip red">'+p.openAlerts+' alert</span> ':'')+(p.needsReply?'<span class="chip amb">'+p.needsReply+' waiting</span>':'')+(!p.linked?' <span class="chip">link not used yet</span>':'')+'</td></tr>'}).join('')+'</table>'}
+
+function vPatients(){
+ api('/api/patients').then(function(pts){
+  var procs=ME.procedures.map(function(p){return '<option value="'+esc(p.key)+'">'+esc(p.label)+'</option>'}).join('');
+  var langs=Object.keys(ME.langs).map(function(k){return '<option value="'+k+'">'+esc(ME.langs[k])+'</option>'}).join('');
+  main('<h2>Patients</h2><p class="sub">Add a patient to create their checklist from the pathway rules, and get a private chat link for them.</p>'
+  +'<div class="card"><h3 style="margin-top:0">Add a patient</h3><div class="row"><label>Short name (first name + initial)<input id="n" maxlength="20" placeholder="Tan M."></label><label>Record number<input id="rn" maxlength="20" placeholder="RN12345"></label><label>Procedure<select id="pr">'+procs+'</select></label></div><div class="row"><label>Operation date<input id="ot" type="date"></label><label>Patient language<select id="lg">'+langs+'</select></label><div class="fix"><button class="btn" id="add">Add patient</button></div></div><div id="ae" class="err"></div><div class="mut" style="font-size:13px">Use fictional data until the clinic has approved real use. Never type IC or phone numbers.</div></div>'
+  +'<div class="card">'+(pts.length?ptTable(pts):'<span class="mut">No patients yet. Add the first one above.</span>')+'</div>');
+  var d=new Date();d.setDate(d.getDate()+14);$('#ot').value=d.toISOString().slice(0,10);
+  $('#add').onclick=function(){api('/api/patients',{name:$('#n').value,rn:$('#rn').value,procedure:$('#pr').value,otDate:$('#ot').value,lang:$('#lg').value}).then(function(r){show('patient',r.id)}).catch(function(e){$('#ae').textContent=e.message||'Could not add.'})};
+  wireRows();
+ });
+}
+
+function vPatient(quiet){
+ api('/api/patients/'+cur).then(function(d){
+  var p=d.patient,link=location.origin+d.link;
+  var scroll=quiet&&$('#thread')?$('#thread').scrollTop:null;
+  var typed=quiet&&$('#rt')?$('#rt').value:'';
+  main('<p><a href="#" id="back">← Patients</a></p><h2>'+esc(p.name)+' <span class="mut" style="font-weight:400">· '+esc(p.rn)+'</span></h2><p class="sub">'+esc(p.procLabel)+' · operation '+esc(p.otDate)+' · '+esc(ME.langs[p.lang]||p.lang)+'</p>'
+  +'<div class="card"><b>Patient chat link</b> <span class="mut">(send this to the patient; anyone with it can message as them)</span><div class="row" style="margin-top:6px"><input readonly id="lk" value="'+esc(link)+'"><div class="fix"><button class="btn ghost sm" id="cp">Copy</button> <button class="btn ghost sm" id="nl">New link</button></div></div></div>'
+  +'<div class="grid" style="grid-template-columns:1.1fr 1fr;align-items:start"><div class="card"><h3 style="margin-top:0">Checklist</h3><div id="tasks"></div></div><div class="card"><h3 style="margin-top:0">Conversation '+(p.threadOpen?'<span class="chip grn">staff handling</span>':'<span class="chip">assistant active</span>')+'</h3><div id="thread" style="max-height:340px;overflow:auto"></div><textarea id="rt" rows="3" placeholder="Reply as '+esc(ME.name)+' ('+esc(ME.role)+'). The patient will see your name and role."></textarea><div class="row" style="margin-top:8px"><div class="fix"><button class="btn" id="rs">Send reply</button></div><div class="fix"><button class="btn ghost" id="hb">Hand back to assistant</button></div></div><div id="re" class="err"></div></div></div>'
+  +(ME.role==='doctor'?'<div class="card"><button class="btn ghost sm" id="ap">Add missing items from current pathway</button> <button class="btn danger sm" id="rm">Remove patient</button> <span id="am" class="ok"></span></div>':''));
+  $('#rt').value=typed;
+  $('#back').onclick=function(e){e.preventDefault();show('patients')};
+  $('#cp').onclick=function(){$('#lk').select();try{navigator.clipboard.writeText(link)}catch(e){document.execCommand('copy')}};
+  $('#nl').onclick=function(){if(confirm('The old link stops working. Continue?'))api('/api/patients/'+cur+'/newlink',{}).then(function(){vPatient()})};
+  $('#tasks').innerHTML=d.tasks.map(function(t){return '<div style="padding:8px 0;border-bottom:1px solid var(--line)"><div><b>'+esc(t.title)+'</b></div><div class="mut" style="font-size:13px">'+esc(t.ownerLabel)+' · '+fmtD(t.dueAt)+' · <span class="'+(t.overdue?'over':'')+'">'+dueTxt(t)+'</span>'+(t.doctorOnly&&t.state==='open'?' · doctor decision':'')+'</div>'+(t.state==='done'?'<div style="font-size:13px" class="ok">✓ '+esc(t.evidence)+' <span class="mut">— '+esc(t.doneBy)+', '+fmt(t.doneAt)+'</span></div>':'<div class="row" style="margin-top:6px"><input placeholder="Evidence / result (required)" data-ev="'+t.id+'"><div class="fix"><button class="btn sm" data-done="'+t.id+'">Close</button></div></div>')+'</div>'}).join('');
+  document.querySelectorAll('[data-done]').forEach(function(b){b.onclick=function(){var ev=$('[data-ev="'+b.dataset.done+'"]').value;api('/api/patients/'+cur+'/tasks/'+b.dataset.done+'/done',{evidence:ev}).then(function(){vPatient()}).catch(function(e){b.parentNode.insertAdjacentHTML('afterend','<div class="err">'+esc(e.message||'Could not close')+'</div>')})}});
+  $('#thread').innerHTML=d.messages.map(function(m){var who=m.who==='patient'?'Patient':m.who==='ai'?'Assistant (AI-written, checked by rules)':m.who==='bot'?(m.faq?'Clinic-approved answer by '+esc(m.approvedBy):'Assistant (fixed text)'):esc(m.staffName)+' ('+esc(m.staffRole)+')';return '<div class="msg '+m.who+'">'+esc(m.text)+'<small>'+who+' · '+fmt(m.at)+(m.cls&&m.who==='patient'&&m.cls!=='ROUTE'?' · '+esc(m.cls):'')+(m.unscreened?' · AI check unavailable':'')+'</small></div>'}).join('')||'<span class="mut">No messages yet.</span>';
+  $('#thread').scrollTop=scroll==null?1e9:scroll;
+  $('#rs').onclick=function(){api('/api/patients/'+cur+'/reply',{text:$('#rt').value}).then(function(){vPatient()}).catch(function(e){$('#re').textContent=e.error==='empty'?'Write a reply first.':'Could not send.'})};
+  $('#hb').onclick=function(){api('/api/patients/'+cur+'/handback',{}).then(function(){vPatient()})};
+  if($('#ap'))$('#ap').onclick=function(){api('/api/rules/apply',{pid:cur}).then(function(r){$('#am').textContent=r.added+' item(s) added.';vPatient()})};
+  if($('#rm'))$('#rm').onclick=function(){if(confirm('Remove this patient from the active list?'))api('/api/patients/'+cur+'/remove',{}).then(function(){show('patients')})};
+ }).catch(function(){});
+}
+
+function vInbox(){
+ Promise.all([refreshCounts(),api('/api/inbox')]).then(function(r){var it=r[1];
+  main('<h2>Inbox</h2><p class="sub">Patient messages that need a person. Urgent first. Anything clinical ("is this normal", "can I stop…") must go to a clinician, not be answered by reassurance.</p><div class="card">'+(it.length?'<table><tr><th></th><th>Patient</th><th>Last message</th><th>Waiting</th></tr>'+it.map(function(i){return '<tr class="click" data-pid="'+i.pid+'"><td>'+clsChip(i.cls)+(i.clinical?'<br><span class="chip">clinical question</span>':'')+'</td><td><b>'+esc(i.name)+'</b><br><span class="mut">'+esc(i.rn)+'</span></td><td>"'+esc(i.last)+'"'+(i.count>1?' <span class="chip">×'+i.count+'</span>':'')+(i.unscreened?'<br><span class="mut" style="font-size:12px">AI check unavailable for this message</span>':'')+'</td><td>'+fmt(i.at)+'</td></tr>'}).join('')+'</table>':'<span class="mut">Inbox is empty.</span>')+'</div>');wireRows();
+ }).catch(function(){});
+}
+function vAlerts(){
+ Promise.all([refreshCounts(),api('/api/alerts')]).then(function(r){var al=r[1];
+  main('<h2>Alerts</h2><p class="sub">Urgent messages. Acknowledging records who saw it and when. Patients are told to call or go to the Emergency Department; they are never told a person has been notified.</p><div class="card">'+(al.length?'<table>'+al.map(function(a){return '<tr><td>'+clsChip(a.cls)+'</td><td><b>'+esc(a.name)+'</b> · '+esc(a.rn)+'<br>"'+esc(a.text)+'"'+(a.count>1?' <span class="chip">×'+a.count+'</span>':'')+'<br><span class="mut" style="font-size:12px">'+fmt(a.at)+' · '+esc(a.reason||'')+'</span></td><td style="text-align:right">'+(a.ackAt?'<span class="chip grn">acknowledged by '+esc(a.ackBy)+'</span>':'<button class="btn sm" data-ack="'+a.id+'">Acknowledge</button>')+' <button class="btn sm ghost" data-open="'+a.pid+'">Open</button></td></tr>'}).join('')+'</table>':'<span class="mut">No alerts yet.</span>')+'</div>');wireAck();
+ }).catch(function(){});
+}
+
+var PW=null;
+function vRules(local){
+ api('/api/rules').then(function(r){
+  PW=JSON.parse(JSON.stringify(local||r.pathway));var isDoc=ME.role==='doctor';
+  var ownerOpts=function(sel){return Object.keys(ME.owners).map(function(k){return '<option value="'+k+'"'+(k===sel?' selected':'')+'>'+esc(ME.owners[k])+'</option>'}).join('')};
+  function itemsHtml(list,key){return list.map(function(it,i){return '<div class="row" style="margin-bottom:6px"><input data-k="'+key+'" data-i="'+i+'" data-f="title" value="'+esc(it.title)+'" '+(isDoc?'':'disabled')+'><select class="fix" data-k="'+key+'" data-i="'+i+'" data-f="owner" '+(isDoc?'':'disabled')+'>'+ownerOpts(it.owner)+'</select><input class="fix" style="width:80px" type="number" data-k="'+key+'" data-i="'+i+'" data-f="due" value="'+it.due+'" title="Days relative to the operation (-14 = 14 days before)" '+(isDoc?'':'disabled')+'>'+(isDoc?'<button class="btn ghost sm fix" data-del="'+key+'|'+i+'">✕</button>':'')+'</div>'}).join('')+(isDoc?'<button class="btn ghost sm" data-addi="'+key+'">+ Add item</button>':'')}
+  var h='<h2>Rules</h2><p class="sub">'+(isDoc?'Edit what every patient\'s checklist contains and when it is due. Changes apply to patients added from now on (use "Add missing items" on a patient to update an existing one).':'Read only. A doctor can change these.')+'</p>';
+  h+='<div class="card"><h3 style="margin-top:0">Checklist for every patient</h3><div class="mut" style="font-size:13px;margin-bottom:8px">Task · who owns it · due day (negative = before the operation)</div>'+itemsHtml(PW.shared,'shared')+'</div>';
+  Object.keys(PW.procedures).forEach(function(k){h+='<div class="card"><h3 style="margin-top:0">'+esc(PW.procedures[k].label)+' <span class="mut" style="font-weight:400">extra items</span></h3>'+itemsHtml(PW.procedures[k].items,'p:'+k)+'</div>'});
+  if(isDoc)h+='<div class="card"><button class="btn" id="svp">Save checklist rules</button> <span id="pm" class="ok"></span></div>';
+  h+='<div class="card"><h3 style="margin-top:0">Extra red-flag phrases</h3><p class="sub" style="margin:0 0 10px">Words your clinic wants treated as urgent. They can only raise urgency, never lower it. The built-in red-flag rules (breathing, chest pain, bleeding, nerve and bladder signs and more) are fixed and are not editable here.</p><div id="rf"></div>'+(isDoc?'<div class="row"><label>Phrase<input id="rfp" placeholder="e.g. kaki pelik"></label><label>Treat as<select id="rfc"><option value="SAME-DAY">Same-day review</option><option value="EMERGENCY">Emergency (send to ED)</option></select></label><div class="fix"><button class="btn" id="rfa">Add phrase</button></div></div><div id="rfe" class="err"></div>':'')+'</div>';
+  h+='<div class="card"><h3 style="margin-top:0">Approved answers</h3><p class="sub" style="margin:0 0 10px">Answers a doctor has written for common questions (for example showering or driving). When a patient message contains one of the keywords and nothing urgent is found, the patient sees exactly this text, labelled as a clinic-approved answer. Nothing else is ever added to it.</p><div id="fq"></div>'+(isDoc?'<label>Keywords (comma separated)<input id="fk" placeholder="shower, mandi, bath"></label><label>Approved answer<textarea id="fa" rows="3" placeholder="You may shower from day 2 if the dressing stays dry. Cover it with the waterproof dressing."></textarea></label><button class="btn" id="fadd">Add approved answer</button><div id="fe" class="err"></div>':'')+'</div>';
+  main(h);
+  function fqList(fs){$('#fq').innerHTML=fs.length?'<table>'+fs.map(function(x){return '<tr><td><b>'+esc(x.keywords.join(', '))+'</b><br>'+esc(x.answer)+'<br><span class="mut" style="font-size:12px">approved by '+esc(x.addedBy)+' · '+fmt(x.at)+'</span></td><td>'+(isDoc?'<button class="btn ghost sm" data-fd="'+x.id+'">Remove</button>':'')+'</td></tr>'}).join('')+'</table>':'<span class="mut">None yet.</span>';document.querySelectorAll('[data-fd]').forEach(function(b){b.onclick=function(){api('/api/rules/faq/'+b.dataset.fd+'/delete',{}).then(function(){vRules(PW)})}})}
+  fqList(r.faqs||[]);
+  if(isDoc)$('#fadd').onclick=function(){api('/api/rules/faq',{keywords:$('#fk').value,answer:$('#fa').value}).then(function(){vRules(PW)}).catch(function(e){$('#fe').textContent=e.message||'Could not add.'})};
+  function rfList(rs){$('#rf').innerHTML=rs.length?'<table>'+rs.map(function(x){return '<tr><td>"'+esc(x.phrase)+'"</td><td>'+(x.cls==='EMERGENCY'?'<span class="chip red">Emergency</span>':'<span class="chip amb">Same-day</span>')+'</td><td class="mut">'+esc(x.addedBy)+' · '+fmt(x.at)+'</td><td>'+(isDoc?'<button class="btn ghost sm" data-rd="'+x.id+'">Remove</button>':'')+'</td></tr>'}).join('')+'</table>':'<span class="mut">None added.</span>';document.querySelectorAll('[data-rd]').forEach(function(b){b.onclick=function(){api('/api/rules/redflag/'+b.dataset.rd+'/delete',{}).then(function(){vRules(PW)})}})}
+  rfList(r.redflags);
+  if(!isDoc)return;
+  function listOf(key){return key==='shared'?PW.shared:PW.procedures[key.slice(2)].items}
+  document.querySelectorAll('[data-f]').forEach(function(el){el.onchange=function(){var l=listOf(el.dataset.k),it=l[+el.dataset.i];it[el.dataset.f]=el.dataset.f==='due'?Number(el.value):el.value}});
+  document.querySelectorAll('[data-del]').forEach(function(b){b.onclick=function(){var a=b.dataset.del.split('|');listOf(a[0]).splice(+a[1],1);redraw()}});
+  document.querySelectorAll('[data-addi]').forEach(function(b){b.onclick=function(){listOf(b.dataset.addi).push({title:'New task',owner:'ward_nurse',due:0,kind:'review'});redraw()}});
+  function redraw(){vRules(PW)}
+  $('#svp').onclick=function(){api('/api/rules/pathway',{pathway:PW}).then(function(){$('#pm').textContent='Saved. New patients get these items.'}).catch(function(e){$('#pm').textContent='Could not save.'})};
+  $('#rfa').onclick=function(){api('/api/rules/redflag',{phrase:$('#rfp').value,cls:$('#rfc').value}).then(function(){vRules(PW)}).catch(function(e){$('#rfe').textContent=e.message||'Could not add.'})};
+ }).catch(function(){});
+}
+function vSettings(){
+ var isDoc=ME.role==='doctor',s=ME.settings;
+ var users=isDoc?api('/api/users'):Promise.resolve([]);
+ users.then(function(us){
+  main('<h2>Settings</h2><p class="sub">Clinic details shown to patients, accounts, and the AI connection.</p>'
+  +'<div class="card"><h3 style="margin-top:0">What patients are told</h3><label>Clinic phone<input id="sp" value="'+esc(s.clinicPhone)+'" '+(isDoc?'':'disabled')+'></label><label>Clinic hours text (say clearly these are the clinic\'s sessions)<input id="ss" value="'+esc(s.sessionsText)+'" '+(isDoc?'':'disabled')+'></label>'+(isDoc?'<button class="btn" id="sv">Save</button> <span id="sm" class="ok"></span>':'')+'</div>'
+  +'<div class="card"><h3 style="margin-top:0">AI</h3><p>'+(ME.ai?'An AI provider is connected on the server.':'No AI provider is connected. The system runs on rules only.')+' The AI can (1) raise a message to same-day, never lower it, and (2) write a short friendly reply to non-clinical, non-urgent messages. Every AI reply is checked by the safety guard and labelled for the patient. It never answers clinical questions.</p><button class="btn ghost" id="tst">Test AI connection</button> <div id="tr" class="mut" style="margin-top:8px"></div></div>'
+  +'<div class="card"><h3 style="margin-top:0">My password</h3><div class="row"><label>New password (8+ characters)<input id="np" type="password"></label><div class="fix"><button class="btn" id="cpw">Change</button></div></div><div id="pe" class="err"></div></div>'
+  +(isDoc?'<div class="card"><h3 style="margin-top:0">Staff accounts</h3><table>'+us.map(function(u){return '<tr><td>'+esc(u.username)+'</td><td>'+esc(u.name)+'</td><td>'+esc(u.role)+'</td></tr>'}).join('')+'</table><div class="row" style="margin-top:10px"><label>Username<input id="nu"></label><label>Name<input id="nn"></label><label>Role<select id="nr"><option value="nurse">Nurse / staff</option><option value="doctor">Doctor</option></select></label><label>Password<input id="npw" type="password"></label><div class="fix"><button class="btn" id="au">Add</button></div></div><div id="ue" class="err"></div></div><div class="card"><button class="btn ghost" id="aud">Show activity log</button><div id="al" style="margin-top:10px"></div></div>':''));
+  if(isDoc){$('#sv').onclick=function(){api('/api/settings',{clinicPhone:$('#sp').value,sessionsText:$('#ss').value}).then(function(){ME.settings.clinicPhone=$('#sp').value;ME.settings.sessionsText=$('#ss').value;$('#sm').textContent='Saved.'})};
+   $('#au').onclick=function(){api('/api/users',{username:$('#nu').value,name:$('#nn').value,role:$('#nr').value,password:$('#npw').value}).then(vSettings).catch(function(e){$('#ue').textContent=e.message||'Could not add.'})};
+   $('#aud').onclick=function(){api('/api/audit').then(function(a){$('#al').innerHTML='<table>'+a.map(function(x){return '<tr><td class="mut">'+fmt(x.at)+'</td><td>'+esc(x.who)+'</td><td>'+esc(x.what)+'</td></tr>'}).join('')+'</table>'})}}
+  $('#tst').onclick=function(){$('#tr').textContent='Testing…';api('/api/ai/test',{}).then(function(r){$('#tr').innerHTML=r.message?esc(r.message):(r.ok?'<span class="ok">Connected.</span> Second check: '+esc(r.secondCheck)+'. Sample reply: "'+esc(r.reply)+'"':'<span class="err">The model could not be reached (check the key, model name and internet).</span>')})};
+  $('#cpw').onclick=function(){api('/api/password',{password:$('#np').value}).then(function(){$('#pe').className='ok';$('#pe').textContent='Password changed.'}).catch(function(e){$('#pe').className='err';$('#pe').textContent=e.message||'Could not change.'})};
+ });
+}
+boot();
+</script></body></html>
