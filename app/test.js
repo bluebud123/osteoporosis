@@ -229,6 +229,10 @@ mock.listen(9199, async function () {
   var before = (await G('/api/patients/' + p3, doc)).json.messages.length;
   var v15 = await say3('ok doctor, one more thing about my son');
   ok((await G('/api/patients/' + p3, doc)).json.messages.length === before + 1 && v15.needsStaff, 'v2: while staff replied in the last 30 minutes the assistant stays silent', v15);
+  var v15c = await say3('how many days will I stay in hospital?');
+  ok(v15c.reply && v15c.reply.library === 'stay' && v15c.needsStaff, 'v2.1: "how many days will I stay" is answered from the library while a doctor is handling the chat', v15c.reply);
+  var v15d = await say3('when is my follow-up?');
+  ok(v15d.reply && /Follow-up visit/.test(v15d.reply.text) && !/bloods/.test(v15d.reply.text), 'v2.1: "when is my follow-up?" names the follow-up visit, not the pre-op bloods review', v15d.reply);
   var v16 = await say3('when is my operation?');
   ok(v16.reply && v16.reply.record && v16.needsStaff, 'v2: an exact answer from the record is still given while a person handles the conversation', v16.reply);
   S.store.db.messages.forEach(function (m) { if (m.pid === p3 && m.who === 'staff') m.at = Date.now() - 2 * 3600 * 1000; });

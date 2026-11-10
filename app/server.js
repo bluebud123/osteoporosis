@@ -364,6 +364,15 @@ async function patientMessage(pt, rawText, via) {
   if (ra) { if (pt.threadOpen) inMsg.needsStaff = true; addMsg(pt.id, 'bot', ra.text, { cls: 'ANSWER', record: true }); finish('Answered from the clinic record (' + ra.kind + '): exact data from this patient\'s own plan, no AI wording, no advice', 'pass', 'Operation ' + P.fmtD(otTime(pt.otDate)), pt.threadOpen ? 'Message also in the Inbox: a person is handling this conversation' : 'Nothing for staff'); return; }
   if (pt.threadOpen) {
     inMsg.needsStaff = true;
+    // v2.1: a fixed clinic answer found by keyword (no AI) is still given while a person handles the chat, like record answers.
+    // Before, "What should I bring?" got silence for 30 minutes after any staff reply.
+    var tpo = /clinical judgement|worsening trend/.test(flags.join(' ')) ? null : (rules.topicHint ? ANS.byId(rules.topicHint) : ANS.match(safe));
+    if (tpo && answerUsable(tpo)) {
+      var sto = store.db.rules.answerState[tpo.id] || {}, apo = sto.status === 'approved';
+      addMsg(pt.id, 'bot', ANS.text(tpo, lang, S), { cls: 'ANSWER', library: tpo.id, draft: !apo, approvedBy: apo ? sto.by : '' });
+      if (tpo.staff) inMsg.forOwner = tpo.owner;
+      finish('Clinic answer "' + tpo.title + '" (' + (apo ? 'approved by ' + sto.by : 'DRAFT, not yet approved by a doctor') + '), shown exactly as written · keyword match', 'pass', 'Given even though a person is handling this conversation, because it is a fixed text', 'Message also in the Inbox for the staff member'); return;
+    }
     if (now2 - lastStaff.at < LIVE_MS) { finish('Silent: ' + lastStaff.staffName + ' replied in the last 30 minutes, so the assistant stays out of the conversation', 'pass', '', 'Message goes to the Inbox for the staff member'); return; }
     addMsg(pt.id, 'bot', T('HELD', lang).replace('{name}', lastStaff.staffName || 'the clinic team'), { cls: 'ROUTE' });
     finish('Receipt only: a person is handling this conversation, so the assistant does not answer but tells the patient the message arrived', 'pass', 'Fixed text, no promise of a reply time', 'Message goes to the Inbox for the staff member'); return;

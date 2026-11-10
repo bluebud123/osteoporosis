@@ -168,7 +168,7 @@ function recordAnswer(text, ctx) {
   // a request to CHANGE an appointment is not a question about its date (it goes to the clinic coordinator)
   if (FOLLOW_RE.test(text) && !/chang\w*|resched\w*|cancel\w*|postpon\w*|move\b|tukar|tunda|batal|改|取消/i.test(text)) {
     // v2: the follow-up visit itself, not the first task that mentions physiotherapy
-    var fuAll = tasks.concat(ctx.tasks).filter(function (t) { return /follow-up|clinic visit|review/i.test(t.title); }).sort(function (a, b) { return a.dueAt - b.dueAt; });
+    var fuAll = tasks.concat(ctx.tasks).filter(function (t) { return /follow-up|clinic visit/i.test(t.title); }).sort(function (a, b) { return a.dueAt - b.dueAt; });
     var fu = fuAll.filter(function (t) { return t.state === 'open'; })[0] || fuAll[0];
     return { kind: 'follow-up', text: fu ? 'From your clinic record: "' + fu.title + '" is planned around ' + fmtD(fu.dueAt) + '. The clinic will confirm the exact time with you. Call ' + phone + ' if you need to change it.' : 'I do not see a follow-up booked in your record yet. Please call ' + phone + ' to arrange it.' };
   }
