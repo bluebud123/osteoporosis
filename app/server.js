@@ -41,7 +41,7 @@ function init() {
     users: [mkUser('doctor', 'Dr Demo', 'doctor', 'doctor-demo-1'), mkUser('nurse', 'Nurse Demo', 'nurse', 'nurse-demo-1')],
     patients: [], tasks: [], messages: [], alerts: [], audit: [],
     rules: { pathway: defaultPathway(), redflags: [], faqs: [] },
-    settings: { clinicPhone: '03-0000 0000 (set in Settings)', sessionsText: 'Set the clinic hours in Settings', demoBanner: true }
+    settings: { clinicPhone: '03-0000 0000 (set in Settings)', sessionsText: 'Set the clinic hours in Settings', demoBanner: true, maxCasesPerDay: 5 }
   };
   audit('system', 'first run: demo accounts created');
   store.save();
@@ -125,7 +125,7 @@ function seedDemo(user) {
     if (store.db.patients.some(function (x) { return x.rn === rn; })) return;
     if (!store.db.rules.pathway.procedures[h.procedure]) return;
     // spread across the journey: some before surgery, some after
-    var offsets = [21, 14, 9, 5, 2, 0, -1, -3, -6, -10];
+    var offsets = [21, 14, 9, 5, 2, 0, -1, 7, -6, 7];
     var off = offsets[i % offsets.length]; if (P.TKR_SEED[rn]) off = P.TKR_SEED[rn].otOff;
     var d = new Date(now + off * DAY); var ot = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     var short = ('Fict ' + String(h.pid).replace('FIC-', '')).slice(0, 20);
@@ -145,6 +145,7 @@ function seedDemo(user) {
 function migrate() {
   var d = store.db; d.readings = d.readings || []; d.detections = d.detections || [];
   if (!d.rules.periop) d.rules.periop = P.defaultRules();
+  if (!d.settings.maxCasesPerDay) d.settings.maxCasesPerDay = 5;
   var n = 0; d.patients.forEach(function (pt) { if (pt.demo && P.TKR_SEED[pt.rn] && !d.readings.some(function (r) { return r.pid === pt.id; })) { seedPeriop(pt); n++; } });
   if (n) { audit('system', 'added fictional TKR parameters for ' + n + ' demo patients'); store.save(); }
 }
@@ -208,7 +209,35 @@ function buildBrief(pt) {
   if (red || urgentMsg) draft = 'Hello ' + first + ', thank you for telling us. I would like to review this with you today. Please call the clinic on ' + phone + ' so we can speak. If you feel worse or unwell, please go to the nearest Emergency Department.';
   else if (day < 0 && preop.length) draft = 'Hello ' + first + ', thank you for your message. Before your operation on ' + P.fmtD(ot) + ' we still need: ' + preop.slice(0, 4).map(function (p) { return p.title; }).join('; ') + '. The team will help you with these. Please call ' + phone + ' if you have questions.';
   else draft = 'Hello ' + first + ', thank you for your message. We have seen it and will reply during clinic hours. If you feel worse or something new worries you, please call ' + phone + '.';
-  return { day: day, phase: day < 0 ? 'before surgery' : 'after surgery', otDate: pt.otDate, comorbidities: como, pending: pending, flags: dets.map(function (d) { return { id: d.id, level: d.level, title: d.title, owner: OWNERS[d.owner] || d.owner, at: d.at, actions: d.actions }; }), recent: recent, latest: Object.keys(latest).map(function (k) { return { param: k, label: P.PARAMS[k].label, value: P.fmtVal(k, latest[k].value), at: latest[k].at }; }), facts: facts, draft: draft, lastMessage: lastMsg ? lastMsg.text : '' };
+  var cm = {}; como.forEach(function (c) { cm[c.key] = c; });
+  var cmNotes = [];
+  if (cm.blood_thinner) cmNotes.push('Your surgeon will give you a clear plan for your blood thinner' + (cm.blood_thinner.label.indexOf(':') > 0 ? ' (' + cm.blood_thinner.label.split(': ')[1] + ')' : '') + '; please do not change it until then.');
+  if (cm.diabetes) cmNotes.push('We are also reviewing your sugar control' + (latest.hba1c ? ' (HbA1c ' + P.fmtVal('hba1c', latest.hba1c.value) + ')' : '') + ' before surgery.');
+  if (cm.kidney_disease || (latest.egfr && latest.egfr.value < 60)) cmNotes.push('We will check your kidney function and medicines with you.');
+  if (cm.heart_disease || cm.lung_disease) cmNotes.push('The anaesthetic team will review your heart and chest history.');
+  if (cm.smoker && day < 0) cmNotes.push('Stopping smoking before surgery helps healing; we can support you.');
+  if (cm.lives_alone) cmNotes.push('Since you live alone, we will plan who can help you at home after surgery.');
+  var cmText = cmNotes.slice(0, 3).join(' ');
+  var options = [];
+  if (red || urgentMsg) options.push({ label: 'Call the clinic today', text: draft });
+  options.push({ label: 'Ask one clarifying question', text: 'Hello ' + first + ', thank you for your message. To help me understand, could you tell me when this started and whether it is getting better or worse? ' + (day >= 0 ? 'If you have a fever, a wet wound, new calf swelling or chest symptoms, please call ' + phone + ' today.' : 'You can also call ' + phone + ' if you prefer to talk.') });
+  if (day < 0) options.push({ label: 'Pre-op plan' + (cmNotes.length ? ' (uses comorbidities)' : ''), text: 'Hello ' + first + ', thank you for your message. Your operation is on ' + P.fmtD(ot) + '. ' + (preop.length ? 'We still need: ' + preop.slice(0, 3).map(function (p) { return p.title; }).join('; ') + '. ' : '') + cmText + ' Please call ' + phone + ' if you have questions.' });
+  else options.push({ label: 'Recovery check-in' + (cmNotes.length ? ' (uses comorbidities)' : ''), text: 'Hello ' + first + ', thank you for your message. You are on day ' + day + ' after your operation. ' + (dets.length ? 'We noticed some readings we want to review with you, so we would like to speak today. ' : '') + 'Please call ' + phone + ' if the wound is wet or red, you have a fever, or your calf is swollen or painful.' });
+  options.push({ label: 'Book a review', text: 'Hello ' + first + ', thank you for your message. I would like to see you in clinic to go through this properly. The clinic team will contact you with a time, or you can call ' + phone + '.' });
+  if (cmNotes.length && day < 0) options.push({ label: 'Medicines and conditions only', text: 'Hello ' + first + ', ' + cmText });
+  return { options: options, day: day, phase: day < 0 ? 'before surgery' : 'after surgery', otDate: pt.otDate, comorbidities: como, pending: pending, flags: dets.map(function (d) { return { id: d.id, level: d.level, title: d.title, owner: OWNERS[d.owner] || d.owner, at: d.at, actions: d.actions }; }), recent: recent, latest: Object.keys(latest).map(function (k) { return { param: k, label: P.PARAMS[k].label, value: P.fmtVal(k, latest[k].value), at: latest[k].at }; }), facts: facts, draft: options.length ? options[0].text : draft, lastMessage: lastMsg ? lastMsg.text : '' };
+}
+function maxCases() { return Math.max(1, Number(store.db.settings.maxCasesPerDay) || 5); }
+function calendarData(from, to) {
+  var days = {}, pts = {}; store.db.patients.forEach(function (p) { if (p.active) pts[p.id] = p; });
+  function d(k) { return days[k] || (days[k] = { date: k, ops: [], bloods: [], followups: [] }); }
+  Object.keys(pts).forEach(function (id) { var p = pts[id]; d(p.otDate).ops.push({ pid: p.id, name: p.name, rn: p.rn, proc: (store.db.rules.pathway.procedures[p.procedure] || {}).label || p.procedure, flags: store.db.detections.filter(function (x) { return x.pid === p.id && x.state === 'open'; }).length }); });
+  store.db.tasks.forEach(function (t) { var p = pts[t.pid]; if (!p || t.auto) return; var k = dateStr(t.dueAt);
+    if (/blood/i.test(t.title)) d(k).bloods.push({ pid: p.id, name: p.name, rn: p.rn, title: t.title, state: t.state });
+    else if (/follow-up|clinic visit/i.test(t.title)) d(k).followups.push({ pid: p.id, name: p.name, rn: p.rn, title: t.title, state: t.state }); });
+  var max = maxCases(), today = dateStr(Date.now()), all = Object.keys(days).sort().map(function (k) { return days[k]; });
+  var over = all.filter(function (x) { return x.ops.length > max && x.date >= today; }).map(function (x) { return { date: x.date, count: x.ops.length }; });
+  return { max: max, today: today, over: over, days: all.filter(function (x) { return (!from || x.date >= from) && (!to || x.date <= to); }) };
 }
 var bg = new Set();
 function bgProfile(pt, s8, inMsg) {
@@ -375,6 +404,7 @@ async function route(req, res) {
   if (m === 'GET' && p === '/api/summary') {
     var open = store.db.tasks.filter(function (t) { return t.state === 'open' && store.db.patients.find(function (x) { return x.id === t.pid && x.active; }); });
     return send(res, 200, {
+      overCapacity: calendarData('', '').over.length,
       patients: store.db.patients.filter(function (x) { return x.active; }).length,
       overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length,
       openTasks: open.length,
@@ -395,7 +425,8 @@ async function route(req, res) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ot) || isNaN(otTime(ot))) return send(res, 400, { error: 'otDate', message: 'Enter the operation date.' });
     var pt2 = { id: uid(), name: name, rn: rn, procedure: proc, otDate: ot, lang: lang, token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: Date.now(), addedBy: user.username };
     store.db.patients.push(pt2); createTasks(pt2); audit(user.username, 'added patient ' + rn); store.save();
-    return send(res, 200, { id: pt2.id });
+    var capd = calendarData(ot, ot).days[0], warn = capd && capd.ops.length > maxCases() ? 'Warning: ' + capd.ops.length + ' cases are now booked on ' + ot + ' (limit ' + maxCases() + ').' : '';
+    return send(res, 200, { id: pt2.id, warning: warn });
   }
   var pp = p.match(/^\/api\/patients\/([a-f0-9]+)(?:\/(.+))?$/);
   if (pp) {
@@ -426,7 +457,7 @@ async function route(req, res) {
     }
     if (m === 'POST' && sub === 'draft') {
       var br = buildBrief(pat), r2 = await AI.draft(br.facts, br.lastMessage || '(no message yet)', 'draft for ' + pat.rn);
-      return send(res, 200, { ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft });
+      return send(res, 200, { ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft, options: br.options });
     }
     if (m === 'POST' && sub === 'handback') { pat.threadOpen = false; addMsg(pat.id, 'bot', 'Handing you back to the assistant for general questions.', { cls: 'ACK' }); audit(user.username, 'handed back ' + pat.rn); store.save(); return send(res, 200, { ok: true }); }
     if (m === 'POST' && sub === 'dismiss') { store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; }); store.save(); return send(res, 200, { ok: true }); }
@@ -454,6 +485,7 @@ async function route(req, res) {
     var tx = String(body.text || '').trim(); if (!tx) return send(res, 400, { error: 'empty' });
     await patientMessage(tp, tx, (body.libId ? 'replayed by ' : 'typed in Live view by ') + user.name + (body.libId ? ' (library ' + String(body.libId).slice(0, 12) + ')' : '')); store.save(); return send(res, 200, { ok: true });
   }
+  if (m === 'GET' && p === '/api/calendar') { var cal = calendarData(url.searchParams.get('from') || '', url.searchParams.get('to') || ''); return send(res, 200, cal); }
   if (m === 'GET' && p === '/api/params') return send(res, 200, { params: P.PARAMS, rules: store.db.rules.periop });
   if (m === 'GET' && p === '/api/detections') {
     var dl = store.db.detections.slice().sort(function (a, b) { return b.at - a.at; }).slice(0, 60).map(function (d) { var q = store.db.patients.find(function (x) { return x.id === d.pid; }); return Object.assign({}, d, { patient: q ? q.name : '?', rn: q ? q.rn : '', ownerLabel: OWNERS[d.owner] || d.owner }); });
@@ -528,6 +560,7 @@ async function route(req, res) {
   if (m === 'POST' && p === '/api/settings') {
     if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
     ['clinicPhone', 'sessionsText'].forEach(function (k) { if (typeof body[k] === 'string' && body[k].trim()) store.db.settings[k] = body[k].trim().slice(0, 160); });
+    if (body.maxCasesPerDay !== undefined) { var mc = Math.round(Number(body.maxCasesPerDay)); if (!(mc >= 1 && mc <= 50)) return send(res, 400, { error: 'max', message: 'Cases per day: 1 to 50.' }); store.db.settings.maxCasesPerDay = mc; }
     if (typeof body.demoBanner === 'boolean') store.db.settings.demoBanner = body.demoBanner;
     audit(user.username, 'edited settings'); store.save(); return send(res, 200, { ok: true });
   }

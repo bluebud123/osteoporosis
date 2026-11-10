@@ -160,6 +160,21 @@ mock.listen(9199, async function () {
   ok((await P('/api/demo/reset', {}, nur)).status === 403, 'only a doctor can reset demo data');
   var rs = await P('/api/demo/reset', {}, doc); ok(rs.json.added === 30, 'doctor resets demo data -> 30 cases back', rs.json);
 
+
+  // ---- calendar, capacity alert, reply options ----
+  t2 = (await G('/api/patients', doc)).json.find(function (x) { return x.rn === 'FIC-TKR-02'; });
+  var cal0 = (await G('/api/calendar', doc)).json; ok(cal0.max === 5 && cal0.over.some(function (o) { return o.count === 6; }), 'demo data has a day with 6 operations -> flagged over the limit of 5', cal0.over);
+  var calD = (await G('/api/calendar?from=' + t2.otDate + '&to=' + t2.otDate, doc)).json; ok(calD.days.length === 1 && calD.days[0].ops.some(function (o) { return o.rn === 'FIC-TKR-02'; }), 'calendar lists a patient on the operation date');
+  ok(cal0.days.some(function (d) { return d.bloods.length > 0; }), 'calendar shows blood-test tasks on their due dates');
+  ok((await P('/api/settings', { maxCasesPerDay: 0 }, doc)).status === 400, 'cases-per-day limit must be 1 to 50');
+  ok((await P('/api/settings', { maxCasesPerDay: 8 }, nur)).status === 403, 'nurse cannot change the limit');
+  ok((await P('/api/settings', { maxCasesPerDay: 8 }, doc)).status === 200 && (await G('/api/calendar', doc)).json.over.length === 0, 'raising the limit to 8 clears the alert');
+  await P('/api/settings', { maxCasesPerDay: 5 }, doc);
+  var sm = (await G('/api/summary', doc)).json; ok(sm.overCapacity >= 1, 'summary counts over-capacity days (nav badge)', sm.overCapacity);
+  var dd = await P('/api/patients/' + t2.id + '/draft', {}, doc); var lab = (dd.json.options || []).map(function (o) { return o.label; });
+  ok(lab.length >= 3 && dd.json.options.some(function (o) { return /blood thinner/.test(o.text) && /rivaroxaban/.test(o.text); }) && dd.json.options.some(function (o) { return /sugar control/.test(o.text); }), 'reply options use the patient comorbidities (blood thinner, diabetes)', lab);
+  ok(dd.json.options.every(function (o) { return !/stop taking|you can stop|it is normal|do not worry/i.test(o.text); }), 'no option tells the patient to stop a medicine or reassures about symptoms');
+
   // ---- persistence ----
   srv.close(); delete require.cache[require.resolve('./server.js')]; delete require.cache[require.resolve('./store.js')];
   var S2 = require('./server.js'), srv2 = S2.createServer(); await new Promise(function (r) { srv2.listen(0, r); });
