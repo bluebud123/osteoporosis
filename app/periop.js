@@ -25,9 +25,17 @@ var PARAMS = {
 };
 
 // phase: preop = before the operation date, postop = from the operation day on, any = both. minDay: only from post-op day N.
+var RULES_VERSION = 2;
 function defaultRules() {
   var r = [];
-  function add(param, op, value, level, phase, msg, owner, minDay) { r.push({ id: param + '_' + op.replace('>', 'gt').replace('<', 'lt').replace('=', 'e') + '_' + String(value).replace('.', 'p').replace(/\s+/g, '_'), param: param, op: op, value: value, level: level, phase: phase, msg: msg, owner: owner, minDay: minDay || 0 }); }
+  // minDay / maxDay are days relative to the operation date (0 = the day of surgery, negative = before). Either can be omitted.
+  function add(param, op, value, level, phase, msg, owner, minDay, maxDay) {
+    var id = param + '_' + phase + '_' + op.replace('>', 'gt').replace('<', 'lt').replace('=', 'e') + '_' + String(value).replace('.', 'p').replace(/\s+/g, '_') + (minDay != null ? '_d' + String(minDay).replace('-', 'm') : '');
+    var rule = { id: id, param: param, op: op, value: value, level: level, phase: phase, msg: msg, owner: owner };
+    if (minDay != null) rule.minDay = minDay; if (maxDay != null) rule.maxDay = maxDay;
+    r.push(rule);
+  }
+  // ---- before surgery ----
   add('hb', '<', 12, 'amber', 'preop', 'Anaemia: plan before surgery', 'surgeon');
   add('hb', '<', 10, 'red', 'preop', 'Significant anaemia: review before surgery goes ahead', 'surgeon');
   add('hba1c', '>=', 8, 'amber', 'preop', 'Glycaemic control: review before surgery', 'surgeon');
@@ -35,18 +43,32 @@ function defaultRules() {
   add('egfr', '<', 60, 'amber', 'preop', 'Reduced kidney function: review medicines and anaesthetic plan', 'surgeon');
   add('egfr', '<', 30, 'red', 'preop', 'Severely reduced kidney function: review before surgery', 'surgeon');
   add('inr', '>', 1.4, 'amber', 'preop', 'Raised INR: anticoagulation plan needed', 'surgeon');
-  add('platelets', '<', 100, 'amber', 'preop', 'Low platelets: review', 'surgeon');
+  add('inr', '>', 1.4, 'red', 'preop', 'INR still raised within 2 days of surgery: surgeon to decide today', 'surgeon', -2);   // v2
   add('albumin', '<', 35, 'amber', 'preop', 'Low albumin: nutrition and wound-healing risk', 'preop_nurse');
   add('bmi', '>=', 35, 'amber', 'preop', 'High BMI: anaesthetic and wound-healing risk', 'preop_nurse');
   add('bmi', '>=', 40, 'red', 'preop', 'Very high BMI: surgeon and anaesthetist review', 'surgeon');
+  add('temp', '>=', 38.0, 'red', 'preop', 'Fever in the week before elective surgery: surgeon to review before it goes ahead', 'surgeon', -7, -1);   // v2
+  // ---- any time ----
+  add('platelets', '<', 100, 'amber', 'preop', 'Low platelets: review', 'surgeon');
+  add('platelets', '<', 50, 'red', 'any', 'Very low platelets: same-day clinician review', 'surgeon');   // v2
+  add('platelets', '<', 100, 'red', 'postop', 'Platelets low after surgery (on a blood thinner?): same-day clinician review', 'surgeon', 1);   // v2
   add('bp_sys', '>=', 160, 'amber', 'any', 'High blood pressure: review', 'preop_nurse');
   add('bp_sys', '>=', 180, 'red', 'any', 'Very high blood pressure: same-day clinician review', 'surgeon');
-  add('temp', '>=', 38.0, 'amber', 'postop', 'Fever after surgery: check wound and chest, review for infection', 'ward_nurse', 1);
-  add('temp', '>=', 38.5, 'red', 'postop', 'High fever after surgery: same-day clinician review', 'surgeon', 1);
-  add('hr', '>', 110, 'amber', 'postop', 'Fast heart rate: review', 'ward_nurse');
-  add('hr', '>', 130, 'red', 'postop', 'Very fast heart rate: same-day clinician review', 'surgeon');
-  add('spo2', '<', 94, 'amber', 'postop', 'Low oxygen saturation: review', 'ward_nurse');
-  add('spo2', '<', 90, 'red', 'postop', 'Very low oxygen saturation: urgent clinician review', 'surgeon');
+  add('bp_sys', '<', 100, 'amber', 'any', 'Low blood pressure: recheck and review', 'ward_nurse');   // v2
+  add('bp_sys', '<', 90, 'red', 'any', 'Very low blood pressure: urgent clinician review', 'surgeon');   // v2
+  add('hr', '>', 110, 'amber', 'any', 'Fast heart rate: review', 'ward_nurse');   // v2: was post-op only
+  add('hr', '>', 130, 'red', 'any', 'Very fast heart rate: same-day clinician review', 'surgeon');
+  add('hr', '<', 50, 'amber', 'any', 'Slow heart rate: recheck and review', 'ward_nurse');   // v2
+  add('hr', '<', 40, 'red', 'any', 'Very slow heart rate: urgent clinician review', 'surgeon');   // v2
+  add('spo2', '<', 94, 'amber', 'any', 'Low oxygen saturation: review', 'ward_nurse');   // v2: was post-op only
+  add('spo2', '<', 90, 'red', 'any', 'Very low oxygen saturation: urgent clinician review', 'surgeon');
+  add('temp', '<', 35.5, 'amber', 'any', 'Low temperature: recheck and warm', 'ward_nurse');   // v2
+  add('wcc', '<', 3, 'amber', 'any', 'Low white cells: review', 'surgeon');   // v2
+  // ---- after surgery (from the day of surgery) ----
+  add('hb', '<', 10, 'amber', 'postop', 'Haemoglobin has fallen after surgery: watch and recheck', 'ward_nurse');   // v2
+  add('hb', '<', 8, 'red', 'postop', 'Low haemoglobin after surgery: same-day clinician review', 'surgeon');   // v2
+  add('temp', '>=', 38.0, 'amber', 'postop', 'Fever after surgery: check wound and chest, review for infection', 'ward_nurse');   // v2: was from day 1
+  add('temp', '>=', 38.5, 'red', 'postop', 'High fever after surgery: same-day clinician review', 'surgeon');
   add('pain', '>=', 7, 'amber', 'postop', 'Severe pain: review pain plan', 'ward_nurse');
   add('crp', '>', 100, 'amber', 'postop', 'High CRP after day 3: review for infection', 'surgeon', 3);
   add('wcc', '>', 12, 'amber', 'postop', 'Raised white cells: review', 'ward_nurse', 2);
@@ -54,6 +76,7 @@ function defaultRules() {
   add('calf_diff', '>=', 3, 'red', 'postop', 'Marked calf swelling: same-day clinician review for clot', 'surgeon');
   add('flexion', '<', 60, 'amber', 'postop', 'Knee bending behind target: physiotherapy review', 'physio', 14);
   add('wound', '=', 'discharge', 'amber', 'postop', 'Wound discharge: review for infection', 'ward_nurse');
+  add('wound', '=', 'discharge', 'red', 'postop', 'Wound still discharging after day 10: same-day clinician review', 'surgeon', 10);   // v2
   add('wound', '=', 'red and hot', 'red', 'postop', 'Red hot wound: same-day clinician review', 'surgeon');
   return r;
 }
@@ -63,7 +86,9 @@ function cmp(op, a, b) {
   return false;
 }
 function fmtVal(param, v) { var d = PARAMS[param] || {}; return d.categorical ? String(v) : (typeof v === 'number' ? v.toFixed(d.dec || 0) : String(v)) + (d.unit ? ' ' + d.unit : ''); }
-function dayRel(otMs, at) { return Math.floor((at - otMs) / DAY); }
+// Whole calendar days between the operation DATE and the reading (v2). Before, this counted 24-hour blocks from 08:00 on the
+// operation day, so a reading at 07:00 on post-op day 1 was scored as day 0 and one at 07:00 on the day of surgery as "before".
+function dayRel(otMs, at) { var a = new Date(otMs), b = new Date(at); return Math.round((Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()) - Date.UTC(a.getFullYear(), a.getMonth(), a.getDate())) / DAY); }
 
 /* Evaluate one reading against the rules. Returns the matched rules (worst first) and a step-by-step explanation. */
 function evaluate(rules, reading, otMs, prev) {
@@ -72,7 +97,8 @@ function evaluate(rules, reading, otMs, prev) {
   var steps = [];
   steps.push({ n: 1, title: 'Reading received', status: 'pass', detail: d.label + ' = ' + fmtVal(reading.param, reading.value) + ' (' + (reading.source || 'entered') + ')' });
   steps.push({ n: 2, title: 'Where the patient is in the journey', status: 'pass', detail: (phase === 'preop' ? 'Before surgery' : 'After surgery') + ', day ' + (day >= 0 ? '+' : '') + day + ' relative to the operation' });
-  var cand = rules.filter(function (r) { return r.param === reading.param && (r.phase === 'any' || r.phase === phase) && (!r.minDay || day >= r.minDay); });
+  // on the day of surgery (day 0) the before-surgery rules still apply as well: the safe side for a morning reading
+  var cand = rules.filter(function (r) { return r.param === reading.param && (r.phase === 'any' || r.phase === phase || (day === 0 && r.phase === 'preop')) && (r.minDay == null || day >= r.minDay) && (r.maxDay == null || day <= r.maxDay); });
   steps.push({ n: 3, title: 'Rules checked', status: 'pass', detail: cand.length ? cand.map(function (r) { return d.label + ' ' + r.op + ' ' + r.value + ' (' + r.level + ')'; }).join('; ') : 'No rule covers this reading in this phase' });
   var hits = cand.filter(function (r) { return cmp(r.op, reading.value, r.value); });
   // simple trend rule: CRP rising by 50% or more and above 60
@@ -123,9 +149,9 @@ function seedReadings(pid, rn, otMs, uidFn, now) {
 function fmtD(ms) { return new Date(ms).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }
 
 /* Questions the patient can ask that the clinic record can answer exactly (no AI, no advice). */
-var PREP_RE = /prepp?ar|what (should|do|must|can) i (bring|do before|do first|need)|what.{0,25}(pending|outstanding|left to do|still (to do|need))|checklist|apa.{0,20}(perlu|patut).{0,12}(sedia|buat)|准备|还有什么/i;
-var OPDATE_RE = /(when|what date|what day|which day).{0,25}(surgery|operation|op\b|procedure|admission|admitted)|(surgery|operation|op) date|bila.{0,18}(pembedahan|operasi)|手术.{0,6}(几时|什么时候|哪天)/i;
-var FOLLOW_RE = /follow[- ]?up|next appointment|when.{0,15}(physio|review|clinic visit)|temu janji/i;
+var PREP_RE = /prepp?ar|what'?s (?:left|pending|outstanding|still)|what is (?:left|pending|outstanding)|to-?do list|my list\b|what (should|do|must|can) i (do before|do first|need to do)|belum (selesai|siap|dibuat)|masih perlu (buat|dibuat)|还没完成|没完成|what.{0,25}(pending|outstanding|left to do|still (to do|need))|checklist|apa.{0,20}(perlu|patut).{0,12}(sedia|buat)|准备|还有什么/i;
+var OPDATE_RE = /(when|what date|what day|which day).{0,25}(surgery|operation|op\b|procedure|admission|admitted)|(surgery|operation|op) date|bila.{0,18}(pembedahan|operasi)|手术.{0,6}(几时|什么时候|哪天|哪一天|几号|日期)|(几时|什么时候|哪天|哪一天|几号).{0,4}(做)?手术|متى.{0,12}(العمليه|العملية|الجراحه)/i;
+var FOLLOW_RE = /follow[- ]?up|next (?:appointment|check[- ]?up|visit|review)|check[- ]?up|复诊|复查|when.{0,15}(physio|review|clinic visit)|temu janji/i;
 function recordAnswer(text, ctx) {
   var pt = ctx.pt, tasks = ctx.tasks.filter(function (t) { return t.state === 'open'; }), ot = ctx.otMs, now = ctx.now, phone = ctx.phone;
   var day = dayRel(ot, now), when = day < 0 ? 'in ' + (-day) + ' day' + (day === -1 ? '' : 's') : day === 0 ? 'today' : day + ' day' + (day === 1 ? '' : 's') + ' ago';
@@ -139,8 +165,11 @@ function recordAnswer(text, ctx) {
     var tail = (docItems.length ? ' Your surgeon will also go through the plan and your medicines with you.' : '') + ' Your care team will confirm the details with you.';
     return { kind: 'checklist', text: lines.length ? head + '\n' + lines.join('\n') + '\n' + tail.trim() : 'From your clinic record, nothing is outstanding on your list right now.' + tail };
   }
-  if (FOLLOW_RE.test(text)) {
-    var fu = tasks.concat(ctx.tasks).filter(function (t) { return /follow-up|physio/i.test(t.title); }).sort(function (a, b) { return a.dueAt - b.dueAt; })[0];
+  // a request to CHANGE an appointment is not a question about its date (it goes to the clinic coordinator)
+  if (FOLLOW_RE.test(text) && !/chang\w*|resched\w*|cancel\w*|postpon\w*|move\b|tukar|tunda|batal|改|取消/i.test(text)) {
+    // v2: the follow-up visit itself, not the first task that mentions physiotherapy
+    var fuAll = tasks.concat(ctx.tasks).filter(function (t) { return /follow-up|clinic visit|review/i.test(t.title); }).sort(function (a, b) { return a.dueAt - b.dueAt; });
+    var fu = fuAll.filter(function (t) { return t.state === 'open'; })[0] || fuAll[0];
     return { kind: 'follow-up', text: fu ? 'From your clinic record: "' + fu.title + '" is planned around ' + fmtD(fu.dueAt) + '. The clinic will confirm the exact time with you. Call ' + phone + ' if you need to change it.' : 'I do not see a follow-up booked in your record yet. Please call ' + phone + ' to arrange it.' };
   }
   return null;
@@ -157,4 +186,4 @@ function detProfile(msgs, now) {
   return { messages: mine.length, topics: Object.keys(topics).sort(function (a, b) { return topics[b] - topics[a]; }).slice(0, 6), languages: Object.keys(langs), urgentMessages: urgent, avgLength: Math.round(sumLen / mine.length), lastContact: last.at, writes: sumLen / mine.length < 40 ? 'short messages' : sumLen / mine.length < 120 ? 'medium messages' : 'long, detailed messages' };
 }
 
-module.exports = { PARAMS: PARAMS, defaultRules: defaultRules, evaluate: evaluate, comorbidities: comorbidities, TKR_SEED: TKR_SEED, seedReadings: seedReadings, recordAnswer: recordAnswer, detProfile: detProfile, fmtVal: fmtVal, fmtD: fmtD, dayRel: dayRel, DAY: DAY };
+module.exports = { PARAMS: PARAMS, defaultRules: defaultRules, RULES_VERSION: RULES_VERSION, evaluate: evaluate, comorbidities: comorbidities, TKR_SEED: TKR_SEED, seedReadings: seedReadings, recordAnswer: recordAnswer, detProfile: detProfile, fmtVal: fmtVal, fmtD: fmtD, dayRel: dayRel, DAY: DAY };

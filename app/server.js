@@ -13,6 +13,11 @@ var SC = require('./lib/second_check.js');
 var proxy = require('./lib/server/chat.js');
 var P = require('./periop.js');
 var AI = require('./ai.js');
+var TR = require('./triage.js');      // v2: engine + added wording + two narrow reductions (measured, see app/eval)
+var ANS = require('./answers.js');    // v2: clinic answer library (fixed texts, doctor approves)
+var GUARD = require('./guard.js');    // v2: chat output guard
+var HANDBACK_MS = 24 * 3600 * 1000;   // a staff conversation with no staff message for this long goes back to the assistant
+var LIVE_MS = 30 * 60 * 1000;         // while staff replied this recently the assistant stays silent
 
 var PORT = Number(process.env.PORT || 8080);
 var DATA_DIR = process.env.PERILOOP_DATA || path.join(__dirname, 'data');
@@ -24,7 +29,7 @@ var store = Store.open(DATA_DIR);
 /* ---------- roles, owners, defaults ---------- */
 var OWNERS = { surgeon: 'Surgeon', preop_nurse: 'Pre-op nurse', ward_nurse: 'Ward nurse', physio: 'Physiotherapist', admin: 'Admin / insurance', clinic_coordinator: 'Clinic coordinator', clinician: 'Clinician' };
 var DOCTOR_OWNERS = { surgeon: 1, clinician: 1 };       // tasks only a doctor may close
-var LANGS = { en: 'English', ms: 'Bahasa Malaysia', zh: '中文' };
+var LANGS = { en: 'English', ms: 'Bahasa Malaysia', zh: '中文', ar: 'العربية' };
 
 function defaultPathway() {
   var procedures = {};
@@ -41,7 +46,7 @@ function init() {
     users: [mkUser('doctor', 'Dr Demo', 'doctor', 'doctor-demo-1'), mkUser('nurse', 'Nurse Demo', 'nurse', 'nurse-demo-1')],
     patients: [], tasks: [], messages: [], alerts: [], audit: [],
     rules: { pathway: defaultPathway(), redflags: [], faqs: [] },
-    settings: { clinicPhone: '03-0000 0000 (set in Settings)', sessionsText: 'Set the clinic hours in Settings', demoBanner: true, maxCasesPerDay: 5 }
+    settings: { clinicPhone: '03-0000 0000 (set in Settings)', sessionsText: 'Set the clinic hours in Settings', demoBanner: true, maxCasesPerDay: 5, emergencyNumber: '999', useDraftAnswers: true }
   };
   audit('system', 'first run: demo accounts created');
   store.save();
@@ -52,24 +57,42 @@ function audit(who, what) { store.db.audit.push({ at: Date.now(), who: who, what
 
 /* ---------- patient-facing fixed texts (follow the clinic-bot rules: route to a staffed channel, never promise a reply) ---------- */
 function T(kind, lang) {
-  var s = store.db.settings, ph = s.clinicPhone, ses = s.sessionsText;
+  var s = store.db.settings, ph = s.clinicPhone, ses = s.sessionsText, em = s.emergencyNumber || '999';
   var X = {
     EMERGENCY: {
-      en: 'Please call 999 or go to the nearest Emergency Department now. This chat is not monitored around the clock and is not for emergencies.',
-      ms: 'Sila hubungi 999 atau pergi ke Jabatan Kecemasan terdekat sekarang. Sembang ini tidak dipantau sepanjang masa dan bukan untuk kecemasan.',
-      zh: '请立即拨打 999 或前往最近的急诊部。此聊天并非全天候监控，不适用于紧急情况。' },
+      en: 'Please call ' + em + ' or go to the nearest Emergency Department now. This chat is not monitored around the clock and is not for emergencies.',
+      ms: 'Sila hubungi ' + em + ' atau pergi ke Jabatan Kecemasan terdekat sekarang. Sembang ini tidak dipantau sepanjang masa dan bukan untuk kecemasan.',
+      zh: '请立即拨打 ' + em + ' 或前往最近的急诊部。此聊天并非全天候监控，不适用于紧急情况。',
+      ar: 'اتصل بالرقم ' + em + ' أو اذهب إلى أقرب قسم طوارئ الآن. هذه المحادثة غير مراقبة على مدار الساعة وليست للحالات الطارئة.' },
     SAMEDAY: {
       en: 'Please call the clinic today: ' + ph + '. ' + ses + '. Messages here are not monitored around the clock. If symptoms are severe or getting worse, go to the nearest Emergency Department.',
       ms: 'Sila hubungi klinik hari ini: ' + ph + '. ' + ses + '. Mesej di sini tidak dipantau sepanjang masa. Jika gejala teruk atau bertambah teruk, pergi ke Jabatan Kecemasan terdekat.',
-      zh: '请今天致电诊所：' + ph + '。' + ses + '。此处消息并非全天候监控。如症状严重或加重，请前往最近的急诊部。' },
+      zh: '请今天致电诊所：' + ph + '。' + ses + '。此处消息并非全天候监控。如症状严重或加重，请前往最近的急诊部。',
+      ar: 'يرجى الاتصال بالعيادة اليوم: ' + ph + '. ' + ses + '. الرسائل هنا غير مراقبة على مدار الساعة. إذا كانت الأعراض شديدة أو تزداد سوءا، اذهب إلى أقرب قسم طوارئ.' },
     ROUTE: {
-      en: 'A clinician has to answer this, and I cannot. Your message has been saved for the clinic team. If you feel worse or something new worries you, call ' + ph + ' or go to the Emergency Department.',
-      ms: 'Soalan ini perlu dijawab oleh doktor, saya tidak boleh menjawabnya. Mesej anda telah disimpan untuk pasukan klinik. Jika anda rasa bertambah teruk, hubungi ' + ph + ' atau pergi ke Jabatan Kecemasan.',
-      zh: '这个问题需要医生回答，我无法回答。您的消息已保存给诊所团队。如感觉加重或有新的担心，请致电 ' + ph + ' 或前往急诊部。' },
+      en: 'This one needs a clinician, so I will not guess. I have saved your question for the clinic team (' + ses + '). If it cannot wait, call ' + ph + '. If you feel worse or something new worries you, go to the Emergency Department.',
+      ms: 'Soalan ini perlu dijawab oleh doktor, jadi saya tidak akan meneka. Soalan anda telah disimpan untuk pasukan klinik (' + ses + '). Jika tidak boleh tunggu, hubungi ' + ph + '. Jika anda rasa bertambah teruk, pergi ke Jabatan Kecemasan.',
+      zh: '这个问题需要医生回答，我不会猜测。您的问题已保存给诊所团队（' + ses + '）。如不能等待，请致电 ' + ph + '。如感觉加重或有新的担心，请前往急诊部。',
+      ar: 'هذا السؤال يحتاج إلى طبيب، ولن أخمن الإجابة. تم حفظ سؤالك لفريق العيادة (' + ses + '). إذا لم يحتمل الانتظار، اتصل على ' + ph + '. إذا شعرت بأنك أسوأ، اذهب إلى قسم الطوارئ.' },
+    RECEIPT: {
+      en: 'I have saved your message for the clinic team, who read messages during clinic hours (' + ses + '). I cannot say exactly when they will reply. If it cannot wait, call ' + ph + '. If this is about trouble breathing, chest pain, heavy bleeding, fainting, or a cold or blue foot, call ' + em + ' now.',
+      ms: 'Mesej anda telah disimpan untuk pasukan klinik, yang membaca mesej pada waktu klinik (' + ses + '). Saya tidak dapat memberitahu bila mereka akan membalas. Jika tidak boleh tunggu, hubungi ' + ph + '. Jika ini tentang sesak nafas, sakit dada, pendarahan banyak, pengsan, atau kaki sejuk atau biru, hubungi ' + em + ' sekarang.',
+      zh: '您的消息已保存给诊所团队，他们会在门诊时间（' + ses + '）查看消息。我无法确定他们何时回复。如不能等待，请致电 ' + ph + '。如果是呼吸困难、胸痛、大量出血、晕倒，或脚发冷发紫，请立即拨打 ' + em + '。',
+      ar: 'تم حفظ رسالتك لفريق العيادة، وهم يقرؤون الرسائل في ساعات العمل (' + ses + '). لا أستطيع أن أحدد متى سيردون. إذا لم يحتمل الانتظار، اتصل على ' + ph + '. إذا شعرت بأنك أسوأ، اذهب إلى قسم الطوارئ.' },
+    HELLO: {
+      en: 'Hello. I am the clinic\'s text assistant, a computer program. You can ask me things like "when is my operation", "what is still pending", "what should I bring" or "when is my follow-up", or write a message for the clinic team. For emergencies call ' + em + '.',
+      ms: 'Helo. Saya pembantu teks klinik, sebuah program komputer. Anda boleh bertanya seperti "bila pembedahan saya", "apa yang masih belum selesai", "apa perlu saya bawa" atau "bila temu janji susulan saya", atau tulis mesej untuk pasukan klinik. Untuk kecemasan hubungi ' + em + '.',
+      zh: '您好。我是诊所的文字助手，是一个电脑程序。您可以问我"手术是哪一天"、"还有什么没完成"、"要带什么"或"复诊是哪一天"，也可以给诊所团队留言。紧急情况请拨打 ' + em + '。',
+      ar: 'مرحبا. أنا المساعد النصي للعيادة، برنامج حاسوب. يمكنك أن تسألني مثلا "متى موعد العملية" أو "ماذا بقي في قائمتي"، أو أن تكتب رسالة لفريق العيادة. للحالات الطارئة اتصل بالرقم ' + em + '.' },
+    HELD: {
+      en: 'Your message has been added to your conversation with {name}. They will see it when they are next at their desk (' + ses + '). If it cannot wait, call ' + ph + '.',
+      ms: 'Mesej anda telah ditambah ke perbualan anda dengan {name}. Mereka akan melihatnya apabila kembali ke meja (' + ses + '). Jika tidak boleh tunggu, hubungi ' + ph + '.',
+      zh: '您的消息已加入您与 {name} 的对话。他们回到岗位时会看到（' + ses + '）。如不能等待，请致电 ' + ph + '。' },
     FOOT: {
       en: 'If you feel worse or something new worries you, call ' + ph + ' or go to the Emergency Department.',
       ms: 'Jika anda rasa bertambah teruk atau ada perkara baharu, hubungi ' + ph + ' atau pergi ke Jabatan Kecemasan.',
-      zh: '若感觉加重或有新的担心，请致电 ' + ph + ' 或前往急诊部。' }
+      zh: '若感觉加重或有新的担心，请致电 ' + ph + ' 或前往急诊部。',
+      ar: 'إذا شعرت بأنك أسوأ أو أقلقك شيء جديد، اتصل على ' + ph + ' أو اذهب إلى قسم الطوارئ.' }
   };
   return (X[kind][lang] || X[kind].en);
 }
@@ -88,9 +111,19 @@ async function secondCheck(text, key) {
     return JSON.parse(j.text);
   } catch (e) { return { verdict: 'unscreened', reason: 'second check error' }; }
 }
+// v2: the model's words go through GUARD.check (app/guard.js). A reply can be shown whole, shown with unsafe-to-verify
+// sentences dropped, or blocked. The caller falls back to a fixed text when nothing is returned.
 async function aiReply(text, history, lang, key, ctx, clinical) {
   if (!aiConfigured()) return { text: '', skipped: 'AI not configured' };
-  try { var j = await aiCall({ mode: 'reply', text: text, history: history, lang: lang, context: ctx || undefined, clinical: clinical ? true : undefined }, key); return { text: typeof j.text === 'string' ? j.text : '', blocked: j.blocked || '', error: j.error || '' }; } catch (e) { return { text: '', error: 'call failed' }; }
+  try {
+    var ctxLine = ctx ? 'procedure: ' + ctx.procedure + '; ' + ctx.phase + '; days ' + (ctx.days >= 0 ? 'until' : 'since') + ' operation: ' + Math.abs(ctx.days) + '; items still pending on their checklist: ' + ctx.pending : '';
+    var r = await AI.chat(text, history, ctxLine, !!clinical, 'chat ' + key);
+    if (!r.text) return { text: '', error: r.error || (r.skipped ? 'AI not configured' : 'model returned nothing') };
+    var out = r.text.replace(/\s+/g, ' ').trim(), g = GUARD.check(out, text);
+    if (g.ok && clinical && !/[?？؟]\s*$/.test(g.text)) g = { ok: false, reason: 'not_a_question' };
+    if (!g.ok) { console.log('[reply] blocked by guard: ' + g.reason); return { text: '', blocked: g.reason }; }
+    return { text: g.text, dropped: g.dropped || 0 };
+  } catch (e) { return { text: '', error: 'call failed' }; }
 }
 
 /* ---------- patients, tasks ---------- */
@@ -146,6 +179,10 @@ function migrate() {
   var d = store.db; d.readings = d.readings || []; d.detections = d.detections || [];
   if (!d.rules.periop) d.rules.periop = P.defaultRules();
   if (!d.settings.maxCasesPerDay) d.settings.maxCasesPerDay = 5;
+  if (!d.settings.emergencyNumber) d.settings.emergencyNumber = '999';
+  if (typeof d.settings.useDraftAnswers !== 'boolean') d.settings.useDraftAnswers = true;
+  d.rules.answerState = d.rules.answerState || {};
+  if (d.rules.periopVersion !== P.RULES_VERSION) { d.rules.periop = P.defaultRules(); d.rules.periopVersion = P.RULES_VERSION; audit('system', 'parameter thresholds updated to rule set v' + P.RULES_VERSION); store.save(); }
   var n = 0; d.patients.forEach(function (pt) { if (pt.demo && P.TKR_SEED[pt.rn] && !d.readings.some(function (r) { return r.pid === pt.id; })) { seedPeriop(pt); n++; } });
   if (n) { audit('system', 'added fictional TKR parameters for ' + n + ' demo patients'); store.save(); }
 }
@@ -277,11 +314,11 @@ async function patientMessage(pt, rawText, via) {
   step(1, 'Receive and mask', masked ? 'raise' : 'pass', masked ? masked + ' identifier(s) masked before storing or sending anywhere' : 'No phone, IC or email found');
   var inMsg = addMsg(pt.id, 'patient', safe, via ? { via: via } : {});
   // 2. fixed red-flag rules
-  var rules = E.classify(safe, { procedure: pt.procedure });
+  var rules = TR.classify(safe, { procedure: pt.procedure });
   var lang = rules.lang || pt.lang || 'en'; if (!T('FOOT', lang) || !LANGS[lang]) lang = 'en';
   var cls = rules.cls, flags = (rules.flags || []).slice(), reason = '';
   var rulesCls = rules.cls;
-  step(2, 'Fixed red-flag rules (written by people, no AI)', (cls === 'EMERGENCY' || cls === 'SAME-DAY') ? 'raise' : 'pass', 'Result: ' + cls + (flags.length ? ' · ' + flags.join('; ') : '') + ' · language detected: ' + lang);
+  step(2, 'Fixed red-flag rules (written by people, no AI)', (cls === 'EMERGENCY' || cls === 'SAME-DAY') ? 'raise' : 'pass', 'Result: ' + cls + (flags.length ? ' · ' + flags.join('; ') : '') + ' · language detected: ' + lang + (rules.changed ? ' · v2 layer: ' + rules.changed + ' (engine alone said ' + rules.engineCls + ')' : ''));
   // 3. clinic extra phrases (can only raise)
   var nt = norm(safe), hitRf = null;
   store.db.rules.redflags.forEach(function (rf) {
@@ -316,29 +353,63 @@ async function patientMessage(pt, rawText, via) {
     finish(cls === 'EMERGENCY' ? 'Fixed emergency text (call 999 / go to the Emergency Department, no promise of a reply)' : 'Fixed same-day text (call the clinic today, not monitored around the clock)', 'pass', 'AI not used for the patient reply', 'Alert ' + (al.count > 1 ? 'merged (x' + al.count + ')' : 'raised') + ' on the Today page and in Alerts; message in the Inbox');
     return;
   }
-  if (pt.threadOpen) { inMsg.needsStaff = true; finish('Silent: a person is handling this patient, so the assistant does not answer', 'pass', '', 'Message goes to the Inbox for the staff member'); return; }
-  var ra = P.recordAnswer(safe, { pt: pt, tasks: store.db.tasks.filter(function (t) { return t.pid === pt.id && !t.auto; }), otMs: otTime(pt.otDate), now: Date.now(), phone: store.db.settings.clinicPhone, doctorOwners: DOCTOR_OWNERS });
-  if (ra) { addMsg(pt.id, 'bot', ra.text, { cls: 'ANSWER', record: true }); finish('Answered from the clinic record (' + ra.kind + '): exact data from this patient\'s own plan, no AI wording, no advice', 'pass', 'Operation ' + P.fmtD(otTime(pt.otDate)), 'Nothing for staff'); return; }
-  if (cls === 'ANSWER') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ANSWER' }); finish('Built-in draft answer (fixed text)', 'pass', '', 'Nothing for staff'); return; }
+  // ---- not urgent from here on ----
+  var S = store.db.settings, now2 = Date.now();
+  function histFor() { return store.db.messages.filter(function (m) { return m.pid === pt.id && (m.who === 'patient' || m.who === 'ai' || m.who === 'bot'); }).slice(-7, -1).map(function (m) { return { role: m.who === 'patient' ? 'user' : 'assistant', content: m.text }; }); }
+  // v2: a staff conversation hands itself back after 24 h without a staff message (before: silent until someone pressed "hand back")
+  var lastStaff = store.db.messages.filter(function (m) { return m.pid === pt.id && m.who === 'staff'; }).slice(-1)[0];
+  if (pt.threadOpen && (!lastStaff || now2 - lastStaff.at > HANDBACK_MS)) { pt.threadOpen = false; audit('system', 'conversation with ' + pt.rn + ' handed back to the assistant after 24 h without a staff message'); }
+  // v2: exact answers from the patient's own record are given even while a person is handling the conversation
+  var ra = P.recordAnswer(safe, { pt: pt, tasks: store.db.tasks.filter(function (t) { return t.pid === pt.id && !t.auto; }), otMs: otTime(pt.otDate), now: now2, phone: S.clinicPhone, doctorOwners: DOCTOR_OWNERS });
+  if (ra) { if (pt.threadOpen) inMsg.needsStaff = true; addMsg(pt.id, 'bot', ra.text, { cls: 'ANSWER', record: true }); finish('Answered from the clinic record (' + ra.kind + '): exact data from this patient\'s own plan, no AI wording, no advice', 'pass', 'Operation ' + P.fmtD(otTime(pt.otDate)), pt.threadOpen ? 'Message also in the Inbox: a person is handling this conversation' : 'Nothing for staff'); return; }
+  if (pt.threadOpen) {
+    inMsg.needsStaff = true;
+    if (now2 - lastStaff.at < LIVE_MS) { finish('Silent: ' + lastStaff.staffName + ' replied in the last 30 minutes, so the assistant stays out of the conversation', 'pass', '', 'Message goes to the Inbox for the staff member'); return; }
+    addMsg(pt.id, 'bot', T('HELD', lang).replace('{name}', lastStaff.staffName || 'the clinic team'), { cls: 'ROUTE' });
+    finish('Receipt only: a person is handling this conversation, so the assistant does not answer but tells the patient the message arrived', 'pass', 'Fixed text, no promise of a reply time', 'Message goes to the Inbox for the staff member'); return;
+  }
   if (cls === 'ACK') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ACK' }); finish('Acknowledgement (fixed text)', 'pass', '', 'Nothing for staff'); return; }
-  // clinic-approved answers written by a doctor
+  // v2: a short thank-you with no question is acknowledged, not sent to the Inbox
+  if (cls === 'ROUTE' && safe.length <= 40 && !/[?？؟]/.test(safe) && /\bthank|\bthanks\b|\btq\b|terima kasih|谢谢|多谢|شكرا/i.test(safe) && !/\bbut\b|tapi|但/i.test(safe)) { addMsg(pt.id, 'bot', { en: 'You are welcome. Message us any time if anything changes.', ms: 'Sama-sama. Hubungi kami bila-bila masa jika ada perubahan.', zh: '不客气。如有变化请随时联系我们。', ar: 'على الرحب والسعة. راسلنا في أي وقت إذا تغيّر شيء.' }[lang] || 'You are welcome.', { cls: 'ACK' }); finish('Thank-you: fixed acknowledgement', 'pass', '', 'Nothing for staff'); return; }
+  if (cls === 'ASK') { inMsg.needsStaff = true; addMsg(pt.id, 'bot', rules.reply, { cls: 'ROUTE' }); finish('Vague "not well" message: fixed question asking what is wrong (pain, wound, breathing, leg swelling, fever)', 'pass', '', 'Message in the Inbox'); return; }
+  var clinical = /clinical judgement|worsening trend/.test(flags.join(' '));
+  // answers a doctor at this clinic wrote
   var faq = store.db.rules.faqs.find(function (f) { return f.keywords.some(function (k) { return k && nt.indexOf(norm(k)) >= 0; }); });
-  var clinical = flags.join(' ').indexOf('clinical judgement') >= 0;
   if (faq && !clinical) { addMsg(pt.id, 'bot', faq.answer, { cls: 'ANSWER', faq: true, approvedBy: faq.addedBy }); finish('Clinic-approved answer by ' + faq.addedBy + ' (shown exactly as written)', 'pass', '', 'Nothing for staff'); return; }
-  // ROUTE: no approved answer. Staff will see it.
-  inMsg.needsStaff = true;
+  // v2: clinic answer library. Keywords first; if none and the AI is on, the model may CHOOSE a text. It never writes one.
+  if (!clinical) {
+    var usable = ANS.TOPICS.filter(answerUsable), how = 'keyword match';
+    var tp = rules.topicHint ? ANS.byId(rules.topicHint) : ANS.match(safe);
+    if (tp && !answerUsable(tp)) tp = null;
+    if (!tp && cls !== 'ANSWER' && secondUsed && usable.length && safe.length > 8) {
+      var picked = await AI.pick(safe, usable.map(function (t) { return t.id + ': ' + t.title; }).join('\n'), usable.map(function (t) { return t.id; }), 'pick ' + pt.rn);
+      if (picked && ANS.byId(picked).re.source !== 'a^') { tp = ANS.byId(picked); how = 'chosen by the AI from the list (the AI did not write the words)'; }
+    }
+    if (tp) {
+      var st = store.db.rules.answerState[tp.id] || {}, approved = st.status === 'approved';
+      var noFoot = tp.owner === 'admin' || tp.owner === 'clinic_coordinator' || tp.id === 'bring' || tp.id === 'shave';
+      addMsg(pt.id, 'bot', ANS.text(tp, lang, S) + (noFoot ? '' : ' ' + T('FOOT', lang)), { cls: 'ANSWER', library: tp.id, draft: !approved, approvedBy: approved ? st.by : '' });
+      if (tp.staff) { inMsg.needsStaff = true; inMsg.forOwner = tp.owner; }
+      finish('Clinic answer "' + tp.title + '" (' + (approved ? 'approved by ' + st.by : 'DRAFT, not yet approved by a doctor') + '), shown exactly as written · ' + how, 'pass', '', tp.staff ? 'Message also in the Inbox for ' + (OWNERS[tp.owner] || tp.owner) : 'Nothing for staff'); return;
+    }
+  }
+  if (cls === 'ANSWER') { addMsg(pt.id, 'bot', rules.reply, { cls: 'ANSWER' }); finish('Built-in draft answer (fixed text)', 'pass', '', 'Nothing for staff'); return; }
+  var greeting = /^(?:hi+|hello+|hey|morning|evening|helo|hai|salam|assalamualaikum|good (?:morning|afternoon|evening)|selamat (?:pagi|petang|malam|tengah hari)|你好|您好|哈[啰喽]|早上好|مرحبا|السلام عليكم|هلا)(?: there| doctor| dr| nurse| doktor)?[\s!.,?]*$/i.test(safe);
+  if (greeting && !secondUsed) { addMsg(pt.id, 'bot', T('HELLO', lang), { cls: 'ACK' }); finish('Greeting: fixed welcome text that says what can be asked', 'pass', 'AI not used', 'Nothing for staff'); return; }
+  // ROUTE: no fixed answer. Staff will see it.
+  inMsg.needsStaff = !greeting;
   if (clinical) {
-    var cai = secondUsed ? await aiReply(safe, store.db.messages.filter(function (m) { return m.pid === pt.id && (m.who === 'patient' || m.who === 'ai' || m.who === 'bot'); }).slice(-7, -1).map(function (m) { return { role: m.who === 'patient' ? 'user' : 'assistant', content: m.text }; }), lang, pt.id, patientCtx(pt), true) : { text: '' };
+    var cai = secondUsed ? await aiReply(safe, histFor(), lang, pt.id, patientCtx(pt), true) : { text: '' };
     if (cai.text) { addMsg(pt.id, 'ai', cai.text + ' ' + (lang === 'en' ? 'I have passed this to the clinic team and a clinician will answer. ' : '') + T('FOOT', lang), { cls: 'ROUTE', clinical: true }); finish('Clinical question: the assistant gives NO advice. It asked one clarifying question and passed the message to a clinician', 'pass', 'Guard: must be a question, no advice or reassurance', 'Inbox item marked clinical question; the answer to the question will help the clinician'); }
     else { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE', clinical: true }); finish('Clinical question: never answered by the assistant, fixed handover text', 'pass', cai.blocked ? 'AI question blocked by the guard: ' + cai.blocked : 'AI not used', 'Inbox item marked clinical question'); }
     return;
   }
-  if (!secondUsed) { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE' }); finish('Fixed handover text', 'pass', 'AI reply not attempted because the second check did not run', 'Message in the Inbox'); return; }
-  var hist = store.db.messages.filter(function (m) { return m.pid === pt.id && (m.who === 'patient' || m.who === 'ai' || m.who === 'bot'); }).slice(-7, -1).map(function (m) { return { role: m.who === 'patient' ? 'user' : 'assistant', content: m.text }; });
-  var ai = await aiReply(safe, hist, lang, pt.id, patientCtx(pt), false);
-  if (ai.text) { addMsg(pt.id, 'ai', ai.text + ' ' + T('FOOT', lang), { cls: 'ROUTE' }); finish('AI-written reply, shown after the output guard accepted it', 'pass', 'Guard: no advice, no reassurance, no diagnosis, no dose, no invented numbers', 'Message also in the Inbox for a person'); }
-  else { addMsg(pt.id, 'bot', T('ROUTE', lang), { cls: 'ROUTE' }); finish('AI reply not used: fixed handover text shown instead', 'warn', ai.blocked ? 'Output guard BLOCKED the model reply: ' + ai.blocked : (ai.error || ai.skipped || 'model returned nothing'), 'Message in the Inbox'); }
+  if (!secondUsed) { addMsg(pt.id, 'bot', T('RECEIPT', lang), { cls: 'ROUTE' }); finish('Fixed receipt text (message saved for the team, no promise of a reply time)', 'pass', 'AI reply not attempted because the second check did not run', 'Message in the Inbox'); return; }
+  var ai = await aiReply(safe, histFor(), lang, pt.id, patientCtx(pt), false);
+  if (ai.text) { addMsg(pt.id, 'ai', ai.text + (greeting ? '' : ' ' + T('FOOT', lang)), { cls: 'ROUTE' }); finish('AI-written reply, shown after the output guard accepted it' + (ai.dropped ? ' (' + ai.dropped + ' sentence(s) the guard could not verify were removed)' : ''), 'pass', 'Guard: no advice, no reassurance, no diagnosis, no dose, no invented numbers, no promise of a reply time', greeting ? 'Nothing for staff' : 'Message also in the Inbox for a person'); }
+  else { addMsg(pt.id, 'bot', T(greeting ? 'HELLO' : 'RECEIPT', lang), { cls: 'ROUTE' }); finish('AI reply not used: fixed text shown instead', 'warn', ai.blocked ? 'Output guard BLOCKED the model reply: ' + ai.blocked : (ai.error || ai.skipped || 'model returned nothing'), greeting ? 'Nothing for staff' : 'Message in the Inbox'); }
 }
+function answerUsable(tp) { var st = (store.db.rules.answerState || {})[tp.id] || {}; if (st.status === 'off') return false; return st.status === 'approved' || !!store.db.settings.useDraftAnswers; }
 
 /* ---------- http helpers ---------- */
 var sessions = new Map();     // sid -> {username, exp}
@@ -372,8 +443,8 @@ async function route(req, res) {
   if (pm) {
     var pt = patientByToken(pm[1]); if (!pt) return send(res, 404, { error: 'unknown_link' });
     if (m === 'GET' && pm[2] === 'messages') {
-      var msgs = store.db.messages.filter(function (x) { return x.pid === pt.id; }).map(function (x) { return { id: x.id, who: x.who, text: x.text, at: x.at, staffName: x.staffName, staffRole: x.staffRole, faq: !!x.faq, approvedBy: x.approvedBy }; });
-      return send(res, 200, { name: pt.name, messages: msgs, threadOpen: !!pt.threadOpen });
+      var msgs = store.db.messages.filter(function (x) { return x.pid === pt.id; }).map(function (x) { return { id: x.id, who: x.who, text: x.text, at: x.at, staffName: x.staffName, staffRole: x.staffRole, faq: !!x.faq, approvedBy: x.approvedBy, library: !!x.library, draft: !!x.draft }; });
+      return send(res, 200, { name: pt.name, messages: msgs, threadOpen: !!pt.threadOpen, emergency: store.db.settings.emergencyNumber || '999', lang: pt.lang, pending: store.db.tasks.filter(function (t) { return t.pid === pt.id && t.state === 'open' && !t.auto && !DOCTOR_OWNERS[t.owner]; }).length });
     }
     if (m === 'POST' && pm[2] === 'message') {
       if (limited('pm-' + pt.id, 20, 5 * 60 * 1000)) return send(res, 429, { error: 'slow_down' });
@@ -511,7 +582,7 @@ async function route(req, res) {
       var ms = store.db.messages.filter(function (x) { return x.pid === pt3.id && x.needsStaff && !x.handled; });
       if (!ms.length) return;
       var worst = ms.reduce(function (a, b) { return urgentRank[b.cls] > urgentRank[a] ? b.cls : a; }, 'ROUTE');
-      items.push({ pid: pt3.id, name: pt3.name, rn: pt3.rn, procLabel: ptView(pt3).procLabel, cls: worst, count: ms.length, last: ms[ms.length - 1].text, at: ms[ms.length - 1].at, unscreened: ms.some(function (x) { return x.unscreened; }), clinical: ms.some(function (x) { return (x.flags || []).join(' ').indexOf('clinical judgement') >= 0; }) });
+      items.push({ pid: pt3.id, name: pt3.name, rn: pt3.rn, procLabel: ptView(pt3).procLabel, cls: worst, count: ms.length, last: ms[ms.length - 1].text, at: ms[ms.length - 1].at, unscreened: ms.some(function (x) { return x.unscreened; }), clinical: ms.some(function (x) { return (x.flags || []).join(' ').indexOf('clinical judgement') >= 0; }), forOwner: (function () { var o = ms.map(function (x) { return x.forOwner; }).filter(Boolean).slice(-1)[0]; return o ? (OWNERS[o] || o) : ''; })() });
     });
     items.sort(function (a, b) { return urgentRank[b.cls] - urgentRank[a.cls] || a.at - b.at; });
     return send(res, 200, items);
@@ -556,12 +627,24 @@ async function route(req, res) {
     audit(user.username, 'applied pathway to ' + tgt.rn + ' (+' + added + ')'); store.save(); return send(res, 200, { added: added });
   }
 
+  // ---- clinic answer library (v2): everyone can read; a doctor approves, switches off or puts back to draft ----
+  if (m === 'GET' && p === '/api/answers') return send(res, 200, { useDrafts: !!store.db.settings.useDraftAnswers, topics: ANS.TOPICS.map(function (t) { var st = store.db.rules.answerState[t.id] || {}; return { id: t.id, title: t.title, owner: OWNERS[t.owner] || t.owner, staff: !!t.staff, status: st.status || 'draft', by: st.by || '', at: st.at || 0, text: ANS.text(t, 'en', store.db.settings) }; }) });
+  var anm = p.match(/^\/api\/answers\/([a-z_]+)\/(approve|off|draft)$/);
+  if (m === 'POST' && anm) {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    if (!ANS.byId(anm[1])) return send(res, 404, { error: 'not_found' });
+    store.db.rules.answerState[anm[1]] = { status: anm[2] === 'approve' ? 'approved' : anm[2], by: user.name, at: Date.now() };
+    audit(user.username, 'answer "' + anm[1] + '" set to ' + anm[2]); store.save(); return send(res, 200, { ok: true });
+  }
+
   // ---- settings, users, AI ----
   if (m === 'POST' && p === '/api/settings') {
     if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
     ['clinicPhone', 'sessionsText'].forEach(function (k) { if (typeof body[k] === 'string' && body[k].trim()) store.db.settings[k] = body[k].trim().slice(0, 160); });
     if (body.maxCasesPerDay !== undefined) { var mc = Math.round(Number(body.maxCasesPerDay)); if (!(mc >= 1 && mc <= 50)) return send(res, 400, { error: 'max', message: 'Cases per day: 1 to 50.' }); store.db.settings.maxCasesPerDay = mc; }
     if (typeof body.demoBanner === 'boolean') store.db.settings.demoBanner = body.demoBanner;
+    if (body.emergencyNumber !== undefined) { var en = String(body.emergencyNumber).trim(); if (!/^\d{3,6}$/.test(en)) return send(res, 400, { error: 'emergency', message: 'Emergency number: 3 to 6 digits (for example 999, or 998 for an ambulance in the UAE).' }); store.db.settings.emergencyNumber = en; }
+    if (typeof body.useDraftAnswers === 'boolean') store.db.settings.useDraftAnswers = body.useDraftAnswers;
     audit(user.username, 'edited settings'); store.save(); return send(res, 200, { ok: true });
   }
   if (m === 'GET' && p === '/api/users') { if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' }); return send(res, 200, store.db.users.map(function (x) { return { username: x.username, name: x.name, role: x.role }; })); }
@@ -581,7 +664,7 @@ async function route(req, res) {
     if (!aiConfigured()) return send(res, 200, { ok: false, message: 'No AI provider is set on the server (PROVIDER_BASE_URL and PROVIDER_KEY). The system works without it, using rules only.' });
     var s1 = await secondCheck('my leg feels strange and tight since this morning', 'test');
     var r1 = await aiReply('hello', [], 'en', 'test');
-    return send(res, 200, { ok: s1.verdict !== 'unscreened', secondCheck: s1.verdict, reply: r1 || '(blocked by the output guard or unavailable: the fixed message would be used)' });
+    return send(res, 200, { ok: s1.verdict !== 'unscreened', secondCheck: s1.verdict, reply: r1.text || '(blocked by the output guard or unavailable: the fixed message would be used)' });
   }
   if (m === 'GET' && p === '/api/audit') { if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' }); return send(res, 200, store.db.audit.slice(-200).reverse()); }
   return send(res, 404, { error: 'not_found' });

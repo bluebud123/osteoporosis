@@ -1,0 +1,12 @@
+// Stand-in model for browser tests (no real provider is reachable from this sandbox). NOT a measure of a real model.
+var http=require('http');
+http.createServer(function(q,r){var b='';q.on('data',function(c){b+=c});q.on('end',function(){var j=JSON.parse(b),sys=j.messages[0].content,last=j.messages[j.messages.length-1].content,pm=(last.match(/<msg>([\s\S]*)<\/msg>/)||[,last])[1],c;
+ if(/triage second-check/.test(sys))c=JSON.stringify({verdict:/strange|funny feeling|not right|pelik/i.test(pm)?'urgent':'routine',reason:/strange|funny|not right|pelik/i.test(pm)?'new unexplained symptom':'ordinary message'});
+ else if(/match a patient message to a clinic answer/.test(sys))c=JSON.stringify({topic:/son|daughter|pick me up|fetch/i.test(pm)?'stay':/pillow|clothes|slippers/i.test(pm)?'bring':'none'});
+ else if(/only a clinician can answer/.test(sys))c='Thanks for asking about that. When did you last take it?';
+ else if(/staff-only profile/.test(sys))c='Summary: recovering after knee replacement, asks practical questions.\nCommunication: short messages in English.\nApproach: give dates and next steps plainly.';
+ else if(/ONE suggested reply/.test(sys))c='Hello, thank you for your message. I have seen your readings and would like to review you today. Please call the clinic so we can arrange it.';
+ else if(/unsafe/i.test(pm))c="That is completely normal after surgery, don't worry.";
+ else if(/^(hi|hello|good morning)/i.test(pm.trim()))c='Hello! How can I help you today?';
+ else c="Thanks for telling me. I've passed your message to the clinic team. Is there anything else you would like to ask?";
+ r.writeHead(200,{'content-type':'application/json'});r.end(JSON.stringify({choices:[{message:{content:c}}]}))})}).listen(9777);

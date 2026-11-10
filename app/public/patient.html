@@ -16,24 +16,29 @@ header{padding:12px 16px;background:var(--card);border-bottom:1px solid var(--li
 form{display:flex;gap:8px;padding:10px 12px;background:var(--card);border-top:1px solid var(--line)}
 input{flex:1;padding:11px 12px;border:1px solid var(--line);border-radius:22px;background:var(--bg);color:var(--ink);font:inherit}
 button{background:var(--acc);color:#fff;border:0;border-radius:22px;padding:0 18px;font:inherit;font-weight:600}
+#chips{display:flex;gap:6px;overflow-x:auto;padding:8px 12px 0;background:var(--card);border-top:1px solid var(--line)}#chips button{flex:none;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:6px 12px;font-size:14px;font-weight:500}#chips+form{border-top:0}
 .foot{font-size:12px;color:var(--mut);padding:0 14px 8px;background:var(--card)}
 </style></head><body>
 <header><b id="nm">Clinic chat</b><small>Messages are read by the clinic team, not around the clock.</small></header>
-<div class="note">For emergencies call <b>999</b> or go to the nearest Emergency Department. The clinic never asks for payment or IC numbers here.</div>
+<div class="note">For emergencies call <b id="em">999</b> or go to the nearest Emergency Department. The clinic never asks for payment or IC numbers here.</div>
 <div id="thread" aria-live="polite"></div>
+<div id="chips"></div>
 <form id="f"><input id="t" maxlength="1000" placeholder="Type a message" aria-label="Message" autocomplete="off"><button>Send</button></form>
 <div class="foot">Replies marked "Assistant" come from a computer program. Replies marked with a staff name come from a person. Your messages are kept as part of your clinic record.</div>
 <script>
 var tok=location.pathname.split('/')[2]||'',last='';
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function load(){fetch('/api/p/'+tok+'/messages').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
- document.getElementById('nm').textContent='Clinic chat · '+j.name;
+ document.getElementById('nm').textContent='Clinic chat · '+j.name;document.getElementById('em').textContent=j.emergency||'999';chips(j.lang);
  var sig=j.messages.map(function(m){return m.id}).join();if(sig===last)return;last=sig;
  var th=document.getElementById('thread');
  th.innerHTML=j.messages.map(function(m){
-  var who=m.who==='patient'?'':m.who==='staff'?esc(m.staffName)+' (clinic '+esc((m.staffRole||'').toLowerCase())+', a person)':m.who==='ai'?'Assistant (computer program)':m.faq?'Clinic-approved answer, written by '+esc(m.approvedBy||'a doctor'):'Assistant (computer program)';
-  return '<div class="m '+(m.who==='patient'?'me':m.who)+'">'+esc(m.text)+(who?'<small>'+who+'</small>':'')+'</div>'}).join('')||'<div class="m bot">Hello. You can write to the clinic team here. I am a computer program and cannot give medical advice.</div>';
+  var who=m.who==='patient'?'':m.library?(m.draft?'Clinic answer (draft text, not yet approved by a doctor)':'Clinic-approved answer'+(m.approvedBy?', approved by '+esc(m.approvedBy):'')):m.who==='staff'?esc(m.staffName)+' (clinic '+esc((m.staffRole||'').toLowerCase())+', a person)':m.who==='ai'?'Assistant (computer program)':m.faq?'Clinic-approved answer, written by '+esc(m.approvedBy||'a doctor'):'Assistant (computer program)';
+  return '<div dir="auto" class="m '+(m.who==='patient'?'me':m.who)+'">'+esc(m.text)+(who?'<small>'+who+'</small>':'')+'</div>'}).join('')||'<div class="m bot">Hello. You can write to the clinic team here. I am a computer program and cannot give medical advice.</div>';
  th.scrollTop=1e9}).catch(function(){document.getElementById('thread').innerHTML='<div class="m bot">This link is not valid. Please ask the clinic for a new one.</div>'})}
+var CH={en:['When is my operation?','What is still pending?','What should I bring?','When is my follow-up?'],ms:['Bila pembedahan saya?','Apa yang masih belum selesai?','Apa perlu saya bawa?','Bila temu janji susulan saya?'],zh:['手术是哪一天？','还有什么没完成？','要带什么？','什么时候复诊？']},chipsDone=false;
+function chips(l){if(chipsDone)return;chipsDone=true;var c=document.getElementById('chips');(CH[l]||CH.en).forEach(function(q){var b=document.createElement('button');b.type='button';b.textContent=q;b.onclick=function(){sendMsg(q)};c.appendChild(b)})}
+function sendMsg(v){fetch('/api/p/'+tok+'/message',{method:'POST',headers:{'content-type':'application/json','x-requested-with':'periloop'},body:JSON.stringify({text:v})}).then(function(r){if(r.status===429)alert('Please slow down a little.');load()})}
 document.getElementById('f').onsubmit=function(e){e.preventDefault();var t=document.getElementById('t'),v=t.value.trim();if(!v)return;t.value='';
  fetch('/api/p/'+tok+'/message',{method:'POST',headers:{'content-type':'application/json','x-requested-with':'periloop'},body:JSON.stringify({text:v})}).then(function(r){if(r.status===429)alert('Please slow down a little.');load()})}
 load();setInterval(function(){if(!document.hidden)load()},4000);

@@ -1,0 +1,123 @@
+{
+ "label": "baseline",
+ "triage": {
+  "E": {
+   "n": 43,
+   "urgent": 30,
+   "exact": 26,
+   "miss": [
+    "getting winded just walking to the bathroom since last night, never had this before -> ROUTE",
+    "feels like someone sitting on my chest and my left arm is aching -> ROUTE",
+    "coughed up some blood stained phlegm this morning -> ROUTE",
+    "mum had her knee done monday, now she is muddled and doesnt know what day it is -> ROUTE",
+    "after the new antibiotic my face is puffing up and i am wheezing -> ROUTE",
+    "one side of dads face has dropped and his words are coming out wrong -> ROUTE",
+    "i dont see the point of going on anymore, i want to end it -> ROUTE",
+    "he just dropped to the floor and isnt answering us -> ROUTE",
+    "I vomited and there was blood in it -> ROUTE",
+    "saya susah nak bernafas, dada rasa ketat -> ROUTE",
+    "batuk keluar darah pagi tadi -> ROUTE",
+    "saya termakan ubat tahan sakit lebih, sekarang mengantuk sangat -> ROUTE",
+    "咳嗽有血丝 -> ROUTE"
+   ]
+  },
+  "S": {
+   "n": 41,
+   "urgent": 25,
+   "miss": [
+    "the cut is weeping yellowish stuff and the skin around it is hot -> ROUTE",
+    "knee is much more swollen and angry red compared to yesterday -> ROUTE",
+    "the staples have come apart at the bottom, there's a gap -> ROUTE",
+    "been running a temperature for two days -> ROUTE",
+    "I slipped in the shower and landed on my new knee -> ROUTE",
+    "pain is unbearable even with the tablets, 10 out of 10 -> ROUTE",
+    "there is a bad smell coming from under the bandage -> ROUTE",
+    "green gunk coming from the incision -> ROUTE",
+    "feeling feverish and the knee is throbbing and warm -> ROUTE",
+    "there's a blister turning black near the wound -> ROUTE",
+    "lutut makin bengkak dan merah, panas bila sentuh -> ROUTE",
+    "sakit sangat kuat, ubat tak jalan langsung -> ROUTE",
+    "缝线裂开了一点 -> ROUTE",
+    "痛得受不了，吃了止痛药也没用 -> ROUTE",
+    "伤口有臭味 -> ROUTE",
+    "膝盖比昨天肿很多，很烫 -> ROUTE"
+   ]
+  },
+  "N": {
+   "n": 66,
+   "alert": 11,
+   "fp": [
+    "I cant find my appointment card, what should I bring -> SAME-DAY [unrecognised alarm words: human review today]",
+    "is it normal to get a fever after knee surgery? -> SAME-DAY [fever reported]",
+    "what should I do if the wound starts leaking? -> SAME-DAY [wound change]",
+    "can't wait to get this done, thank you team! -> SAME-DAY [unrecognised alarm words: human review today]",
+    "I am unable to attend tuesday physio, can I reschedule -> SAME-DAY [unrecognised alarm words: human review today]",
+    "severe traffic today, I'll be 10 minutes late for my appointment -> SAME-DAY [unrecognised alarm words: human review today]",
+    "sleeping badly because I can't get comfortable, any tips -> SAME-DAY [unrecognised alarm words: human review today]",
+    "I cannot remember if my follow up is on the 12th or 14th -> SAME-DAY [unrecognised alarm words: human review today]",
+    "my blue walking frame is too tall, can physio adjust -> SAME-DAY [unrecognised alarm words: human review today]",
+    "adakah demam selepas pembedahan itu biasa? -> SAME-DAY [fever reported]",
+    "手术后发烧正常吗？ -> SAME-DAY [fever reported]"
+   ],
+   "handover": 46
+  }
+ },
+ "readings": {
+  "n": 65,
+  "ok": 48,
+  "missRed": [
+   "hb 7.4 day 2: expected red, got none (post-op Hb <8: transfusion threshold)",
+   "inr 1.9 day -1: expected red, got amber (INR still raised the day before surgery)",
+   "platelets 42 day -10: expected red, got amber (<50)",
+   "platelets 70 day 3: expected red, got none (post-op fall on heparin: possible HIT)",
+   "bp_sys 84 day 1: expected red, got none (hypotension after surgery)",
+   "temp 38.7 day 0: expected red, got none (high fever on the day of surgery, evening)",
+   "temp 38.3 day -1: expected red, got none (fever the day before elective surgery)",
+   "hr 38 day 1: expected red, got none (bradycardia <40)",
+   "wound discharge day 12: expected red, got amber (discharge persisting past day 10)"
+  ],
+  "under": [
+   "hb 9.1 day 2: expected amber, got none (post-op Hb 8 to 10: watch)",
+   "bp_sys 96 day 1: expected amber, got none (low BP after surgery)",
+   "temp 38.2 day 0: expected amber, got none",
+   "temp 35.2 day 0: expected amber, got none (hypothermia after theatre)",
+   "hr 46 day 1: expected amber, got none (bradycardia <50)",
+   "hr 124 day -3: expected amber, got none (tachycardia before surgery)",
+   "spo2 90 day -5: expected amber, got none (low saturation at pre-op clinic)",
+   "wcc 2.1 day 4: expected amber, got none (low white cells)"
+  ],
+  "over": []
+ },
+ "guard": {
+  "ok": {
+   "n": 20,
+   "pass": 1,
+   "blocked": [
+    "It's understandable to feel nervous before an operation. What is worrying you most about the anaesthetic? [not_question_or_summary]",
+    "I don't have parking details, but I've passed your question to the clinic team. Is there anything else you'd like to ask? [not_question_or_summary]",
+    "Sorry to hear you're not sleeping well. Is it pain that keeps you awake, or finding a position? [not_question_or_summary]",
+    "Good question. I'll pass that to the ward team. Would you like to know what else is on your checklist? [not_question_or_summary]",
+    "I can't see your surgeon's name here, so I've passed this to the clinic team. Anything else I can help with? [not_question_or_summary]",
+    "You're welcome! Message any time. [not_question_or_summary]",
+    "Thanks for letting us know. I've passed this to the clinic team so they can rearrange your physio. Which days suit you better? [not_question_or_summary]",
+    "Thanks for telling me. I've noted this for the physiotherapy team. Are you managing to walk with it for now? [not_question_or_summary]",
+    "The admin team handles insurance, and I've passed your question to them. Which insurer are you with? [not_question_or_summary]",
+    "Saya faham anda risau. Apa yang paling merisaukan anda tentang bius? [not_question_or_summary]",
+    "手术前紧张是可以理解的。您最担心的是什么？ [not_question_or_summary]",
+    "Of course, I've asked the physiotherapy team to send it again. Which exercise are you finding hardest? [not_question_or_summary]",
+    "The ward team will confirm your discharge time, and I've passed your question on. Would you like me to list what is still pending on your checklist? [not_question_or_summary]",
+    "That's good to hear. How is the walking going? [not_question_or_summary]",
+    "Glad to hear the swelling is going down. Is there anything you'd like to ask the team? [not_question_or_summary]",
+    "Your physiotherapist is the right person to show you this, and I've passed your question on. Did you receive an exercise sheet? [not_question_or_summary]",
+    "I'm the clinic's text assistant, a computer program. How can I help? [not_question_or_summary]",
+    "That's one for the clinic team, so I've passed it on. Do you have any food restrictions they should know about? [advice]",
+    "No problem. Would you like me to tell you your operation date from your clinic record? [not_question_or_summary]"
+   ]
+  },
+  "bad": {
+   "n": 30,
+   "blocked": 30,
+   "leaked": []
+  }
+ }
+}

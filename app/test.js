@@ -14,6 +14,9 @@ var mock = http.createServer(function (q, r) { var b = ''; q.on('data', function
   else if (/only a clinician can answer/.test(sys)) c = 'Thanks for asking. When did this start?';
   else if (/staff-only profile/.test(sys)) c = 'Summary: asks routine questions.\nCommunication: brief.\nApproach: be clear.';
   else if (/ONE suggested reply/.test(sys)) c = 'Hello, thank you for your message. Dr will review and call you.';
+  else if (/match a patient message to a clinic answer/.test(sys)) c = JSON.stringify({ topic: /PICKSTAY/.test(last) ? 'stay' : /PICKBOGUS/.test(last) ? 'made_up_topic' : 'none' });
+  else if (/PROMISEREPLY/.test(last)) c = 'Thanks for your message. The nurse will call you within the hour.';
+  else if (/TRIMREPLY/.test(last)) c = "I've passed this on. In the meantime keep your leg raised.";
   else if (/BADREPLY/.test(last)) c = "That is completely normal, don't worry.";
   else c = 'Hello! I can pass a message to your care team or share ward information, like showering or follow-up. What would you like to ask?';
   r.writeHead(200, { 'content-type': 'application/json' }); r.end(JSON.stringify({ choices: [{ message: { content: c } }] })); }); });
@@ -175,11 +178,80 @@ mock.listen(9199, async function () {
   ok(lab.length >= 3 && dd.json.options.some(function (o) { return /blood thinner/.test(o.text) && /rivaroxaban/.test(o.text); }) && dd.json.options.some(function (o) { return /sugar control/.test(o.text); }), 'reply options use the patient comorbidities (blood thinner, diabetes)', lab);
   ok(dd.json.options.every(function (o) { return !/stop taking|you can stop|it is normal|do not worry/i.test(o.text); }), 'no option tells the patient to stop a medicine or reassures about symptoms');
 
+  // ================= v2: measured rule changes (see docs/decision-log.md) =================
+  var a3 = await P('/api/patients', { name: 'Vee Two', rn: 'V2TEST01', procedure: 'TKR', otDate: new Date(Date.now() - 4 * 864e5).toISOString().slice(0, 10), lang: 'en' }, nur);
+  var p3 = a3.json.id;
+  async function say3(t) { await P('/api/live/send', { pid: p3, text: t }, doc); var d = (await G('/api/patients/' + p3, doc)).json; var pm = d.messages.filter(function (m) { return m.who === 'patient'; }).slice(-1)[0]; var idx = d.messages.indexOf(pm); return { cls: pm.cls, needsStaff: !!pm.needsStaff, reply: d.messages[idx + 1] || null, alerts: d.alerts.length, open: d.patient.threadOpen, msg: pm }; }
+  var v1 = await say3('I cant find my appointment card, what should I bring');
+  ok(v1.cls !== 'SAME-DAY' && v1.alerts === 0 && v1.reply && /passport/.test(v1.reply.text) && v1.reply.draft === true, 'v2: "I cant find my appointment card" is not a same-day alert and gets the (draft) what-to-bring answer', v1);
+  var v2 = await say3('is it normal to get a fever after knee surgery?');
+  ok(v2.cls === 'ROUTE' && v2.alerts === 0 && /38\.0/.test(v2.reply.text) && v2.needsStaff, 'v2: a general question about fever is answered from the library and goes to the Inbox, with no alert', v2);
+  var v3 = await say3('I have a fever, is that normal?');
+  ok(v3.cls === 'SAME-DAY' && v3.alerts === 1, 'v2: "I have a fever, is that normal?" is still a same-day alert', v3);
+  var v4 = await say3('coughed up some blood stained phlegm this morning');
+  ok(v4.cls === 'EMERGENCY' && /999/.test(v4.reply.text), 'v2: "coughed up blood stained phlegm" is an emergency (the engine alone said ROUTE)', v4);
+  var v5 = await say3('the staples have come apart at the bottom, there is a gap');
+  ok(v5.cls === 'SAME-DAY', 'v2: staples coming apart is a same-day alert (the engine alone said ROUTE)', v5.cls);
+  var v6 = await say3('thank you nurse');
+  ok(v6.reply && v6.reply.cls === 'ACK' && !v6.needsStaff, 'v2: a thank-you is acknowledged and does not go to the Inbox', v6);
+  var v6b = await say3('I am scared about the operation');
+  ok(v6b.cls === 'ROUTE' && v6b.alerts === 2 && /nervous/.test(v6b.reply.text), 'v2: "scared" is not read as scar + red (no wound alert); the patient gets the feeling-nervous answer', v6b);
+  // emergency number is a setting
+  ok((await P('/api/settings', { emergencyNumber: '998' }, nur)).status === 403, 'v2: nurse cannot change the emergency number');
+  ok((await P('/api/settings', { emergencyNumber: 'call me' }, doc)).status === 400, 'v2: a non-numeric emergency number is refused');
+  await P('/api/settings', { emergencyNumber: '998' }, doc);
+  var v7 = await say3('my husband is gasping and his lips look bluish');
+  ok(v7.cls === 'EMERGENCY' && /998/.test(v7.reply.text) && !/999/.test(v7.reply.text), 'v2: the emergency text uses the number from Settings (998)', v7.reply);
+  await P('/api/settings', { emergencyNumber: '999' }, doc);
+  // answer library: doctor approves or switches off; the model may only choose
+  ok((await P('/api/answers/bring/approve', {}, nur)).status === 403, 'v2: nurse cannot approve a clinic answer');
+  await P('/api/answers/bring/approve', {}, doc);
+  var v8 = await say3('what should I bring to hospital');
+  ok(v8.reply.draft === false && v8.reply.approvedBy === 'Dr Demo', 'v2: an approved answer is no longer labelled a draft', v8.reply);
+  await P('/api/answers/bring/off', {}, doc);
+  var v9 = await say3('what should I bring to hospital');
+  ok(!v9.reply.library && v9.needsStaff, 'v2: a switched-off answer is not shown; the message goes to the Inbox', v9.reply);
+  await P('/api/settings', { useDraftAnswers: false }, doc);
+  var v10 = await say3('do I need to stop eating before surgery, what about fasting');
+  ok(!v10.reply.library, 'v2: with "use draft answers" off, an unapproved draft is never shown', v10.reply);
+  await P('/api/settings', { useDraftAnswers: true }, doc);
+  var v11 = await say3('PICKSTAY my son wants to know the plan');
+  ok(v11.reply.library === 'stay' && /Most people stay/.test(v11.reply.text), 'v2: the AI may CHOOSE a clinic answer; the patient sees the fixed text, not model wording', v11.reply);
+  var v12 = await say3('PICKBOGUS tell me something');
+  ok(!v12.reply.library, 'v2: a topic id the model invents is ignored', v12.reply);
+  // chat guard
+  var v13 = await say3('TRIMREPLY the frame is a bit wobbly');
+  ok(v13.reply.who === 'bot' && !/keep your leg raised/.test(v13.reply.text) && /instruction/.test(JSON.stringify(v13.msg.trace)), 'v2: a model reply containing an instruction ("keep your leg raised") is blocked; fixed receipt shown', v13.reply);
+  var v14 = await say3('PROMISEREPLY nobody has replied to me');
+  ok(v14.reply.who === 'bot' && !/within the hour/.test(v14.reply.text) && /promise_of_time/.test(JSON.stringify(v14.msg.trace)), 'v2: a model promise of when staff will call is blocked; fixed receipt shown', v14.reply);
+  // staff conversation: receipt instead of silence, record answers still work, automatic hand-back
+  await P('/api/patients/' + p3 + '/reply', { text: 'Hello, this is Dr Demo. I have read your messages.' }, doc);
+  var before = (await G('/api/patients/' + p3, doc)).json.messages.length;
+  var v15 = await say3('ok doctor, one more thing about my son');
+  ok((await G('/api/patients/' + p3, doc)).json.messages.length === before + 1 && v15.needsStaff, 'v2: while staff replied in the last 30 minutes the assistant stays silent', v15);
+  var v16 = await say3('when is my operation?');
+  ok(v16.reply && v16.reply.record && v16.needsStaff, 'v2: an exact answer from the record is still given while a person handles the conversation', v16.reply);
+  S.store.db.messages.forEach(function (m) { if (m.pid === p3 && m.who === 'staff') m.at = Date.now() - 2 * 3600 * 1000; });
+  var v17 = await say3('my son will bring the forms');
+  ok(v17.reply && /conversation with Dr Demo/.test(v17.reply.text) && v17.open, 'v2: after 30 minutes the patient gets a receipt naming the staff member, not silence', v17.reply);
+  S.store.db.messages.forEach(function (m) { if (m.pid === p3 && m.who === 'staff') m.at = Date.now() - 25 * 3600 * 1000; });
+  var v18 = await say3('good morning');
+  ok(v18.open === false && v18.reply && v18.reply.who === 'ai', 'v2: a conversation with no staff message for 24 h hands itself back to the assistant', v18);
+  // thresholds v2 (patient is on day 4 after surgery)
+  var t1 = await P('/api/patients/' + p3 + '/readings', { param: 'hb', value: 7.4 }, nur); ok(t1.json.hits[0] && t1.json.hits[0].level === 'red', 'v2: haemoglobin 7.4 after surgery is red (before: no rule after surgery)', t1.json.hits);
+  var t2 = await P('/api/patients/' + p3 + '/readings', { param: 'bp_sys', value: 84 }, nur); ok(t2.json.hits[0] && t2.json.hits[0].level === 'red', 'v2: systolic BP 84 is red (before: no low-BP rule)', t2.json.hits);
+  var t3 = await P('/api/patients/' + p3 + '/readings', { param: 'hr', value: 38 }, nur); ok(t3.json.hits[0] && t3.json.hits[0].level === 'red', 'v2: heart rate 38 is red (before: no slow-heart rule)', t3.json.hits);
+  var t4 = await P('/api/patients/' + pid + '/readings', { param: 'spo2', value: 90 }, nur); ok(t4.json.hits[0] && t4.json.hits[0].level === 'amber', 'v2: oxygen saturation 90% before surgery is amber (before: post-op only)', t4.json.hits);
+  var GD = require('./guard.js');
+  ok(!GD.check('Thanks for the update, your wound sounds fine.', 'wound update').ok, 'v2 guard: "your wound sounds fine" is blocked (the original guard let it through)');
+  ok(!GD.check('Stop eating from midnight before your operation.', 'do i need to stop eating').ok, 'v2 guard: an instruction built from the patient\'s own words is blocked (the original guard let it through)');
+  ok(GD.check("Thanks for telling me. I've noted this for the physiotherapy team. Are you managing to walk with it for now?", 'my blue walking frame is too tall').ok, 'v2 guard: a plain reception-style reply is allowed');
+
   // ---- persistence ----
   srv.close(); delete require.cache[require.resolve('./server.js')]; delete require.cache[require.resolve('./store.js')];
   var S2 = require('./server.js'), srv2 = S2.createServer(); await new Promise(function (r) { srv2.listen(0, r); });
   var port2 = srv2.address().port, c2 = (await call(port2, 'POST', '/api/login', { username: 'doctor', password: 'doctor-demo-1' })).cookie;
-  var pts = (await call(port2, 'GET', '/api/patients', null, c2)).json; ok(pts.length === 32, 'data survives a restart (30 demo + 2 added)', pts.length);
+  var pts = (await call(port2, 'GET', '/api/patients', null, c2)).json; ok(pts.length === 33, 'data survives a restart (30 demo + 3 added)', pts.length);   // v2 tests add one more patient (V2TEST01)
   ok((await call(port2, 'GET', '/healthz')).status === 200, 'health check');
   srv2.close(); mock.close();
   console.log('\n' + pass + ' passed, ' + fail + ' failed'); process.exit(fail ? 1 : 0);
