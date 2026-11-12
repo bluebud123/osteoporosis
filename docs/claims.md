@@ -1,3 +1,5 @@
+> **Read this first (12 Nov 2026).** This claim check covers the OLD single-page prototype (`index.html`) and the documents written for it on 8 Nov 2026. It does not cover the Console in `app/`, the current `README.md`, `docs/solution-brief.md` or `docs/video-script.md`. For the Console, the evidence and its limits are in `docs/decision-log.md`.
+
 # PeriLoop submission docs: claim check (final build, 2026-11-08)
 
 Every factual sentence in brief.md, README.md and video_script.md, with the evidence it rests on and its status.
