@@ -40,7 +40,7 @@ Menu names on Railway may differ slightly from these. Deploy the branch **`demo`
 
 ### Create the service
 1. railway.com: sign in with GitHub, choose the Hobby plan.
-2. New Project, then "Deploy from GitHub repo", pick `bluebud123/osteoporosis`.
+2. New Project, then "Deploy from GitHub repo", pick `bluebud123/periloop-console`.
 3. In the service's Settings: set the branch to `demo`. The start command is taken from `package.json` (`node app/server.js`); there is no build step. Pick the region closest to the judges that Railway offers.
 4. Attach a volume to the service with the mount path `/data`.
 5. In Settings, Networking: "Generate Domain". That https link is your deployment link.

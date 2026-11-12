@@ -11,7 +11,7 @@ This is a plan, not an order. If you find a step is wrong or a better route exis
 
 ## Where things are
 
-- Repo `bluebud123/osteoporosis`, branch `periloop-v3-review-fixes`. Work only on this branch.
+- Repo `bluebud123/periloop-console`, branch `periloop-v3-review-fixes`. Work only on this branch.
 - Read first, in this order: `docs/clinician-todo.md`, `docs/decision-log.md` (v3 to v3.7), `docs/solution-brief.md`, `docs/video-script.md`, `docs/DEPLOY.md`.
 - His PC: `D:\AIS_AI_EXPORT\abu dhabi 2026\osteoporosis`, Windows, PowerShell. `start-periloop.bat` starts the Console on port 8090 with DeepSeek on. `run-model-eval.bat` runs the real-model evaluation. Neither .bat has been confirmed working by him yet; ask.
 - The browser inside the Claude desktop app can open `http://localhost:8090` on his PC when the session is linked. The Chrome extension did not connect.
