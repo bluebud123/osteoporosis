@@ -279,3 +279,7 @@ What it shows:
 5. Limits as before: invented messages, AI labels, sets the rules were tuned on, one model.
 
 Changed: `docs/solution-brief.md`, `README.md` and `docs/video-script.md` now quote this run. `run_model_eval.js` now records the reason the AI check gave when it was unavailable, so a later run can say why. No server behaviour changed.
+
+## v3.11 (12 Nov 2026): labelling page ignored new settings
+
+Reported by Dr Tan: after changing the language ticks or the number of messages, the page still showed the first 150 mixed English and Malay messages. Cause: a session saved in the browser under the same initials was resumed silently, and the settings were ignored. Fix in `app/eval/label.html`: the button now reads "Continue saved session", the note says the settings are ignored when continuing, and a second button starts a new session with the settings on the page (after a confirmation, because it deletes the saved labels). Starting with no language ticked is refused. Checked in a browser: English only, 0 = all, gives 368 messages, all English.

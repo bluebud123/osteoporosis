@@ -23,7 +23,8 @@ progress{width:100%;height:10px}kbd{background:#eef1f4;border:1px solid #d5dae0;
   <p class="mut">Label from the words alone. Do not open the Console or the rules while labelling. If two people label, do it separately and do not discuss until both have exported.</p>
   <div class="row" style="margin-top:12px"><label>Your initials <input type="text" id="who" maxlength="8" autocomplete="off"></label>
   <label>Languages you read: <label><input type="checkbox" class="lg" value="en" checked> English</label> <label><input type="checkbox" class="lg" value="ms" checked> Malay</label> <label><input type="checkbox" class="lg" value="zh"> Chinese</label> <label><input type="checkbox" class="lg" value="ar"> Arabic</label></label></div>
-  <div class="row" style="margin-top:12px"><label>How many messages (0 = all) <input type="text" id="cap" value="150" inputmode="numeric"></label><button class="r" id="go">Start</button><span id="resume" class="mut"></span></div>
+  <div class="row" style="margin-top:12px"><label>How many messages (0 = all) <input type="text" id="cap" value="150" inputmode="numeric"></label><button class="r" id="go">Start</button><button id="fresh" class="hide">Start a new session (deletes the saved labels)</button></div>
+  <p class="mut" id="resume"></p>
   <p class="mut hide" id="static">Opened as a file, not from the server: choose the pool file (make it with <code>node app/eval/pool.js &gt; pool.json</code>). <input type="file" id="pf" accept=".json"></p>
   <p class="mut" id="err"></p>
 </div>
@@ -43,7 +44,8 @@ var $=function(s){return document.querySelector(s)},POOL=null,ORDER=[],I=0,LAB={
 function save(){try{localStorage.setItem(KEY,JSON.stringify({who:WHO,order:ORDER,i:I,lab:LAB,started:STARTED}))}catch(e){}}
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
 var STARTED=0,saved=load();
-if(saved&&saved.order&&saved.order.length){$('#resume').textContent='A session by "'+saved.who+'" with '+Object.keys(saved.lab).length+' labels is saved in this browser; Start will continue it.';$('#who').value=saved.who||''}
+if(saved&&saved.order&&saved.order.length){$('#resume').textContent='A session by "'+saved.who+'" ('+saved.order.length+' messages, '+Object.keys(saved.lab).length+' labelled) is saved in this browser. "Continue" carries on with the same messages and ignores the language and number settings above. To use new settings, press "Start a new session".';$('#who').value=saved.who||'';$('#go').textContent='Continue saved session';$('#fresh').classList.remove('hide')}
+$('#fresh').addEventListener('click',function(){if(!confirm('Delete the '+Object.keys(saved.lab).length+' saved labels and start again with the settings on this page?'))return;try{localStorage.removeItem(KEY)}catch(e){}saved=null;$('#go').click()});
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function getPool(){return fetch('/api/eval/pool',{credentials:'same-origin'}).then(function(r){if(r.status===401)throw new Error('Log in to the Console as a doctor first (open / in another tab), then reload this page.');if(r.status===403)throw new Error('Only a doctor account can open the labelling pool.');if(!r.ok)throw new Error('pool');return r.json()})}
 if(location.protocol==='file:'){$('#static').classList.remove('hide')}
@@ -53,7 +55,7 @@ $('#go').addEventListener('click',function(){
   var p=POOL?Promise.resolve(POOL):getPool();
   p.then(function(pool){POOL=pool;var byId={};pool.forEach(function(x){byId[x.id]=x});
     if(saved&&saved.order&&saved.order.length&&saved.who===WHO&&saved.order.every(function(id){return byId[id]})){ORDER=saved.order;I=saved.i;LAB=saved.lab;STARTED=saved.started}
-    else{var langs=[].slice.call(document.querySelectorAll('.lg:checked')).map(function(c){return c.value});var cap=parseInt($('#cap').value,10)||0;
+    else{var langs=[].slice.call(document.querySelectorAll('.lg:checked')).map(function(c){return c.value});if(!langs.length){$('#err').textContent='Tick at least one language.';return}var cap=parseInt($('#cap').value,10)||0;
       var ids=shuffle(pool.filter(function(x){return langs.indexOf(x.lang)>=0}).map(function(x){return x.id}));ORDER=cap?ids.slice(0,cap):ids;I=0;LAB={};STARTED=Date.now()}
     POOL=byId;$('#start').classList.add('hide');show()}).catch(function(e){$('#err').textContent=e.message==='pool'||/Failed to fetch/.test(e.message)?'Could not load the pool from the server. If you opened this as a file, choose pool.json above.':e.message;if(location.protocol==='file:')$('#static').classList.remove('hide')})});
 function show(){if(I>=ORDER.length){$('#work').classList.add('hide');$('#done').classList.remove('hide');save();return}
