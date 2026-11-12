@@ -148,7 +148,7 @@ function ptView(p) {
   var open = tasks.filter(function (t) { return t.state === 'open'; });
   var alerts = store.db.alerts.filter(function (a) { return a.pid === p.id && !a.ackAt; });
   var needs = store.db.messages.filter(function (m) { return m.pid === p.id && m.needsStaff && !m.handled; });
-  return { id: p.id, name: p.name, rn: p.rn, procedure: p.procedure, procLabel: (store.db.rules.pathway.procedures[p.procedure] || {}).label || p.procedure, otDate: p.otDate, lang: p.lang, active: p.active, threadOpen: !!p.threadOpen,
+  return { id: p.id, name: p.name, rn: p.rn, age: p.age == null ? null : p.age, sex: p.sex || '', sexLabel: SEX[p.sex] || '', procedure: p.procedure, procLabel: (store.db.rules.pathway.procedures[p.procedure] || {}).label || p.procedure, otDate: p.otDate, lang: p.lang, active: p.active, threadOpen: !!p.threadOpen,
     open: open.length, overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length, openAlerts: alerts.length, needsReply: needs.length, linked: !!p.firstSeen, como: P.comorbidities(p.intake).map(function (c) { return c.label; }), flags: store.db.detections.filter(function (d) { return d.pid === p.id && d.state === 'open'; }).length, redFlags: store.db.detections.filter(function (d) { return d.pid === p.id && d.state === 'open' && d.level === 'red'; }).length, demo: !!p.demo, demoCase: p.demoCase || '', expect: p.expect || '' };
 }
 
@@ -169,7 +169,7 @@ function seedDemo(user) {
     var d = new Date(now + off * DAY); var ot = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     var short = ('Fict ' + String(h.pid).replace('FIC-', '')).slice(0, 20);
     var pt = { id: uid(), name: short, rn: rn, procedure: h.procedure, otDate: ot, lang: LANGS[h.lang] ? h.lang : 'en', token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: now, addedBy: user || 'system', demo: true, demoCase: h.case, expect: h.expect, intake: h.answers };
-    store.db.patients.push(pt); createTasks(pt);
+    demoDemographics(pt); store.db.patients.push(pt); createTasks(pt);
     // earlier items already done for most demo patients, so the board is realistic: a few stay overdue on purpose
     // v3: the demo board showed 93 overdue tasks, which hid the point. Most demo patients are now up to date (everything already due is done);
     // every fourth patient keeps only the last 4 days of items overdue, so the overdue logic is still visible. Real patients are not touched by this.
@@ -188,6 +188,7 @@ function migrate() {
   var d = store.db; d.readings = d.readings || []; d.detections = d.detections || [];
   if (!d.rules.periop) d.rules.periop = P.defaultRules();
   if (!d.settings.maxCasesPerDay) d.settings.maxCasesPerDay = 5;
+  (d.patients || []).forEach(demoDemographics);   // v7: demo patients in an older data file get a fictional age and sex
   // v6: one doctor is the chief (approves lessons). An older data file has none: the first doctor becomes chief.
   if (d.users && !d.users.some(function (u) { return u.chief; })) { var fd = d.users.find(function (u) { return u.role === 'doctor'; }); if (fd) fd.chief = true; }
   if (!d.settings.emergencyNumber) d.settings.emergencyNumber = '999';
@@ -248,7 +249,7 @@ function buildBrief(pt) {
   var recent = msgs.slice(-4).map(function (m) { return { text: m.text, cls: m.cls || '', at: m.at }; });
   var lastMsg = msgs[msgs.length - 1];
   var first = String(pt.name || '').split(' ').slice(-1)[0] || 'there';
-  var facts = ['Patient: ' + pt.name + ', ' + (patientCtx(pt).procedure) + ', operation ' + P.fmtD(ot) + ' (' + (day < 0 ? (-day) + ' days to go' : day === 0 ? 'today' : 'day ' + day + ' after surgery') + ')',
+  var facts = ['Patient: ' + pt.name + ', ' + ageSexText(pt) + ', ' + (patientCtx(pt).procedure) + ', operation ' + P.fmtD(ot) + ' (' + (day < 0 ? (-day) + ' days to go' : day === 0 ? 'today' : 'day ' + day + ' after surgery') + ')',
     'Comorbidities: ' + (como.length ? como.map(function (c) { return c.label; }).join('; ') : 'none recorded'),
     'Pending items: ' + (pending.length ? pending.slice(0, 8).map(function (p) { return p.title + (p.overdue ? ' (overdue)' : ''); }).join('; ') : 'none'),
     'Open automatic flags: ' + (dets.length ? dets.map(function (d) { return d.level.toUpperCase() + ' ' + d.title; }).join('; ') : 'none'),
@@ -276,6 +277,36 @@ function buildBrief(pt) {
   options.push({ label: 'Book a review', text: 'Hello ' + first + ', thank you for your message. I would like to see you in clinic to go through this properly. The clinic team will contact you with a time, or you can call ' + phone + '.' });
   if (cmNotes.length && day < 0) options.push({ label: 'Medicines and conditions only', text: 'Hello ' + first + ', ' + cmText });
   return { options: options, day: day, phase: day < 0 ? 'before surgery' : 'after surgery', otDate: pt.otDate, comorbidities: como, pending: pending, flags: dets.map(function (d) { return { id: d.id, level: d.level, title: d.title, owner: OWNERS[d.owner] || d.owner, at: d.at, actions: d.actions }; }), recent: recent, latest: Object.keys(latest).map(function (k) { return { param: k, label: P.PARAMS[k].label, value: P.fmtVal(k, latest[k].value), at: latest[k].at }; }), facts: facts, draft: options.length ? options[0].text : draft, lastMessage: lastMsg ? lastMsg.text : '' };
+}
+// v7: age (years, not date of birth) and sex. Demo patients get fictional values so the screens are not empty.
+var SEX = { F: 'Female', M: 'Male' };
+function cleanAge(a) { var n = Math.floor(Number(a)); return a !== '' && a != null && isFinite(n) && n >= 0 && n <= 120 ? n : null; }
+function cleanSex(x) { x = String(x || '').toUpperCase().slice(0, 1); return SEX[x] ? x : ''; }
+function demoDemographics(pt) {
+  if (!pt.demo || pt.age != null) return; var h = 0, k = String(pt.rn); for (var i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0;
+  var base = { TKR: [58, 22], THR: [60, 22], ACL: [19, 20], SHOULDER: [35, 30], LUMBAR: [40, 30], FOOTANKLE: [30, 35] }[pt.procedure] || [40, 30];
+  pt.age = base[0] + (h % base[1]); pt.sex = (h >> 5) % 2 ? 'F' : 'M';
+}
+function ageSexText(pt) { return (pt.age != null ? pt.age + ' years' : 'age not recorded') + ', ' + (SEX[pt.sex] ? SEX[pt.sex].toLowerCase() : 'sex not recorded'); }
+/* v7: when a day is over the limit, suggest which case could move and where. Fixed rules, no AI: a doctor decides and nothing
+ * moves by itself. Candidates are ordered "least ready first" (open red flags, then overdue pre-operative tasks, then booked
+ * last), because a patient who is not ready is the one most likely to be postponed anyway. Weekends are not offered. */
+function rescheduleSuggest(date) {
+  var max = maxCases(), now = Date.now(), today = dateStr(now), day = calendarData(date, date).days[0] || { ops: [] }, excess = day.ops.length - max;
+  if (excess <= 0) return { date: date, count: day.ops.length, max: max, excess: 0, candidates: [], days: [] };
+  var cands = day.ops.map(function (o) {
+    var pt = store.db.patients.find(function (x) { return x.id === o.pid; }), tasks = store.db.tasks.filter(function (t) { return t.pid === o.pid && t.state === 'open' && !t.auto; });
+    var overdue = tasks.filter(function (t) { return t.dueAt < now && t.dueAt < otTime(pt.otDate); }).length, pending = tasks.filter(function (t) { return t.dueAt <= otTime(pt.otDate); }).length;
+    var red = store.db.detections.filter(function (x) { return x.pid === o.pid && x.state === 'open' && x.level === 'red'; }).length;
+    var why = []; if (red) why.push(red + ' open red flag' + (red > 1 ? 's' : '')); if (overdue) why.push(overdue + ' pre-operative task' + (overdue > 1 ? 's' : '') + ' overdue'); if (!why.length) why.push(pending ? pending + ' pre-operative task' + (pending > 1 ? 's' : '') + ' still open, none overdue' : 'ready: nothing outstanding');
+    return { pid: o.pid, name: o.name, rn: o.rn, proc: o.proc, age: pt.age == null ? null : pt.age, sex: pt.sex || '', redFlags: red, overdue: overdue, pending: pending, createdAt: pt.createdAt || 0, score: red * 3 + overdue, why: why.join(', ') };
+  }).sort(function (a, b) { return b.score - a.score || b.createdAt - a.createdAt; });
+  var base = otTime(date), days = [];
+  for (var off = 1; off <= 21 && days.length < 6; off++) [off, -off].forEach(function (o) {
+    var d = new Date(base + o * DAY), k = dateStr(d.getTime()), wd = d.getDay(); if (wd === 0 || wd === 6 || k <= today) return;
+    var n = (calendarData(k, k).days[0] || { ops: [] }).ops.length; if (n < max) days.push({ date: k, weekday: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][wd], count: n, free: max - n, daysAway: o });
+  });
+  return { date: date, count: day.ops.length, max: max, excess: excess, candidates: cands, days: days.slice(0, 6) };
 }
 function maxCases() { return Math.max(1, Number(store.db.settings.maxCasesPerDay) || 5); }
 function calendarData(from, to) {
@@ -353,6 +384,7 @@ async function patientMessage(pt, rawText, via) {
   if (memHit) { cls = 'SAME-DAY'; flags.push('patient profile: ' + memHit.reason); reason = 'Patient profile (confirmed by staff): ' + memHit.reason + ' ("' + memHit.fact + '")'; }
   // v6: a dose above the usual maximum in the patient's own words is flagged FOR THE DOCTOR (raise-only; the patient text stays the fixed one)
   var doseHit = DOSE.check(safe);
+  if (doseHit.length && pt.age != null && pt.age >= 65) doseHit.forEach(function (x) { x.text += ' · patient is ' + pt.age + ': lower maximums may apply'; });
   if (doseHit.length) { inMsg.dose = doseHit; doseHit.forEach(function (x) { flags.push('possible wrong dose, for the doctor: ' + x.text); }); if (urgentRank[cls] < urgentRank['SAME-DAY']) { cls = 'SAME-DAY'; reason = 'Possible wrong dose reported by the patient: ' + doseHit[0].text; } else reason = (reason ? reason + ' · ' : '') + 'Possible wrong dose: ' + doseHit[0].text; }
   step(3, 'Clinic extra phrases, confirmed patient profile and dose check (can only raise)', (hitRf || memHit || doseHit.length) ? 'raise' : 'pass', (doseHit.length ? 'Dose check: ' + doseHit.map(function (x) { return x.text; }).join(' | ') + ' · ' : '') + (hitRf ? 'Matched "' + hitRf.phrase + '" -> ' + hitRf.cls : store.db.rules.redflags.length + ' phrase(s) checked, none matched') + (memHit ? ' · Profile: ' + memHit.reason + ' -> SAME-DAY' : ' · ' + MEM.confirmed(pt.memory).length + ' confirmed profile fact(s) checked'));
   var urgent = cls === 'EMERGENCY' || cls === 'SAME-DAY';
@@ -550,7 +582,7 @@ async function route(req, res) {
     if (store.db.patients.some(function (x) { return x.active && x.rn === rn; })) return send(res, 400, { error: 'rn', message: 'That record number already exists.' });
     if (!store.db.rules.pathway.procedures[proc]) return send(res, 400, { error: 'procedure', message: 'Pick a procedure.' });
     if (!/^\d{4}-\d{2}-\d{2}$/.test(ot) || isNaN(otTime(ot))) return send(res, 400, { error: 'otDate', message: 'Enter the operation date.' });
-    var pt2 = { id: uid(), name: name, rn: rn, procedure: proc, otDate: ot, lang: lang, token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: Date.now(), addedBy: user.username };
+    var pt2 = { id: uid(), name: name, rn: rn, age: cleanAge(body.age), sex: cleanSex(body.sex), procedure: proc, otDate: ot, lang: lang, token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: Date.now(), addedBy: user.username };
     store.db.patients.push(pt2); createTasks(pt2); audit(user.username, 'added patient ' + rn); store.save();
     var capd = calendarData(ot, ot).days[0], warn = capd && capd.ops.length > maxCases() ? 'Warning: ' + capd.ops.length + ' cases are now booked on ' + ot + ' (limit ' + maxCases() + ').' : '';
     return send(res, 200, { id: pt2.id, warning: warn });
@@ -570,7 +602,7 @@ async function route(req, res) {
     if (m === 'POST' && sub === 'reply') {
       var txt = String(body.text || '').trim().slice(0, 1000); if (!txt) return send(res, 400, { error: 'empty' });
       // v6: a reply that mentions a dose above the usual maximum is held until the sender confirms they have checked it
-      var rd = DOSE.check(txt);
+      var rd = DOSE.check(txt); if (pat.age != null && pat.age >= 65) rd.forEach(function (x) { x.text += ' · patient is ' + pat.age + ': lower maximums may apply'; });
       if (rd.length && !body.doseAck) return send(res, 409, { error: 'dose', findings: rd, message: 'This reply mentions a dose above the usual maximum. Check it, then send again to confirm.' });
       if (rd.length) audit(user.username, 'sent a reply to ' + pat.rn + ' after a dose warning: ' + rd.map(function (x) { return x.text; }).join(' | '));
       addMsg(pat.id, 'staff', txt, { staffName: user.name, staffRole: user.role === 'doctor' ? 'Doctor' : 'Nurse', by: user.username });
@@ -594,6 +626,24 @@ async function route(req, res) {
       var rd = { id: uid(), pid: pat.id, param: pr, value: val, at: Date.now(), source: 'entered by ' + user.name };
       store.db.readings.push(rd); var dr = detectAndAct(pat, rd, 'entered by ' + user.name); audit(user.username, 'entered ' + pr + ' for ' + pat.rn); store.save();
       return send(res, 200, { reading: rd, detections: dr.detections, steps: dr.evaluation.steps, hits: dr.evaluation.hits.map(function (h) { return { level: h.level, msg: h.msg }; }) });
+    }
+    if (m === 'POST' && sub === 'details') {
+      var na = body.age === '' || body.age == null ? null : cleanAge(body.age); if (body.age !== '' && body.age != null && na === null) return send(res, 400, { error: 'age', message: 'Age is a whole number of years from 0 to 120.' });
+      pat.age = na; pat.sex = cleanSex(body.sex); audit(user.username, 'set age and sex for ' + pat.rn); store.save(); return send(res, 200, { age: pat.age, sex: pat.sex });
+    }
+    if (m === 'POST' && sub === 'reschedule') {
+      if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only', message: 'Only a doctor can move an operation.' });
+      var nd = String(body.otDate || ''); if (!/^\d{4}-\d{2}-\d{2}$/.test(nd) || isNaN(otTime(nd))) return send(res, 400, { error: 'otDate', message: 'Enter the new operation date.' });
+      if (nd === pat.otDate) return send(res, 400, { error: 'otDate', message: 'That is the current date.' });
+      if (nd <= dateStr(Date.now())) return send(res, 400, { error: 'otDate', message: 'Choose a date after today.' });
+      var booked = (calendarData(nd, nd).days[0] || { ops: [] }).ops.length;
+      if (booked >= maxCases() && !body.force) return send(res, 409, { error: 'full', message: nd + ' already has ' + booked + ' case(s), the limit is ' + maxCases() + '.' });
+      var oldD = pat.otDate, delta = otTime(nd) - otTime(oldD), moved = 0;
+      store.db.tasks.forEach(function (t) { if (t.pid === pat.id && t.state === 'open' && !t.auto) { t.dueAt += delta; moved++; } });
+      pat.otDate = nd; pat.rescheduled = (pat.rescheduled || []).concat([{ from: oldD, to: nd, by: user.name, at: Date.now(), reason: String(body.reason || '').slice(0, 120) }]);
+      store.db.tasks.push({ id: uid(), pid: pat.id, title: 'Tell the patient the new operation date (' + nd + ', was ' + oldD + ')', owner: 'clinic_coordinator', kind: 'admin', due: 0, dueAt: Date.now(), state: 'open', createdAt: Date.now() });
+      audit(user.username, 'moved the operation of ' + pat.rn + ' from ' + oldD + ' to ' + nd + (body.reason ? ' (' + String(body.reason).slice(0, 120) + ')' : '')); store.save();
+      return send(res, 200, { ok: true, from: oldD, to: nd, tasksMoved: moved });
     }
     // v4: patient profile memory. Staff add, confirm, edit or dismiss. Every change is in the audit log.
     if (m === 'POST' && sub === 'memory') {
@@ -693,6 +743,7 @@ async function route(req, res) {
     if (!fm.feedback) { fm.feedback = 'should_alert'; fm.feedbackBy = user.name; LEARN.addSignal(store.db, { type: 'missed_alert', pid: fm.pid, text: fm.text, cls: fm.cls, by: user.username }); audit(user.username, 'marked a message as one that should have raised an alert'); store.save(); }
     return send(res, 200, { ok: true });
   }
+  if (m === 'GET' && p === '/api/calendar/suggest') { var sd2 = String(url.searchParams.get('date') || ''); if (!/^\d{4}-\d{2}-\d{2}$/.test(sd2)) return send(res, 400, { error: 'date' }); return send(res, 200, rescheduleSuggest(sd2)); }
   if (m === 'GET' && p === '/api/learning') {
     return send(res, 200, { tags: Object.keys(LEARN.TAGS).map(function (k) { return { id: k, label: LEARN.TAGS[k].label }; }), signalLabels: LEARN.SIGNAL_LABEL, aiOn: aiConfigured(), canDecide: needChief(user),
       lessons: (store.db.lessons || []).slice().sort(function (a, b) { return b.at - a.at; }),

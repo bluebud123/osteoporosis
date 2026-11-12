@@ -414,3 +414,16 @@ Each lesson now counts the AI drafts it was used in that were sent unchanged and
 
 ### Not built, proposed for later
 The AI tidying the playbook (merging duplicates, flagging contradictions); an expiry or "reconfirm" date on confirmed patient facts; search by meaning instead of topic tags; pages and links between lessons (a wiki). Stage 2 (lessons that change triage) is still not built.
+
+## v7 (12 Nov 2026): patient age and sex; a suggestion when a day is over-booked
+
+Asked for by Dr Tan. Tests: `node app/eval/v7.test.js` (13 checks).
+
+### Age and sex
+Stored as age in whole years (not a date of birth) and Female or Male. Asked for when a patient is added; shown on the patient list, the patient page (with an edit link) and the calendar suggestion; included in the facts the AI sees when it drafts for staff. Not sent to the patient side (tested). The 30 demo patients get a fictional age and sex worked out from their record number, also in an older data file. A dose warning adds "patient is N: lower maximums may apply" from age 65. Nothing else uses age or sex yet: the triage rules, the thresholds on readings and the dose table itself do not. A patient added before today shows "age not recorded" in red until someone fills it in.
+
+### Over-booked day
+The calendar already flagged a day with more operations than the limit. Now, when such a day is opened, a "Suggested change" card says how many cases to move, lists the patients with the least ready first, and offers the three nearest weekdays that have space. A doctor presses a date to move a case; a nurse sees the list but not the buttons.
+- **It is fixed rules, not AI.** Dr Tan asked whether the AI would propose where to reschedule. A rule does this better: the same answer every time, with the reason visible, and nothing to verify. Order: open red flags (3 points each), then overdue pre-operative tasks (1 each), then booked most recently.
+- Moving a case shifts its open checklist tasks by the same number of days, adds a task "Tell the patient the new operation date", and writes the move to the audit log. The patient is not messaged automatically. Moving onto a full day or into the past is refused.
+- Limits: it does not know theatre lists, surgeon availability, implant orders, bed numbers, public holidays or how urgent each operation is. Weekends are never offered; a unit that operates on Saturday must pick the date by hand on the patient page. "Least ready first" is the reviewer's choice of rule and awaits Dr Tan's agreement. Completed tasks are not moved; a pre-operative blood test done for the old date may be out of date for the new one, and the system does not check that.

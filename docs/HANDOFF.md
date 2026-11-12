@@ -83,3 +83,5 @@ The DeepSeek key pasted in an earlier chat has NOT been rotated yet; he said he 
 v5 (same day): learning stage 1 is built (Learning page: signals, AI-proposed lessons a doctor approves, topic index, system report). Stage 2 (lessons that change triage) is designed in decision log v5 and NOT built; do not build it before the submission. Not yet tried with the real model.
 
 v6 (same day): dose check for doctors (`app/doses.js`, AI-drafted table: Dr Tan must check every row before real use), chief-doctor approval of lessons, lesson tracking. See decision log v6.
+
+v7 (same day): patient age and sex; rule-based reschedule suggestion for an over-booked day. See decision log v7.
