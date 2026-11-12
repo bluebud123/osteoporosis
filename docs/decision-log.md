@@ -453,3 +453,27 @@ Changes:
 - New test `node app/eval/load.test.js`: 40 messages sent 8 at a time against a mock provider that rejects more than 4 simultaneous calls; every second check must be answered.
 
 Still true after the fix: in real use a slow or failing provider makes the second check unavailable; staff are alerted, the patient reply is unchanged. The 60-per-minute limit per patient inside `app/lib/server/chat.js` was not the cause (each test patient has its own key).
+
+## v7.2 (12 Nov 2026): fourth real-model run, on the v7.1 code: clean
+
+Dr Tan pulled v7.1 and ran option 3 again (913 messages, `deepseek-chat`, 585 s). Output: `docs/evidence/model_run_2026-11-12_deepseek-chat_run4_v7.1.md`.
+
+| | Run 2 (v3.9) | Run 3 (v7, failed) | Run 4 (v7.1) |
+|---|---|---|---|
+| AI check unavailable, server path | 1 | 303 | **0** |
+| Urgent alerted, rules + AI | 537/537 | 494/537 | **537/537** |
+| Labelled emergencies alerted | 211/211 | 211/211 | 211/211 |
+| False alerts, rules alone / rules + AI | 14 / 22 | 14 / 17 | 14 / 20 |
+| AI check by itself, urgent | 519/537 | 81/537 | 529/537 |
+| AI check by itself, labelled emergencies | 198/211 | 43/211 | 205/211 |
+| AI check by itself, ordinary raised | 11/376 | 3/376 | 9/376 |
+
+What it shows:
+1. With the gate, the wait before the retry and evaluation mode, the AI check was available for every message. This fits the explanation of v7.1 (too many simultaneous calls) but does not prove it: three things changed at once, and the provider may simply have been healthier.
+2. The tally shows 23 of 928 second-check calls (2.5%) still came back unusable. On the server path the retry recovered all of them; asked directly, 8 stayed unavailable after one retry. So single-call failure at this provider is real and steady at about 2 to 3%, and the retry is doing necessary work.
+3. As in run 2, when the model answered it flagged every urgent message (529 of 529) and every labelled emergency (205 of 205).
+4. 52 severity calls were made and all answered. **How many raised a message to EMERGENCY is not in this output**; the script did not print it. It is in the .json file on Dr Tan's PC and the script now prints a severity table. Until that is read, nothing can be said about the severity step except that it ran.
+5. The model raised the same kind of ordinary message as before: general questions about fever and wounds, and two Arabic questions about a plaster cast.
+6. Still not measured with a real model: patient-fact extraction, lesson proposals (evaluation mode skips them), and the dose check in a live chat.
+
+The brief and README now quote run 4 for the current code. Limits unchanged: invented messages, AI labels in this table, sets the rules were tuned on, one model.

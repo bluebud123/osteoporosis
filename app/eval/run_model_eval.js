@@ -81,7 +81,7 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
   var stamp = new Date().toISOString().slice(0, 10), model = String(process.env.PROVIDER_MODEL).replace(/[^A-Za-z0-9._-]/g, '_');
   var banner = STANDIN ? '> **STAND-IN MODEL. THIS IS NOT EVIDENCE.** The "model" here is `app/eval/standin_model.js`, a few lines of canned text used to test that this script runs. Its numbers say nothing about any real AI model.\n\n' : '';
   var md = '# PeriLoop second-check evaluation, ' + stamp + '\n\n' + banner + 'Model: `' + process.env.PROVIDER_MODEL + '` at `' + process.env.PROVIDER_BASE_URL.replace(/\/\/[^/@]*@/, '//') + '`. Messages: ' + items.length + (LIMIT ? ' (limited to ' + LIMIT + ' per group)' : '') + '. Run time: ' + Math.round((Date.now() - t0) / 1000) + ' s.\n\n' +
-    'Read this before quoting any number:\n- Every message is invented and every label ("urgent", "emergency", "normal") was written by an AI, not a clinician.\n- Sets h1 to h5 and the library have all been used to tune the fixed rules, so "rules alone" is optimistic. The useful columns are what the AI check adds and what it costs in false alerts.\n- "Caught" means the message raised an EMERGENCY or SAME-DAY alert. The AI check can only raise to SAME-DAY.\n- "AI check unavailable" counts messages where the model call failed or returned something unusable; the rules result stood.\n- One run of one model. Run it again and with another model before relying on it.\n\n';
+    'Read this before quoting any number:\n- Every message is invented and every label ("urgent", "emergency", "normal") was written by an AI, not a clinician.\n- Sets h1 to h5 and the library have all been used to tune the fixed rules, so "rules alone" is optimistic. The useful columns are what the AI check adds and what it costs in false alerts.\n- "Caught" means the message raised an EMERGENCY or SAME-DAY alert. Since v4 a message the AI check raises is then graded by a second AI call and may get the emergency text; see the severity table.\n- "AI check unavailable" counts messages where the model call failed or returned something unusable; the rules result stood.\n- One run of one model. Run it again and with another model before relying on it.\n\n';
   md += table(items, 'All sets together');
   var sets = {}; items.forEach(function (x) { sets[x.set] = 1; }); Object.keys(sets).forEach(function (s) { md += table(items.filter(function (x) { return x.set === s; }), 'Set ' + s); });
   if (AIALONE) {
@@ -93,6 +93,10 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
     var aiMiss = items.filter(function (x) { return x.truth !== 'normal' && x.ai !== 'urgent'; });
     md += '\n#### Urgent messages the AI check alone did not flag (' + aiMiss.length + ')\n\n' + (aiMiss.length ? aiMiss.map(function (x) { return '- [' + x.set + ', ' + x.lang + ', ' + x.truth + ', AI said ' + x.ai + (x.aiReason ? ' (' + x.aiReason + ')' : '') + ', rules said ' + x.rules + '] ' + x.text; }).join('\n') + '\n' : '- none\n') + '\n';
   }
+  // v7.2: what the severity step did with the messages the AI check raised
+  var raised = items.filter(function (x) { return x.raisedByModel; });
+  if (raised.length) { var rg = function (t) { var g = raised.filter(function (x) { return t === 'urgent' ? x.truth !== 'normal' : x.truth === 'normal'; }); return g.filter(function (x) { return x.final === 'EMERGENCY'; }).length + ' of ' + g.length; };
+    md += '### Severity step (messages the rules missed and the AI check raised)\n\n| Label | Given the emergency text |\n|---|---|\n| Labelled urgent | ' + rg('urgent') + ' |\n| Labelled ordinary | ' + rg('normal') + ' |\n\n'; }
   // v7.1: what the provider actually answered, by kind of call, and a direct probe when many calls failed
   var AIM = require('../ai.js'), un = items.filter(function (x) { return x.unscreened; }).length, probe = '';
   if (un > items.length * 0.03 && !STANDIN) {

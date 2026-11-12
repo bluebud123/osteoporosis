@@ -55,16 +55,16 @@ All messages are synthetic and written by AI. All labels are AI labels except th
 | Set 5 | the AI that wrote the v3 rules | v3, fresh | 59 of 69 (86%); emergencies 39 of 46 | 0 of 30 | Same author as the rules; two missed messages were about wanting to die |
 | 360-message library | an earlier AI | v3, not fresh | 134 of 180 (74%): en 32/40, ms 35/40, zh 34/40, ar 33/60 | 12 of 180 | Arabic is the weakest language |
 | Old prototype, AI second check (Haiku) | AI | old page, not the Console | 75 of 75 and 60 of 60 | 6 of 75 and 6 of 60 | Different product; the same model family wrote and judged the messages |
-| **All six sets, real model in the Console (DeepSeek `deepseek-chat`, 12 Nov 2026)** | all of the above | v3 rules alone | 491 of 537 (91%): en 96%, ms 96%, zh 95%, ar 73% | 14 of 376 (4%) | Every set here has been used to tune the rules, so this row is optimistic |
-| Same run | | v3 rules + AI check | 537 of 537; all 211 labelled emergencies | 22 of 376 (6%); Arabic 10 of 73 | One run, one model. The AI was needed for 46 messages and flagged all 46 |
-| Same run, AI check by itself on every message | | no rules | 519 of 537 (97%); emergencies 198 of 211 (94%); Arabic emergencies 21 of 26 | 11 of 376 (3%) | All 18 misses were calls where the AI gave no usable answer (19 of 913 calls, about 2%). When it answered, it flagged every urgent message |
+| **All six sets, real model in the Console (DeepSeek `deepseek-chat`, 12 Nov 2026, current code v7.1)** | all of the above | rules alone | 491 of 537 (91%): en 96%, ms 96%, zh 95%, ar 73% | 14 of 376 (4%) | Every set here has been used to tune the rules, so this row is optimistic |
+| Same run | | rules + AI check | 537 of 537; all 211 labelled emergencies; AI check unavailable for 0 of 913 messages | 20 of 376 (5%); Arabic 8 of 73 | One model. Same result as the run on the morning's code. The AI was needed for 46 urgent messages and flagged all 46 |
+| Same run, AI check by itself on every message | | no rules | 529 of 537 (99%); emergencies 205 of 211 (97%) | 9 of 376 (2%) | All 8 misses were calls with no usable answer even after one retry. About 2.5% of single calls to the provider fail; the retry recovered every one on the normal path |
 | **Clinician labels: one orthopaedic medical officer, 368 English messages, blind (12 Nov 2026)** | all of the above, English | v3 rules + AI check (DeepSeek) | His emergencies alerted: 155 of 155 (rules alone 150). Given the emergency text: 108 of 155 (70%) in that run. After his emergency line was added to the rules (v4): 134 of 155 by rules alone; the AI severity step is not yet measured | 0 of 114 | One labeller, one fast pass, four finger slips corrected and listed in the decision log (v3.13). 43 questions he wanted answered the same day go to the inbox, not to a page |
 
 What the table shows:
 1. After three rounds of fixes, a fresh set still has missed emergencies. Fixed word lists do not converge. Rules alone are not a safe sole triage.
-2. Neither layer is enough alone. The rules missed 46 urgent messages; the AI gave no usable answer on about 2% of calls, 13 of them labelled emergencies. In this run the two never failed on the same message.
+2. Neither layer is enough alone. The rules missed 46 urgent messages; about 2.5% of single calls to the AI provider fail. A retry and a queue that puts the safety check first recovered all of them in the latest run. An earlier run without that queue lost a third of its AI checks; staff were alerted for each one and no labelled emergency was missed (decision log v7.1).
 3. The AI check can raise only to "same day". An emergency the rules miss and the AI catches gets "call the clinic today", not the emergency text.
-4. The AI check is not deterministic: a second run of the same messages raised 8 ordinary messages where the first raised 6.
+4. The AI check is not deterministic: three runs of the same messages raised 6, 8 and 6 ordinary messages.
 
 Raw output of both real-model runs: `docs/evidence/`.
 
