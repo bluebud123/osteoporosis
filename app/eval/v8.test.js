@@ -9,6 +9,11 @@ process.env.PROVIDER_BASE_URL = 'http://localhost:9777'; process.env.PROVIDER_KE
 var pass = 0, fail = 0; function ok(c, name, extra) { if (c) { pass++; console.log('PASS ' + name); } else { fail++; console.log('FAIL ' + name + (extra !== undefined ? '  -> ' + JSON.stringify(extra) : '')); } }
 function call(port, method, p, body, cookie, hdr) { return new Promise(function (res) { var d = body ? JSON.stringify(body) : null; var q = http.request({ port: port, path: p, method: method, headers: Object.assign({ 'content-type': 'application/json', 'x-requested-with': 'periloop' }, cookie ? { cookie: cookie } : {}, hdr || {}) }, function (r) { var c = []; r.on('data', function (x) { c.push(x); }); r.on('end', function () { var t = Buffer.concat(c).toString(), j; try { j = JSON.parse(t); } catch (e) { j = t; } res({ status: r.statusCode, json: j, raw: t, cookie: (r.headers['set-cookie'] || [''])[0].split(';')[0], setCookie: (r.headers['set-cookie'] || [''])[0] }); }); }); if (d) q.write(d); q.end(); }); }
 (async function () {
+  // every page's script must at least parse: on 12 Nov a stray apostrophe in staff.html shipped a blank page to the live demo
+  ['staff.html', 'patient.html', 'live.html'].forEach(function (f) { var h = fs.readFileSync(path.join(__dirname, '..', 'public', f), 'utf8'), bad = '';
+    (h.match(/<script>[\s\S]*?<\/script>/g) || []).forEach(function (b) { try { new Function(b.replace(/^<script>|<\/script>$/g, '')); } catch (e) { bad = e.message; } });
+    ok(!bad, 'pages: the script in ' + f + ' parses', bad); });
+  (function () { var h = fs.readFileSync(path.join(__dirname, 'label.html'), 'utf8'), bad = ''; (h.match(/<script>[\s\S]*?<\/script>/g) || []).forEach(function (b) { try { new Function(b.replace(/^<script>|<\/script>$/g, '')); } catch (e) { bad = e.message; } }); ok(!bad, 'pages: the script in label.html parses', bad); })();
   var standin = cp.spawn(process.execPath, [path.join(__dirname, 'standin_model.js')], { stdio: 'ignore' }); await new Promise(function (r) { setTimeout(r, 700); });
   var S = require('../server.js'), srv = S.createServer(); await new Promise(function (r) { srv.listen(0, r); }); var port = srv.address().port;
   try {
