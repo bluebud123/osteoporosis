@@ -79,3 +79,5 @@ Done since the handoff above: jobs 1, 2 and 3 (one labeller, English only; a sec
 Built in v4 on his "go": the clinician's emergency line, an AI severity step, a retry and staff alert when the AI is unavailable, and the patient profile memory.
 Still open: a real-model run of v4 (`run-model-eval.bat`, option 3) to measure the severity step; a live try of the profile memory with the real model; job 4 sign-off (now also the three raise-only links in `app/memory.js`, and the 16 emergencies still classed same-day); jobs 5 to 8.
 The DeepSeek key pasted in an earlier chat has NOT been rotated yet; he said he will do it when the work is finished.
+
+v5 (same day): learning stage 1 is built (Learning page: signals, AI-proposed lessons a doctor approves, topic index, system report). Stage 2 (lessons that change triage) is designed in decision log v5 and NOT built; do not build it before the submission. Not yet tried with the real model.

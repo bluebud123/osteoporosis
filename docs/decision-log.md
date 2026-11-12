@@ -373,3 +373,23 @@ Decisions by Dr Tan: staff confirm each item; staff only; raise only; remember c
 
 ### Test expectations changed
 None in `app/test.js` (117/117) or the held-out sets. New: `app/eval/v4.test.js`.
+
+## v5 (12 Nov 2026): learning, stage 1 (signals, doctor-approved lessons, topic index, system report)
+
+Asked for by Dr Tan: "for the AI to get smarter along the way", without overloading it. His decisions: the AI proposes and a doctor approves; learn from rewritten drafts, triage corrections, dismissed profile items and unanswered questions; no fixed cap on lessons, use an index instead. He also asked that lessons may change everything, lowering urgency included, with the physician alerted. **That part is not built** (see "Stage 2" below). Code: `app/learning.js`, routes in `app/server.js`, the Learning page in `app/public/staff.html`. Tests: `node app/eval/v5.test.js` (24 checks, stand-in model: plumbing only).
+
+What exists:
+- **Signals.** Recorded when staff rewrite an AI draft before sending; dismiss a patient fact the AI proposed; a doctor presses "Not urgent" on an alert; a doctor presses "should have alerted?" on a message; a patient question gets no clinic answer.
+- **Lessons.** A doctor presses a button and the AI reads up to 25 new signals and proposes at most 5 one-sentence lessons. A proposal is kept only if it names a real signal it is based on, has known topic tags, and contains no dose, no medicine instruction and no "this is normal or safe". A doctor edits, approves or rejects each. A doctor can also write one by hand under the same limits. Earlier wording, who approved and when are kept; all of it is in the audit log.
+- **Index.** Each lesson has topic tags (16 topics). For one patient message the AI gets only the approved lessons whose topics match, at most five. Tested with 300 lessons.
+- **Where lessons are used.** Two places: the reply draft written for staff to edit, and what the AI proposes for the patient profile. The draft panel shows which lessons were used.
+- **System report.** Counts with no AI: messages, alerts, alerts marked not urgent, messages that should have alerted, AI check unavailable, drafts made, sent unchanged and rewritten, profile facts proposed, confirmed and dismissed, unanswered questions by topic.
+- His fifth source, "improve the algorithm and the architecture of the app", is the system report: the running AI does not change the software. A person or a developer AI reads the report and changes it, with the tests.
+
+What a lesson cannot do in stage 1: change triage, change any fixed patient text, or reach the patient chat. Marking an alert "not urgent" changes nothing by itself (tested: the same message alerts again). Lessons the AI derives from triage corrections are stored as observations tagged "triage" and are never sent to the AI.
+
+### Stage 2, designed and not built
+Lessons that raise or lower triage. Conditions proposed by the reviewer and to be confirmed by Dr Tan: an EMERGENCY from the fixed rules can never be lowered by a lesson; a lowering lesson must pass every held-out set and a real-model run before it goes live; whenever one fires, the message still appears for the doctor marked "lowered by lesson X". Not built because it cannot be measured properly before 20 Nov 2026.
+
+### Limits
+No real model has proposed a lesson yet; whether its proposals are useful is unknown. The topic keywords are English only. Lessons are free text given to a model: a lesson can be followed badly or ignored. A doctor could approve a poor lesson; the wording filter stops doses and reassurance, not bad judgement. Signals hold patient message text (masked for phone, IC and email) and are sent to the AI provider when a doctor asks for proposals.

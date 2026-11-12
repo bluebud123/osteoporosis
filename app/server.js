@@ -10,7 +10,8 @@ var http = require('http'), fs = require('fs'), path = require('path'), crypto =
 var Store = require('./store.js');
 var E = require('./lib/engine.js');
 var SC = require('./lib/second_check.js');
-var MEM = require('./memory.js');   // v4: patient-reported facts, proposed by the AI, confirmed by staff
+var MEM = require('./memory.js');
+var LEARN = require('./learning.js');   // v5: signals from staff corrections, doctor-approved lessons, topic index   // v4: patient-reported facts, proposed by the AI, confirmed by staff
 var proxy = require('./lib/server/chat.js');
 var P = require('./periop.js');
 var AI = require('./ai.js');
@@ -301,7 +302,7 @@ function bgProfile(pt, s8, inMsg) {
 // v4: after the reply, ask the AI what the patient said about themselves. Items are only PROPOSED; staff confirm or dismiss.
 function bgMemory(pt, inMsg) {
   if (!aiConfigured()) return;
-  var p = AI.memory(inMsg.text, 'memory ' + pt.rn).then(function (out) {
+  var p = AI.memory(inMsg.text, 'memory ' + pt.rn, LEARN.block(LEARN.forProfile(store.db))).then(function (out) {
     var items = MEM.parse(out, inMsg.text); pt.memory = pt.memory || [];
     items.forEach(function (it) { if (MEM.known(pt.memory, it)) return; pt.memory.push({ id: uid(), cat: it.cat, text: it.text, quote: it.quote, msgId: inMsg.id, status: 'proposed', at: Date.now(), by: 'AI (proposed from chat)' }); });
     if (pt.memory.length > 200) pt.memory.splice(0, pt.memory.length - 200);
@@ -380,6 +381,8 @@ async function patientMessage(pt, rawText, via) {
     inMsg.totalMs = Date.now() - t0;
     var s8 = { n: 8, title: 'Update patient profile (after the reply, in the background)', status: 'warn', detail: 'Updating the profile from the record and this chat...', ms: 0 }; trace.push(s8); inMsg.trace = trace;
     bgProfile(pt, s8, inMsg); bgMemory(pt, inMsg);
+    // v5: a question that got no clinic answer is a signal that an answer may be missing
+    if (/^(Clinical question|Fixed receipt text|AI-written reply|AI reply not used|Receipt only)/.test(label) && safe.length >= 8 && /\?|\b(how|when|what|where|which|can i|could i|should i|is it|do i|am i|boleh|bila|macam mana)\b/i.test(safe)) LEARN.addSignal(store.db, { type: 'unanswered', pid: pt.id, text: safe });
     if (unscreenedAlert && cls !== 'EMERGENCY' && cls !== 'SAME-DAY') raiseAlert(pt, 'SAME-DAY', safe, 'AI check unavailable (tried twice): the rules found nothing, a person must read this message today');
   }
   if (cls === 'EMERGENCY' || cls === 'SAME-DAY') {
@@ -521,7 +524,7 @@ async function route(req, res) {
   if (m === 'GET' && p === '/api/summary') {
     var open = store.db.tasks.filter(function (t) { return t.state === 'open' && store.db.patients.find(function (x) { return x.id === t.pid && x.active; }); });
     return send(res, 200, {
-      overCapacity: calendarData('', '').over.length,
+      overCapacity: calendarData('', '').over.length, lessonsToReview: (store.db.lessons || []).filter(function (l) { return l.status === 'proposed'; }).length,
       patients: store.db.patients.filter(function (x) { return x.active; }).length,
       overdue: open.filter(function (t) { return t.dueAt < Date.now(); }).length,
       openTasks: open.length,
@@ -560,6 +563,11 @@ async function route(req, res) {
     if (m === 'POST' && sub === 'reply') {
       var txt = String(body.text || '').trim().slice(0, 1000); if (!txt) return send(res, 400, { error: 'empty' });
       addMsg(pat.id, 'staff', txt, { staffName: user.name, staffRole: user.role === 'doctor' ? 'Doctor' : 'Nurse', by: user.username });
+      // v5: if this reply started from an AI draft, remember whether staff sent it as it was or rewrote it
+      var dtx = String(body.draftText || '').trim().slice(0, 1000);
+      if (dtx && body.draftLabel === 'AI draft') { store.db.learnStats = store.db.learnStats || {}; var lastP = store.db.messages.filter(function (x) { return x.pid === pat.id && x.who === 'patient'; }).slice(-1)[0];
+        if (LEARN.norm(dtx) === LEARN.norm(txt)) store.db.learnStats.draftsUnchanged = (store.db.learnStats.draftsUnchanged || 0) + 1;
+        else LEARN.addSignal(store.db, { type: 'draft_edit', pid: pat.id, text: lastP ? lastP.text : '', draft: dtx, sent: txt, by: user.username }); }
       store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; });
       pat.threadOpen = true; audit(user.username, 'replied to ' + pat.rn); store.save(); return send(res, 200, { ok: true });
     }
@@ -584,13 +592,14 @@ async function route(req, res) {
       var it = (pat.memory || []).find(function (x) { return x.id === mm[1]; }); if (!it) return send(res, 404, { error: 'not_found' });
       var ab = body || {}, act = String(ab.action || '');
       if (act === 'confirm') { if (ab.text) it.text = String(ab.text).replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 120) || it.text; it.status = 'confirmed'; it.confirmedBy = user.name; it.confirmedAt = Date.now(); }
-      else if (act === 'dismiss') { it.status = 'dismissed'; it.dismissedBy = user.name; it.dismissedAt = Date.now(); }
+      else if (act === 'dismiss') { if (it.status === 'proposed' && /^AI/.test(it.by || '')) LEARN.addSignal(store.db, { type: 'memory_dismissed', pid: pat.id, text: it.quote, quote: it.quote, fact: MEM.CATS[it.cat] + ': ' + it.text, by: user.username }); it.status = 'dismissed'; it.dismissedBy = user.name; it.dismissedAt = Date.now(); }
       else return send(res, 400, { error: 'action' });
       audit(user.username, (act === 'confirm' ? 'confirmed' : 'dismissed') + ' profile fact for ' + pat.rn + ': ' + MEM.CATS[it.cat] + ': ' + it.text); store.save(); return send(res, 200, { item: it });
     }
     if (m === 'POST' && sub === 'draft') {
-      var br = buildBrief(pat), r2 = await AI.draft(br.facts, br.lastMessage || '(no message yet)', 'draft for ' + pat.rn);
-      return send(res, 200, { ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft, options: br.options });
+      var br = buildBrief(pat), ls = LEARN.retrieve(store.db, br.lastMessage || '', 5), r2 = await AI.draft(br.facts, br.lastMessage || '(no message yet)', 'draft for ' + pat.rn, LEARN.block(ls));
+      store.db.learnStats = store.db.learnStats || {}; if (r2.text) { store.db.learnStats.draftsRequested = (store.db.learnStats.draftsRequested || 0) + 1; ls.forEach(function (l) { l.uses = (l.uses || 0) + 1; }); store.save(); }
+      return send(res, 200, { lessonsUsed: r2.text ? ls.map(function (l) { return l.text; }) : [], ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft, options: br.options });
     }
     if (m === 'POST' && sub === 'handback') { pat.threadOpen = false; addMsg(pat.id, 'bot', 'Handing you back to the assistant for general questions.', { cls: 'ACK' }); audit(user.username, 'handed back ' + pat.rn); store.save(); return send(res, 200, { ok: true }); }
     if (m === 'POST' && sub === 'dismiss') { store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; }); store.save(); return send(res, 200, { ok: true }); }
@@ -651,6 +660,61 @@ async function route(req, res) {
     return send(res, 200, items);
   }
   if (m === 'GET' && p === '/api/alerts') return send(res, 200, store.db.alerts.slice().reverse().slice(0, 100).map(function (a) { var pt4 = store.db.patients.find(function (x) { return x.id === a.pid; }) || {}; return Object.assign({}, a, { name: pt4.name, rn: pt4.rn }); }));
+  // ---- v5: learning (signals, lessons, report). Doctors decide; nurses can read. ----
+  var af = p.match(/^\/api\/alerts\/([a-f0-9]+)\/feedback$/);
+  if (m === 'POST' && af) {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    var fa = store.db.alerts.find(function (x) { return x.id === af[1]; }); if (!fa) return send(res, 404, { error: 'not_found' });
+    if (!fa.feedback) { fa.feedback = 'not_urgent'; fa.feedbackBy = user.name; fa.feedbackAt = Date.now(); if (!fa.ackAt) { fa.ackBy = user.name; fa.ackAt = Date.now(); }
+      LEARN.addSignal(store.db, { type: 'alert_not_urgent', pid: fa.pid, text: fa.text, cls: fa.cls, reason: fa.reason, by: user.username }); audit(user.username, 'marked an alert as not urgent'); store.save(); }
+    return send(res, 200, { ok: true });
+  }
+  var mf = p.match(/^\/api\/messages\/([a-f0-9]+)\/feedback$/);
+  if (m === 'POST' && mf) {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    var fm = store.db.messages.find(function (x) { return x.id === mf[1] && x.who === 'patient'; }); if (!fm) return send(res, 404, { error: 'not_found' });
+    if (!fm.feedback) { fm.feedback = 'should_alert'; fm.feedbackBy = user.name; LEARN.addSignal(store.db, { type: 'missed_alert', pid: fm.pid, text: fm.text, cls: fm.cls, by: user.username }); audit(user.username, 'marked a message as one that should have raised an alert'); store.save(); }
+    return send(res, 200, { ok: true });
+  }
+  if (m === 'GET' && p === '/api/learning') {
+    return send(res, 200, { tags: Object.keys(LEARN.TAGS).map(function (k) { return { id: k, label: LEARN.TAGS[k].label }; }), signalLabels: LEARN.SIGNAL_LABEL, aiOn: aiConfigured(), canDecide: needDoctor(user),
+      lessons: (store.db.lessons || []).slice().sort(function (a, b) { return b.at - a.at; }),
+      signals: (store.db.signals || []).slice(-60).reverse(), report: LEARN.report(store.db) });
+  }
+  if (m === 'POST' && p === '/api/lessons/suggest') {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    if (!aiConfigured()) return send(res, 400, { error: 'ai_off', message: 'The AI is not connected, so it cannot propose lessons. You can still write one yourself.' });
+    var sg = LEARN.signalsForAI(store.db, 25); if (!sg.used.length) return send(res, 200, { proposed: 0, message: 'No new corrections to learn from yet.' });
+    var lr = await AI.lessons(sg.text, Object.keys(LEARN.TAGS).join(', '), 'lessons by ' + user.username);
+    if (!lr.text) return send(res, 200, { proposed: 0, message: 'The AI gave no usable answer (' + (lr.error || 'empty') + '). Nothing was changed; try again.' });
+    var props = LEARN.parseProposals(lr.text, sg.used); store.db.lessons = store.db.lessons || [];
+    props = props.filter(function (pp2) { return !store.db.lessons.some(function (l) { return LEARN.norm(l.text) === LEARN.norm(pp2.text); }); });
+    props.forEach(function (pp2) { store.db.lessons.push({ id: uid(), text: pp2.text, tags: pp2.tags, status: 'proposed', by: 'AI (proposed)', basedOn: pp2.basedOn, example: pp2.example, at: Date.now(), history: [] }); });
+    sg.used.forEach(function (x) { x.processed = true; }); audit(user.username, 'asked the AI to propose lessons from ' + sg.used.length + ' correction(s): ' + props.length + ' proposed'); store.save();
+    return send(res, 200, { proposed: props.length, read: sg.used.length, message: props.length ? '' : 'The AI read ' + sg.used.length + ' correction(s) and proposed nothing that passed the checks.' });
+  }
+  if (m === 'POST' && p === '/api/lessons') {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    var nt2 = LEARN.clean(body.text, 240), ng = LEARN.okTags(body.tags);
+    if (!LEARN.lessonOk(nt2)) return send(res, 400, { error: 'lesson', message: 'A lesson is one sentence (12 to 240 characters) about wording or what to mention. It cannot contain a dose, a medicine instruction, or say that something is normal or safe.' });
+    if (!ng.length) return send(res, 400, { error: 'tags', message: 'Choose at least one topic.' });
+    store.db.lessons = store.db.lessons || []; var nl = { id: uid(), text: nt2, tags: ng, status: 'approved', by: user.name, approvedBy: user.name, approvedAt: Date.now(), at: Date.now(), history: [] };
+    store.db.lessons.push(nl); audit(user.username, 'wrote lesson: ' + nt2); store.save(); return send(res, 200, { lesson: nl });
+  }
+  var lm = p.match(/^\/api\/lessons\/([a-f0-9]+)$/);
+  if (m === 'POST' && lm) {
+    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    var le = (store.db.lessons || []).find(function (x) { return x.id === lm[1]; }); if (!le) return send(res, 404, { error: 'not_found' });
+    var la = String(body.action || '');
+    if (la === 'approve') {
+      var et = body.text ? LEARN.clean(body.text, 240) : le.text, eg = body.tags ? LEARN.okTags(body.tags) : le.tags;
+      if (!LEARN.lessonOk(et) || !eg.length) return send(res, 400, { error: 'lesson', message: 'This wording is not allowed in a lesson (no doses, no medicine instructions, no "it is normal").' });
+      if (et !== le.text) le.history.push({ at: Date.now(), by: user.name, was: le.text });
+      le.text = et; le.tags = eg; le.status = 'approved'; le.approvedBy = user.name; le.approvedAt = Date.now();
+    } else if (la === 'retire') { le.history.push({ at: Date.now(), by: user.name, was: le.status }); le.status = le.status === 'proposed' ? 'rejected' : 'retired'; le.retiredBy = user.name; le.retiredAt = Date.now(); }
+    else return send(res, 400, { error: 'action' });
+    audit(user.username, (la === 'approve' ? 'approved' : le.status) + ' lesson: ' + le.text); store.save(); return send(res, 200, { lesson: le });
+  }
   var am = p.match(/^\/api\/alerts\/([a-f0-9]+)\/ack$/);
   if (m === 'POST' && am) { var al = store.db.alerts.find(function (x) { return x.id === am[1]; }); if (!al) return send(res, 404, { error: 'not_found' }); al.ackBy = user.name; al.ackAt = Date.now(); audit(user.username, 'acknowledged alert'); store.save(); return send(res, 200, { ok: true }); }
 
