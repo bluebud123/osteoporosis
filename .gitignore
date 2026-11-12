@@ -1,1 +1,4 @@
 deepseek-key.txt
+
+# evaluation output from the stand-in model is never evidence; do not commit it
+app/eval/model_run_STANDIN_*
