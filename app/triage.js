@@ -184,7 +184,7 @@ var QFRAME = /^\s*(?:hi[ ,.]+|hello[ ,.]+|doctor[ ,.]+|dr[ ,.]+|nurse[ ,.]+)?(?:
 var REPORT = /\b(?:i have|i'?ve|i got|i am|i'?m|i feel|i felt|i think i|i noticed|i woke|i can|i cannot|i can'?t|he has|she has|he is|she is|(?:my|the|his|her) (?:temp\w*|wound|knee|leg|calf|dressing|bandage|stitches|scar|cut) (?:is|has|feels|looks|keeps|was|started)|it is|it'?s|since|today|tonight|now|this (?:morning|afternoon|evening)|yesterday|last night|again|still|just)\b|\d{2}(?:\.\d)?|saya (?:ada|rasa|demam|dah|sudah)|sejak|tadi|semalam|sekarang|hari ini|malam tadi|masih|我(?:有|在|发|觉得|现在)|今天|昨天|昨晚|现在|刚才|一直|还在|了/i;
 function generalQuestion(text) { return QFRAME.test(text) && !REPORT.test(text); }
 
-function classify(text, ctx) {
+function classifyBase(text, ctx) {
   var nt = normalise(text);
   var r = E.classify(text, ctx);
   if (nt !== String(text)) { var rn = E.classify(nt, ctx); if (RANK(rn.cls) > RANK(r.cls)) { r = rn; r.normalised = true; } }
@@ -221,4 +221,26 @@ function classify(text, ctx) {
   return out;
 }
 
-module.exports = { normalise: normalise, classify: classify, alarmHasContext: alarmHasContext, generalQuestion: generalQuestion, EMERGENCY: EMERGENCY, SAMEDAY: SAMEDAY };
+/* v4 (12 Nov 2026): the clinician's emergency line.
+ * Dr Tan labelled 368 English messages blind. 42 that he called emergencies were only SAME-DAY here. He then decided that
+ * these groups get the emergency text. This step can only raise SAME-DAY to EMERGENCY; it never lowers and adds no new
+ * way of detecting a message: it re-classes results the rules above already produce, by their flag.
+ * The calf group needs one qualifier (swollen, hard or bigger) because he labelled plain calf pain as same-day. */
+var CLINICIAN_LINE = [
+  ['fever 38.4 C or higher', function (f) { return f.some(function (x) { var m = /^fever (\d+(?:\.\d+)?)$/.exec(x); return m && parseFloat(m[1]) >= 38.4 && parseFloat(m[1]) < 45; }); }],
+  ['pus, discharge or a foul smell from the wound', function (f) { return f.indexOf('wound discharge or smell') >= 0; }],
+  ['fall, or injury to the operated joint', function (f) { return f.indexOf('fall or knee injury') >= 0 || f.indexOf('fall or head injury') >= 0; }],
+  ['swollen or hard calf or leg (possible clot)', function (f, t) { return f.indexOf('calf/leg pain or swelling') >= 0 && /\b(swollen|swelling|swell|hard|bigger|fat|ballooned|puffy)\b/i.test(t); }],
+  ['cannot pass urine', function (f) { return f.indexOf('cannot pass urine') >= 0; }]
+];
+function classify(text, ctx) {
+  var out = classifyBase(text, ctx);
+  if (out.cls !== 'SAME-DAY') return out;
+  var f = out.flags || [], t = String(text), hits = CLINICIAN_LINE.filter(function (r) { return r[1](f, t); }).map(function (r) { return r[0]; });
+  if (!hits.length) return out;
+  out.cls = 'EMERGENCY'; out.escalated = hits; out.flags = f.concat(hits.map(function (h) { return 'clinician line: ' + h; }));
+  out.changed = (out.changed ? out.changed + '; ' : '') + 'raised from SAME-DAY to EMERGENCY by the clinician line (Dr Tan, 12 Nov 2026): ' + hits.join('; ');
+  return out;
+}
+
+module.exports = { normalise: normalise, classify: classify, classifyBase: classifyBase, CLINICIAN_LINE: CLINICIAN_LINE, alarmHasContext: alarmHasContext, generalQuestion: generalQuestion, EMERGENCY: EMERGENCY, SAMEDAY: SAMEDAY };

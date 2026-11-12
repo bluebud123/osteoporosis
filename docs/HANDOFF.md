@@ -71,3 +71,11 @@ He asked for free tools, for example an ElevenLabs connector, for the video and 
 - That a pilot or Ministry of Health permission exists.
 - Any accuracy figure without saying the messages were invented and who labelled them.
 - That Arabic is reviewed, unless a native speaker has read it.
+
+
+## Update, 12 Nov 2026 (later session)
+
+Done since the handoff above: jobs 1, 2 and 3 (one labeller, English only; a second labeller and other languages are dropped for now by Dr Tan's decision). See decision log v3.8 to v4.
+Built in v4 on his "go": the clinician's emergency line, an AI severity step, a retry and staff alert when the AI is unavailable, and the patient profile memory.
+Still open: a real-model run of v4 (`run-model-eval.bat`, option 3) to measure the severity step; a live try of the profile memory with the real model; job 4 sign-off (now also the three raise-only links in `app/memory.js`, and the 16 emergencies still classed same-day); jobs 5 to 8.
+The DeepSeek key pasted in an earlier chat has NOT been rotated yet; he said he will do it when the work is finished.

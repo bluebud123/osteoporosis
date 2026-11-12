@@ -23,6 +23,7 @@ Around elective surgery a finding is often made and then not followed through: a
 | Patient chat | A private link, no app to install. English, Malay, Chinese, Arabic. |
 | Message triage | Fixed red-flag rules run first. An optional AI second check can only raise urgency, never lower it. Emergency and same-day replies are fixed texts. The AI never writes clinical advice. |
 | Clinic answers | 19 fixed answers to common questions. Each is a draft until a doctor approves it, and is labelled as a draft to the patient. |
+| Patient profile memory | When a patient mentions an illness, a medicine, a worry, their home situation or a preference, the AI proposes it to staff with the patient's exact words. Staff confirm or dismiss. Confirmed items help the AI draft replies for staff and can raise urgency (a confirmed blood thinner plus "bruising" pages the same day). Never shown in the patient chat. |
 | Staff views | Today, Inbox, Alerts (acknowledging records who and when), Calendar with a cases-per-day limit, Rules, Settings, audit log. |
 | Live view | Patient, pipeline and staff side by side, so each decision can be seen step by step. |
 

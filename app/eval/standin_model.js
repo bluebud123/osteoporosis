@@ -2,6 +2,8 @@
 var http=require('http');
 http.createServer(function(q,r){var b='';q.on('data',function(c){b+=c});q.on('end',function(){var j=JSON.parse(b),sys=j.messages[0].content,last=j.messages[j.messages.length-1].content,pm=(last.match(/<msg>([\s\S]*)<\/msg>/)||[,last])[1],c;
  if(/triage second-check/.test(sys))c=JSON.stringify({verdict:/strange|funny feeling|not right|pelik/i.test(pm)?'urgent':'routine',reason:/strange|funny|not right|pelik/i.test(pm)?'new unexplained symptom':'ordinary message'});
+ else if(/flagged this message/.test(sys))c=JSON.stringify(/very wrong|gone cold/i.test(pm)?{level:'emergency',reason:'stand-in: limb threat'}:{level:'sameday',reason:'stand-in'});
+ else if(/states about THEMSELVES/.test(sys)){var out=[],w=pm.match(/i take warfarin/i),l=pm.match(/i live alone/i),inv=/invent/i.test(pm);if(w)out.push({cat:'medicine',fact:'takes warfarin',quote:w[0]});if(l)out.push({cat:'home',fact:'lives alone',quote:l[0]});if(inv)out.push({cat:'condition',fact:'has heart failure',quote:'my heart failure is bad'});c=JSON.stringify(out)}
  else if(/match a patient message to a clinic answer/.test(sys))c=JSON.stringify({topic:/son|daughter|pick me up|fetch/i.test(pm)?'stay':/pillow|clothes|slippers/i.test(pm)?'bring':'none'});
  else if(/only a clinician can answer/.test(sys))c='Thanks for asking about that. When did you last take it?';
  else if(/staff-only profile/.test(sys))c='Summary: recovering after knee replacement, asks practical questions.\nCommunication: short messages in English.\nApproach: give dates and next steps plainly.';

@@ -10,6 +10,7 @@ var http = require('http'), fs = require('fs'), path = require('path'), crypto =
 var Store = require('./store.js');
 var E = require('./lib/engine.js');
 var SC = require('./lib/second_check.js');
+var MEM = require('./memory.js');   // v4: patient-reported facts, proposed by the AI, confirmed by staff
 var proxy = require('./lib/server/chat.js');
 var P = require('./periop.js');
 var AI = require('./ai.js');
@@ -247,6 +248,7 @@ function buildBrief(pt) {
     'Comorbidities: ' + (como.length ? como.map(function (c) { return c.label; }).join('; ') : 'none recorded'),
     'Pending items: ' + (pending.length ? pending.slice(0, 8).map(function (p) { return p.title + (p.overdue ? ' (overdue)' : ''); }).join('; ') : 'none'),
     'Open automatic flags: ' + (dets.length ? dets.map(function (d) { return d.level.toUpperCase() + ' ' + d.title; }).join('; ') : 'none'),
+    MEM.factsLine(pt.memory),
     'Latest readings: ' + (Object.keys(latest).length ? Object.keys(latest).map(function (k) { return P.PARAMS[k].label + ' ' + P.fmtVal(k, latest[k].value); }).join('; ') : 'none')].join('\n');
   var draft, red = dets.some(function (d) { return d.level === 'red'; }), urgentMsg = lastMsg && (lastMsg.cls === 'EMERGENCY' || lastMsg.cls === 'SAME-DAY');
   var preop = pending.filter(function (p) { return !p.doctorOnly; });
@@ -296,6 +298,17 @@ function bgProfile(pt, s8, inMsg) {
   }).catch(function () {}).then(function () { bg.delete(p); });
   bg.add(p);
 }
+// v4: after the reply, ask the AI what the patient said about themselves. Items are only PROPOSED; staff confirm or dismiss.
+function bgMemory(pt, inMsg) {
+  if (!aiConfigured()) return;
+  var p = AI.memory(inMsg.text, 'memory ' + pt.rn).then(function (out) {
+    var items = MEM.parse(out, inMsg.text); pt.memory = pt.memory || [];
+    items.forEach(function (it) { if (MEM.known(pt.memory, it)) return; pt.memory.push({ id: uid(), cat: it.cat, text: it.text, quote: it.quote, msgId: inMsg.id, status: 'proposed', at: Date.now(), by: 'AI (proposed from chat)' }); });
+    if (pt.memory.length > 200) pt.memory.splice(0, pt.memory.length - 200);
+    if (items.length) store.save();
+  }).catch(function () {}).then(function () { bg.delete(p); });
+  bg.add(p);
+}
 function drain() { return Promise.all(Array.from(bg)); }
 
 /* ---------- the patient message pipeline ---------- */
@@ -331,17 +344,32 @@ async function patientMessage(pt, rawText, via) {
   store.db.rules.redflags.forEach(function (rf) {
     if (rf.phrase && nt.indexOf(norm(rf.phrase)) >= 0 && urgentRank[rf.cls] > urgentRank[cls]) { cls = rf.cls; flags.push('clinic rule: ' + rf.phrase); reason = 'Clinic rule: "' + rf.phrase + '"'; hitRf = rf; }
   });
-  step(3, 'Clinic extra phrases (can only raise)', hitRf ? 'raise' : 'pass', hitRf ? 'Matched "' + hitRf.phrase + '" -> ' + hitRf.cls : store.db.rules.redflags.length + ' phrase(s) checked, none matched');
+  // v4: a fact the patient told us earlier and staff confirmed can raise a routine message to SAME-DAY (never lower)
+  var memHit = urgentRank[cls] < urgentRank['SAME-DAY'] ? MEM.raise(pt.memory, safe) : null;
+  if (memHit) { cls = 'SAME-DAY'; flags.push('patient profile: ' + memHit.reason); reason = 'Patient profile (confirmed by staff): ' + memHit.reason + ' ("' + memHit.fact + '")'; }
+  step(3, 'Clinic extra phrases and confirmed patient profile (can only raise)', (hitRf || memHit) ? 'raise' : 'pass', (hitRf ? 'Matched "' + hitRf.phrase + '" -> ' + hitRf.cls : store.db.rules.redflags.length + ' phrase(s) checked, none matched') + (memHit ? ' · Profile: ' + memHit.reason + ' -> SAME-DAY' : ' · ' + MEM.confirmed(pt.memory).length + ' confirmed profile fact(s) checked'));
   var urgent = cls === 'EMERGENCY' || cls === 'SAME-DAY';
-  var secondUsed = false, sec = null;
+  var secondUsed = false, sec = null, unscreenedAlert = false;
   // 4. model second check
   if (urgent) step(4, 'AI second check', 'skip', 'Skipped: rules already say ' + cls + '. The AI is never needed to confirm an emergency.');
   else if (!aiConfigured()) step(4, 'AI second check', 'skip', 'AI is not connected on the server, so rules only.');
   else {
-    sec = await secondCheck(safe, pt.id); secondUsed = sec.verdict !== 'unscreened';
-    if (sec.verdict === 'urgent') { cls = 'SAME-DAY'; urgent = true; flags.push('second check: ' + sec.reason); reason = 'AI second check: ' + sec.reason; step(4, 'AI second check', 'raise', 'Model says URGENT: "' + sec.reason + '". The class is raised to SAME-DAY. The model can raise, never lower.'); }
-    else if (sec.verdict === 'routine') step(4, 'AI second check', 'pass', 'Model says routine. The rules class is unchanged (' + cls + ').');
-    else { inMsg.unscreened = true; step(4, 'AI second check', 'warn', 'Model unavailable or invalid: message marked "AI check unavailable" for staff. The rules result stands.'); }
+    sec = await secondCheck(safe, pt.id);
+    var retried = false; if (sec.verdict === 'unscreened') { retried = true; sec = await secondCheck(safe, pt.id + '-r'); }   // v4: one retry
+    secondUsed = sec.verdict !== 'unscreened';
+    if (sec.verdict === 'urgent') {
+      cls = 'SAME-DAY'; urgent = true; flags.push('second check: ' + sec.reason); reason = 'AI second check: ' + sec.reason;
+      // v4: the AI may raise its own catch from SAME-DAY to EMERGENCY (never lower). No usable answer keeps SAME-DAY.
+      var sv = await AI.severity(safe, 'severity ' + pt.rn);
+      if (sv.level === 'emergency') { cls = 'EMERGENCY'; flags.push('AI severity: emergency (' + sv.reason + ')'); reason += ' · AI severity: emergency (' + sv.reason + ')'; }
+      step(4, 'AI second check', 'raise', 'Model says URGENT: "' + sec.reason + '"' + (retried ? ' (answered on the second try)' : '') + '. Severity check: ' + (sv.level === 'emergency' ? 'EMERGENCY ("' + sv.reason + '"), so the emergency text is sent.' : sv.level === 'sameday' ? 'same-day.' : 'no usable answer, kept at SAME-DAY.') + ' The model can raise, never lower.');
+    }
+    else if (sec.verdict === 'routine') step(4, 'AI second check', 'pass', 'Model says routine' + (retried ? ' (answered on the second try)' : '') + '. The rules class is unchanged (' + cls + ').');
+    else {
+      // v4: tried twice, no answer. The patient reply is unchanged (the rules found nothing), but a person must read it today.
+      inMsg.unscreened = true; inMsg.needsStaff = true; unscreenedAlert = true;
+      step(4, 'AI second check', 'warn', 'Model unavailable or invalid twice. The rules result stands for the patient reply; a staff alert is raised so a person reads this message today.');
+    }
   }
   inMsg.cls = cls; inMsg.flags = flags;
   step(5, 'Decision', urgent ? 'raise' : 'pass', 'Final class: ' + cls + (rulesCls !== cls ? ' (rules said ' + rulesCls + ')' : ''));
@@ -351,7 +379,8 @@ async function patientMessage(pt, rawText, via) {
     step(7, 'Effect for staff', staffEffect.indexOf('Nothing') === 0 ? 'pass' : 'raise', staffEffect);
     inMsg.totalMs = Date.now() - t0;
     var s8 = { n: 8, title: 'Update patient profile (after the reply, in the background)', status: 'warn', detail: 'Updating the profile from the record and this chat...', ms: 0 }; trace.push(s8); inMsg.trace = trace;
-    bgProfile(pt, s8, inMsg);
+    bgProfile(pt, s8, inMsg); bgMemory(pt, inMsg);
+    if (unscreenedAlert && cls !== 'EMERGENCY' && cls !== 'SAME-DAY') raiseAlert(pt, 'SAME-DAY', safe, 'AI check unavailable (tried twice): the rules found nothing, a person must read this message today');
   }
   if (cls === 'EMERGENCY' || cls === 'SAME-DAY') {
     var al = raiseAlert(pt, cls, safe, reason || flags.join('; '));
@@ -526,7 +555,7 @@ async function route(req, res) {
         messages: store.db.messages.filter(function (x) { return x.pid === pat.id; }),
         alerts: store.db.alerts.filter(function (a) { return a.pid === pat.id; }),
         readings: store.db.readings.filter(function (r) { return r.pid === pat.id; }).sort(function (a, b) { return a.at - b.at; }), detections: store.db.detections.filter(function (d) { return d.pid === pat.id; }).sort(function (a, b) { return b.at - a.at; }),
-        brief: buildBrief(pat), profile: pat.profile || null, aiOn: aiConfigured(), params: P.PARAMS });
+        brief: buildBrief(pat), profile: pat.profile || null, memory: (pat.memory || []).slice().sort(function (a, b) { return b.at - a.at; }), memoryCats: MEM.CATS, aiOn: aiConfigured(), params: P.PARAMS });
     }
     if (m === 'POST' && sub === 'reply') {
       var txt = String(body.text || '').trim().slice(0, 1000); if (!txt) return send(res, 400, { error: 'empty' });
@@ -542,6 +571,22 @@ async function route(req, res) {
       var rd = { id: uid(), pid: pat.id, param: pr, value: val, at: Date.now(), source: 'entered by ' + user.name };
       store.db.readings.push(rd); var dr = detectAndAct(pat, rd, 'entered by ' + user.name); audit(user.username, 'entered ' + pr + ' for ' + pat.rn); store.save();
       return send(res, 200, { reading: rd, detections: dr.detections, steps: dr.evaluation.steps, hits: dr.evaluation.hits.map(function (h) { return { level: h.level, msg: h.msg }; }) });
+    }
+    // v4: patient profile memory. Staff add, confirm, edit or dismiss. Every change is in the audit log.
+    if (m === 'POST' && sub === 'memory') {
+      var mb = body || {}, mcat = String(mb.cat || ''), mtext = String(mb.text || '').replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 120);
+      if (!MEM.CATS[mcat] || mtext.length < 2) return send(res, 400, { error: 'memory', message: 'Choose a category and type what the patient said.' });
+      pat.memory = pat.memory || []; var mi = { id: uid(), cat: mcat, text: mtext, quote: '', status: 'confirmed', at: Date.now(), by: user.name, confirmedBy: user.name, confirmedAt: Date.now() };
+      pat.memory.push(mi); audit(user.username, 'added profile fact for ' + pat.rn + ': ' + MEM.CATS[mcat] + ': ' + mtext); store.save(); return send(res, 200, { item: mi });
+    }
+    var mm = /^memory\/([a-f0-9]+)$/.exec(sub);
+    if (m === 'POST' && mm) {
+      var it = (pat.memory || []).find(function (x) { return x.id === mm[1]; }); if (!it) return send(res, 404, { error: 'not_found' });
+      var ab = body || {}, act = String(ab.action || '');
+      if (act === 'confirm') { if (ab.text) it.text = String(ab.text).replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 120) || it.text; it.status = 'confirmed'; it.confirmedBy = user.name; it.confirmedAt = Date.now(); }
+      else if (act === 'dismiss') { it.status = 'dismissed'; it.dismissedBy = user.name; it.dismissedAt = Date.now(); }
+      else return send(res, 400, { error: 'action' });
+      audit(user.username, (act === 'confirm' ? 'confirmed' : 'dismissed') + ' profile fact for ' + pat.rn + ': ' + MEM.CATS[it.cat] + ': ' + it.text); store.save(); return send(res, 200, { item: it });
     }
     if (m === 'POST' && sub === 'draft') {
       var br = buildBrief(pat), r2 = await AI.draft(br.facts, br.lastMessage || '(no message yet)', 'draft for ' + pat.rn);

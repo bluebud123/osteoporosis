@@ -337,3 +337,39 @@ What it shows:
 3. The 43 same-day messages with no alert are all questions or mild, stable symptoms ("can I shower?", "is bruising normal?"). In the system these go to the inbox for a named person to answer; they do not page. This is the definition difference of v3.12 point 2, not a miss of an urgent symptom.
 4. No routine message was paged, with or without the AI.
 5. Limits: one clinician, one pass at about 2 to 3 seconds a message, English only, invented messages, one model, one run, and sets the rules were tuned on. With 155 of 155 the one-sided 95% lower bound is about 98% for this labeller and these messages only; it is not a sensitivity for real patients.
+
+## v4 (12 Nov 2026): the clinician's emergency line, AI severity, AI-unavailable alert, patient profile memory
+
+All four were approved by Dr Tan in chat on 12 Nov 2026 ("go"), after the label results of v3.12 and v3.13. Tests: `node app/eval/v4.test.js` (33 checks, with the stand-in model: it tests the plumbing, not any real model). `app/lib/` and `src/` are untouched.
+
+### 1. The clinician's emergency line (`app/triage.js`, `CLINICIAN_LINE`)
+A SAME-DAY result becomes EMERGENCY when its flags show: a fever reading of 38.4 C or more; pus, discharge or a foul smell from the wound; a fall or an injury to the operated joint; a calf or leg flag together with "swollen", "hard" or "bigger"; cannot pass urine. It re-classes results the rules already produce and can only raise. One qualifier was needed for the calf group, because he labelled plain calf pain as same-day.
+
+Measured against his 368 English labels (four slips corrected), rules alone:
+
+| | Before | After |
+|---|---|---|
+| His emergencies that get the emergency text | 108/155 (70%) | 134/155 (86%) |
+| His emergencies that raise any alert | 150/155 | 150/155 |
+| His same-day messages that now get the emergency text because of the line | 0 | 8 of 99 |
+| His routine messages that raise any alert | 0/114 | 0/114 |
+
+Cost: 8 messages he called same-day now get the emergency text (for example "calf is rock hard and painful", "i havent peed since last night", "there is a bad smell coming from under the bandage"). One of them is a known false alert made worse: "my son fell off his bike yesterday but hes ok, can he still drive me?" now gets the emergency text. Across the AI-labelled sets in all four languages, 64 of 146 same-day messages now get the emergency text. The line was written from English labels; its effect in Malay, Chinese and Arabic follows from the flags and has not been checked by a reader of those languages.
+Still same-day although he called them emergencies (16): vomiting that will not settle, bleeding through the dressing, spreading redness, chills without a reading, a blackening blister, uncontrolled pain, numb toes in a tight plaster. Not changed: he approved five groups, not these.
+
+### 2. AI severity (`AI.severity` in `app/ai.js`, used in `app/server.js` step 4)
+When the AI second check says "urgent", a second short call asks "emergency or same-day?" with a fixed list that includes the clinician's line. "emergency" sends the fixed emergency text. No usable answer keeps SAME-DAY. It can only raise. Not yet measured with a real model: the next `run-model-eval.bat` run will show how many AI-caught messages become emergencies and how many ordinary ones do.
+
+### 3. AI unavailable (changed from what was first proposed)
+The second check is tried twice. If both fail, the message is marked for staff and a staff alert is raised ("AI check unavailable (tried twice): a person must read this message today"). **The patient reply is not changed.** The first proposal was to class the message SAME-DAY; that would have told a patient who wrote "thank you" to call the clinic today whenever the provider is down. The clinician's aim, that a person looks at it, is kept. Known cost: during a provider outage every routine message raises a staff alert (alerts for one patient merge within ten minutes).
+
+### 4. Patient profile memory (`app/memory.js`)
+Decisions by Dr Tan: staff confirm each item; staff only; raise only; remember conditions and medicines, worries and goals, home and support, preferences, and details around the operation.
+- After each patient message the AI is asked what the patient said about themselves. Its answer is untrusted: an item is kept only if its category is known, it is not worded as an instruction, and its quote is really in the patient's message. Items are stored as "proposed", with the patient's words.
+- A doctor or nurse confirms or dismisses each item on the patient page, or adds one by hand. A dismissed item is not proposed again. Every change is in the audit log.
+- Confirmed items are used in three places only: shown to staff; added (labelled "not medically verified") to the facts the AI sees when it drafts a reply for staff or writes the staff summary; and a fixed table of three raise-only links (blood thinner + bleeding or bruising; blood thinner + a fall; diabetes + a wound change) that can raise a routine message to SAME-DAY with the reason shown.
+- The patient chat never receives the profile, because the chat link is the patient's only identity (tested).
+- Limits: the three links are AI-drafted, English only, and await sign-off. "Confirmed" means "we heard this", not "verified". No real model has run the extraction yet; how often it proposes something wrong or misses something is not known. Patient text is sent to the provider for one more call per message.
+
+### Test expectations changed
+None in `app/test.js` (117/117) or the held-out sets. New: `app/eval/v4.test.js`.
