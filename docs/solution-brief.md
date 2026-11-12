@@ -85,7 +85,7 @@ Automated tests: `node app/test.js` 117 of 117; `node app/eval/holdout.test.js` 
 
 - Synthetic data only. Phone numbers, IC numbers and emails are masked before storage or any model call.
 - Emergency, same-day and clinical-question replies are fixed texts. Urgent texts never promise that a person will reply.
-- When the AI is on, patient text goes to the configured provider. No provider or hosting region has been chosen for health data in the UAE.
+- When the AI is on, patient text goes to the configured provider. The provider is a setting, not code: base URL, key and model name. The measurements here used DeepSeek because it is cheap for synthetic tests. For real patients in the UAE the model must run in-country (for example a cloud region in the UAE or a locally hosted model), and any change of model must be measured again with the one-command evaluation before it is trusted. No other provider has been tried yet.
 - A patient's private link is their only identity. That is acceptable for a demo and not for real use.
 
 ## 8. Do not read this prototype as

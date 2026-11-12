@@ -104,7 +104,7 @@ function T(kind, lang) {
 }
 
 /* ---------- AI via the same guarded proxy code (no key ever leaves the server) ---------- */
-function aiConfigured() { return !!(process.env.PROVIDER_BASE_URL && process.env.PROVIDER_KEY); }
+function aiConfigured() { return !!(process.env.PROVIDER_BASE_URL && process.env.PROVIDER_KEY) && !AI.overBudget(); }   // v8: a reached daily ceiling counts as "AI off"
 async function aiCall(body, ipKey) {
   var req = new Request('http://localhost/', { method: 'POST', headers: { 'content-type': 'application/json', 'x-client-ip': 'console-' + ipKey }, body: JSON.stringify(body) });
   var res = await proxy.handle(req);
@@ -518,6 +518,33 @@ function patientByToken(tok) { return store.db.patients.find(function (p) { retu
 function needDoctor(u) { return u && u.role === 'doctor'; }
 function needChief(u) { if (!u || u.role !== 'doctor') return false; var du = store.db.users.find(function (x) { return x.username === u.username; }); return !!(du && du.chief); }
 
+/* ---------- v8: settings for a hosted public demo ----------
+ * PERILOOP_DEMO=1            this is a public demo: allows the full reset below and the idle auto-reset.
+ * PERILOOP_DOCTOR_PW / PERILOOP_NURSE_PW   passwords for the two demo logins, applied at every start and after every reset,
+ *                            so the passwords printed in the public README never work on the hosted link.
+ * PERILOOP_EMERGENCY_NUMBER, PERILOOP_CLINIC_PHONE, PERILOOP_CLINIC_HOURS   settings applied the same way.
+ * PERILOOP_DEMO_RESET_MIN    minutes with no activity after which changed demo data is put back to the start (0 = never).
+ * PERILOOP_TRUST_PROXY=1     behind a host's proxy: read the visitor's address from x-forwarded-for, so one visitor cannot use up
+ *                            the login attempts of everyone else. */
+var DEMO_HOST = process.env.PERILOOP_DEMO === '1', RESET_MIN = Math.max(0, parseInt(process.env.PERILOOP_DEMO_RESET_MIN || '0', 10) || 0);
+var lastActivity = Date.now(), dirty = false;
+function applyEnv() {
+  [['doctor', process.env.PERILOOP_DOCTOR_PW], ['nurse', process.env.PERILOOP_NURSE_PW]].forEach(function (x) {
+    var u = store.db.users.find(function (y) { return y.username === x[0]; }); if (!u || !x[1] || String(x[1]).length < 8) return;
+    u.salt = crypto.randomBytes(12).toString('hex'); u.hash = hash(x[1], u.salt);
+  });
+  var S = store.db.settings;
+  if (process.env.PERILOOP_EMERGENCY_NUMBER) S.emergencyNumber = String(process.env.PERILOOP_EMERGENCY_NUMBER).slice(0, 20);
+  if (process.env.PERILOOP_CLINIC_PHONE) S.clinicPhone = String(process.env.PERILOOP_CLINIC_PHONE).slice(0, 40);
+  if (process.env.PERILOOP_CLINIC_HOURS) S.sessionsText = String(process.env.PERILOOP_CLINIC_HOURS).slice(0, 120);
+}
+// Everything back to the first-run state: demo patients, chats, alerts, lessons, corrections, settings. Logins stay valid.
+function fullReset(by) {
+  store.db = null; init(); applyEnv(); audit(by, 'whole demo reset to its starting state'); store.save(); dirty = false; return store.db.patients.length;
+}
+function clientAddr(req) { var f = process.env.PERILOOP_TRUST_PROXY === '1' ? String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() : ''; return f || req.socket.remoteAddress || ''; }
+function idleTick() { if (DEMO_HOST && RESET_MIN && dirty && Date.now() - lastActivity >= RESET_MIN * 60000) { try { fullReset('system (no activity for ' + RESET_MIN + ' min)'); } catch (e) { /* keep serving */ } } }
+
 /* ---------- routes ---------- */
 async function route(req, res) {
   var url = new URL(req.url, 'http://x'), p = url.pathname, m = req.method;
@@ -527,6 +554,7 @@ async function route(req, res) {
   if (m === 'GET' && p === '/eval/label') return serveFile(res, path.join('..', 'eval', 'label.html'));   // v3: blind labelling page (the pool itself is doctor-only, below)
   if (m === 'GET' && p === '/healthz') return send(res, 200, { ok: true });
   if (!p.startsWith('/api/')) { res.writeHead(404); return res.end('Not found'); }
+  lastActivity = Date.now(); if (m === 'POST' && p !== '/api/login' && p !== '/api/logout') dirty = true;   // v8: for the idle reset of a public demo
 
   if (m === 'POST' && req.headers['x-requested-with'] !== 'periloop') return send(res, 403, { error: 'bad_request' });
   var body = m === 'POST' ? await readBody(req) : {};
@@ -541,7 +569,7 @@ async function route(req, res) {
       return send(res, 200, { name: pt.name, messages: msgs, threadOpen: !!pt.threadOpen, emergency: store.db.settings.emergencyNumber || '999', lang: pt.lang, pending: store.db.tasks.filter(function (t) { return t.pid === pt.id && t.state === 'open' && !t.auto && !DOCTOR_OWNERS[t.owner]; }).length });
     }
     if (m === 'POST' && pm[2] === 'message') {
-      if (limited('pm-' + pt.id, 20, 5 * 60 * 1000)) return send(res, 429, { error: 'slow_down' });
+      if (limited('pm-' + pt.id, 20, 5 * 60 * 1000) || limited('pmip-' + clientAddr(req), 60, 5 * 60 * 1000)) return send(res, 429, { error: 'slow_down' });   // v8: also per visitor address
       if (!body.text || typeof body.text !== 'string') return send(res, 400, { error: 'bad_text' });
       await patientMessage(pt, body.text); store.save();
       return send(res, 200, { ok: true });
@@ -550,13 +578,13 @@ async function route(req, res) {
 
   // ---- login ----
   if (m === 'POST' && p === '/api/login') {
-    if (limited('login-' + (req.socket.remoteAddress || ''), 10, 5 * 60 * 1000)) return send(res, 429, { error: 'too_many_attempts' });
+    if (limited('login-' + clientAddr(req), 10, 5 * 60 * 1000)) return send(res, 429, { error: 'too_many_attempts' });
     var u = store.db.users.find(function (x) { return x.username === String(body.username || '').toLowerCase(); });
     var ok = u && crypto.timingSafeEqual(Buffer.from(hash(body.password || '', u.salt), 'hex'), Buffer.from(u.hash, 'hex'));
     if (!ok) return send(res, 401, { error: 'wrong_login' });
     var sid = crypto.randomBytes(24).toString('hex'); sessions.set(sid, { username: u.username, exp: Date.now() + 12 * 3600 * 1000 });
     audit(u.username, 'login');
-    return send(res, 200, { ok: true }, { 'set-cookie': 'sid=' + sid + '; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200' });
+    return send(res, 200, { ok: true }, { 'set-cookie': 'sid=' + sid + '; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200' + (req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '') });
   }
   if (m === 'GET' && p === '/api/demo') return send(res, 200, { demo: !!store.db.settings.demoBanner });
 
@@ -564,7 +592,7 @@ async function route(req, res) {
   if (!user) return send(res, 401, { error: 'login_required' });
 
   if (m === 'POST' && p === '/api/logout') { var sid2 = parseCookies(req).sid; sessions.delete(sid2); return send(res, 200, { ok: true }, { 'set-cookie': 'sid=; Max-Age=0; Path=/' }); }
-  if (m === 'GET' && p === '/api/me') return send(res, 200, { username: user.username, name: user.name, role: user.role, chief: needChief(user), owners: OWNERS, langs: LANGS, procedures: Object.keys(store.db.rules.pathway.procedures).map(function (k) { return { key: k, label: store.db.rules.pathway.procedures[k].label }; }), ai: aiConfigured(), settings: store.db.settings });
+  if (m === 'GET' && p === '/api/me') return send(res, 200, { username: user.username, name: user.name, role: user.role, chief: needChief(user), demoHost: DEMO_HOST, demoResetMin: RESET_MIN, aiBudget: AI.budget(), owners: OWNERS, langs: LANGS, procedures: Object.keys(store.db.rules.pathway.procedures).map(function (k) { return { key: k, label: store.db.rules.pathway.procedures[k].label }; }), ai: aiConfigured(), settings: store.db.settings });
 
   if (m === 'GET' && p === '/api/summary') {
     var open = store.db.tasks.filter(function (t) { return t.state === 'open' && store.db.patients.find(function (x) { return x.id === t.pid && x.active; }); });
@@ -708,6 +736,11 @@ async function route(req, res) {
     return send(res, 200, dl);
   }
   if (m === 'GET' && p === '/api/ai/activity') return send(res, 200, { on: aiConfigured(), log: AI.activity(60) });
+  if (m === 'POST' && p === '/api/demo/full-reset') {   // v8: public demo only, chief only
+    if (!DEMO_HOST) return send(res, 403, { error: 'not_demo', message: 'A full reset is only available on a hosted demo (PERILOOP_DEMO=1).' });
+    if (!needChief(user)) return send(res, 403, { error: 'chief_only' });
+    var who = user.username, nfr = fullReset(who); return send(res, 200, { ok: true, patients: nfr });
+  }
   if (m === 'POST' && p === '/api/demo/reset') {
     if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
     var ids = {}; store.db.patients.forEach(function (x) { if (x.demo) ids[x.id] = 1; });
@@ -872,15 +905,17 @@ async function route(req, res) {
 }
 
 function createServer() {
-  init();
+  init(); applyEnv(); store.save();
   return http.createServer(function (req, res) { route(req, res).catch(function (e) { console.log('error', e && e.message); try { send(res, 500, { error: 'server_error' }); } catch (x) { /* ignore */ } }); });
 }
-module.exports = { createServer: createServer, init: init, store: store, drain: drain, secondCheck: secondCheck };   // secondCheck is exported for app/eval/run_model_eval.js --ai-alone
+module.exports = { createServer: createServer, init: init, store: store, drain: drain, secondCheck: secondCheck, idleTick: idleTick, fullReset: fullReset };   // secondCheck is exported for app/eval/run_model_eval.js --ai-alone
 if (require.main === module) {
+  setInterval(idleTick, 60000).unref();
   createServer().listen(PORT, function () {
     console.log('PeriLoop Console: http://localhost:' + PORT + '   (staff)');
     console.log('AI: ' + (aiConfigured() ? 'on (' + process.env.PROVIDER_BASE_URL + ')' : 'off, rules only. Set PROVIDER_BASE_URL, PROVIDER_KEY, PROVIDER_MODEL to turn it on.'));
-    console.log('Demo logins: doctor / doctor-demo-1   nurse / nurse-demo-1   (synthetic data only; change them in Settings)');
+    console.log(process.env.PERILOOP_DOCTOR_PW ? 'Logins: doctor and nurse, with the passwords set on the host.' : 'Demo logins: doctor / doctor-demo-1   nurse / nurse-demo-1   (synthetic data only; change them in Settings)');
+    if (DEMO_HOST) console.log('Public demo mode: full reset allowed' + (RESET_MIN ? ', automatic reset after ' + RESET_MIN + ' min without activity' : '') + '. AI calls today: ' + (AI.budget().max ? 'at most ' + AI.budget().max : 'no ceiling set (set AI_DAILY_MAX)') + '.');
     console.log('Data file: ' + store.file);
   });
 }

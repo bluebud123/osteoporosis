@@ -11,7 +11,7 @@ Built for the Future Health Digital Innovation Challenge 2026 (Abu Dhabi), State
 Node 18 or later. No dependencies.
 
 ```
-node app/server.js          # then open http://localhost:8080
+node app/server.js          # then open http://localhost:8080   (or: npm start)
 ```
 
 Demo logins: `doctor` / `doctor-demo-1` and `nurse` / `nurse-demo-1`. Thirty fictional patients are loaded on first run. Open **Live view** to type as a patient and watch the rules, the reply and the staff panel side by side.
@@ -28,6 +28,7 @@ node app/eval/v5.test.js         # learning: signals, doctor-approved lessons, t
 node app/eval/v6.test.js         # dose check for doctors, chief-doctor approval
 node app/eval/v7.test.js         # age and sex, over-booked day suggestion
 node app/eval/load.test.js       # the safety check survives a provider that rejects simultaneous calls
+node app/eval/v8.test.js         # hosted demo: host-set passwords, full and idle reset, daily AI ceiling
 node app/eval/run_model_eval.js  # real-model run of the second check; needs the three PROVIDER variables
 ```
 

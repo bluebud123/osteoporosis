@@ -1,0 +1,11 @@
+{
+  "name": "periloop-console",
+  "version": "0.8.0",
+  "private": true,
+  "description": "PeriLoop Console: a prototype perioperative follow-up system. Synthetic data only. Not clinically validated.",
+  "scripts": {
+    "start": "node app/server.js",
+    "test": "node app/test.js && node app/eval/holdout.test.js && node app/eval/v4.test.js && node app/eval/v5.test.js && node app/eval/v6.test.js && node app/eval/v7.test.js && node app/eval/v8.test.js && node app/eval/load.test.js"
+  },
+  "engines": { "node": ">=18" }
+}

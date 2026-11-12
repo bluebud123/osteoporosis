@@ -477,3 +477,15 @@ What it shows:
 6. Still not measured with a real model: patient-fact extraction, lesson proposals (evaluation mode skips them), and the dose check in a live chat.
 
 The brief and README now quote run 4 for the current code. Limits unchanged: invented messages, AI labels in this table, sets the rules were tuned on, one model.
+
+## v8 (12 Nov 2026): hosted-demo mode, and a second AI's review of the hosting plan
+
+Dr Tan passed on another AI's comments on the hosting plan. What was taken, what was corrected:
+- **Railway instead of Render: taken.** A volume keeps the data file across restarts; the price is similar. Neither host has been tried from the build environment.
+- **"Add a reset button": partly already there.** A doctor could already reload the demo patients (Patients page). That did not clear lessons, corrections, settings or patients a visitor added. Added: a full reset (chief only, hosted demo only) and an automatic reset after N minutes without activity. A one-click reset open to every visitor was not added: one judge could wipe another's session.
+- **"The message endpoint is unauthenticated, add express-rate-limit": not accurate.** A message needs a staff login or a patient's private link, and each patient was already limited to 20 messages per 5 minutes. The app has no Express and no dependencies. The real gaps were different and are now closed: (1) behind a host's proxy every visitor had the same address, so ten wrong passwords from anyone locked out everyone; the address is now read from `x-forwarded-for` when `PERILOOP_TRUST_PROXY=1`; (2) nothing capped total AI spending; `AI_DAILY_MAX` now does, and reaching it switches to rules only without raising "AI unavailable" alerts.
+- **"Switching to Azure OpenAI or a local model needs two variables": not claimed.** The provider is configuration (three variables), which is true and now said in the brief. No other provider has been tried, Azure's endpoint format differs, and a different model is a different triage layer that must be measured again.
+
+Also added: passwords and clinic settings from host variables, applied at every start and after every reset (the passwords in the public README stop working on the hosted link); the login cookie is marked Secure over HTTPS; a root `package.json` with a start command and `npm test`; Railway steps in `docs/DEPLOY.md`; the Settings page text about the AI no longer quotes the old "127 of 180". Tests: `node app/eval/v8.test.js` (13 checks).
+
+Known limits of the hosted demo: anyone with the judges' passwords sees everything, so fictional data only; text typed into it goes to DeepSeek; a manual full reset during another visitor's session wipes their work; the daily ceiling counts calls, not money, so the spending limit on the key is still needed; whether the host can reach DeepSeek is untested until the first deploy.

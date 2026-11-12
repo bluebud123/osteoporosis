@@ -87,3 +87,5 @@ v6 (same day): dose check for doctors (`app/doses.js`, AI-drafted table: Dr Tan 
 v7 (same day): patient age and sex; rule-based reschedule suggestion for an over-booked day. See decision log v7.
 
 v7.1 (same day): real-model run 3 FAILED (AI check unavailable for 303 of 913). Most likely the extra model calls added in v4 to v6 overloaded the provider; not confirmed. Fixed with a gate on all model calls (decision log v7.1). The next run prints the provider's HTTP status if it happens again. Do not quote run 3.
+
+v8 (same day): hosted-demo mode for Railway (decision log v8, steps in docs/DEPLOY.md). The branch `demo` is the frozen copy to deploy; move it forward only on purpose (`git push origin periloop-v3-review-fixes:demo`) and never while judging is under way without telling Dr Tan.

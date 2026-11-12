@@ -5,7 +5,14 @@
 var LOG = [];
 function log(entry) { LOG.push(entry); if (LOG.length > 200) LOG.splice(0, 50); return entry; }
 function activity(limit) { return LOG.slice(-(limit || 60)).reverse(); }
-function configured() { return !!(process.env.PROVIDER_BASE_URL && process.env.PROVIDER_KEY); }
+/* v8: a daily ceiling on model calls (AI_DAILY_MAX, 0 = none). On a public demo it stops a stranger or a bot from spending
+ * the provider credit. When the ceiling is reached the system behaves exactly as with no AI connected: rules only, and it says so. */
+var DAILY_MAX = Math.max(0, parseInt(process.env.AI_DAILY_MAX || '0', 10) || 0), dayKey = '', dayCount = 0;
+function today() { return new Date().toISOString().slice(0, 10); }
+function countCall() { var k = today(); if (k !== dayKey) { dayKey = k; dayCount = 0; } dayCount++; }
+function overBudget() { if (!DAILY_MAX) return false; if (today() !== dayKey) return false; return dayCount >= DAILY_MAX; }
+function budget() { return { max: DAILY_MAX, used: today() === dayKey ? dayCount : 0, hit: overBudget() }; }
+function configured() { return !!(process.env.PROVIDER_BASE_URL && process.env.PROVIDER_KEY) && !overBudget(); }
 
 /* v7.1: one gate for every model call. The real-model run of 12 Nov (run 3) lost 303 of about 400 second checks after v4 to v6
  * added three more model calls per message (severity, patient facts, lessons) on top of the summary and the chat reply. The
@@ -14,7 +21,7 @@ function configured() { return !!(process.env.PROVIDER_BASE_URL && process.env.P
 var MAX_AT_ONCE = Math.max(1, parseInt(process.env.AI_MAX_AT_ONCE || '3', 10) || 3), running = 0, waitHi = [], waitLo = [];
 function slot(priority) { return new Promise(function (res) { if (running < MAX_AT_ONCE) { running++; res(); } else (priority ? waitHi : waitLo).push(res); }); }
 function release() { var next = waitHi.shift() || waitLo.shift(); if (next) next(); else running--; }
-async function withSlot(fn, priority) { await slot(priority); try { return await fn(); } finally { release(); } }
+async function withSlot(fn, priority) { countCall(); await slot(priority); try { return await fn(); } finally { release(); } }
 var TALLY = {}; function tally(kind, detail) { var k = kind + ' | ' + String(detail).replace(/\d+ characters/, 'N characters'); TALLY[k] = (TALLY[k] || 0) + 1; }
 function tallyReport() { return Object.keys(TALLY).sort().map(function (k) { return TALLY[k] + ' x ' + k; }); }
 var PRIORITY = { 'severity of a flagged message': true };
@@ -124,4 +131,4 @@ function lessonSys(tagList) { return [
 ].join('\n'); }
 async function lessons(signalsText, tagList, who) { var r = await ask('propose clinic lessons', who, lessonSys(tagList), '<data>\n' + String(signalsText).replace(/<\/?data>/gi, '').slice(0, 6000) + '\n</data>', 500); return r; }
 
-module.exports = { configured: configured, activity: activity, log: log, profile: profile, draft: draft, chat: chat, pick: pick, severity: severity, memory: memory, lessons: lessons, withSlot: withSlot, tally: tally, tallyReport: tallyReport };
+module.exports = { configured: configured, activity: activity, log: log, profile: profile, draft: draft, chat: chat, pick: pick, severity: severity, memory: memory, lessons: lessons, withSlot: withSlot, overBudget: overBudget, budget: budget, tally: tally, tallyReport: tallyReport };
