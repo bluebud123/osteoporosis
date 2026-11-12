@@ -214,3 +214,18 @@ Noticed and not fixed:
 3. Row 10: whether missed anticoagulant doses should page the same day.
 4. Every Arabic phrase in the v3 block of `app/triage.js`, by a native Arabic-speaking clinician.
 5. The fallback wording "the clinic number on your appointment card" in four languages (`app/phrases.js`).
+
+## v3.7 Live test on Dr Tan's PC with a real model (12 Nov 2026)
+
+Done by Claude (AI) through a browser on the running Console (`deepseek-chat`, AI check on). 15 invented messages typed as a patient on a TKR patient 5 days after surgery. This is a smoke test, not a measurement.
+
+Worked: emergency, same-day and receipt texts came back in the patient's language (en, ms, zh, ar) with no placeholder text; the Arabic chest-pain message was an EMERGENCY from the rules; record answers and library answers arrived in about 1 second, AI replies in 2 to 3 seconds.
+
+Found, and what was done:
+
+| Finding | Action |
+|---|---|
+| "is it normal to hear clicking in the knee?" and "do you remember my medical illness?" both got the AI reply "Would you like me to tell you what is still pending on your checklist?", which ignores the question | Chat prompt in `app/ai.js` changed: stay on the patient's question; if it cannot be answered, say so and say it was passed to the clinic team; offer the record lookups only after a greeting or "what can you do". No rule or guard changed. **Not yet re-tested with the real model** |
+| "the dressing is soaked through with yellow fluid and it stinks" is an EMERGENCY flagged "heavy bleeding". It should be a same-day wound alert | Not changed (no more hand-edited wording). It errs on the safe side but the flag text is wrong. For clinician review |
+| "what should I bring to my physio appointment?" returns the hospital admission list (IC, insurance card, medicines) | Not changed. The "bring" answer has no separate text for clinic or physio visits. For the answer-library sign-off |
+| A server left running from before a branch switch keeps the old rules while showing the new pages | Restart the server after every `git checkout` or `git pull` |
