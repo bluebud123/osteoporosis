@@ -43,7 +43,7 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
 (async function () {
   var items = load(), S = require('../server.js'), srv = S.createServer(); await new Promise(function (r) { srv.listen(0, r); }); var port = srv.address().port;
   var doc = (await call(port, 'POST', '/api/login', { username: 'doctor', password: 'doctor-demo-1' })).cookie, n = 0, done = 0, t0 = Date.now();
-  var PROCS = { TKR: 1, THR: 1, ACL: 1, LUM: 1, SHO: 1, FOOT: 1 };
+  var PROCS = { TKR: 1, THR: 1, ACL: 1, LUMBAR: 1, SHOULDER: 1, FOOTANKLE: 1 };   // same keys as the server pathway (v3.8 fix: LUM, SHO, FOOT never matched)
   async function one(it) {
     var k = ++n; it.rules = TR.classify(it.text, { procedure: it.procedure }).cls;
     var a = await call(port, 'POST', '/api/patients', { name: 'M' + k, rn: 'M' + String(k).padStart(5, '0'), procedure: PROCS[it.procedure] ? it.procedure : 'TKR', otDate: ds(-4), lang: ['en', 'ms', 'zh', 'ar'].indexOf(it.lang) >= 0 ? it.lang : 'en' }, doc);

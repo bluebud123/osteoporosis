@@ -229,3 +229,7 @@ Found, and what was done:
 | "the dressing is soaked through with yellow fluid and it stinks" is an EMERGENCY flagged "heavy bleeding". It should be a same-day wound alert | Not changed (no more hand-edited wording). It errs on the safe side but the flag text is wrong. For clinician review |
 | "what should I bring to my physio appointment?" returns the hospital admission list (IC, insurance card, medicines) | Not changed. The "bring" answer has no separate text for clinic or physio visits. For the answer-library sign-off |
 | A server left running from before a branch switch keeps the old rules while showing the new pages | Restart the server after every `git checkout` or `git pull` |
+
+## v3.8 (12 Nov 2026): evaluation script procedure keys
+
+`app/eval/run_model_eval.js` accepted the procedure keys LUM, SHO and FOOT, but the library and the server use LUMBAR, SHOULDER and FOOTANKLE. So 156 of the 360 library messages (lumbar 53, shoulder 56, foot and ankle 47) would have been sent as knee replacement patients. Fixed to the server's keys before any real-model run was quoted. Any run made before this commit should be repeated, not quoted. Verified by reading the code and counting the library; the effect on scores was not measured.
