@@ -273,7 +273,7 @@ Dr Tan pulled commit 591b926 (so the procedure-key fix of v3.8 is included; opti
 
 What it shows:
 1. When the model answered, it flagged every urgent message (519 of 519) and every labelled emergency (198 of 198). **Every miss of the AI check alone was "unavailable", not "routine".**
-2. So the weak point of the AI layer in this run is availability, not judgement. The cause is not known: the script did not record the reason (timeout, a reply that was not valid JSON, a provider error or a content filter are all possible). The 18 are short, plainly urgent messages in all four languages, 17 of them asked through the direct call that `--ai-alone` adds. Whether the direct call fails more often than the server path is not known either.
+2. So the weak point of the AI layer in this run is availability, not judgement. The cause is not known: the script did not record the reason (timeout, a reply that was not valid JSON, a provider error or a content filter are all possible). The 18 are short, plainly urgent messages in all four languages, and all 18 were asked through the direct call that `--ai-alone` adds (the nineteenth unavailable answer was an ordinary message on the server path). Whether the direct call fails more often than the server path is not known either.
 3. In the product, a message the rules miss while the AI is unavailable gets the ordinary receipt (which lists the five emergencies to call for) and is marked "unscreened" for staff. There is no retry. A retry or a "treat unscreened as same-day" setting is a decision for the clinician; not changed here.
 4. The model is not deterministic: 8 ordinary messages raised in this run, 6 in run 1.
 5. Limits as before: invented messages, AI labels, sets the rules were tuned on, one model.
