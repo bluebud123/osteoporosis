@@ -1,37 +1,30 @@
-# Deploying PeriLoop for judges
+# Hosting the PeriLoop Console for judges
 
-Goal: a link that anyone can open in a browser, with no login. The whole app is one self-contained HTML file, so any static host works. Three free options are below.
+The Console in `app/` is a small Node server (Node 18 or newer, no packages to install). It is not a static page, so GitHub Pages will not run it. The older single-page prototype at the repository root (`index.html`) is a static page and can still be served by GitHub Pages, but it is not the product described in the brief.
 
-## Before you deploy
+These steps are generic and have not been tried on a particular host from the build environment.
 
-- The published file must be named `index.html`. The repository currently has `prototype.html`. Rename it to `index.html` (the same file, just renamed).
-- No credentials are needed, because there is no login. The link alone is enough.
-- Check that the page contains no API key. Version 1 uses no model, so there should be none. Search the file for "key" or "api" before you publish.
+## What the server needs
 
-## Option 1: GitHub Pages
+| Setting | Meaning |
+|---|---|
+| Start command | `node app/server.js` |
+| `PORT` | The port to listen on (default 8080). Most hosts set this for you |
+| `PERILOOP_DATA` | A folder the server can write to. All data is one file, `db.json`, in it. If the host wipes its disk on restart, the demo simply reloads its 30 fictional patients |
+| `PROVIDER_BASE_URL`, `PROVIDER_KEY`, `PROVIDER_MODEL` | Optional. Turns on the AI second check and chat replies. Without them the Console runs on rules only and says so on the Today screen |
 
-1. Create a new public repository on GitHub (for example `periloop`).
-2. Put the repository files in it, including `index.html` (renamed from `prototype.html`), `README.md` and `DEPLOY.md`. Commit to the branch `main`.
-3. In the repository, go to **Settings > Pages**.
-4. Under **Build and deployment**, choose **Deploy from a branch**. Select branch **main** and folder **/ (root)**, then save.
-5. Wait for the deployment to finish. The Pages section shows the link to the live site. Open it to check that the page loads and that Watch instead: 2-minute auto story works.
+## Steps
 
-## Option 2: Netlify Drop
+1. Pick any host that runs a Node web service from a GitHub repository, or a small virtual machine.
+2. Point it at this repository and branch. Set the start command to `node app/server.js`. There is no build step.
+3. Make sure the site is served over HTTPS. The login cookie and the patient links should not travel over plain HTTP.
+4. Open the link, log in as `doctor` / `doctor-demo-1`, and in Settings set the emergency number for where the judges are.
+5. If the link will be public, change both demo passwords in Settings and give the judges the new ones privately. Leave the "Demo system" banner on.
+6. Check: Today loads, the Live view opens, a patient link opens on a phone, and a typed message appears in all three columns of the Live view.
+7. Put the link and the logins in `docs/solution-brief.md` section 8.
 
-1. Make a folder that contains `index.html` (renamed from `prototype.html`). The folder can also hold `README.md`.
-2. Open Netlify and use **Netlify Drop**.
-3. Drag the folder onto the drop area. Netlify publishes it and gives you a link.
-4. Open the link to check it. No account is needed to view the site.
+## Do not
 
-## Option 3: Vercel
-
-Either of these works:
-
-- **Drag and drop**: in the Vercel dashboard, import or drop the folder containing `index.html`, then deploy. Open the link it gives you.
-- **CLI**: install the Vercel CLI, go into the folder containing `index.html`, and run `vercel`. Accept the defaults. The command prints the link. Run `vercel --prod` if you want a production link.
-
-## After deploying
-
-- Open the link on a phone and on a laptop to check the layout.
-- Run the 30-case tests tab once to confirm the page works on the host.
-- Give judges the link. No login or credentials are needed.
+- Do not enter any real patient information. The server stores data unencrypted in one file and has no backups.
+- Do not commit an API key. Set it as an environment variable on the host.
+- Do not leave a public demo running with an AI key and no spending limit.

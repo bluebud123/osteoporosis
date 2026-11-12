@@ -132,3 +132,85 @@ Missed same-day: "knee is locked, wont bend at all", "i missed my blood thinner 
 False alerts: "my chest of drawers is too low to reach, any tips?" (EMERGENCY), "im confused about my appointment date" (EMERGENCY), "walked to the kitchen and back, bit out of breath but proud" (EMERGENCY), "my son fell off his bike yesterday but hes ok, can he still drive me?" (SAME-DAY).
 
 Together with v2: on three sets written by two different AI authors the v2 rules alone caught 91% (own fresh sets), 80% (this set) and 71% (the 360 library; Arabic 28 of 60). The spread is the honest picture.
+
+Correction to the review text: the reviewer set has 149 messages (72 + 37 + 40), not 153 as the review said.
+
+## v3.2 What was changed in the rules (`app/triage.js`), and why
+
+All additions raise only. `app/lib/` is untouched and still byte-identical to `src/`.
+
+| # | Change | Reason (message that showed it) | Risk accepted |
+|---|---|---|---|
+| 1 | Traditional Chinese characters are converted to simplified before matching (about 200 characters) | "呼吸困難", "透不過氣", "傷口有臭味" were missed while the simplified forms were caught | The map is not complete; a rare character will still slip through |
+| 2 | Text-speak is rewritten into the plain form first: cnt, dont/arent/isnt, x leh / tak leh / xboleh, tiba2, "sob" (only with a time or severity word), "cp" (only with radiating, arm, jaw or similar) | "cnt breathe", "xleh bernafas", "sob since this morning", "cp radiating to left arm" | "sob" or "cp" used for something else beside a time word will alert |
+| 3 | The engine now reads both the raw and the rewritten text; the higher class wins | So the unchanged engine benefits from 1 and 2 | None found |
+| 4 | Self-harm wording: "don't want to be here (anymore)", "kill myself", "end my life", "no reason to keep living", "bunuh diri", "lebih baik saya mati", 想死, 自杀, Arabic forms | "i dont want to be here anymore" got the ordinary receipt | "I don't want to be here at 7am" does not alert (the phrase must end the sentence); other innocent uses may |
+| 5 | Overdose by count: took or swallowed 4 or more of a named medicine, or a whole strip, box or bottle, or "all my ... tablets" | "took 10 tramadol at once" | The number 4 is the AI's guess. Someone correctly prescribed 4 tablets at once will get an emergency text |
+| 6 | Pain on breathing in; coughing "something red" or pink froth; feeling of drowning or suffocating lying down; "heart attack" or "stroke" said by the patient; coffee-ground or black vomit; seeing people who are not there | Each was a miss in set 4 or set 5 | More alerts |
+| 7 | Bleeding that is dripping, pooling or on the floor is an emergency, not same-day | "blood is coming through the bandage and dripping on the floor" | None found |
+| 8 | Leg swelling together with breathlessness in one message is an emergency | "رجلي منتفخة وتعورني وأحس بكتمة" was only same-day | None found |
+| 9 | Arabic wording added for breathlessness, chest pain, bleeding that will not stop, unresponsive relative, self-harm, pain on breathing, wound pus or smell, wound opening, hot or red knee, fever with a number, fall, pain not controlled. Arabic negation ("لا يوجد", "ما فيه", "ليست", "بدون" ...) is now read | Arabic was 28 of 60 on the library | **Written by an AI with no native review.** Gulf and Egyptian forms are imitations. A wrong word may alert on an ordinary message or miss a real one |
+| 10 | Same-day: locked knee; painkillers "not doing anything"; awake all night with pain; anticoagulant missed or run out for 2 or more days or doses; Malay "luka keluar air"; massive swelling; "the cut has opened" | Misses in set 4 or set 5 | The missed-anticoagulant rule pages staff for a medicine question that v2 sent to the clinician route with no alert |
+| 11 | Two regex bugs fixed in the v2 wording: "reach" matched "ach..." (so "chest of drawers ... reach" was a chest-pain EMERGENCY) and "kitchen" matched "itch..." | Two false emergencies in set 4 | None: both were accidents |
+| 12 | Furniture and idioms ("chest of drawers", "pain in the neck", "breathtaking") are removed before the ADDED wording is matched. The engine still sees them | Same | A real symptom inside the same phrase would still be read by the engine |
+| 13 | **The only lowering.** "I'm confused about my appointment / booking / appointment date" is no longer an EMERGENCY. It applies only if confusion is the sole emergency sign, the word is followed by about/over/with + an appointment or booking word, the writer is the first person, and there is no body, symptom, medicine or disorientation word ("what day", "where I am"). "Mum is confused about her appointment" and "I'm confused, don't know what day it is" stay EMERGENCY | The v2 log left this for a clinician; the review listed it as a false 999 | **Awaiting clinician sign-off.** A delirious patient who types exactly this is sent to the Inbox, not told to call the emergency number. Remove `adminConfusion` in `app/triage.js` to undo it |
+
+Left alone on purpose (listed in `app/eval/known_gaps.js`, printed on every test run):
+- "my son fell off his bike yesterday but hes ok, can he still drive me?" is still SAME-DAY. The unchanged engine alerts on any reported fall. Lowering it needs a clinician.
+- "walked to the kitchen and back, bit out of breath but proud" is still EMERGENCY for breathlessness. The reviewer labelled it ordinary, but new breathlessness on exertion four days after knee replacement may be a clot in the lung. A clinician should decide.
+
+## v3.3 Scores after the change, and a new fresh set
+
+| Set | Who wrote it | State | Emergencies alerted | Same-day alerted | False alerts |
+|---|---|---|---|---|---|
+| Reviewer set 4, v2 rules | independent AI reviewer | fresh, measured once | 56/72 | 31/37 | 4/40 |
+| Reviewer set 4, v3 rules | same | **seen** (guided the fixes) | 72/72 | 37/37 | 2/40, both left on purpose |
+| **Set 5, v3 rules** | the AI that wrote the v3 rules | **fresh, measured once** | **39/46** (38 classed EMERGENCY) | **20/23** | **0/30** |
+| Set 5, after its misses were fixed | same | seen | 46/46 | 23/23 | 0/30 |
+| 360 library, v2 rules | earlier AI | not fresh | 127/180 urgent (en 32/40, ms 34/40, zh 33/40, ar 28/60) | | 12/180 |
+| 360 library, v3 rules | earlier AI | not fresh | 134/180 urgent (en 32/40, ms 35/40, zh 34/40, ar 33/60) | | 12/180 |
+
+Set 5 fresh, urgent together: 59 of 69 (86%). Emergencies by language: en 16/20, ms 8/10, zh 8/8, ar 7/8. The seven missed emergencies were: "theres no reason for me to keep living", "she keeps seeing people who arent there since last night", "i think im having a heart attack", "vomited something that looks like coffee grounds", "saya termakan ubat tidur banyak sangat", "saya rasa lebih baik saya mati", "امي تتنفس بصعوبة وما تقدر تتكلم". One was only same-day: "رجلي متورمة مرة وصرت اتعب من النفس". Missed same-day: "the cut has opened about 2cm at the top", "knee has swollen up massively since this morning", "the oxycodone isnt touching the pain". All were then fixed, so set 5 is a regression set now and its 100% means nothing.
+
+What this shows:
+1. The v2 conclusion stands. After three rounds of fixes a fresh set still had 7 missed emergencies in 46, two of them statements about wanting to die. Fixed word lists do not converge. Rules alone are not a safe sole triage.
+2. Set 5 was written by the same AI that wrote the rules, so 86% is likely flattering. The reviewer's 80% on v2 and the library's 74% on v3 are the less friendly numbers.
+3. Arabic is still the weakest: 33 of 60 on the library after the additions.
+4. No number here has a clinician or a patient in it.
+
+## v3.4 Tools added so the missing evidence can be produced
+
+- `app/eval/run_model_eval.js`: one command that sends every test message through the real server path with a real model and writes a per-language table (rules alone, rules + AI check, false alerts, check unavailable, missed emergencies). It refuses to run without a provider. It has been run only against the stand-in model to check that it works; that output is marked "STAND-IN, NOT EVIDENCE" and is not committed. **No real model has been run in the Console.**
+- `app/eval/label.html` (open `/eval/label` after logging in as a doctor): blind labelling, one message at a time, no AI label shown. `app/eval/score_labels.js` scores the rules against one clinician's labels and gives Cohen's kappa between two. `node app/eval/score_labels.test.js` tests the arithmetic.
+- `docs/clinician-todo.md`: what only Dr Tan can do, in order, with time estimates.
+
+## v3.5 Other changes in the Console
+
+| Change | Before | After |
+|---|---|---|
+| Unset clinic phone and hours | Patients saw "call 03-0000 0000 (set in Settings)" and "clinic hours (Set the clinic hours in Settings)" | Unset phone reads "the clinic number on your appointment card" in the patient's language; unset hours are left out of the sentence (`app/phrases.js`). Old databases with the placeholder strings are treated as unset |
+| Seeded demo | Same placeholders | The 30-patient demo gets "555-0100 (fictional demo line)" and "Demo clinic hours: Sunday to Thursday, 8am to 4pm". Today shows "Demo contact details in use" until a doctor replaces them |
+| Demo board | 93 overdue tasks on first login | 28: most demo patients are up to date, every fourth keeps a few days overdue, and 15 are open flag tasks. Only the seed changed; the overdue logic did not |
+| Live view, step 2 text | "Written by people" | Says the lists were drafted by an AI, await surgeon sign-off, and that Arabic is weakest |
+| Today, AI notice | "AI is off. See README" | Says the rules alone miss some urgent messages and names the three settings that turn the check on |
+| Today | | A card pointing to the Live view for demos. `app/README.md` no longer says the Live view opens first (it never did; Today does) |
+| Pipeline trace wording | "v2 layer" | "added-wording layer" |
+
+Test expectations changed, each on purpose:
+- `app/eval/browser_e2e.py`: one check looked for the words "v2 layer" in the Live view; it now looks for "added-wording layer".
+- `app/eval/holdout.test.js`: now also runs sets 4 and 5, and prints (without failing) the two false alerts listed in `known_gaps.js`.
+- `app/test.js`: no expectation changed. 117 of 117 pass.
+
+Noticed and not fixed:
+- A Malay-language patient who writes a short Malay message the rules do not recognise ("lutut saya berbunyi") gets the English receipt, because the unchanged engine guesses the language as English. Fixing it means changing how the server picks the reply language; left for a decision.
+- The emergency number still defaults to 999. 998 for Abu Dhabi is still unconfirmed.
+- `app/answers.js` still has no Arabic texts; Arabic patients get English library answers.
+- No notifications, on-call escalation, encryption or backups. Unchanged from v2.
+
+## v3.6 What a clinician must review that v3 added
+
+1. Row 13 above (the one lowering) and the two known gaps.
+2. Row 5: the overdose count of 4.
+3. Row 10: whether missed anticoagulant doses should page the same day.
+4. Every Arabic phrase in the v3 block of `app/triage.js`, by a native Arabic-speaking clinician.
+5. The fallback wording "the clinic number on your appointment card" in four languages (`app/phrases.js`).

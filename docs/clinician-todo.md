@@ -1,0 +1,19 @@
+# What only Dr Tan can do before 20 November
+
+Everything an AI could do is done on the branch `periloop-v3-review-fixes`. The steps below need a clinician, a key, an account or a native speaker. They are in order of how much they change a judge's score. Total: about 3 working days.
+
+| # | Step | How | Time |
+|---|---|---|---|
+| 1 | Confirm you are registered, and read Statement 3 in full | Log in at hack2skill.com/event/futurehealthchallenge. The page says register by 10 November; the press release says 15 November. Read the exact wording and requirements of Statement 3 and check `docs/solution-brief.md` section 3 against them. The requirement list in the brief was written by an AI from memory of the page and has not been checked | 30 min |
+| 2 | Run a real model through the Console | Get a key for any OpenAI-compatible provider. Then: `PROVIDER_BASE_URL=... PROVIDER_KEY=... PROVIDER_MODEL=... node app/eval/run_model_eval.js --limit 5` to check it works (a few cents), then the same without `--limit` (913 messages; allow 15 to 40 minutes). It writes `app/eval/model_run_<date>_<model>.md`. Copy the "All sets together" table into the evidence table in `docs/solution-brief.md` and `README.md`, including the missed-emergency list. Before choosing a provider, decide whether you are comfortable telling a Department of Health panel where patient text would be sent | 2 to 3 hours |
+| 3 | Label messages blind, with one colleague | Start the server (`node app/server.js`), log in as doctor, open `/eval/label`. Enter initials, tick the languages you read, label 150 messages (about 45 minutes), press Export. Ask a colleague to do the same on their own without discussing. Then `node app/eval/score_labels.js labels_A.json labels_B.json`. This gives the first numbers with a clinician in them: rule sensitivity against your labels, and Cohen's kappa between you. Put both in the evidence table | 2 hours each |
+| 4 | Sign off, edit or switch off the clinical content | (a) Rules page: approve, edit or switch off each of the 19 clinic answers (edit text in `app/answers.js`). (b) The fixed patient texts in `app/server.js` function `T` (emergency, same-day, clinician route, receipt). (c) Every threshold in `app/periop.js` against your unit's practice. (d) The items in `docs/decision-log.md` section v3.6: the one lowering rule, the overdose count of 4, missed anticoagulant doses, the two known gaps. Write your name, date and what you changed at the top of `docs/decision-log.md` | half a day |
+| 5 | Native Arabic check | Ask an Arabic-speaking clinician to read the four fixed Arabic texts and the Arabic phrases in the v3 block of `app/triage.js`. Even one hour of review lets you say "reviewed by a native speaker" for the fixed texts. If you cannot get it, say in the pitch that Arabic is a machine draft and the weakest language | 1 to 2 hours of their time |
+| 6 | Confirm the emergency number | Confirm 998 (ambulance) or 999 for Abu Dhabi from an official source, then set it in Settings for the demo | 10 min |
+| 7 | Host the demo | Follow `docs/DEPLOY.md`. Change both demo passwords first if the link will be public, or give judges the demo logins and keep the banner on | 1 to 2 hours |
+| 8 | Record the video | Follow `docs/video-script.md` on the hosted demo, with the AI check on if step 2 is done | 1 hour |
+| 9 | Employer and clinic permission | The brief says written permission from the Ministry of Health and a pilot clinic is not yet obtained. Say so; do not imply a pilot is agreed | when you can |
+
+If time runs out, do 1, 2 and 3. Those three change the evidence from "an AI tested its own rules" to "a clinician labelled the messages and a real model was measured", which is the largest gap a judge will see.
+
+Do not do: add more red-flag wording by hand. Three rounds have shown it does not converge (see `docs/decision-log.md` v3.3).
