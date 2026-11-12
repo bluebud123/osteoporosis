@@ -7,7 +7,19 @@ function log(entry) { LOG.push(entry); if (LOG.length > 200) LOG.splice(0, 50); 
 function activity(limit) { return LOG.slice(-(limit || 60)).reverse(); }
 function configured() { return !!(process.env.PROVIDER_BASE_URL && process.env.PROVIDER_KEY); }
 
-async function ask(kind, who, system, user, maxTokens) {
+/* v7.1: one gate for every model call. The real-model run of 12 Nov (run 3) lost 303 of about 400 second checks after v4 to v6
+ * added three more model calls per message (severity, patient facts, lessons) on top of the summary and the chat reply. The
+ * provider answered most of them with an error at once. So: at most MAX_AT_ONCE calls are in flight; the safety calls (second
+ * check, severity) go to the front of the queue; and the tally below records what the provider answered, by kind. */
+var MAX_AT_ONCE = Math.max(1, parseInt(process.env.AI_MAX_AT_ONCE || '3', 10) || 3), running = 0, waitHi = [], waitLo = [];
+function slot(priority) { return new Promise(function (res) { if (running < MAX_AT_ONCE) { running++; res(); } else (priority ? waitHi : waitLo).push(res); }); }
+function release() { var next = waitHi.shift() || waitLo.shift(); if (next) next(); else running--; }
+async function withSlot(fn, priority) { await slot(priority); try { return await fn(); } finally { release(); } }
+var TALLY = {}; function tally(kind, detail) { var k = kind + ' | ' + String(detail).replace(/\d+ characters/, 'N characters'); TALLY[k] = (TALLY[k] || 0) + 1; }
+function tallyReport() { return Object.keys(TALLY).sort().map(function (k) { return TALLY[k] + ' x ' + k; }); }
+var PRIORITY = { 'severity of a flagged message': true };
+async function ask(kind, who, system, user, maxTokens) { return withSlot(function () { return askNow(kind, who, system, user, maxTokens); }, !!PRIORITY[kind]); }
+async function askNow(kind, who, system, user, maxTokens) {
   var e = { at: Date.now(), kind: kind, who: who || '', ok: false, ms: 0, detail: '' };
   if (!configured()) { e.detail = 'AI not connected: used the rule-based version only'; log(e); return { text: '', skipped: true }; }
   var t0 = Date.now(), ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, 25000);
@@ -16,13 +28,13 @@ async function ask(kind, who, system, user, maxTokens) {
     var headers = { 'content-type': 'application/json' }; if (process.env.PROVIDER_KEY) headers.authorization = 'Bearer ' + process.env.PROVIDER_KEY;
     var res = await fetch(base + endpoint, { method: 'POST', headers: headers, signal: ctl.signal, body: JSON.stringify({ model: process.env.PROVIDER_MODEL || '', temperature: 0.2, max_tokens: maxTokens || 260, stream: false, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] }) });
     e.ms = Date.now() - t0;
-    if (!res.ok) { e.detail = 'model returned HTTP ' + res.status; log(e); return { text: '', error: e.detail }; }
+    if (!res.ok) { e.detail = 'model returned HTTP ' + res.status; log(e); tally(kind, e.detail); return { text: '', error: e.detail }; }
     var data = await res.json();
     var out = data && data.choices && data.choices[0] && data.choices[0].message ? String(data.choices[0].message.content || '') : '';
     out = out.replace(/\r/g, '').trim();
-    e.ok = !!out; e.detail = out ? 'ok, ' + out.length + ' characters' : 'empty answer'; log(e);
+    e.ok = !!out; e.detail = out ? 'ok, ' + out.length + ' characters' : 'empty answer'; log(e); tally(kind, out ? 'ok' : 'empty answer');
     return { text: out };
-  } catch (err) { e.ms = Date.now() - t0; e.detail = 'call failed (' + (err && err.name) + ')'; log(e); return { text: '', error: e.detail }; }
+  } catch (err) { e.ms = Date.now() - t0; e.detail = 'call failed (' + (err && err.name) + ')'; log(e); tally(kind, e.detail); return { text: '', error: e.detail }; }
   finally { clearTimeout(timer); }
 }
 
@@ -112,4 +124,4 @@ function lessonSys(tagList) { return [
 ].join('\n'); }
 async function lessons(signalsText, tagList, who) { var r = await ask('propose clinic lessons', who, lessonSys(tagList), '<data>\n' + String(signalsText).replace(/<\/?data>/gi, '').slice(0, 6000) + '\n</data>', 500); return r; }
 
-module.exports = { configured: configured, activity: activity, log: log, profile: profile, draft: draft, chat: chat, pick: pick, severity: severity, memory: memory, lessons: lessons };
+module.exports = { configured: configured, activity: activity, log: log, profile: profile, draft: draft, chat: chat, pick: pick, severity: severity, memory: memory, lessons: lessons, withSlot: withSlot, tally: tally, tallyReport: tallyReport };

@@ -427,3 +427,29 @@ The calendar already flagged a day with more operations than the limit. Now, whe
 - **It is fixed rules, not AI.** Dr Tan asked whether the AI would propose where to reschedule. A rule does this better: the same answer every time, with the reason visible, and nothing to verify. Order: open red flags (3 points each), then overdue pre-operative tasks (1 each), then booked most recently.
 - Moving a case shifts its open checklist tasks by the same number of days, adds a task "Tell the patient the new operation date", and writes the move to the audit log. The patient is not messaged automatically. Moving onto a full day or into the past is refused.
 - Limits: it does not know theatre lists, surgeon availability, implant orders, bed numbers, public holidays or how urgent each operation is. Weekends are never offered; a unit that operates on Saturday must pick the date by hand on the patient page. "Least ready first" is the reviewer's choice of rule and awaits Dr Tan's agreement. Completed tasks are not moved; a pre-operative blood test done for the old date may be out of date for the new one, and the system does not check that.
+
+## v7.1 (12 Nov 2026): the third real-model run failed, and why
+
+Dr Tan ran option 3 on the v7 code. Output: `docs/evidence/model_run_2026-11-12_deepseek-chat_run3_FAILED_ai_unavailable.md`. **Do not quote any AI-check number from this run.**
+
+| | Run 2 (v3.9 code) | Run 3 (v7 code) |
+|---|---|---|
+| AI check unavailable, server path | 1 of 913 | **303 of 913** |
+| AI check unavailable, asked directly | 19 | **730** |
+| Urgent alerted, rules + AI | 537/537 | 494/537 |
+| Labelled emergencies alerted | 211/211 | 211/211 (all by the rules) |
+| Run time | 397 s | 237 s |
+
+What happened, as far as it can be told from the output:
+1. The failures were fast (the run was shorter, not longer), so they were not timeouts. The second-check code returns "unavailable" for any HTTP error from the provider, a timeout, or an unusable answer, and does not say which. The HTTP status was not recorded, so **the cause is not confirmed**.
+2. Most likely cause: between run 2 and run 3 the reviewer added three more model calls for each message (severity, patient facts, plus a retry) on top of the staff summary and the chat reply, two of them started in the background without waiting. With three messages in flight the provider was sent many calls at once and rejected most. This was reproduced with a mock provider that rejects more than four simultaneous calls: the v7 code lost 41 of 154 second checks on the server path and all 139 direct ones; the fixed code lost none. That shows the mechanism is possible, not that DeepSeek did this. Other causes that fit a fast error and are not ruled out: the account balance ran out, or the key was changed.
+3. **This was a regression introduced by the reviewer's own features**: convenience calls competed with the safety call. The stand-in model answers instantly and never refuses, so no test caught it.
+4. The safety net behaved as designed in v4: no labelled emergency was missed, because the rules caught all 211, and each of the 303 unscreened messages raised a staff alert ("AI check unavailable, a person must read this today"). The 43 urgent messages shown as "still missed" were among those: missed by triage, but put in front of staff. The cost is the alert flood that v4 predicted.
+
+Changes:
+- `app/ai.js`: one gate for every model call. At most 3 in flight (`AI_MAX_AT_ONCE`); the second check and the severity call go to the front of the queue; a tally records what the provider answered for each kind of call.
+- `app/server.js`: the retry of the second check waits 1.5 s first (`AI_RETRY_WAIT_MS`), because an immediate retry meets the same error.
+- `app/eval/run_model_eval.js`: runs in evaluation mode (the staff summary and patient-fact calls are skipped: they are not what it measures), 2 messages at a time instead of 3, retries a direct call once, prints the tally, and when more than 3% of messages were unscreened prints a warning and makes one direct test call to the provider and shows its HTTP status and message.
+- New test `node app/eval/load.test.js`: 40 messages sent 8 at a time against a mock provider that rejects more than 4 simultaneous calls; every second check must be answered.
+
+Still true after the fix: in real use a slow or failing provider makes the second check unavailable; staff are alerted, the patient reply is unchanged. The 60-per-minute limit per patient inside `app/lib/server/chat.js` was not the cause (each test patient has its own key).

@@ -20,6 +20,8 @@ var TR = require('./triage.js');      // v2: engine + added wording + two narrow
 var PH = require('./phrases.js');     // v3: wording when the clinic phone or hours are not set (never show a placeholder to a patient)
 var ANS = require('./answers.js');    // v2: clinic answer library (fixed texts, doctor approves)
 var GUARD = require('./guard.js');    // v2: chat output guard
+var RETRY_WAIT_MS = Math.max(0, parseInt(process.env.AI_RETRY_WAIT_MS || '1500', 10));   // v7.1
+var EVAL_MODE = function () { return process.env.PERILOOP_EVAL === '1'; };   // v7.1: an evaluation run measures triage only, so the staff summary and patient-fact calls are skipped
 var HANDBACK_MS = 24 * 3600 * 1000;   // a staff conversation with no staff message for this long goes back to the assistant
 var LIVE_MS = 30 * 60 * 1000;         // while staff replied this recently the assistant stays silent
 
@@ -110,11 +112,15 @@ async function aiCall(body, ipKey) {
 }
 async function secondCheck(text, key) {
   if (!aiConfigured()) return { verdict: 'unscreened', reason: 'AI not configured' };
-  try {
-    var j = await aiCall({ mode: 'second_check', text: text }, key);
-    return JSON.parse(j.text);
-  } catch (e) { return { verdict: 'unscreened', reason: 'second check error' }; }
+  // v7.1: the second check goes through the same gate as every other model call, at the front of the queue
+  return AI.withSlot(async function () {
+    try {
+      var j = await aiCall({ mode: 'second_check', text: text }, key), v = JSON.parse(j.text);
+      AI.tally('second check', v.verdict === 'unscreened' ? 'unavailable (provider error, timeout or unusable answer)' : 'ok'); return v;
+    } catch (e) { AI.tally('second check', 'error in the call'); return { verdict: 'unscreened', reason: 'second check error' }; }
+  }, true);
 }
+function wait(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
 // v2: the model's words go through GUARD.check (app/guard.js). A reply can be shown whole, shown with unsafe-to-verify
 // sentences dropped, or blocked. The caller falls back to a fixed text when nothing is returned.
 async function aiReply(text, history, lang, key, ctx, clinical) {
@@ -326,7 +332,7 @@ function bgProfile(pt, s8, inMsg) {
   var det = P.detProfile(msgs, Date.now()), b = buildBrief(pt);
   pt.profile = Object.assign(pt.profile || {}, { det: det, comorbidities: b.comorbidities.map(function (c) { return c.label; }), pending: b.pending.length, openFlags: b.flags.length, updatedAt: Date.now() });
   var texts = msgs.filter(function (m) { return m.who === 'patient'; }).map(function (m) { return m.text; });
-  var p = AI.profile(b.facts, texts, 'profile ' + pt.rn).then(function (r) {
+  var p = (EVAL_MODE() ? Promise.resolve({ text: '', skipped: true }) : AI.profile(b.facts, texts, 'profile ' + pt.rn)).then(function (r) {
     if (r.text) { pt.profile.summary = r.text; pt.profile.aiAt = Date.now(); s8.detail = 'Facts updated from the record and chat. AI wrote the staff summary (' + AI.activity(1)[0].ms + ' ms).'; }
     else s8.detail = 'Facts updated from the record and chat. ' + (r.skipped ? 'AI not connected, no written summary.' : 'AI summary unavailable this time.');
     s8.status = 'pass'; store.save();
@@ -335,7 +341,7 @@ function bgProfile(pt, s8, inMsg) {
 }
 // v4: after the reply, ask the AI what the patient said about themselves. Items are only PROPOSED; staff confirm or dismiss.
 function bgMemory(pt, inMsg) {
-  if (!aiConfigured()) return;
+  if (!aiConfigured() || EVAL_MODE()) return;
   var p = AI.memory(inMsg.text, 'memory ' + pt.rn, LEARN.block(LEARN.forProfile(store.db))).then(function (out) {
     var items = MEM.parse(out, inMsg.text); pt.memory = pt.memory || [];
     items.forEach(function (it) { if (MEM.known(pt.memory, it)) return; pt.memory.push({ id: uid(), cat: it.cat, text: it.text, quote: it.quote, msgId: inMsg.id, status: 'proposed', at: Date.now(), by: 'AI (proposed from chat)' }); });
@@ -394,7 +400,7 @@ async function patientMessage(pt, rawText, via) {
   else if (!aiConfigured()) step(4, 'AI second check', 'skip', 'AI is not connected on the server, so rules only.');
   else {
     sec = await secondCheck(safe, pt.id);
-    var retried = false; if (sec.verdict === 'unscreened') { retried = true; sec = await secondCheck(safe, pt.id + '-r'); }   // v4: one retry
+    var retried = false; if (sec.verdict === 'unscreened') { retried = true; await wait(RETRY_WAIT_MS); sec = await secondCheck(safe, pt.id + '-r'); }   // v4: one retry. v7.1: after a short wait, because an immediate retry meets the same provider error
     secondUsed = sec.verdict !== 'unscreened';
     if (sec.verdict === 'urgent') {
       cls = 'SAME-DAY'; urgent = true; flags.push('second check: ' + sec.reason); reason = 'AI second check: ' + sec.reason;

@@ -21,10 +21,11 @@ if (!process.env.PROVIDER_BASE_URL || !process.env.PROVIDER_KEY || !process.env.
   process.exit(2);
 }
 var STANDIN = /standin/i.test(process.env.PROVIDER_MODEL) || /localhost:9777|127\.0\.0\.1:9777/.test(process.env.PROVIDER_BASE_URL);
-var LIMIT = parseInt(opt('limit', '0'), 10) || 0, PAR = Math.max(1, parseInt(opt('parallel', '3'), 10) || 3);
+var LIMIT = parseInt(opt('limit', '0'), 10) || 0, PAR = Math.max(1, parseInt(opt('parallel', '2'), 10) || 2);
 var AIALONE = args.indexOf('--ai-alone') >= 0;
 var WANT = opt('sets', 'h1,h2,h3,h4,h5,library').split(',');
 process.env.PERILOOP_DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'plm-')); process.env.PERILOOP_NO_SEED = '1';
+process.env.PERILOOP_EVAL = '1';   // v7.1: triage only. The staff summary and patient-fact calls are skipped: they are not what this measures and they tripled the load on the provider.
 var TR = require('../triage.js');
 
 function load() {
@@ -58,7 +59,7 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
     // AI check by itself: where the rules found nothing the server already asked it; where the rules alerted, ask it directly.
     if (AIALONE) {
       if (!alertCls(it.rules)) it.ai = it.unscreened ? 'unscreened' : (it.raisedByModel ? 'urgent' : 'routine');
-      else { var sc = await S.secondCheck(it.text, 'eval-' + k); it.ai = sc && sc.verdict === 'urgent' ? 'urgent' : (sc && sc.verdict === 'routine' ? 'routine' : 'unscreened'); if (it.ai === 'unscreened') it.aiReason = (sc && sc.reason) || 'no answer'; }
+      else { var sc = await S.secondCheck(it.text, 'eval-' + k); if (sc && sc.verdict === 'unscreened') { await new Promise(function (r) { setTimeout(r, 1500); }); sc = await S.secondCheck(it.text, 'eval-' + k + '-r'); } it.ai = sc && sc.verdict === 'urgent' ? 'urgent' : (sc && sc.verdict === 'routine' ? 'routine' : 'unscreened'); if (it.ai === 'unscreened') it.aiReason = (sc && sc.reason) || 'no answer'; }
     }
     if (++done % 25 === 0) process.stderr.write('  ' + done + '/' + items.length + ' (' + Math.round((Date.now() - t0) / 1000) + ' s)\n');
   }
@@ -92,6 +93,14 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
     var aiMiss = items.filter(function (x) { return x.truth !== 'normal' && x.ai !== 'urgent'; });
     md += '\n#### Urgent messages the AI check alone did not flag (' + aiMiss.length + ')\n\n' + (aiMiss.length ? aiMiss.map(function (x) { return '- [' + x.set + ', ' + x.lang + ', ' + x.truth + ', AI said ' + x.ai + (x.aiReason ? ' (' + x.aiReason + ')' : '') + ', rules said ' + x.rules + '] ' + x.text; }).join('\n') + '\n' : '- none\n') + '\n';
   }
+  // v7.1: what the provider actually answered, by kind of call, and a direct probe when many calls failed
+  var AIM = require('../ai.js'), un = items.filter(function (x) { return x.unscreened; }).length, probe = '';
+  if (un > items.length * 0.03 && !STANDIN) {
+    try { var pr = await fetch(process.env.PROVIDER_BASE_URL.replace(/\/+$/, '') + (process.env.PROVIDER_ENDPOINT || '/v1/chat/completions'), { method: 'POST', headers: { 'content-type': 'application/json', authorization: 'Bearer ' + process.env.PROVIDER_KEY }, body: JSON.stringify({ model: process.env.PROVIDER_MODEL, max_tokens: 5, messages: [{ role: 'user', content: 'Say ok' }] }) });
+      probe = 'One direct test call to the provider just now: HTTP ' + pr.status + ' ' + (await pr.text()).replace(/\s+/g, ' ').replace(/sk-[A-Za-z0-9]+/g, '[key]').slice(0, 220);
+    } catch (e) { probe = 'One direct test call to the provider just now failed: ' + (e && e.message); }
+  }
+  md += '### Model calls in this run\n\n' + (un > items.length * 0.03 ? '**WARNING: the AI check was unavailable for ' + un + ' of ' + items.length + ' messages. The numbers above are NOT a measure of the AI check. Find the cause below before quoting anything.**\n\n' : '') + AIM.tallyReport().map(function (l) { return '- ' + l; }).join('\n') + '\n' + (probe ? '\n' + probe + '\n' : '') + '\n';
   var missE = items.filter(function (x) { return x.truth === 'emergency' && !alertCls(x.final); }), missU = items.filter(function (x) { return x.truth !== 'normal' && x.truth !== 'emergency' && !alertCls(x.final); }), fpM = items.filter(function (x) { return x.truth === 'normal' && x.raisedByModel; });
   function list(a) { return a.length ? a.map(function (x) { return '- [' + x.set + ', ' + x.lang + '] ' + x.text + (x.unscreened ? '  (AI check unavailable)' : ''); }).join('\n') + '\n' : '- none\n'; }
   md += '### Emergencies still missed after rules + AI check (' + missE.length + ')\n\n' + list(missE) + '\n### Other urgent messages still missed (' + missU.length + ')\n\n' + list(missU) + '\n### Ordinary messages the AI check raised (' + fpM.length + ')\n\n' + list(fpM);

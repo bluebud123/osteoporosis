@@ -85,3 +85,5 @@ v5 (same day): learning stage 1 is built (Learning page: signals, AI-proposed le
 v6 (same day): dose check for doctors (`app/doses.js`, AI-drafted table: Dr Tan must check every row before real use), chief-doctor approval of lessons, lesson tracking. See decision log v6.
 
 v7 (same day): patient age and sex; rule-based reschedule suggestion for an over-booked day. See decision log v7.
+
+v7.1 (same day): real-model run 3 FAILED (AI check unavailable for 303 of 913). Most likely the extra model calls added in v4 to v6 overloaded the provider; not confirmed. Fixed with a gate on all model calls (decision log v7.1). The next run prints the provider's HTTP status if it happens again. Do not quote run 3.
