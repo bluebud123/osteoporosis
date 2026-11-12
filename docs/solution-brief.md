@@ -43,7 +43,7 @@ The requirement wording below was written from an earlier reading of the challen
 
 ## 5. Evidence (one table, every caveat)
 
-All messages are synthetic and written by AI. All labels are AI labels. "Fresh" means measured once before the set was used to fix anything; only fresh rows are estimates. Details: `docs/decision-log.md`.
+All messages are synthetic and written by AI. All labels are AI labels except the row marked "Clinician labels". "Fresh" means measured once before the set was used to fix anything; only fresh rows are estimates. Details: `docs/decision-log.md`.
 
 | Set | Written by | Rules | Urgent messages alerted | False alerts | Caveat |
 |---|---|---|---|---|---|
@@ -55,7 +55,7 @@ All messages are synthetic and written by AI. All labels are AI labels. "Fresh" 
 | **All six sets, real model in the Console (DeepSeek `deepseek-chat`, 12 Nov 2026)** | all of the above | v3 rules alone | 491 of 537 (91%): en 96%, ms 96%, zh 95%, ar 73% | 14 of 376 (4%) | Every set here has been used to tune the rules, so this row is optimistic |
 | Same run | | v3 rules + AI check | 537 of 537; all 211 labelled emergencies | 22 of 376 (6%); Arabic 10 of 73 | One run, one model. The AI was needed for 46 messages and flagged all 46 |
 | Same run, AI check by itself on every message | | no rules | 519 of 537 (97%); emergencies 198 of 211 (94%); Arabic emergencies 21 of 26 | 11 of 376 (3%) | All 18 misses were calls where the AI gave no usable answer (19 of 913 calls, about 2%). When it answered, it flagged every urgent message |
-| Clinician labels | | | **not yet done** | | `/eval/label` and `app/eval/score_labels.js` produce it |
+| **Clinician labels: one orthopaedic medical officer, 368 English messages, blind (12 Nov 2026)** | all of the above, English | v3 rules alone | His emergencies alerted: 150 of 157 (96%). His emergencies given the emergency text: 108 of 157 (69%). All his urgent: 202 of 258 (78%) | 0 of 110 | One labeller, about 2 to 3 seconds a message. He is stricter than the system: fever, pus and falls he calls emergencies; questions needing an answer today he calls same-day. Second labeller pending |
 
 What the table shows:
 1. After three rounds of fixes, a fresh set still has missed emergencies. Fixed word lists do not converge. Rules alone are not a safe sole triage.

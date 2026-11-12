@@ -1,0 +1,2586 @@
+{
+ "tool": "periloop-label",
+ "version": 1,
+ "labeller": "tsh",
+ "startedAt": 1794454022235,
+ "exportedAt": 1794455239955,
+ "shown": 368,
+ "labels": [
+  {
+   "id": "mfhqqyh2o",
+   "lang": "en",
+   "text": "Hi, the stitches itch like crazy under the tape. Is it okay to scratch lightly or should I wait?",
+   "label": "routine",
+   "at": 1794454030387
+  },
+  {
+   "id": "mnq8yt2l",
+   "lang": "en",
+   "text": "whats left on my list",
+   "label": "routine",
+   "at": 1794454033045
+  },
+  {
+   "id": "mhhm8fw1g",
+   "lang": "en",
+   "text": "my chest feels tight and heavy and im sweating a lot",
+   "label": "emergency",
+   "at": 1794454034880
+  },
+  {
+   "id": "m1qortnpn",
+   "lang": "en",
+   "text": "my husband wont wake up",
+   "label": "emergency",
+   "at": 1794454035958
+  },
+  {
+   "id": "m1gnb2og1e",
+   "lang": "en",
+   "text": "there is a bad smell coming from under the bandage",
+   "label": "sameday",
+   "at": 1794454037784
+  },
+  {
+   "id": "m12zeod1s",
+   "lang": "en",
+   "text": "im dying to get back to golf",
+   "label": "routine",
+   "at": 1794454058720
+  },
+  {
+   "id": "m4z3n9m1x",
+   "lang": "en",
+   "text": "the whole leg is swollen to the groin and im breathless on the stairs",
+   "label": "emergency",
+   "at": 1794454062174
+  },
+  {
+   "id": "m7bqbso1d",
+   "lang": "en",
+   "text": "dad is breathing very fast and his lips look dark",
+   "label": "emergency",
+   "at": 1794454063632
+  },
+  {
+   "id": "m18na74821",
+   "lang": "en",
+   "text": "wound oozing yellow pus, smell very bad, and my thermometer say 39 degree",
+   "label": "emergency",
+   "at": 1794454065933
+  },
+  {
+   "id": "mshp0wu2n",
+   "lang": "en",
+   "text": "Can I go Umrah? It's 3 weeks after my hip op, the flight is 6 hrs. Doctor said no heavy walking",
+   "label": "routine",
+   "at": 1794454067350
+  },
+  {
+   "id": "mgdik38s",
+   "lang": "en",
+   "text": "passing black tar like stool",
+   "label": "emergency",
+   "at": 1794454069036
+  },
+  {
+   "id": "mxj0stg1k",
+   "lang": "en",
+   "text": "the staples have come apart at the bottom, there's a gap",
+   "label": "sameday",
+   "at": 1794454070269
+  },
+  {
+   "id": "mmjf02q2x",
+   "lang": "en",
+   "text": "my calf muscle a bit tight after walking, no chest pain no shortness of breath, just muscle ache, normal?",
+   "label": "sameday",
+   "at": 1794454072599
+  },
+  {
+   "id": "m1b3gq3f1s",
+   "lang": "en",
+   "text": "the cut is weeping yellowish stuff and the skin around it is hot",
+   "label": "sameday",
+   "at": 1794454075064
+  },
+  {
+   "id": "m1lpdgoo1o",
+   "lang": "en",
+   "text": "I feel dizzy when I stand and blacked out twice this morning",
+   "label": "emergency",
+   "at": 1794454077408
+  },
+  {
+   "id": "m1abrre516",
+   "lang": "en",
+   "text": "need to change my appointment to next week",
+   "label": "routine",
+   "at": 1794454079001
+  },
+  {
+   "id": "m17w1293t",
+   "lang": "en",
+   "text": "calf is rock hard and painful",
+   "label": "sameday",
+   "at": 1794454085286
+  },
+  {
+   "id": "m2jf8g61r",
+   "lang": "en",
+   "text": "my poo is jet black and sticky since starting the blood thinner",
+   "label": "emergency",
+   "at": 1794454086855
+  },
+  {
+   "id": "mt7l97j1u",
+   "lang": "en",
+   "text": "physio exercise sheet hard to read, can I take photo and send you?",
+   "label": "sameday",
+   "at": 1794454091996
+  },
+  {
+   "id": "m1a480yvt",
+   "lang": "en",
+   "text": "i left my charger on the ward",
+   "label": "routine",
+   "at": 1794454094578
+  },
+  {
+   "id": "m1fand5ps",
+   "lang": "en",
+   "text": "cant find the parking ticket",
+   "label": "routine",
+   "at": 1794454096816
+  },
+  {
+   "id": "m1ll9o632r",
+   "lang": "en",
+   "text": "sudden sharp pain on right side of chest when I breathe in, I'm not sure if this is normal recovery",
+   "label": "emergency",
+   "at": 1794454099673
+  },
+  {
+   "id": "m1s904lax",
+   "lang": "en",
+   "text": "im not sure which entrance to use",
+   "label": "routine",
+   "at": 1794454102756
+  },
+  {
+   "id": "m1a4ugsz1g",
+   "lang": "en",
+   "text": "my red suitcase is packed, anything else to prepare?",
+   "label": "routine",
+   "at": 1794454105111
+  },
+  {
+   "id": "mrafine1o",
+   "lang": "en",
+   "text": "I've been throwing up all day and can't keep my tablets down",
+   "label": "emergency",
+   "at": 1794454112103
+  },
+  {
+   "id": "mlnnrc6u",
+   "lang": "en",
+   "text": "i dont want to be here anymore",
+   "label": "sameday",
+   "at": 1794454116750
+  },
+  {
+   "id": "mr89xfk3j",
+   "lang": "en",
+   "text": "I know I'm overreacting but the pain at the hip is 9 out of 10 even with 2 panadol and the morphine nurse said wait. been 6 hrs",
+   "label": "sameday",
+   "at": 1794454120893
+  },
+  {
+   "id": "m1snjs7c9",
+   "lang": "en",
+   "text": "ok thanks",
+   "label": "routine",
+   "at": 1794454122265
+  },
+  {
+   "id": "m169w1oz11",
+   "lang": "en",
+   "text": "this hospital food is killing me haha",
+   "label": "routine",
+   "at": 1794454123366
+  },
+  {
+   "id": "m152a2e0u",
+   "lang": "en",
+   "text": "how many days will i be warded",
+   "label": "routine",
+   "at": 1794454125868
+  },
+  {
+   "id": "m18v24u710",
+   "lang": "en",
+   "text": "no pain no swelling, everything fine",
+   "label": "routine",
+   "at": 1794454127065
+  },
+  {
+   "id": "m1fks5wk2s",
+   "lang": "en",
+   "text": "Cant feel my front bum area and I think I peed myself a bit, not sure. Lower back op 2 days ago lah.",
+   "label": "sameday",
+   "at": 1794454139556
+  },
+  {
+   "id": "m1ope1uf17",
+   "lang": "en",
+   "text": "the knee is twice the size of the other one",
+   "label": "sameday",
+   "at": 1794454143939
+  },
+  {
+   "id": "mqkecvh1l",
+   "lang": "en",
+   "text": "sudden worst headache and neck stiffness after the spinal",
+   "label": "emergency",
+   "at": 1794454149066
+  },
+  {
+   "id": "m101band22",
+   "lang": "en",
+   "text": "my foot below the operated knee is cold and pale and i cant wiggle my toes",
+   "label": "emergency",
+   "at": 1794454150611
+  },
+  {
+   "id": "mypxzbjs",
+   "lang": "en",
+   "text": "pain 9/10 tablets do nothing",
+   "label": "sameday",
+   "at": 1794454152412
+  },
+  {
+   "id": "m3y7wov1h",
+   "lang": "en",
+   "text": "I'm on warfarin, when do I need the blood test again?",
+   "label": "routine",
+   "at": 1794454156361
+  },
+  {
+   "id": "m14jt9mg1k",
+   "lang": "en",
+   "text": "sleeping badly because I can't get comfortable, any tips",
+   "label": "sameday",
+   "at": 1794454179359
+  },
+  {
+   "id": "m1gc4h1j2i",
+   "lang": "en",
+   "text": "thigh very hard and swollen, skin looks very shiny and tight, pain getting worse each hour",
+   "label": "sameday",
+   "at": 1794454188723
+  },
+  {
+   "id": "mhvb0ko15",
+   "lang": "en",
+   "text": "my knee clicks when i bend it but no pain",
+   "label": "routine",
+   "at": 1794454191338
+  },
+  {
+   "id": "m164pc0n1f",
+   "lang": "en",
+   "text": "feeling feverish and the knee is throbbing and warm",
+   "label": "sameday",
+   "at": 1794454193760
+  },
+  {
+   "id": "m1fmy5z2d",
+   "lang": "en",
+   "text": "ok thanks doc",
+   "label": "routine",
+   "at": 1794454194855
+  },
+  {
+   "id": "m9vko4017",
+   "lang": "en",
+   "text": "whole leg swollen up to the thigh and tight",
+   "label": "sameday",
+   "at": 1794454196857
+  },
+  {
+   "id": "m14zvnes1e",
+   "lang": "en",
+   "text": "very sleepy cant keep him awake after the morphine",
+   "label": "emergency",
+   "at": 1794454199124
+  },
+  {
+   "id": "moewr8dp",
+   "lang": "en",
+   "text": "thanks doc, feeling great",
+   "label": "routine",
+   "at": 1794454200496
+  },
+  {
+   "id": "mjef9or1q",
+   "lang": "en",
+   "text": "left side of my body went weak suddenly and my mouth is droopy",
+   "label": "emergency",
+   "at": 1794454201633
+  },
+  {
+   "id": "mlwobtx11",
+   "lang": "en",
+   "text": "i forgot what time to come on the day",
+   "label": "routine",
+   "at": 1794454205921
+  },
+  {
+   "id": "m2xvlqp2g",
+   "lang": "en",
+   "text": "can I do the squats the physio showed? my knee clicks sometimes but no swelling, no pain",
+   "label": "routine",
+   "at": 1794454207464
+  },
+  {
+   "id": "m1an4q5j3n",
+   "lang": "en",
+   "text": "I'm coughing and my chest is tight when I breathe deep, like there's a brick. Ankle surgery was on Thursday. I'm fine otherwise lah",
+   "label": "emergency",
+   "at": 1794454216137
+  },
+  {
+   "id": "my6lo801e",
+   "lang": "en",
+   "text": "what are the signs of infection i should watch for",
+   "label": "sameday",
+   "at": 1794454219045
+  },
+  {
+   "id": "mmjfzc6z",
+   "lang": "en",
+   "text": "is it normal to have some swelling?",
+   "label": "sameday",
+   "at": 1794454225187
+  },
+  {
+   "id": "mnlstsaf",
+   "lang": "en",
+   "text": "where do i park",
+   "label": "routine",
+   "at": 1794454226110
+  },
+  {
+   "id": "m18k8kyb1e",
+   "lang": "en",
+   "text": "he just dropped to the floor and isnt answering us",
+   "label": "emergency",
+   "at": 1794454228323
+  },
+  {
+   "id": "ma9sqew3l",
+   "lang": "en",
+   "text": "I've been peeing loads and so thirsty since the op, sugar reads really high on the machine, probably nothing but I'm not diabetic",
+   "label": "emergency",
+   "at": 1794454231134
+  },
+  {
+   "id": "mdg091m1c",
+   "lang": "en",
+   "text": "wife is very sleepy and i cant wake her properly",
+   "label": "emergency",
+   "at": 1794454232189
+  },
+  {
+   "id": "mvgsij9v",
+   "lang": "en",
+   "text": "how long will the swelling last",
+   "label": "routine",
+   "at": 1794454239580
+  },
+  {
+   "id": "mk34yhz2x",
+   "lang": "en",
+   "text": "lightheaded when i stand, wound ok but i fainted in the shower this morning for a sec. no pain just dizzy",
+   "label": "sameday",
+   "at": 1794454249517
+  },
+  {
+   "id": "m1rqx0fn48",
+   "lang": "en",
+   "text": "I had surgery on my back and now when I cough I feel like something goes down my legs like electric and my right leg just gave way when i tried to walk.",
+   "label": "sameday",
+   "at": 1794454258693
+  },
+  {
+   "id": "m1268qe12",
+   "lang": "en",
+   "text": "can my daughter stay overnight with me",
+   "label": "routine",
+   "at": 1794454262040
+  },
+  {
+   "id": "m17yywqki",
+   "lang": "en",
+   "text": "chills and shaking",
+   "label": "sameday",
+   "at": 1794454264799
+  },
+  {
+   "id": "m1icmpv2w",
+   "lang": "en",
+   "text": "pus coming out from the stitches",
+   "label": "emergency",
+   "at": 1794454269126
+  },
+  {
+   "id": "mxnux4e40",
+   "lang": "en",
+   "text": "Doctor the toilet thing again. Nothing coming out since Tuesday and my legs feel like someone put sandbags on them. Back surgery was 4 days ago.",
+   "label": "emergency",
+   "at": 1794454281944
+  },
+  {
+   "id": "mu1d79g18",
+   "lang": "en",
+   "text": "my son will fetch me, what time is discharge",
+   "label": "routine",
+   "at": 1794454284029
+  },
+  {
+   "id": "m1e49qe8u",
+   "lang": "en",
+   "text": "mum passed out in the bathroom",
+   "label": "emergency",
+   "at": 1794454285133
+  },
+  {
+   "id": "my6ih6d1c",
+   "lang": "en",
+   "text": "knee aches after physio, eases with rest and ice",
+   "label": "routine",
+   "at": 1794454287626
+  },
+  {
+   "id": "m7omi4xw",
+   "lang": "en",
+   "text": "knee is locked, wont bend at all",
+   "label": "sameday",
+   "at": 1794454289275
+  },
+  {
+   "id": "m1nibrv4v",
+   "lang": "en",
+   "text": "grandma is not responding to us",
+   "label": "emergency",
+   "at": 1794454290442
+  },
+  {
+   "id": "mvk1bns1s",
+   "lang": "en",
+   "text": "hi, can I take a nap in the afternoon? I feel sleepy after lunch",
+   "label": "routine",
+   "at": 1794454293973
+  },
+  {
+   "id": "mj86mir14",
+   "lang": "en",
+   "text": "my foot has gone white and cold and numb",
+   "label": "emergency",
+   "at": 1794454297032
+  },
+  {
+   "id": "mgqjj2i19",
+   "lang": "en",
+   "text": "the physio was a pain in the neck but helpful",
+   "label": "sameday",
+   "at": 1794454304172
+  },
+  {
+   "id": "m1xs7nhp10",
+   "lang": "en",
+   "text": "unable to find parking yesterday lol",
+   "label": "routine",
+   "at": 1794454306155
+  },
+  {
+   "id": "m1b5ai7x1k",
+   "lang": "en",
+   "text": "tongue feels swollen and hard to swallow after injection",
+   "label": "emergency",
+   "at": 1794454308342
+  },
+  {
+   "id": "m1joz47i1n",
+   "lang": "en",
+   "text": "walked to the kitchen and back, bit out of breath but proud",
+   "label": "sameday",
+   "at": 1794454320267
+  },
+  {
+   "id": "mirrm9s25",
+   "lang": "en",
+   "text": "accident this morning lah, cannot hold my poo at all, back pain very bad also",
+   "label": "emergency",
+   "at": 1794454330046
+  },
+  {
+   "id": "mdj1ycl1a",
+   "lang": "en",
+   "text": "there's a blister turning black near the wound",
+   "label": "emergency",
+   "at": 1794454333003
+  },
+  {
+   "id": "m5jpzt619",
+   "lang": "en",
+   "text": "sharp pain in my chest when I breathe in deep",
+   "label": "emergency",
+   "at": 1794454334936
+  },
+  {
+   "id": "m1wx7hry2x",
+   "lang": "en",
+   "text": "My sleep is so bad since the op, can't lie on the left side. Any tips? No chest pain, just uncomfortable.",
+   "label": "sameday",
+   "at": 1794454338077
+  },
+  {
+   "id": "mh61uz7p",
+   "lang": "en",
+   "text": "feeling much better today",
+   "label": "routine",
+   "at": 1794454339523
+  },
+  {
+   "id": "m1p9zr911s",
+   "lang": "en",
+   "text": "feels like someone sitting on my chest and my left arm is aching",
+   "label": "emergency",
+   "at": 1794454343964
+  },
+  {
+   "id": "m1ouxf9f2k",
+   "lang": "en",
+   "text": "No chest pain, no fever, but my breathing is getting worse every time I walk to the bathroom",
+   "label": "emergency",
+   "at": 1794454347209
+  },
+  {
+   "id": "my5w5j0q",
+   "lang": "en",
+   "text": "i cant wait to walk again!",
+   "label": "routine",
+   "at": 1794454349630
+  },
+  {
+   "id": "meuugz9p",
+   "lang": "en",
+   "text": "SOB and calf pain x2 days",
+   "label": "emergency",
+   "at": 1794454351240
+  },
+  {
+   "id": "m1jwimmd16",
+   "lang": "en",
+   "text": "i swallowed the whole strip of painkillers",
+   "label": "emergency",
+   "at": 1794454352557
+  },
+  {
+   "id": "meg79sly",
+   "lang": "en",
+   "text": "bleeding has stopped, all fine now",
+   "label": "routine",
+   "at": 1794454354003
+  },
+  {
+   "id": "mqt36ea1g",
+   "lang": "en",
+   "text": "heart is racing and i feel like im going to pass out",
+   "label": "emergency",
+   "at": 1794454355568
+  },
+  {
+   "id": "m1sawoh9v",
+   "lang": "en",
+   "text": "do you accept my insurance card",
+   "label": "routine",
+   "at": 1794454359016
+  },
+  {
+   "id": "mhqsby41g",
+   "lang": "en",
+   "text": "calf very painful and swollen compared to other side",
+   "label": "emergency",
+   "at": 1794454365390
+  },
+  {
+   "id": "mhl8nzj1n",
+   "lang": "en",
+   "text": "no temperature, wound clean and dry, walking with the frame",
+   "label": "routine",
+   "at": 1794454368741
+  },
+  {
+   "id": "m18jx2jz1b",
+   "lang": "en",
+   "text": "my mother is gasping and cant finish a sentence",
+   "label": "emergency",
+   "at": 1794454371793
+  },
+  {
+   "id": "m1i1wam8q",
+   "lang": "en",
+   "text": "wound edges are separating",
+   "label": "sameday",
+   "at": 1794454375426
+  },
+  {
+   "id": "m419u23i",
+   "lang": "en",
+   "text": "thanks a lot nurse",
+   "label": "routine",
+   "at": 1794454376510
+  },
+  {
+   "id": "m1rotn4n1d",
+   "lang": "en",
+   "text": "cant lift my foot up since surgery, it just drops",
+   "label": "sameday",
+   "at": 1794454386672
+  },
+  {
+   "id": "mejm6a01l",
+   "lang": "en",
+   "text": "sometimes i think everyone would be better off without me",
+   "label": "sameday",
+   "at": 1794454392298
+  },
+  {
+   "id": "m1mvn29i1u",
+   "lang": "en",
+   "text": "my wife had a blood clot years ago, will I get the injections too?",
+   "label": "sameday",
+   "at": 1794454407699
+  },
+  {
+   "id": "m1cm9ilf12",
+   "lang": "en",
+   "text": "unable to log in to the patient portal",
+   "label": "routine",
+   "at": 1794454413193
+  },
+  {
+   "id": "min2vw51i",
+   "lang": "en",
+   "text": "the wound looks clean and dry, stitches out next week?",
+   "label": "routine",
+   "at": 1794454416607
+  },
+  {
+   "id": "m1kfcvv31a",
+   "lang": "en",
+   "text": "i missed my blood thinner injection for 3 days",
+   "label": "sameday",
+   "at": 1794454434124
+  },
+  {
+   "id": "m1rcwg9dv",
+   "lang": "en",
+   "text": "yellow fluid leaking from wound",
+   "label": "emergency",
+   "at": 1794454438000
+  },
+  {
+   "id": "m17oibukk",
+   "lang": "en",
+   "text": "can i fly in january",
+   "label": "routine",
+   "at": 1794454439815
+  },
+  {
+   "id": "m6r9b1ra",
+   "lang": "en",
+   "text": "fever 38.9",
+   "label": "emergency",
+   "at": 1794454441041
+  },
+  {
+   "id": "m1ggehl71i",
+   "lang": "en",
+   "text": "blood soaked through three towels and its still coming",
+   "label": "emergency",
+   "at": 1794454442803
+  },
+  {
+   "id": "m1sgajbs9",
+   "lang": "en",
+   "text": "thank you",
+   "label": "routine",
+   "at": 1794454443769
+  },
+  {
+   "id": "m8jsrka2x",
+   "lang": "en",
+   "text": "since last night got a tight feeling in chest and my left arm tingly, sorry maybe nothing but want to ask",
+   "label": "emergency",
+   "at": 1794454445558
+  },
+  {
+   "id": "mjb5w9g2b",
+   "lang": "en",
+   "text": "my dad's op was fine, he says hi. Just asking if physio can come home in Shah Alam?",
+   "label": "routine",
+   "at": 1794454448853
+  },
+  {
+   "id": "m1tt708z9",
+   "lang": "en",
+   "text": "calf pain",
+   "label": "sameday",
+   "at": 1794454450589
+  },
+  {
+   "id": "mb6wwrd2y",
+   "lang": "en",
+   "text": "i keep getting dizzy and thinking of ending it all. surgery was pain, now i just dont see the point. sorry",
+   "label": "sameday",
+   "at": 1794454456351
+  },
+  {
+   "id": "mchomxx10",
+   "lang": "en",
+   "text": "i fell on my operated knee yesterday",
+   "label": "emergency",
+   "at": 1794454459313
+  },
+  {
+   "id": "mxikxz911",
+   "lang": "en",
+   "text": "knee feels a bit stiff in the morning",
+   "label": "sameday",
+   "at": 1794454460527
+  },
+  {
+   "id": "m2k6f0pi",
+   "lang": "en",
+   "text": "Ok thanks, got it.",
+   "label": "routine",
+   "at": 1794454461444
+  },
+  {
+   "id": "m6pbq9kh",
+   "lang": "en",
+   "text": "who is my surgeon",
+   "label": "routine",
+   "at": 1794454463955
+  },
+  {
+   "id": "m14sywebw",
+   "lang": "en",
+   "text": "how much will the operation cost",
+   "label": "routine",
+   "at": 1794454465949
+  },
+  {
+   "id": "maa7pifk",
+   "lang": "en",
+   "text": "vomiting blood clots",
+   "label": "emergency",
+   "at": 1794454467169
+  },
+  {
+   "id": "mx0ga8mv",
+   "lang": "en",
+   "text": "having fits, whole body shaking",
+   "label": "emergency",
+   "at": 1794454468934
+  },
+  {
+   "id": "m1b6uqpx29",
+   "lang": "en",
+   "text": "omg my leg is cold and kinda grey-blue since i woke up. the knee brace is on. Pls",
+   "label": "emergency",
+   "at": 1794454470515
+  },
+  {
+   "id": "m11lvsb713",
+   "lang": "en",
+   "text": "lower leg is tender to squeeze and warm",
+   "label": "sameday",
+   "at": 1794454473178
+  },
+  {
+   "id": "m50ba2w2e",
+   "lang": "en",
+   "text": "coughing up a little bit of blood since this afternoon and breathing faster than usual",
+   "label": "emergency",
+   "at": 1794454475103
+  },
+  {
+   "id": "m1vv432p2e",
+   "lang": "en",
+   "text": "my foot gone white and cold, i cannot wiggle my toes anymore. no need to panic i think",
+   "label": "emergency",
+   "at": 1794454476225
+  },
+  {
+   "id": "mssr4rh57",
+   "lang": "en",
+   "text": "Came back from Dubai last night, 11hr flight. Right leg below knee is fat and warm to touch and kind of hurts when I point my toes. Probably just from sitting. Knee replacement 3 wks ago.",
+   "label": "emergency",
+   "at": 1794454479725
+  },
+  {
+   "id": "mornlx61r",
+   "lang": "en",
+   "text": "had a slight temperature yesterday but its gone now, 36.8 today",
+   "label": "emergency",
+   "at": 1794454481458
+  },
+  {
+   "id": "m1lh62ayz",
+   "lang": "en",
+   "text": "how do I do the heel slide exercise",
+   "label": "routine",
+   "at": 1794454483664
+  },
+  {
+   "id": "m1n8sipr7",
+   "lang": "en",
+   "text": "morning",
+   "label": "routine",
+   "at": 1794454484666
+  },
+  {
+   "id": "mr2ovh819",
+   "lang": "en",
+   "text": "what should I do if the wound starts leaking?",
+   "label": "sameday",
+   "at": 1794454487783
+  },
+  {
+   "id": "mqmpjbk1g",
+   "lang": "en",
+   "text": "pain in my chest that goes to my back when i breathe",
+   "label": "emergency",
+   "at": 1794454490836
+  },
+  {
+   "id": "ma19lwy1l",
+   "lang": "en",
+   "text": "do you have a chest of drawers in the room for my clothes",
+   "label": "routine",
+   "at": 1794454494126
+  },
+  {
+   "id": "m1tyxe451n",
+   "lang": "en",
+   "text": "Ok doc will come on time Monday. Park at basement B1 right?",
+   "label": "routine",
+   "at": 1794454496118
+  },
+  {
+   "id": "myayo7011",
+   "lang": "en",
+   "text": "temp 38.4 tonight and feeling shivery",
+   "label": "emergency",
+   "at": 1794454498034
+  },
+  {
+   "id": "m1qvd1931n",
+   "lang": "en",
+   "text": "i took double my oxycodone by accident and feel very drowsy",
+   "label": "emergency",
+   "at": 1794454501431
+  },
+  {
+   "id": "m15o4brm1h",
+   "lang": "en",
+   "text": "wound is red, warm and the red area is getting bigger",
+   "label": "emergency",
+   "at": 1794454502604
+  },
+  {
+   "id": "m1gn1m7uz",
+   "lang": "en",
+   "text": "leg is cold and i cant feel my toes",
+   "label": "emergency",
+   "at": 1794454504201
+  },
+  {
+   "id": "mfja68p1k",
+   "lang": "en",
+   "text": "left side of my body feels weak and my mouth is drooping",
+   "label": "emergency",
+   "at": 1794454505490
+  },
+  {
+   "id": "m3z75bv1c",
+   "lang": "en",
+   "text": "constipated since the op, havent gone for 3 days",
+   "label": "sameday",
+   "at": 1794454507076
+  },
+  {
+   "id": "m1xq7lhup",
+   "lang": "en",
+   "text": "what is the visiting time",
+   "label": "routine",
+   "at": 1794454508585
+  },
+  {
+   "id": "m1637ho93a",
+   "lang": "en",
+   "text": "the wound on my back is very red, hot, and the stitches spitting out pus. Also my temperature 39.2 on the thermometer.",
+   "label": "emergency",
+   "at": 1794454511255
+  },
+  {
+   "id": "m177b7rl3l",
+   "lang": "en",
+   "text": "bro my knee got the bandage and i been bleeding through it since morning, the blood keeps coming thru even after pressing 20 mins",
+   "label": "emergency",
+   "at": 1794454513832
+  },
+  {
+   "id": "m7ibxyxw",
+   "lang": "en",
+   "text": "incision has opened up about 1cm",
+   "label": "sameday",
+   "at": 1794454516685
+  },
+  {
+   "id": "m1jv2pob1f",
+   "lang": "en",
+   "text": "my husband cannot come to fetch me on discharge day",
+   "label": "routine",
+   "at": 1794454519114
+  },
+  {
+   "id": "maf2odvs",
+   "lang": "en",
+   "text": "no fever, no pain, wound dry",
+   "label": "routine",
+   "at": 1794454519957
+  },
+  {
+   "id": "m4o7b1z18",
+   "lang": "en",
+   "text": "redness spreading up my thigh from the wound",
+   "label": "sameday",
+   "at": 1794454535774
+  },
+  {
+   "id": "mgf8c4py",
+   "lang": "en",
+   "text": "stitches burst when i bent my knee",
+   "label": "sameday",
+   "at": 1794454542632
+  },
+  {
+   "id": "m3hofz2",
+   "lang": "en",
+   "text": "ok",
+   "label": "routine",
+   "at": 1794454543607
+  },
+  {
+   "id": "m1gury7z12",
+   "lang": "en",
+   "text": "theres no reason for me to keep living",
+   "label": "sameday",
+   "at": 1794454545869
+  },
+  {
+   "id": "m14nz34xm",
+   "lang": "en",
+   "text": "can i sleep on my side",
+   "label": "routine",
+   "at": 1794454547908
+  },
+  {
+   "id": "mkp6o3eg",
+   "lang": "en",
+   "text": "happy to be home",
+   "label": "routine",
+   "at": 1794454548504
+  },
+  {
+   "id": "m1qegisj15",
+   "lang": "en",
+   "text": "my calf hurts when i walk and feels tight",
+   "label": "sameday",
+   "at": 1794454549723
+  },
+  {
+   "id": "mwpuvyx25",
+   "lang": "en",
+   "text": "lower leg is tender when I squeeze it and ankle is puffy on the operated side",
+   "label": "sameday",
+   "at": 1794454554000
+  },
+  {
+   "id": "m1wfjt172c",
+   "lang": "en",
+   "text": "Is it okay to take turmeric capsules with the blood thinner? Not sure if they clash.",
+   "label": "sameday",
+   "at": 1794454556960
+  },
+  {
+   "id": "m8oeqe0s",
+   "lang": "en",
+   "text": "sharp pain when i breathe in",
+   "label": "emergency",
+   "at": 1794454558899
+  },
+  {
+   "id": "mch1dg1t",
+   "lang": "en",
+   "text": "is swelling normal after tkr?",
+   "label": "sameday",
+   "at": 1794454561304
+  },
+  {
+   "id": "ml8196116",
+   "lang": "en",
+   "text": "cant move my right arm and face feels numb",
+   "label": "emergency",
+   "at": 1794454562612
+  },
+  {
+   "id": "mqcrslc2u",
+   "lang": "en",
+   "text": "Thanks doc, the physio exercises are doable. Just confirming the next appointment is still 14th at 10?",
+   "label": "routine",
+   "at": 1794454564283
+  },
+  {
+   "id": "m1yikiky1m",
+   "lang": "en",
+   "text": "the swelling is going down nicely, feeling better each day",
+   "label": "routine",
+   "at": 1794454568787
+  },
+  {
+   "id": "me28e4u1c",
+   "lang": "en",
+   "text": "knee has swollen up massively since this morning",
+   "label": "sameday",
+   "at": 1794454571339
+  },
+  {
+   "id": "m5sjvu315",
+   "lang": "en",
+   "text": "he fainted in the shower and hit his head",
+   "label": "emergency",
+   "at": 1794454572544
+  },
+  {
+   "id": "m1k8lszi1g",
+   "lang": "en",
+   "text": "hi can I shower with the waterproof dressing on now?",
+   "label": "sameday",
+   "at": 1794454576388
+  },
+  {
+   "id": "mmq3sks",
+   "lang": "en",
+   "text": "is the hospital parking free",
+   "label": "routine",
+   "at": 1794454578690
+  },
+  {
+   "id": "m1pe222q14",
+   "lang": "en",
+   "text": "what do i still need to do before the op",
+   "label": "routine",
+   "at": 1794454580047
+  },
+  {
+   "id": "mp3pfcx13",
+   "lang": "en",
+   "text": "been running a temperature for two days",
+   "label": "emergency",
+   "at": 1794454586658
+  },
+  {
+   "id": "mv50xd616",
+   "lang": "en",
+   "text": "out of breath and dizzy, calf also swollen",
+   "label": "emergency",
+   "at": 1794454590484
+  },
+  {
+   "id": "mdo6lsf13",
+   "lang": "en",
+   "text": "the cut has opened about 2cm at the top",
+   "label": "sameday",
+   "at": 1794454596762
+  },
+  {
+   "id": "m1reb42j1f",
+   "lang": "en",
+   "text": "thank you so much nurse, I will keep my appointment",
+   "label": "routine",
+   "at": 1794454607611
+  },
+  {
+   "id": "mcmvwzmp",
+   "lang": "en",
+   "text": "worst headache of my life",
+   "label": "emergency",
+   "at": 1794454608793
+  },
+  {
+   "id": "ms7veisx",
+   "lang": "en",
+   "text": "the dressing is soaked with blood",
+   "label": "emergency",
+   "at": 1794454610971
+  },
+  {
+   "id": "mt27kgrp",
+   "lang": "en",
+   "text": "can i wear my own clothes",
+   "label": "routine",
+   "at": 1794454612435
+  },
+  {
+   "id": "mfgm2zh",
+   "lang": "en",
+   "text": "throat closing up",
+   "label": "emergency",
+   "at": 1794454615089
+  },
+  {
+   "id": "m1lnfkrtx",
+   "lang": "en",
+   "text": "knee is hot to touch and very red",
+   "label": "sameday",
+   "at": 1794454618480
+  },
+  {
+   "id": "m1x6uuv1i",
+   "lang": "en",
+   "text": "he is turning blue",
+   "label": "emergency",
+   "at": 1794454619800
+  },
+  {
+   "id": "mg51j4o19",
+   "lang": "en",
+   "text": "woke up drenched in sweat with shaking chills",
+   "label": "emergency",
+   "at": 1794454622230
+  },
+  {
+   "id": "m1k8hc0b1c",
+   "lang": "en",
+   "text": "my lips and tongue swelling after the painkiller",
+   "label": "emergency",
+   "at": 1794454623343
+  },
+  {
+   "id": "m1igp4624u",
+   "lang": "en",
+   "text": "my shoulder surgery stitches ok but my hand is kinda cold and white compared to other side and the fingers got pins and needles, been like this since the drip bag was changed",
+   "label": "emergency",
+   "at": 1794454629884
+  },
+  {
+   "id": "m1jq3h921w",
+   "lang": "en",
+   "text": "one side of dads face has dropped and his words are coming out wrong",
+   "label": "emergency",
+   "at": 1794454631331
+  },
+  {
+   "id": "min8rww",
+   "lang": "en",
+   "text": "i think im having a heart attack",
+   "label": "emergency",
+   "at": 1794454633868
+  },
+  {
+   "id": "m1fb37a3s",
+   "lang": "en",
+   "text": "my temperature reading is 39",
+   "label": "emergency",
+   "at": 1794454634607
+  },
+  {
+   "id": "m29lpr36",
+   "lang": "en",
+   "text": "Feeling a bit off, heart going like a drum even when I rest. Shoulder op 3 days. Doctor said it's nothing usually.",
+   "label": "emergency",
+   "at": 1794454640603
+  },
+  {
+   "id": "m1c8sghdo",
+   "lang": "en",
+   "text": "took 10 tramadol at once",
+   "label": "emergency",
+   "at": 1794454642062
+  },
+  {
+   "id": "m1v0tqy318",
+   "lang": "en",
+   "text": "greenish stuff on the dressing and it stinks",
+   "label": "emergency",
+   "at": 1794454644884
+  },
+  {
+   "id": "m2g9mjq10",
+   "lang": "en",
+   "text": "the oxycodone isnt touching the pain",
+   "label": "sameday",
+   "at": 1794454646621
+  },
+  {
+   "id": "mho8jj610",
+   "lang": "en",
+   "text": "what time is my appointment tomorrow",
+   "label": "routine",
+   "at": 1794454647788
+  },
+  {
+   "id": "m18e3u2i1d",
+   "lang": "en",
+   "text": "I slipped in the shower and landed on my new knee",
+   "label": "emergency",
+   "at": 1794454649627
+  },
+  {
+   "id": "mq5iwo21e",
+   "lang": "en",
+   "text": "the view from the ward was breathtaking, thank you",
+   "label": "routine",
+   "at": 1794454652050
+  },
+  {
+   "id": "meozz651a",
+   "lang": "en",
+   "text": "my husband will collect me, where does he park",
+   "label": "routine",
+   "at": 1794454653188
+  },
+  {
+   "id": "mojvjtjd",
+   "lang": "en",
+   "text": "can i shower?",
+   "label": "sameday",
+   "at": 1794454658586
+  },
+  {
+   "id": "mv0d9ng1i",
+   "lang": "en",
+   "text": "I am unable to attend tuesday physio, can I reschedule",
+   "label": "routine",
+   "at": 1794454667320
+  },
+  {
+   "id": "mxwvencq",
+   "lang": "en",
+   "text": "can i take a bath in a tub",
+   "label": "sameday",
+   "at": 1794454668740
+  },
+  {
+   "id": "m1x4g33y2y",
+   "lang": "en",
+   "text": "Is it normal that my knee is still a bit swollen after 6 weeks? Not painful, just puffy when i stand long.",
+   "label": "sameday",
+   "at": 1794454677881
+  },
+  {
+   "id": "m1r2gsq8q",
+   "lang": "en",
+   "text": "thinking of killing myself",
+   "label": "sameday",
+   "at": 1794454679613
+  },
+  {
+   "id": "m1shuucn30",
+   "lang": "en",
+   "text": "i been throwing up since yesterday and today the vomit got black bits like coffee grounds. knee op last week",
+   "label": "emergency",
+   "at": 1794454683528
+  },
+  {
+   "id": "mj819su",
+   "lang": "en",
+   "text": "i took all my sleeping tablets",
+   "label": "emergency",
+   "at": 1794454684681
+  },
+  {
+   "id": "m15lmd61r",
+   "lang": "en",
+   "text": "short of breath la doc, climbing few steps only already panting",
+   "label": "emergency",
+   "at": 1794454685868
+  },
+  {
+   "id": "m34je6ku",
+   "lang": "en",
+   "text": "can i fly to penang next month",
+   "label": "routine",
+   "at": 1794454689343
+  },
+  {
+   "id": "m1hgtshg3k",
+   "lang": "en",
+   "text": "Doc, I feel weird, the words not coming out right and my left arm is numb. Had the hip done Monday. Probably the painkillers ya.",
+   "label": "emergency",
+   "at": 1794454696168
+  },
+  {
+   "id": "mrf6toj",
+   "lang": "en",
+   "text": "is bruising normal?",
+   "label": "sameday",
+   "at": 1794454697799
+  },
+  {
+   "id": "msv0rga1a",
+   "lang": "en",
+   "text": "do I need to shave my leg before the operation",
+   "label": "sameday",
+   "at": 1794454699810
+  },
+  {
+   "id": "m1wx920k2b",
+   "lang": "en",
+   "text": "The bruise on my thigh turned yellow green, is that healing? No new pain, no fever.",
+   "label": "sameday",
+   "at": 1794454702126
+  },
+  {
+   "id": "m1sj7z0511",
+   "lang": "en",
+   "text": "can I bring my own pillow to the ward",
+   "label": "routine",
+   "at": 1794454703813
+  },
+  {
+   "id": "m1ynvl2y1a",
+   "lang": "en",
+   "text": "all good today, walked to the kitchen and back",
+   "label": "routine",
+   "at": 1794454704708
+  },
+  {
+   "id": "m1qvib2a23",
+   "lang": "en",
+   "text": "Hi, can I shower with the dressing on or should I keep it dry until Friday?",
+   "label": "sameday",
+   "at": 1794454706051
+  },
+  {
+   "id": "mrv7d73t",
+   "lang": "en",
+   "text": "ran out of clexane 4 days ago",
+   "label": "sameday",
+   "at": 1794454707913
+  },
+  {
+   "id": "m1fmaavjz",
+   "lang": "en",
+   "text": "i keep vomiting, nothing stays down",
+   "label": "sameday",
+   "at": 1794454710833
+  },
+  {
+   "id": "mnycj6sy",
+   "lang": "en",
+   "text": "black tarry stools since yesterday",
+   "label": "emergency",
+   "at": 1794454711887
+  },
+  {
+   "id": "m47jigp15",
+   "lang": "en",
+   "text": "my lips are swelling after the antibiotic",
+   "label": "emergency",
+   "at": 1794454713124
+  },
+  {
+   "id": "m1kw7xp92b",
+   "lang": "en",
+   "text": "Can I claim MC for the 2 weeks? Where do I get the form, insurance needs signature.",
+   "label": "routine",
+   "at": 1794454714518
+  },
+  {
+   "id": "m863yup36",
+   "lang": "en",
+   "text": "the stitches are fine lah. It's my foot under the dressing, colour gone grey-blue, and the toes feel cold to touch",
+   "label": "emergency",
+   "at": 1794454719960
+  },
+  {
+   "id": "m1vlemk52l",
+   "lang": "en",
+   "text": "since the injection my husband keep talking nonsense, forget where he is, cannot recognise me",
+   "label": "emergency",
+   "at": 1794454721545
+  },
+  {
+   "id": "mrhemk21i",
+   "lang": "en",
+   "text": "what time is my follow-up on Thursday again? thank you",
+   "label": "routine",
+   "at": 1794454728556
+  },
+  {
+   "id": "m1o4b0wns",
+   "lang": "en",
+   "text": "had a seizure 10 minutes ago",
+   "label": "emergency",
+   "at": 1794454729632
+  },
+  {
+   "id": "m1q00br91c",
+   "lang": "en",
+   "text": "wife is acting strange, doesnt know where she is",
+   "label": "emergency",
+   "at": 1794454730800
+  },
+  {
+   "id": "m1uvfvo72d",
+   "lang": "en",
+   "text": "when can I start walking without the stick? walking to the market with stick feels ok",
+   "label": "routine",
+   "at": 1794454732259
+  },
+  {
+   "id": "mjfngsv18",
+   "lang": "en",
+   "text": "can't wait to get this done, thank you team!",
+   "label": "routine",
+   "at": 1794454733539
+  },
+  {
+   "id": "m4il41r1d",
+   "lang": "en",
+   "text": "bleeding wont stop even after pressing 20 minutes",
+   "label": "emergency",
+   "at": 1794454734578
+  },
+  {
+   "id": "mb6sp1j10",
+   "lang": "en",
+   "text": "do i need to stop eating at midnight",
+   "label": "sameday",
+   "at": 1794454738899
+  },
+  {
+   "id": "m1bu12e92r",
+   "lang": "en",
+   "text": "the drain bottle got like pure red blood now, like half full in 2 hours. i dunno if thats normal ah",
+   "label": "sameday",
+   "at": 1794454744009
+  },
+  {
+   "id": "m1iolovdx",
+   "lang": "en",
+   "text": "fell down the stairs this morning",
+   "label": "emergency",
+   "at": 1794454749772
+  },
+  {
+   "id": "m1lyf470r",
+   "lang": "en",
+   "text": "pain is 3/10 and manageable",
+   "label": "routine",
+   "at": 1794454753549
+  },
+  {
+   "id": "m14t6df7e",
+   "lang": "en",
+   "text": "when is the op",
+   "label": "routine",
+   "at": 1794454754763
+  },
+  {
+   "id": "m13l93rb3i",
+   "lang": "en",
+   "text": "My friend had a breathing problem after her op but I am fine, no shortness of breath. Question: how long to keep the sling on?",
+   "label": "routine",
+   "at": 1794454762874
+  },
+  {
+   "id": "m1tjqlrv33",
+   "lang": "en",
+   "text": "my dad pass urine like cola colour and he very sleepy today, he got the back op 5 days ago. he say he okay only",
+   "label": "emergency",
+   "at": 1794454775650
+  },
+  {
+   "id": "mev5llzy",
+   "lang": "en",
+   "text": "pain is much better than last week",
+   "label": "routine",
+   "at": 1794454778732
+  },
+  {
+   "id": "m1jm5dxy1b",
+   "lang": "en",
+   "text": "my toes on the op leg turned blue and feel numb",
+   "label": "emergency",
+   "at": 1794454780003
+  },
+  {
+   "id": "m1j57wgf2y",
+   "lang": "en",
+   "text": "No fever, no bleeding, no swelling more than before, I'm just scared to walk. Is it normal to feel scared?",
+   "label": "sameday",
+   "at": 1794454782757
+  },
+  {
+   "id": "m1symfoc24",
+   "lang": "en",
+   "text": "Hi, insurance company wants the discharge summary, how do I request? Thanks.",
+   "label": "routine",
+   "at": 1794454785275
+  },
+  {
+   "id": "mgc481v1g",
+   "lang": "en",
+   "text": "i cant open the link you sent for the exercise video",
+   "label": "sameday",
+   "at": 1794454788638
+  },
+  {
+   "id": "m1k78y19m",
+   "lang": "en",
+   "text": "sob since this morning",
+   "label": "emergency",
+   "at": 1794454791032
+  },
+  {
+   "id": "m1lhyvub13",
+   "lang": "en",
+   "text": "wound smells bad and dressing is yellow",
+   "label": "emergency",
+   "at": 1794454792275
+  },
+  {
+   "id": "mpnvu0b1g",
+   "lang": "en",
+   "text": "my blue walking frame is too tall, can physio adjust",
+   "label": "sameday",
+   "at": 1794454796201
+  },
+  {
+   "id": "m1g0t3d4w",
+   "lang": "en",
+   "text": "how many weeks until i can drive",
+   "label": "routine",
+   "at": 1794454799295
+  },
+  {
+   "id": "m1c690u1q",
+   "lang": "en",
+   "text": "when can I drive my automatic car again, around 6 weeks is ok?",
+   "label": "routine",
+   "at": 1794454800519
+  },
+  {
+   "id": "m294wbow",
+   "lang": "en",
+   "text": "how long until I can drive again",
+   "label": "routine",
+   "at": 1794454801566
+  },
+  {
+   "id": "m1h2btvm14",
+   "lang": "en",
+   "text": "can you send me the exercise sheet again",
+   "label": "routine",
+   "at": 1794454809412
+  },
+  {
+   "id": "m1p97mae1w",
+   "lang": "en",
+   "text": "the stitches are a bit itchy as it heals, normal right? nothing else",
+   "label": "sameday",
+   "at": 1794454813725
+  },
+  {
+   "id": "m44rk7i1g",
+   "lang": "en",
+   "text": "I cant find my appointment card, what should I bring",
+   "label": "routine",
+   "at": 1794454814920
+  },
+  {
+   "id": "mo1bvqc1d",
+   "lang": "en",
+   "text": "coughed up some blood stained phlegm this morning",
+   "label": "emergency",
+   "at": 1794454816153
+  },
+  {
+   "id": "mjzmrgy2a",
+   "lang": "en",
+   "text": "dressing soaked red again, blood keep coming through even after I press 20 minutes",
+   "label": "emergency",
+   "at": 1794454818681
+  },
+  {
+   "id": "msbg4i7y",
+   "lang": "en",
+   "text": "my temp is 38.7 and i feel shivery",
+   "label": "emergency",
+   "at": 1794454819543
+  },
+  {
+   "id": "mviici92v",
+   "lang": "en",
+   "text": "is some numbness on the outer side of the scar expected? it's been there since surgery and not changing",
+   "label": "sameday",
+   "at": 1794454823962
+  },
+  {
+   "id": "m1tgk0os13",
+   "lang": "en",
+   "text": "my wound is bleeding again after physio",
+   "label": "emergency",
+   "at": 1794454827289
+  },
+  {
+   "id": "m1qvnobdo",
+   "lang": "en",
+   "text": "cp radiating to left arm",
+   "label": "emergency",
+   "at": 1794454828255
+  },
+  {
+   "id": "m9n9h8234",
+   "lang": "en",
+   "text": "pls help. my mum keep saying she dunno who i am and talking to the wall. she was fine after the hip op yesterday",
+   "label": "emergency",
+   "at": 1794454829922
+  },
+  {
+   "id": "m1id095hy",
+   "lang": "en",
+   "text": "severe weather here, might be late",
+   "label": "routine",
+   "at": 1794454833665
+  },
+  {
+   "id": "m13rmhpb3a",
+   "lang": "en",
+   "text": "doc my calf very swollen since this morning, hot and painful leh, and i got short of breath walking to toilet just now",
+   "label": "emergency",
+   "at": 1794454840522
+  },
+  {
+   "id": "mpssm4a1f",
+   "lang": "en",
+   "text": "feet are cold because of the aircon in the ward lol",
+   "label": "emergency",
+   "at": 1794454841958
+  },
+  {
+   "id": "m14bz5il14",
+   "lang": "en",
+   "text": "sudden shortness of breath and calf pain",
+   "label": "emergency",
+   "at": 1794454842827
+  },
+  {
+   "id": "m1tq8ndr11",
+   "lang": "en",
+   "text": "i feel like i am dying cannot breathe",
+   "label": "emergency",
+   "at": 1794454843935
+  },
+  {
+   "id": "m1l7ktzwq",
+   "lang": "en",
+   "text": "do i need to bring my xray",
+   "label": "routine",
+   "at": 1794454849313
+  },
+  {
+   "id": "m1ku9ndp17",
+   "lang": "en",
+   "text": "i think i took my blood thinner twice today",
+   "label": "sameday",
+   "at": 1794454855995
+  },
+  {
+   "id": "m5sganj12",
+   "lang": "en",
+   "text": "how to use the walking frame on stairs",
+   "label": "routine",
+   "at": 1794454859164
+  },
+  {
+   "id": "m1q04jbn1c",
+   "lang": "en",
+   "text": "vomited something that looks like coffee grounds",
+   "label": "emergency",
+   "at": 1794454864662
+  },
+  {
+   "id": "m17b6rmw1b",
+   "lang": "en",
+   "text": "is it normal to get a fever after knee surgery?",
+   "label": "sameday",
+   "at": 1794454866522
+  },
+  {
+   "id": "m5j3st031",
+   "lang": "en",
+   "text": "my toes on my right foot feel like wood and I can't wiggle them, the plaster is tight. been like that 2 hours",
+   "label": "emergency",
+   "at": 1794454876646
+  },
+  {
+   "id": "mnmw4zk1f",
+   "lang": "en",
+   "text": "my leg is a bit stiff in the morning but loosens up",
+   "label": "sameday",
+   "at": 1794454879548
+  },
+  {
+   "id": "m1nbmyvmu",
+   "lang": "en",
+   "text": "i havent peed since last night",
+   "label": "sameday",
+   "at": 1794454884085
+  },
+  {
+   "id": "megi9o22u",
+   "lang": "en",
+   "text": "my husband's body keep jerking like shaking for 2 min and now he sleeping weird, wont wake up properly",
+   "label": "emergency",
+   "at": 1794454888706
+  },
+  {
+   "id": "mo68ja01s",
+   "lang": "en",
+   "text": "after the new antibiotic my face is puffing up and i am wheezing",
+   "label": "emergency",
+   "at": 1794454890188
+  },
+  {
+   "id": "m1nn34ba11",
+   "lang": "en",
+   "text": "feeling nervous about the anaesthetic",
+   "label": "sameday",
+   "at": 1794454891696
+  },
+  {
+   "id": "mfn6ps41p",
+   "lang": "en",
+   "text": "my knee suddenly gave way and I heard a pop, now very swollen",
+   "label": "emergency",
+   "at": 1794454898306
+  },
+  {
+   "id": "mq9grlh11",
+   "lang": "en",
+   "text": "there is a bad smell from the bandage",
+   "label": "emergency",
+   "at": 1794454899459
+  },
+  {
+   "id": "m18tszpnq",
+   "lang": "en",
+   "text": "dressing soaked with fluid",
+   "label": "sameday",
+   "at": 1794454902299
+  },
+  {
+   "id": "mzr0j6oz",
+   "lang": "en",
+   "text": "I vomited and there was blood in it",
+   "label": "emergency",
+   "at": 1794454903242
+  },
+  {
+   "id": "mp6z7u5w",
+   "lang": "en",
+   "text": "can my wife collect the medicine",
+   "label": "routine",
+   "at": 1794454904515
+  },
+  {
+   "id": "m1s3jd9v1b",
+   "lang": "en",
+   "text": "feeling blue about missing my grandsons wedding",
+   "label": "sameday",
+   "at": 1794454908833
+  },
+  {
+   "id": "mxgpkyou",
+   "lang": "en",
+   "text": "can I eat durian after surgery",
+   "label": "routine",
+   "at": 1794454911806
+  },
+  {
+   "id": "maibu9r2k",
+   "lang": "en",
+   "text": "No chest pain, no fever, just checking when I can start driving the auto car. Right foot op.",
+   "label": "routine",
+   "at": 1794454915419
+  },
+  {
+   "id": "mcc5w2614",
+   "lang": "en",
+   "text": "i cant put weight on my leg since i fell",
+   "label": "emergency",
+   "at": 1794454918055
+  },
+  {
+   "id": "mkb99372f",
+   "lang": "en",
+   "text": "cannot feel my feet properly since the op, and when i try to pee also cannot control it",
+   "label": "emergency",
+   "at": 1794454920779
+  },
+  {
+   "id": "mxefssy1s",
+   "lang": "en",
+   "text": "severe traffic today, I'll be 10 minutes late for my appointment",
+   "label": "routine",
+   "at": 1794454922595
+  },
+  {
+   "id": "m1u86wwkw",
+   "lang": "en",
+   "text": "my heart is full, thank you team",
+   "label": "routine",
+   "at": 1794454926298
+  },
+  {
+   "id": "m19bpkzb1c",
+   "lang": "en",
+   "text": "painkillers not working at all, crying from pain",
+   "label": "sameday",
+   "at": 1794454927969
+  },
+  {
+   "id": "ma5f1bz11",
+   "lang": "en",
+   "text": "cant breathe properly when lying flat",
+   "label": "emergency",
+   "at": 1794454930122
+  },
+  {
+   "id": "musuyrcv",
+   "lang": "en",
+   "text": "my appointment is at 3pm right?",
+   "label": "sameday",
+   "at": 1794454934271
+  },
+  {
+   "id": "m149b09b1d",
+   "lang": "en",
+   "text": "no chest pain, no shortness of breath, doing well",
+   "label": "routine",
+   "at": 1794454937029
+  },
+  {
+   "id": "ml99jbao",
+   "lang": "en",
+   "text": "cannot walk at all today",
+   "label": "sameday",
+   "at": 1794454939836
+  },
+  {
+   "id": "mgo1l4538",
+   "lang": "en",
+   "text": "Doc I sweating a bit at night the last 2 days, room is hot though, no fever no chills I checked. Is this painkiller?",
+   "label": "sameday",
+   "at": 1794454943939
+  },
+  {
+   "id": "m1b3ndxgy",
+   "lang": "en",
+   "text": "struggling for air since i woke up",
+   "label": "emergency",
+   "at": 1794454946383
+  },
+  {
+   "id": "m15tao30y",
+   "lang": "en",
+   "text": "dad fainted in the toilet just now",
+   "label": "emergency",
+   "at": 1794454947128
+  },
+  {
+   "id": "m1edf4of1m",
+   "lang": "en",
+   "text": "lips and tongue tingling and swelling after the new tablet",
+   "label": "emergency",
+   "at": 1794454948090
+  },
+  {
+   "id": "m5wa26s18",
+   "lang": "en",
+   "text": "leg wound bleeding nonstop, already 3 towels",
+   "label": "emergency",
+   "at": 1794454949705
+  },
+  {
+   "id": "m1onzwhew",
+   "lang": "en",
+   "text": "do i need to fast before surgery",
+   "label": "sameday",
+   "at": 1794454951317
+  },
+  {
+   "id": "m3oaq2zs",
+   "lang": "en",
+   "text": "pus coming from the incision",
+   "label": "emergency",
+   "at": 1794454952506
+  },
+  {
+   "id": "mvs6di71p",
+   "lang": "en",
+   "text": "knee is much more swollen and angry red compared to yesterday",
+   "label": "sameday",
+   "at": 1794454954415
+  },
+  {
+   "id": "m7g1gov1i",
+   "lang": "en",
+   "text": "no fever, wound is dry, calf is soft. just checking in",
+   "label": "routine",
+   "at": 1794454956896
+  },
+  {
+   "id": "m1ahjh701k",
+   "lang": "en",
+   "text": "what happens if my wound gets infected, how would i know",
+   "label": "sameday",
+   "at": 1794454959976
+  },
+  {
+   "id": "m1t8flak23",
+   "lang": "en",
+   "text": "since this morning I cant put any weight on the leg, yesterday I could walk",
+   "label": "sameday",
+   "at": 1794454965709
+  },
+  {
+   "id": "my9wkoq27",
+   "lang": "en",
+   "text": "my calf is swollen and sore and now i get short of breath walking to the toilet",
+   "label": "emergency",
+   "at": 1794454976256
+  },
+  {
+   "id": "m13h8wka18",
+   "lang": "en",
+   "text": "the bruise on my thigh is turning yellow now",
+   "label": "sameday",
+   "at": 1794454985325
+  },
+  {
+   "id": "m8d5ja3q",
+   "lang": "en",
+   "text": "i coughed up something red",
+   "label": "emergency",
+   "at": 1794454986250
+  },
+  {
+   "id": "m16u0vb3q",
+   "lang": "en",
+   "text": "when can i go back to work",
+   "label": "routine",
+   "at": 1794454987450
+  },
+  {
+   "id": "m9ef4gp1l",
+   "lang": "en",
+   "text": "my heart is skipping and i feel like im going to pass out",
+   "label": "emergency",
+   "at": 1794454989321
+  },
+  {
+   "id": "m14t4t8v18",
+   "lang": "en",
+   "text": "i feel faint and my heart is beating so fast",
+   "label": "emergency",
+   "at": 1794454990347
+  },
+  {
+   "id": "m1dl213n",
+   "lang": "en",
+   "text": "hi doc my wound been leaking yellow thing since yesterday, smell not nice, and i got shivering at night. just wan ask is it normal?",
+   "label": "emergency",
+   "at": 1794455005173
+  },
+  {
+   "id": "m1pgnf3c1b",
+   "lang": "en",
+   "text": "he is shaking all over and his eyes rolled back",
+   "label": "emergency",
+   "at": 1794455008428
+  },
+  {
+   "id": "mm1hjvv1t",
+   "lang": "en",
+   "text": "heart pounding and i nearly passed out on the way to the bathroom",
+   "label": "emergency",
+   "at": 1794455009225
+  },
+  {
+   "id": "mvsky212b",
+   "lang": "en",
+   "text": "getting winded just walking to the bathroom since last night, never had this before",
+   "label": "sameday",
+   "at": 1794455013172
+  },
+  {
+   "id": "m16zaok4t",
+   "lang": "en",
+   "text": "coughing up pink frothy stuff",
+   "label": "emergency",
+   "at": 1794455014657
+  },
+  {
+   "id": "m1ior90v1c",
+   "lang": "en",
+   "text": "knee feels tight after physio, is that expected?",
+   "label": "sameday",
+   "at": 1794455017761
+  },
+  {
+   "id": "mclwazc13",
+   "lang": "en",
+   "text": "burning when i pee and feeling feverish",
+   "label": "sameday",
+   "at": 1794455021861
+  },
+  {
+   "id": "mxllp5b1v",
+   "lang": "en",
+   "text": "dressing is soaked with blood stained fluid, changed it twice today",
+   "label": "emergency",
+   "at": 1794455028382
+  },
+  {
+   "id": "m1s84u6hl",
+   "lang": "en",
+   "text": "when is my operation?",
+   "label": "routine",
+   "at": 1794455029889
+  },
+  {
+   "id": "m1qos0rx1i",
+   "lang": "en",
+   "text": "woke up with a tight band around my chest and sweating",
+   "label": "emergency",
+   "at": 1794455032577
+  },
+  {
+   "id": "mrcf8ltw",
+   "lang": "en",
+   "text": "should i keep taking my vitamins",
+   "label": "sameday",
+   "at": 1794455034947
+  },
+  {
+   "id": "m18j9k12q",
+   "lang": "en",
+   "text": "i blacked out for a minute",
+   "label": "emergency",
+   "at": 1794455036505
+  },
+  {
+   "id": "mzg14h3f",
+   "lang": "en",
+   "text": "stitches opened",
+   "label": "sameday",
+   "at": 1794455037526
+  },
+  {
+   "id": "mdh8e522o",
+   "lang": "en",
+   "text": "sorry for late msg. after ACL the knee is big now like balloon. tight. toes look purple?? ok bye",
+   "label": "emergency",
+   "at": 1794455042271
+  },
+  {
+   "id": "mv8footd",
+   "lang": "en",
+   "text": "i want to die",
+   "label": "emergency",
+   "at": 1794455044130
+  },
+  {
+   "id": "m85yho9z",
+   "lang": "en",
+   "text": "green gunk coming from the incision",
+   "label": "emergency",
+   "at": 1794455046585
+  },
+  {
+   "id": "m5xiaju27",
+   "lang": "en",
+   "text": "my pain is 2 out of 10 today, paracetamol enough, walking to the market is fine",
+   "label": "routine",
+   "at": 1794455049139
+  },
+  {
+   "id": "m1vhsky",
+   "lang": "en",
+   "text": "can i kneel after knee replacement",
+   "label": "routine",
+   "at": 1794455053131
+  },
+  {
+   "id": "meeaf741e",
+   "lang": "en",
+   "text": "slipped in the bathroom and landed on the new knee",
+   "label": "emergency",
+   "at": 1794455057438
+  },
+  {
+   "id": "m1skcbn5p",
+   "lang": "en",
+   "text": "theres blood when i cough",
+   "label": "emergency",
+   "at": 1794455058439
+  },
+  {
+   "id": "mujws3f14",
+   "lang": "en",
+   "text": "i cant catch my breath even sitting down",
+   "label": "emergency",
+   "at": 1794455059216
+  },
+  {
+   "id": "mf1b355n",
+   "lang": "en",
+   "text": "is it ok to feel scared",
+   "label": "sameday",
+   "at": 1794455060661
+  },
+  {
+   "id": "m1bbtzyj3d",
+   "lang": "en",
+   "text": "I took the paracetamol and the codeine but I think I took too many last night, I was crying a lot. Dont tell my wife pls.",
+   "label": "sameday",
+   "at": 1794455069219
+  },
+  {
+   "id": "m5340rr1m",
+   "lang": "en",
+   "text": "can't bend or straighten the knee since last night, locked",
+   "label": "sameday",
+   "at": 1794455078265
+  },
+  {
+   "id": "maduj61m",
+   "lang": "en",
+   "text": "i dont see the point of going on anymore, i want to end it",
+   "label": "sameday",
+   "at": 1794455080439
+  },
+  {
+   "id": "mcqej3411",
+   "lang": "en",
+   "text": "im confused about my appointment date",
+   "label": "routine",
+   "at": 1794455082246
+  },
+  {
+   "id": "mjp1xey18",
+   "lang": "en",
+   "text": "thanks for yesterday, the nurses were lovely",
+   "label": "routine",
+   "at": 1794455083383
+  },
+  {
+   "id": "mjjzgn83u",
+   "lang": "en",
+   "text": "the wound has a little clear watery drip on the dressing this morning, no smell no redness, nurse on phone said that's fine. just checking",
+   "label": "sameday",
+   "at": 1794455085023
+  },
+  {
+   "id": "mb4k8z32d",
+   "lang": "en",
+   "text": "Constipated since the tablets. Any laxative safe? Not in pain, just no poo for 3 days",
+   "label": "sameday",
+   "at": 1794455086744
+  },
+  {
+   "id": "mmyarfd14",
+   "lang": "en",
+   "text": "sudden trouble breathing and chest hurts",
+   "label": "emergency",
+   "at": 1794455087919
+  },
+  {
+   "id": "m1u4r8o22h",
+   "lang": "en",
+   "text": "Just want to say thank you to the nurse who helped me to the toilet yesterday. Very kind.",
+   "label": "routine",
+   "at": 1794455092229
+  },
+  {
+   "id": "m1j3s0js14",
+   "lang": "en",
+   "text": "what time do i need to arrive on the day",
+   "label": "routine",
+   "at": 1794455093158
+  },
+  {
+   "id": "mfjfe6f1p",
+   "lang": "en",
+   "text": "havent pooped in 6 days, belly is hard and i keep throwing up",
+   "label": "emergency",
+   "at": 1794455096424
+  },
+  {
+   "id": "m127t4hg1f",
+   "lang": "en",
+   "text": "my calf is hard, sore and bigger than the other one",
+   "label": "emergency",
+   "at": 1794455099440
+  },
+  {
+   "id": "m1icbl3m2w",
+   "lang": "en",
+   "text": "No fever, no pain, just checking: parking at level 2 is full, where else can I park for Thursday review?",
+   "label": "routine",
+   "at": 1794455106265
+  },
+  {
+   "id": "m9dhszb1r",
+   "lang": "en",
+   "text": "Will the stitches dissolve or do I have to come back to remove?",
+   "label": "routine",
+   "at": 1794455108115
+  },
+  {
+   "id": "m85lfjus",
+   "lang": "en",
+   "text": "chest pain going into my jaw",
+   "label": "emergency",
+   "at": 1794455109764
+  },
+  {
+   "id": "m1xqvdsf1i",
+   "lang": "en",
+   "text": "pain is unbearable even with the tablets, 10 out of 10",
+   "label": "emergency",
+   "at": 1794455110824
+  },
+  {
+   "id": "m13dec0z1b",
+   "lang": "en",
+   "text": "have not urinated since morning, feel very full",
+   "label": "emergency",
+   "at": 1794455113596
+  },
+  {
+   "id": "mxk1z3cc",
+   "lang": "en",
+   "text": "good morning",
+   "label": "routine",
+   "at": 1794455115431
+  },
+  {
+   "id": "m1ifasxz18",
+   "lang": "en",
+   "text": "been sick 5 times today cant keep water down",
+   "label": "emergency",
+   "at": 1794455122856
+  },
+  {
+   "id": "m1wae24o1p",
+   "lang": "en",
+   "text": "the pain meds arent doing anything, i was up all night crying",
+   "label": "sameday",
+   "at": 1794455132067
+  },
+  {
+   "id": "mxkbbfm11",
+   "lang": "en",
+   "text": "when can I open the bandage to shower",
+   "label": "sameday",
+   "at": 1794455134819
+  },
+  {
+   "id": "mxt5ns41e",
+   "lang": "en",
+   "text": "what time do I need to stop eating before surgery?",
+   "label": "sameday",
+   "at": 1794455136955
+  },
+  {
+   "id": "ml3m44k12",
+   "lang": "en",
+   "text": "feels like im drowning when i lie down",
+   "label": "emergency",
+   "at": 1794455137990
+  },
+  {
+   "id": "m1yp8hzvo",
+   "lang": "en",
+   "text": "when is my next check up",
+   "label": "routine",
+   "at": 1794455139306
+  },
+  {
+   "id": "m1iwyvau1v",
+   "lang": "en",
+   "text": "cant pee at all since yesterday and my tummy is swollen and painful",
+   "label": "emergency",
+   "at": 1794455140239
+  },
+  {
+   "id": "m2hbqii1o",
+   "lang": "en",
+   "text": "my speech is slurred and my right hand keeps dropping things",
+   "label": "emergency",
+   "at": 1794455141347
+  },
+  {
+   "id": "m177y0yvy",
+   "lang": "en",
+   "text": "feel hot and shivering whole night",
+   "label": "emergency",
+   "at": 1794455143074
+  },
+  {
+   "id": "m1qyv8ig34",
+   "lang": "en",
+   "text": "Doc my friend said I should not sleep on the right side after the hip, but I want to ask you. Thanks in advance.",
+   "label": "sameday",
+   "at": 1794455146001
+  },
+  {
+   "id": "m1c5239sy",
+   "lang": "en",
+   "text": "slept well, pain about 2 out of 10",
+   "label": "routine",
+   "at": 1794455149441
+  },
+  {
+   "id": "mo6mlur1e",
+   "lang": "en",
+   "text": "i cant decide whether to go ahead with the surgery",
+   "label": "routine",
+   "at": 1794455152167
+  },
+  {
+   "id": "m3ho9i2",
+   "lang": "en",
+   "text": "hi",
+   "label": "routine",
+   "at": 1794455157184
+  },
+  {
+   "id": "mqto0hq1b",
+   "lang": "en",
+   "text": "something yellowish on the plaster this morning",
+   "label": "sameday",
+   "at": 1794455158409
+  },
+  {
+   "id": "mg6n9jk1h",
+   "lang": "en",
+   "text": "knee ballooned up overnight and skin is shiny and red",
+   "label": "emergency",
+   "at": 1794455160775
+  },
+  {
+   "id": "mqkfw7en",
+   "lang": "en",
+   "text": "what date is my surgery",
+   "label": "routine",
+   "at": 1794455163781
+  },
+  {
+   "id": "m8e5out2v",
+   "lang": "en",
+   "text": "I've been doing the injections like the letter said. the letter mention DVT risk, when can I stop them?",
+   "label": "routine",
+   "at": 1794455175089
+  },
+  {
+   "id": "m1ni7dtvp",
+   "lang": "en",
+   "text": "can i bring my own pillow",
+   "label": "routine",
+   "at": 1794455175897
+  },
+  {
+   "id": "m1o6vbzx1k",
+   "lang": "en",
+   "text": "she keeps seeing people who arent there since last night",
+   "label": "emergency",
+   "at": 1794455177481
+  },
+  {
+   "id": "mct1agc2u",
+   "lang": "en",
+   "text": "Wound looks dry and pink on the edges, no pus no smell, just wanted confirm it's healing ok. No fever.",
+   "label": "routine",
+   "at": 1794455180492
+  },
+  {
+   "id": "mj3dro6f",
+   "lang": "en",
+   "text": "vomitting blood",
+   "label": "emergency",
+   "at": 1794455181502
+  },
+  {
+   "id": "mm9pps7e",
+   "lang": "en",
+   "text": "spitting blood",
+   "label": "emergency",
+   "at": 1794455182217
+  },
+  {
+   "id": "msv42bm1k",
+   "lang": "en",
+   "text": "blood is pouring from the wound, towel is soaked through",
+   "label": "emergency",
+   "at": 1794455184613
+  },
+  {
+   "id": "m1fh1oxtx",
+   "lang": "en",
+   "text": "temperature 38.5 since last night",
+   "label": "emergency",
+   "at": 1794455185415
+  },
+  {
+   "id": "mi8s2jns",
+   "lang": "en",
+   "text": "when do the staples come out",
+   "label": "routine",
+   "at": 1794455187719
+  },
+  {
+   "id": "ma3497s1k",
+   "lang": "en",
+   "text": "I cannot remember if my follow up is on the 12th or 14th",
+   "label": "routine",
+   "at": 1794455189632
+  },
+  {
+   "id": "mlwqe3u31",
+   "lang": "en",
+   "text": "bruising on my thigh is huge and purple but no pain at all, the nurse said it will fade, that's normal right?",
+   "label": "sameday",
+   "at": 1794455192531
+  },
+  {
+   "id": "mc5c5r03b",
+   "lang": "en",
+   "text": "I think my throat swelling a bit after I took the new antibiotic the clinic gave. hard to swallow. Itching all over too",
+   "label": "emergency",
+   "at": 1794455198380
+  },
+  {
+   "id": "m1vkqzdi27",
+   "lang": "en",
+   "text": "mum had her knee done monday, now she is muddled and doesnt know what day it is",
+   "label": "emergency",
+   "at": 1794455200635
+  },
+  {
+   "id": "m10l37j41a",
+   "lang": "en",
+   "text": "my husband is gasping and his lips look bluish",
+   "label": "emergency",
+   "at": 1794455202020
+  },
+  {
+   "id": "m1k6z50zm",
+   "lang": "en",
+   "text": "i cant catch my breath",
+   "label": "emergency",
+   "at": 1794455202793
+  },
+  {
+   "id": "mjg2kwk1r",
+   "lang": "en",
+   "text": "The toilet seat raised frame, do I still need it after 4 weeks?",
+   "label": "routine",
+   "at": 1794455211578
+  },
+  {
+   "id": "m1uk0fpm1w",
+   "lang": "en",
+   "text": "fever 38.9 since night, shaking and chills, the wound also looks red",
+   "label": "emergency",
+   "at": 1794455214515
+  },
+  {
+   "id": "mml2t0cw",
+   "lang": "en",
+   "text": "shivering and sweating all night",
+   "label": "emergency",
+   "at": 1794455215574
+  },
+  {
+   "id": "m1txklsw11",
+   "lang": "en",
+   "text": "what if I fall at home, who do I call",
+   "label": "routine",
+   "at": 1794455218457
+  },
+  {
+   "id": "m1w102n61p",
+   "lang": "en",
+   "text": "blood is coming through the bandage and dripping on the floor",
+   "label": "emergency",
+   "at": 1794455223135
+  },
+  {
+   "id": "mxqdr181k",
+   "lang": "en",
+   "text": "toes on the operated side are white and i cant feel them",
+   "label": "emergency",
+   "at": 1794455224370
+  },
+  {
+   "id": "m1mmb9wxx",
+   "lang": "en",
+   "text": "when can I take the dressing off?",
+   "label": "sameday",
+   "at": 1794455225848
+  },
+  {
+   "id": "m17k5syw1e",
+   "lang": "en",
+   "text": "my chest of drawers is too low to reach, any tips?",
+   "label": "sameday",
+   "at": 1794455231493
+  },
+  {
+   "id": "m5op7b9b",
+   "lang": "en",
+   "text": "cnt breathe",
+   "label": "emergency",
+   "at": 1794455232561
+  },
+  {
+   "id": "m1d3k2r91x",
+   "lang": "en",
+   "text": "my son fell off his bike yesterday but hes ok, can he still drive me?",
+   "label": "sameday",
+   "at": 1794455238219
+  }
+ ]
+}

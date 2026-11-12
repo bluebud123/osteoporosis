@@ -283,3 +283,27 @@ Changed: `docs/solution-brief.md`, `README.md` and `docs/video-script.md` now qu
 ## v3.11 (12 Nov 2026): labelling page ignored new settings
 
 Reported by Dr Tan: after changing the language ticks or the number of messages, the page still showed the first 150 mixed English and Malay messages. Cause: a session saved in the browser under the same initials was resumed silently, and the settings were ignored. Fix in `app/eval/label.html`: the button now reads "Continue saved session", the note says the settings are ignored when continuing, and a second button starts a new session with the settings on the page (after a confirmation, because it deletes the saved labels). Starting with no language ticked is refused. Checked in a browser: English only, 0 = all, gives 368 messages, all English.
+
+## v3.12 (12 Nov 2026): first clinician labels (one labeller, English)
+
+Dr Tan (orthopaedic medical officer, initials TSH) labelled all 368 English messages in the pool, blind to the AI labels and the rule results. File: `docs/evidence/labels_tsh_2026-11-12.json`; score: `docs/evidence/labels_tsh_2026-11-12_score.md` (`node app/eval/score_labels.js`). His labels: 157 emergency, 101 same-day, 110 routine, 0 unsure.
+
+Rules alone (no AI) against his labels:
+
+| Measure | Result |
+|---|---|
+| His emergencies that raised any alert | 150 of 157 (96%, 95% CI 91 to 98) |
+| His emergencies that got the emergency text | 108 of 157 (69%, 95% CI 61 to 76) |
+| His urgent messages (emergency or same-day) that raised any alert | 202 of 258 (78%, 95% CI 73 to 83) |
+| His routine messages that raised an alert | 0 of 110 |
+| Agreement with the AI labels, urgent against routine | 86%, Cohen's kappa 0.71 |
+
+What it shows:
+1. **The clinician is stricter than the system at both steps.** 42 messages he called emergency got only "call the clinic today": fever of 38.4 and above, pus or a foul smell from the wound, a fall on the operated knee, a hard swollen calf, vomiting everything, cannot pass urine. 49 messages the AI had labelled routine he called same-day; most are questions that need a clinical answer ("can I shower?", "do I need to fast?", "is bruising normal?").
+2. The second group is partly a difference of definition. The page defined same-day as "a clinician should speak to or see the patient today". The system uses SAME-DAY to mean "page staff". A question that needs an answer today is not a page in the system; it goes to the inbox. So "78%" understates the rules against the system's own definition and should not be quoted without this note.
+3. Seven of his emergencies raised nothing. Five are real gaps in the rules: a hot swollen leg after an 11-hour flight three weeks after knee replacement; new confusion the day after hip surgery; no urine since Tuesday with heavy legs after back surgery; a high sugar reading with thirst; a pounding heart at rest. Two look like slips of the finger ("had a slight temperature yesterday but its gone now, 36.8 today"; "feet are cold because of the aircon in the ward lol"). They are kept as he labelled them.
+4. Other rule gaps he found, labelled same-day: "thinking of ending it all" in a longer message, a leg that gave way after back surgery, a drain bottle half full of red blood in two hours.
+5. Eleven messages the rules class as EMERGENCY he labelled same-day, including six about self-harm or overdose and "walked to the kitchen and back, bit out of breath but proud". Whether a self-harm message gets the emergency text is his decision at sign-off; the rules are unchanged.
+6. Limits: one labeller, English only, invented messages. 368 labels in 20 minutes: median 2.4 seconds a message, 103 labels made in under 1.5 seconds, so some slips are likely. No second labeller yet, so no agreement figure between clinicians. The AI check is not in these numbers.
+
+No rule was changed because of these labels (rule: no more wording by hand). The gaps in points 3 and 4 are what the AI check is for; whether it catches them is to be measured from the real-model run file.
