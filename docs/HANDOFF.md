@@ -29,6 +29,14 @@ This is a plan, not an order. If you find a step is wrong or a better route exis
 
 ## State on handoff
 
+Everything is pushed. Nothing is waiting locally. Last code commit before this note: `d59321f` on `periloop-v3-review-fixes` (12 Nov, 10:45 Malaysia time). All three test commands passed on it.
+
+Pushed today, in order: `run-model-eval.bat`; the chat prompt fix in `app/ai.js` with decision log v3.7; this handoff.
+
+Dr Tan's PC is one step behind: he has not yet pulled the chat prompt fix. He must close the server window, run `git pull`, and start `start-periloop.bat` again before job 1.
+
+Note for a cloud session: a fresh clone tracks only the branches it was cloned with. If `git status` shows no upstream for this branch, run `git config --add remote.origin.fetch '+refs/heads/periloop-v3-review-fixes:refs/remotes/origin/periloop-v3-review-fixes' && git fetch origin && git branch -u origin/periloop-v3-review-fixes`. Without it a push check can report unpushed commits that are already on GitHub.
+
 Done and pushed: v3 rules and tools, both launchers, a live browser smoke test with DeepSeek (decision log v3.7).
 
 Open, in order:
