@@ -8,7 +8,7 @@ This brief describes the Console in `app/`. The single web page at the repositor
 
 ## 1. The claim
 
-PeriLoop is a working prototype that gives every perioperative task and patient message a named owner and a written closure, and screens patient messages with fixed red-flag rules plus a raise-only AI second check. On 537 synthetic, AI-labelled urgent messages in four languages, the rules alone alerted on 91% (Arabic 73%) and rules plus the AI check alerted on all of them, in one run with one model, at a cost of 22 false alerts in 376 ordinary messages. No clinician has labelled or signed off anything yet.
+PeriLoop is a working prototype that gives every perioperative task and patient message a named owner and a written closure, and screens patient messages with fixed red-flag rules plus a raise-only AI second check. On 368 invented English messages labelled blind by one orthopaedic medical officer, every one of the 155 he called an emergency raised an alert (rules alone: 150) and none of the 114 he called routine did; 47 of those emergencies got "call the clinic today" rather than the emergency text. One clinician, one model, one run; no real patients.
 
 ## 2. The problem
 
@@ -55,7 +55,7 @@ All messages are synthetic and written by AI. All labels are AI labels except th
 | **All six sets, real model in the Console (DeepSeek `deepseek-chat`, 12 Nov 2026)** | all of the above | v3 rules alone | 491 of 537 (91%): en 96%, ms 96%, zh 95%, ar 73% | 14 of 376 (4%) | Every set here has been used to tune the rules, so this row is optimistic |
 | Same run | | v3 rules + AI check | 537 of 537; all 211 labelled emergencies | 22 of 376 (6%); Arabic 10 of 73 | One run, one model. The AI was needed for 46 messages and flagged all 46 |
 | Same run, AI check by itself on every message | | no rules | 519 of 537 (97%); emergencies 198 of 211 (94%); Arabic emergencies 21 of 26 | 11 of 376 (3%) | All 18 misses were calls where the AI gave no usable answer (19 of 913 calls, about 2%). When it answered, it flagged every urgent message |
-| **Clinician labels: one orthopaedic medical officer, 368 English messages, blind (12 Nov 2026)** | all of the above, English | v3 rules alone | His emergencies alerted: 150 of 157 (96%). His emergencies given the emergency text: 108 of 157 (69%). All his urgent: 202 of 258 (78%) | 0 of 110 | One labeller, about 2 to 3 seconds a message. He is stricter than the system: fever, pus and falls he calls emergencies; questions needing an answer today he calls same-day. Second labeller pending |
+| **Clinician labels: one orthopaedic medical officer, 368 English messages, blind (12 Nov 2026)** | all of the above, English | v3 rules + AI check (DeepSeek) | His emergencies alerted: 155 of 155 (rules alone 150). Given the emergency text: 108 of 155 (70%); the other 47 got "call the clinic today" | 0 of 114 | One labeller, one fast pass, four finger slips corrected and listed in the decision log (v3.13). 43 questions he wanted answered the same day go to the inbox, not to a page |
 
 What the table shows:
 1. After three rounds of fixes, a fresh set still has missed emergencies. Fixed word lists do not converge. Rules alone are not a safe sole triage.

@@ -307,3 +307,33 @@ What it shows:
 6. Limits: one labeller, English only, invented messages. 368 labels in 20 minutes: median 2.4 seconds a message, 103 labels made in under 1.5 seconds, so some slips are likely. No second labeller yet, so no agreement figure between clinicians. The AI check is not in these numbers.
 
 No rule was changed because of these labels (rule: no more wording by hand). The gaps in points 3 and 4 are what the AI check is for; whether it catches them is to be measured from the real-model run file.
+
+## v3.13 (12 Nov 2026): rules plus AI check against the clinician's labels (English)
+
+Scope decided by Dr Tan today: English only for the submission evidence; other languages later. No second labeller. He asked the reviewer to correct labels that are plainly slips of the finger.
+
+Four labels were changed by the AI reviewer, with his permission, all to routine. They are listed so anyone can undo them:
+- "feet are cold because of the aircon in the ward lol" (was emergency)
+- "had a slight temperature yesterday but its gone now, 36.8 today" (was emergency)
+- "the physio was a pain in the neck but helpful" (was same-day)
+- "my appointment is at 3pm right?" (was same-day)
+
+Nothing else was changed, including labels the reviewer would have chosen differently. The raw file is kept as exported.
+
+The real-model run of v3.10 (`deepseek-chat`, file `model_run_2026-11-12_deepseek-chat.json` from his PC, analysed by script) covers every message he labelled, so no new run was needed.
+
+| Against the clinician's labels, English, 368 messages | Raw labels | Four slips corrected |
+|---|---|---|
+| His emergencies that raised an alert, rules alone | 150/157 | 150/155 (97%) |
+| His emergencies that raised an alert, rules + AI check | 155/157 | **155/155** |
+| His emergencies that got the emergency text | 108/157 | 108/155 (70%) |
+| His emergencies flagged by the AI check by itself | 152/157 | 152/155 (3 were "AI unavailable") |
+| His same-day messages that raised an alert, rules + AI | 56/101 | 56/99 |
+| His routine messages that raised an alert, rules + AI | 0/110 | 0/114 |
+
+What it shows:
+1. Every message this clinician called an emergency raised an alert when the AI check was on. The five real gaps in the rules (v3.12 point 3) were all caught by the AI check.
+2. 47 of his 155 emergencies got "call the clinic today" instead of the emergency text: 42 where the rules say SAME-DAY, and 5 raised by the AI, which can raise only to SAME-DAY. This is the largest gap between the clinician and the system.
+3. The 43 same-day messages with no alert are all questions or mild, stable symptoms ("can I shower?", "is bruising normal?"). In the system these go to the inbox for a named person to answer; they do not page. This is the definition difference of v3.12 point 2, not a miss of an urgent symptom.
+4. No routine message was paged, with or without the AI.
+5. Limits: one clinician, one pass at about 2 to 3 seconds a message, English only, invented messages, one model, one run, and sets the rules were tuned on. With 155 of 155 the one-sided 95% lower bound is about 98% for this labeller and these messages only; it is not a sensitivity for real patients.
