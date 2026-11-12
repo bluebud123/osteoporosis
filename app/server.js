@@ -692,7 +692,7 @@ function createServer() {
   init();
   return http.createServer(function (req, res) { route(req, res).catch(function (e) { console.log('error', e && e.message); try { send(res, 500, { error: 'server_error' }); } catch (x) { /* ignore */ } }); });
 }
-module.exports = { createServer: createServer, init: init, store: store, drain: drain };
+module.exports = { createServer: createServer, init: init, store: store, drain: drain, secondCheck: secondCheck };   // secondCheck is exported for app/eval/run_model_eval.js --ai-alone
 if (require.main === module) {
   createServer().listen(PORT, function () {
     console.log('PeriLoop Console: http://localhost:' + PORT + '   (staff)');

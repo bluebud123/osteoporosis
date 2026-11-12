@@ -233,3 +233,27 @@ Found, and what was done:
 ## v3.8 (12 Nov 2026): evaluation script procedure keys
 
 `app/eval/run_model_eval.js` accepted the procedure keys LUM, SHO and FOOT, but the library and the server use LUMBAR, SHOULDER and FOOTANKLE. So 156 of the 360 library messages (lumbar 53, shoulder 56, foot and ankle 47) would have been sent as knee replacement patients. Fixed to the server's keys before any real-model run was quoted. Any run made before this commit should be repeated, not quoted. Verified by reading the code and counting the library; the effect on scores was not measured.
+
+## v3.9 (12 Nov 2026): first real-model run in the Console, and what it does not show
+
+Dr Tan ran `run-model-eval.bat` (full run, 913 messages, `deepseek-chat`, 247 s) on his PC. The screen output is saved as `docs/evidence/model_run_2026-11-12_deepseek-chat_run1.md`. This is the first time a real model has been run through the Console.
+
+| | Rules alone | Rules + AI check |
+|---|---|---|
+| Urgent messages alerted, all languages | 491/537 (91%) | 537/537 (100%) |
+| Arabic | 72/99 (73%) | 99/99 (100%) |
+| Labelled emergencies | 211/211 | 211/211 |
+| False alerts on ordinary messages | 14/376 (4%) | 20/376 (5%) |
+| AI check unavailable | | 1 |
+
+How far to trust it:
+1. Every message is invented and every label is an AI's. No clinician is in these numbers.
+2. All six sets have been used to tune the rules, so "rules alone" is optimistic.
+3. The server asks the AI only when the rules find nothing. So the AI was asked about 46 urgent messages (all from the library, 27 of them Arabic) and it flagged all 46. That is the whole of the evidence for the AI check in this run: 46 of 46, one run, one model. With 46 of 46 the one-sided 95% lower bound on its catch rate is about 94%.
+4. **The AI check was not tested on a single labelled emergency**, because the rules had already caught all 211. "211 of 211" says nothing about the model.
+5. The AI check can raise only to SAME-DAY. An emergency that the rules miss and the AI catches gets the "call the clinic today" text, not the emergency text.
+6. It is not confirmed whether this run was made before or after the procedure-key fix (v3.8). Treat it as preliminary.
+7. The AI raised 6 ordinary messages; 4 are general questions ("is it normal to get a fever after knee surgery?") that rule 4 of v2 had deliberately sent to the answer library. The AI check undoes that rule for those messages. Left as it is: the raise-only principle wins, and a clinician should decide.
+8. During the run the output guard blocked 13 model chat replies (instruction, verdict or forecast, medicine, diagnosis, advice). The guard worked; it also shows the model does try to give advice.
+
+Change made because of point 4: `run_model_eval.js --ai-alone` (option 3 in `run-model-eval.bat`) asks the AI check about every message, including those the rules caught, and adds a table "AI check by itself". `app/server.js` now exports `secondCheck` for this; no behaviour of the server changed. Tested with the stand-in model only. The numbers in the brief will be taken from an `--ai-alone` run made after this commit.

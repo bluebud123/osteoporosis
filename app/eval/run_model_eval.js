@@ -6,6 +6,8 @@
  * Options:  --limit N     only the first N messages of each set (for a cheap smoke test)
  *           --sets a,b    choose sets: h1,h2,h3,h4,h5,library (default: all)
  *           --parallel N  messages in flight at once (default 3)
+ *           --ai-alone    also ask the AI check about every message the rules already caught (the server skips it there),
+ *                         so the AI check can be scored by itself on all messages. Roughly doubles the model calls.
  * Output:   a table on screen, and app/eval/model_run_<date>_<model>.md + .json
  *
  * What it measures: for every test message, what the fixed rules said alone, and what the class was after the second check.
@@ -20,6 +22,7 @@ if (!process.env.PROVIDER_BASE_URL || !process.env.PROVIDER_KEY || !process.env.
 }
 var STANDIN = /standin/i.test(process.env.PROVIDER_MODEL) || /localhost:9777|127\.0\.0\.1:9777/.test(process.env.PROVIDER_BASE_URL);
 var LIMIT = parseInt(opt('limit', '0'), 10) || 0, PAR = Math.max(1, parseInt(opt('parallel', '3'), 10) || 3);
+var AIALONE = args.indexOf('--ai-alone') >= 0;
 var WANT = opt('sets', 'h1,h2,h3,h4,h5,library').split(',');
 process.env.PERILOOP_DATA = fs.mkdtempSync(path.join(os.tmpdir(), 'plm-')); process.env.PERILOOP_NO_SEED = '1';
 var TR = require('../triage.js');
@@ -52,6 +55,11 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
     var d = (await call(port, 'GET', '/api/patients/' + a.json.id, null, doc)).json, pm = (d.messages || []).filter(function (x) { return x.who === 'patient'; })[0] || {};
     it.final = pm.cls || it.rules; it.unscreened = !!pm.unscreened; it.flags = pm.flags || [];
     it.raisedByModel = !alertCls(it.rules) && alertCls(it.final);
+    // AI check by itself: where the rules found nothing the server already asked it; where the rules alerted, ask it directly.
+    if (AIALONE) {
+      if (!alertCls(it.rules)) it.ai = it.unscreened ? 'unscreened' : (it.raisedByModel ? 'urgent' : 'routine');
+      else { var sc = await S.secondCheck(it.text, 'eval-' + k); it.ai = sc && sc.verdict === 'urgent' ? 'urgent' : (sc && sc.verdict === 'routine' ? 'routine' : 'unscreened'); }
+    }
     if (++done % 25 === 0) process.stderr.write('  ' + done + '/' + items.length + ' (' + Math.round((Date.now() - t0) / 1000) + ' s)\n');
   }
   var q = items.slice(); await Promise.all(Array.from({ length: PAR }, async function () { while (q.length) await one(q.shift()); }));
@@ -75,6 +83,15 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
     'Read this before quoting any number:\n- Every message is invented and every label ("urgent", "emergency", "normal") was written by an AI, not a clinician.\n- Sets h1 to h5 and the library have all been used to tune the fixed rules, so "rules alone" is optimistic. The useful columns are what the AI check adds and what it costs in false alerts.\n- "Caught" means the message raised an EMERGENCY or SAME-DAY alert. The AI check can only raise to SAME-DAY.\n- "AI check unavailable" counts messages where the model call failed or returned something unusable; the rules result stood.\n- One run of one model. Run it again and with another model before relying on it.\n\n';
   md += table(items, 'All sets together');
   var sets = {}; items.forEach(function (x) { sets[x.set] = 1; }); Object.keys(sets).forEach(function (s) { md += table(items.filter(function (x) { return x.set === s; }), 'Set ' + s); });
+  if (AIALONE) {
+    md += '### AI check by itself (no rules), all sets\n\nThe AI check was asked about every message, including those the rules had already caught. This is the only table that tests the AI check on labelled emergencies. "Unavailable" answers count as not caught.\n\n| Language | Urgent caught by AI alone | Of which labelled emergency | Ordinary messages the AI raised | AI unavailable |\n|---|---|---|---|---|\n';
+    LANGS.forEach(function (l) { var s = l === 'all' ? items : items.filter(function (x) { return x.lang === l; }); if (!s.length) return;
+      var u = s.filter(function (x) { return x.truth !== 'normal'; }), e = s.filter(function (x) { return x.truth === 'emergency'; }), nm = s.filter(function (x) { return x.truth === 'normal'; });
+      function a(arr) { return arr.filter(function (x) { return x.ai === 'urgent'; }).length; }
+      md += '| ' + l + ' | ' + pct(a(u), u.length) + ' | ' + pct(a(e), e.length) + ' | ' + pct(a(nm), nm.length) + ' | ' + s.filter(function (x) { return x.ai === 'unscreened'; }).length + ' |\n'; });
+    var aiMiss = items.filter(function (x) { return x.truth !== 'normal' && x.ai !== 'urgent'; });
+    md += '\n#### Urgent messages the AI check alone did not flag (' + aiMiss.length + ')\n\n' + (aiMiss.length ? aiMiss.map(function (x) { return '- [' + x.set + ', ' + x.lang + ', ' + x.truth + ', AI said ' + x.ai + ', rules said ' + x.rules + '] ' + x.text; }).join('\n') + '\n' : '- none\n') + '\n';
+  }
   var missE = items.filter(function (x) { return x.truth === 'emergency' && !alertCls(x.final); }), missU = items.filter(function (x) { return x.truth !== 'normal' && x.truth !== 'emergency' && !alertCls(x.final); }), fpM = items.filter(function (x) { return x.truth === 'normal' && x.raisedByModel; });
   function list(a) { return a.length ? a.map(function (x) { return '- [' + x.set + ', ' + x.lang + '] ' + x.text + (x.unscreened ? '  (AI check unavailable)' : ''); }).join('\n') + '\n' : '- none\n'; }
   md += '### Emergencies still missed after rules + AI check (' + missE.length + ')\n\n' + list(missE) + '\n### Other urgent messages still missed (' + missU.length + ')\n\n' + list(missU) + '\n### Ordinary messages the AI check raised (' + fpM.length + ')\n\n' + list(fpM);
