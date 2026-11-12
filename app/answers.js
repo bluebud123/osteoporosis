@@ -118,7 +118,8 @@ function match(text) {
 }
 function text(tp, lang, s) {
   var raw = tp[lang] || tp.en;
-  return raw.replace(/\{phone\}/g, s.clinicPhone).replace(/\{emerg\}/g, s.emergencyNumber || '999').replace(/\{sessions\}/g, s.sessionsText);
+  var PH = require('./phrases.js'), ps = PH.forPatient(s, tp[lang] ? lang : 'en');   // v3: never show a settings placeholder to a patient
+  return PH.tidy(raw.replace(/\{phone\}/g, ps.clinicPhone).replace(/\{emerg\}/g, ps.emergencyNumber).replace(/\{sessions\}/g, ps.sessionsText));
 }
 function menu() { return TOPICS.map(function (t) { return t.id + ': ' + t.title; }).join('\n'); }
 module.exports = { TOPICS: TOPICS, byId: byId, match: match, text: text, menu: menu };

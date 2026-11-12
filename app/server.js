@@ -14,6 +14,7 @@ var proxy = require('./lib/server/chat.js');
 var P = require('./periop.js');
 var AI = require('./ai.js');
 var TR = require('./triage.js');      // v2: engine + added wording + two narrow reductions (measured, see app/eval)
+var PH = require('./phrases.js');     // v3: wording when the clinic phone or hours are not set (never show a placeholder to a patient)
 var ANS = require('./answers.js');    // v2: clinic answer library (fixed texts, doctor approves)
 var GUARD = require('./guard.js');    // v2: chat output guard
 var HANDBACK_MS = 24 * 3600 * 1000;   // a staff conversation with no staff message for this long goes back to the assistant
@@ -46,7 +47,7 @@ function init() {
     users: [mkUser('doctor', 'Dr Demo', 'doctor', 'doctor-demo-1'), mkUser('nurse', 'Nurse Demo', 'nurse', 'nurse-demo-1')],
     patients: [], tasks: [], messages: [], alerts: [], audit: [],
     rules: { pathway: defaultPathway(), redflags: [], faqs: [] },
-    settings: { clinicPhone: '03-0000 0000 (set in Settings)', sessionsText: 'Set the clinic hours in Settings', demoBanner: true, maxCasesPerDay: 5, emergencyNumber: '999', useDraftAnswers: true }
+    settings: { clinicPhone: '', sessionsText: '', demoBanner: true, maxCasesPerDay: 5, emergencyNumber: '999', useDraftAnswers: true }
   };
   audit('system', 'first run: demo accounts created');
   store.save();
@@ -57,7 +58,7 @@ function audit(who, what) { store.db.audit.push({ at: Date.now(), who: who, what
 
 /* ---------- patient-facing fixed texts (follow the clinic-bot rules: route to a staffed channel, never promise a reply) ---------- */
 function T(kind, lang) {
-  var s = store.db.settings, ph = s.clinicPhone, ses = s.sessionsText, em = s.emergencyNumber || '999';
+  var s = PH.forPatient(store.db.settings, lang), ph = s.clinicPhone, ses = s.sessionsText, em = s.emergencyNumber || '999';
   var X = {
     EMERGENCY: {
       en: 'Please call ' + em + ' or go to the nearest Emergency Department now. This chat is not monitored around the clock and is not for emergencies.',
@@ -94,7 +95,7 @@ function T(kind, lang) {
       zh: '若感觉加重或有新的担心，请致电 ' + ph + ' 或前往急诊部。',
       ar: 'إذا شعرت بأنك أسوأ أو أقلقك شيء جديد، اتصل على ' + ph + ' أو اذهب إلى قسم الطوارئ.' }
   };
-  return (X[kind][lang] || X[kind].en);
+  return PH.tidy(X[kind][lang] || X[kind].en);
 }
 
 /* ---------- AI via the same guarded proxy code (no key ever leaves the server) ---------- */
@@ -153,6 +154,8 @@ function ptView(p) {
 function seedDemo(user) {
   var hist; try { hist = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed', 'histories.json'), 'utf8')); } catch (e) { return 0; }
   var added = 0, now = Date.now();
+  // v3: the seeded demo gets clearly fictional contact details, so demo replies read like real ones. A real clinic replaces them in Settings.
+  if (PH.unset(store.db.settings.clinicPhone)) store.db.settings.clinicPhone = PH.DEMO_PHONE; if (PH.unset(store.db.settings.sessionsText)) store.db.settings.sessionsText = PH.DEMO_HOURS;
   hist.forEach(function (h, i) {
     var rn = String(h.pid).toUpperCase();
     if (store.db.patients.some(function (x) { return x.rn === rn; })) return;
@@ -165,8 +168,11 @@ function seedDemo(user) {
     var pt = { id: uid(), name: short, rn: rn, procedure: h.procedure, otDate: ot, lang: LANGS[h.lang] ? h.lang : 'en', token: crypto.randomBytes(18).toString('base64url'), active: true, createdAt: now, addedBy: user || 'system', demo: true, demoCase: h.case, expect: h.expect, intake: h.answers };
     store.db.patients.push(pt); createTasks(pt);
     // earlier items already done for most demo patients, so the board is realistic: a few stay overdue on purpose
-    if (i % 4 !== 0) store.db.tasks.forEach(function (t) { if (t.pid === pt.id && t.dueAt < now - 2 * DAY && t.due <= -8) { t.state = 'done'; t.evidence = 'Demo data: completed'; t.doneBy = 'Demo'; t.doneAt = now - 3 * DAY; } });
-    seedPeriop(pt);
+    // v3: the demo board showed 93 overdue tasks, which hid the point. Most demo patients are now up to date (everything already due is done);
+    // every fourth patient keeps only the last 4 days of items overdue, so the overdue logic is still visible. Real patients are not touched by this.
+    seedPeriop(pt);   // may move the operation date, so the demo clean-up below runs after it
+    var keepDays = i % 4 !== 0 ? 0 : 4;
+    store.db.tasks.forEach(function (t) { if (t.pid === pt.id && !t.auto && t.dueAt < now - keepDays * DAY) { t.state = 'done'; t.evidence = 'Demo data: completed'; t.doneBy = 'Demo'; t.doneAt = now - 3 * DAY; } });
     added++;
   });
   if (added) { audit(user || 'system', 'loaded ' + added + ' fictional demo patients'); store.save(); }
@@ -180,6 +186,7 @@ function migrate() {
   if (!d.rules.periop) d.rules.periop = P.defaultRules();
   if (!d.settings.maxCasesPerDay) d.settings.maxCasesPerDay = 5;
   if (!d.settings.emergencyNumber) d.settings.emergencyNumber = '999';
+  if (PH.unset(d.settings.clinicPhone)) d.settings.clinicPhone = ''; if (PH.unset(d.settings.sessionsText)) d.settings.sessionsText = '';   // v3: old placeholder strings are treated as not set
   if (typeof d.settings.useDraftAnswers !== 'boolean') d.settings.useDraftAnswers = true;
   d.rules.answerState = d.rules.answerState || {};
   if (d.rules.periopVersion !== P.RULES_VERSION) { d.rules.periop = P.defaultRules(); d.rules.periopVersion = P.RULES_VERSION; audit('system', 'parameter thresholds updated to rule set v' + P.RULES_VERSION); store.save(); }
@@ -318,7 +325,7 @@ async function patientMessage(pt, rawText, via) {
   var lang = rules.lang || pt.lang || 'en'; if (!T('FOOT', lang) || !LANGS[lang]) lang = 'en';
   var cls = rules.cls, flags = (rules.flags || []).slice(), reason = '';
   var rulesCls = rules.cls;
-  step(2, 'Fixed red-flag rules (written by people, no AI)', (cls === 'EMERGENCY' || cls === 'SAME-DAY') ? 'raise' : 'pass', 'Result: ' + cls + (flags.length ? ' · ' + flags.join('; ') : '') + ' · language detected: ' + lang + (rules.changed ? ' · v2 layer: ' + rules.changed + ' (engine alone said ' + rules.engineCls + ')' : ''));
+  step(2, 'Fixed red-flag rules (fixed word lists, no AI at run time; drafted by an AI, awaiting surgeon sign-off)', (cls === 'EMERGENCY' || cls === 'SAME-DAY') ? 'raise' : 'pass', 'Result: ' + cls + (flags.length ? ' · ' + flags.join('; ') : '') + ' · language detected: ' + lang + (rules.changed ? ' · added-wording layer: ' + rules.changed + ' (engine alone said ' + rules.engineCls + ')' : ''));
   // 3. clinic extra phrases (can only raise)
   var nt = norm(safe), hitRf = null;
   store.db.rules.redflags.forEach(function (rf) {
@@ -360,7 +367,7 @@ async function patientMessage(pt, rawText, via) {
   var lastStaff = store.db.messages.filter(function (m) { return m.pid === pt.id && m.who === 'staff'; }).slice(-1)[0];
   if (pt.threadOpen && (!lastStaff || now2 - lastStaff.at > HANDBACK_MS)) { pt.threadOpen = false; audit('system', 'conversation with ' + pt.rn + ' handed back to the assistant after 24 h without a staff message'); }
   // v2: exact answers from the patient's own record are given even while a person is handling the conversation
-  var ra = P.recordAnswer(safe, { pt: pt, tasks: store.db.tasks.filter(function (t) { return t.pid === pt.id && !t.auto; }), otMs: otTime(pt.otDate), now: now2, phone: S.clinicPhone, doctorOwners: DOCTOR_OWNERS });
+  var ra = P.recordAnswer(safe, { pt: pt, tasks: store.db.tasks.filter(function (t) { return t.pid === pt.id && !t.auto; }), otMs: otTime(pt.otDate), now: now2, phone: PH.forPatient(S, 'en').clinicPhone, doctorOwners: DOCTOR_OWNERS });
   if (ra) { if (pt.threadOpen) inMsg.needsStaff = true; addMsg(pt.id, 'bot', ra.text, { cls: 'ANSWER', record: true }); finish('Answered from the clinic record (' + ra.kind + '): exact data from this patient\'s own plan, no AI wording, no advice', 'pass', 'Operation ' + P.fmtD(otTime(pt.otDate)), pt.threadOpen ? 'Message also in the Inbox: a person is handling this conversation' : 'Nothing for staff'); return; }
   if (pt.threadOpen) {
     inMsg.needsStaff = true;
@@ -491,7 +498,7 @@ async function route(req, res) {
       openTasks: open.length,
       openAlerts: store.db.alerts.filter(function (a) { return !a.ackAt; }).length,
       needsReply: store.db.messages.filter(function (x) { return x.needsStaff && !x.handled; }).length,
-      setup: /set in Settings|Set the clinic hours/.test(store.db.settings.clinicPhone + store.db.settings.sessionsText),
+      setup: PH.unset(store.db.settings.clinicPhone) || PH.unset(store.db.settings.sessionsText), demoContact: /demo/i.test(String(store.db.settings.clinicPhone) + String(store.db.settings.sessionsText)),
       ai: aiConfigured()
     });
   }

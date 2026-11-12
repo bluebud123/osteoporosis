@@ -66,7 +66,7 @@ with sync_playwright() as p:
     # ---- Live view ----
     pg.goto('http://localhost:8080/live'); pg.wait_for_selector('#ps'); pg.select_option('#ps',t1['id']); pg.wait_for_timeout(800)
     pg.fill('#ti','the staples have come apart at the bottom'); pg.click('#tsend'); pg.wait_for_timeout(2500); lv=pg.inner_text('body')
-    ok('SAME-DAY' in lv and 'wound opening' in lv and 'v2 layer' in lv,'Live view: typing as the patient shows the pipeline; step 2 says the v2 layer raised it and what the engine alone said',lv[lv.find('Fixed red-flag'):][:260])
+    ok('SAME-DAY' in lv and 'wound opening' in lv and 'added-wording layer' in lv,'Live view: typing as the patient shows the pipeline; step 2 says the added-wording layer raised it and what the engine alone said',lv[lv.find('Fixed red-flag'):][:260])
     pg.fill('#ti','what should I bring to hospital'); pg.click('#tsend'); pg.wait_for_timeout(2500); lv=pg.inner_text('body'); ok('Clinic answer "What to bring to hospital" (approved by Dr Demo)' in lv,'Live view: reply path shows which clinic answer was used and who approved it')
     pg.screenshot(path='40_live.png',full_page=True)
     # ---- Calendar ----
