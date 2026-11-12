@@ -58,7 +58,7 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
     // AI check by itself: where the rules found nothing the server already asked it; where the rules alerted, ask it directly.
     if (AIALONE) {
       if (!alertCls(it.rules)) it.ai = it.unscreened ? 'unscreened' : (it.raisedByModel ? 'urgent' : 'routine');
-      else { var sc = await S.secondCheck(it.text, 'eval-' + k); it.ai = sc && sc.verdict === 'urgent' ? 'urgent' : (sc && sc.verdict === 'routine' ? 'routine' : 'unscreened'); }
+      else { var sc = await S.secondCheck(it.text, 'eval-' + k); it.ai = sc && sc.verdict === 'urgent' ? 'urgent' : (sc && sc.verdict === 'routine' ? 'routine' : 'unscreened'); if (it.ai === 'unscreened') it.aiReason = (sc && sc.reason) || 'no answer'; }
     }
     if (++done % 25 === 0) process.stderr.write('  ' + done + '/' + items.length + ' (' + Math.round((Date.now() - t0) / 1000) + ' s)\n');
   }
@@ -90,7 +90,7 @@ function alertCls(c) { return c === 'EMERGENCY' || c === 'SAME-DAY'; }
       function a(arr) { return arr.filter(function (x) { return x.ai === 'urgent'; }).length; }
       md += '| ' + l + ' | ' + pct(a(u), u.length) + ' | ' + pct(a(e), e.length) + ' | ' + pct(a(nm), nm.length) + ' | ' + s.filter(function (x) { return x.ai === 'unscreened'; }).length + ' |\n'; });
     var aiMiss = items.filter(function (x) { return x.truth !== 'normal' && x.ai !== 'urgent'; });
-    md += '\n#### Urgent messages the AI check alone did not flag (' + aiMiss.length + ')\n\n' + (aiMiss.length ? aiMiss.map(function (x) { return '- [' + x.set + ', ' + x.lang + ', ' + x.truth + ', AI said ' + x.ai + ', rules said ' + x.rules + '] ' + x.text; }).join('\n') + '\n' : '- none\n') + '\n';
+    md += '\n#### Urgent messages the AI check alone did not flag (' + aiMiss.length + ')\n\n' + (aiMiss.length ? aiMiss.map(function (x) { return '- [' + x.set + ', ' + x.lang + ', ' + x.truth + ', AI said ' + x.ai + (x.aiReason ? ' (' + x.aiReason + ')' : '') + ', rules said ' + x.rules + '] ' + x.text; }).join('\n') + '\n' : '- none\n') + '\n';
   }
   var missE = items.filter(function (x) { return x.truth === 'emergency' && !alertCls(x.final); }), missU = items.filter(function (x) { return x.truth !== 'normal' && x.truth !== 'emergency' && !alertCls(x.final); }), fpM = items.filter(function (x) { return x.truth === 'normal' && x.raisedByModel; });
   function list(a) { return a.length ? a.map(function (x) { return '- [' + x.set + ', ' + x.lang + '] ' + x.text + (x.unscreened ? '  (AI check unavailable)' : ''); }).join('\n') + '\n' : '- none\n'; }

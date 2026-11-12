@@ -257,3 +257,25 @@ How far to trust it:
 8. During the run the output guard blocked 13 model chat replies (instruction, verdict or forecast, medicine, diagnosis, advice). The guard worked; it also shows the model does try to give advice.
 
 Change made because of point 4: `run_model_eval.js --ai-alone` (option 3 in `run-model-eval.bat`) asks the AI check about every message, including those the rules caught, and adds a table "AI check by itself". `app/server.js` now exports `secondCheck` for this; no behaviour of the server changed. Tested with the stand-in model only. The numbers in the brief will be taken from an `--ai-alone` run made after this commit.
+
+## v3.10 (12 Nov 2026): second real-model run, with the AI check scored by itself
+
+Dr Tan pulled commit 591b926 (so the procedure-key fix of v3.8 is included; option 3 exists only after that commit) and ran option 3: 913 messages, `deepseek-chat`, 397 s. Output: `docs/evidence/model_run_2026-11-12_deepseek-chat_run2_ai_alone.md`.
+
+| | Result |
+|---|---|
+| Rules alone, urgent alerted | 491/537 (91%); en 199/207, ms 116/121, zh 104/110, ar 72/99. Same as run 1 |
+| Rules + AI check, urgent alerted | 537/537; labelled emergencies 211/211 |
+| False alerts, rules alone / rules + AI | 14/376 / 22/376 (run 1: 20/376) |
+| AI check by itself, urgent flagged | 519/537 (97%); labelled emergencies 198/211 (94%); Arabic emergencies 21/26 |
+| AI check by itself, ordinary raised | 11/376 (3%) |
+| AI gave no usable answer | 19 of 913 direct or server calls (about 2%): 18 urgent messages, 13 of them labelled emergencies |
+
+What it shows:
+1. When the model answered, it flagged every urgent message (519 of 519) and every labelled emergency (198 of 198). **Every miss of the AI check alone was "unavailable", not "routine".**
+2. So the weak point of the AI layer in this run is availability, not judgement. The cause is not known: the script did not record the reason (timeout, a reply that was not valid JSON, a provider error or a content filter are all possible). The 18 are short, plainly urgent messages in all four languages, 17 of them asked through the direct call that `--ai-alone` adds. Whether the direct call fails more often than the server path is not known either.
+3. In the product, a message the rules miss while the AI is unavailable gets the ordinary receipt (which lists the five emergencies to call for) and is marked "unscreened" for staff. There is no retry. A retry or a "treat unscreened as same-day" setting is a decision for the clinician; not changed here.
+4. The model is not deterministic: 8 ordinary messages raised in this run, 6 in run 1.
+5. Limits as before: invented messages, AI labels, sets the rules were tuned on, one model.
+
+Changed: `docs/solution-brief.md`, `README.md` and `docs/video-script.md` now quote this run. `run_model_eval.js` now records the reason the AI check gave when it was unavailable, so a later run can say why. No server behaviour changed.

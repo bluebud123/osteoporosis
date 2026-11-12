@@ -28,9 +28,15 @@ node app/eval/run_model_eval.js  # real-model run of the second check; needs the
 
 ## What the evidence says
 
-All test messages are synthetic and AI-written, and all labels are AI labels. On sets measured once before being used for fixes, the fixed rules alone alerted on 80 to 91% of urgent messages, and on 74% of an older 360-message library (Arabic 33 of 60). Every fresh set still contained missed emergencies. Rules alone are not a safe sole triage.
+All test messages are synthetic and AI-written, and all labels are AI labels.
 
-Not yet done: a real-model run of the second check in the Console, clinician labelling, surgeon sign-off, native review of the Malay, Chinese and Arabic texts.
+- **Rules alone, on sets measured once before being used for fixes:** 80 to 91% of urgent messages alerted. Every fresh set still contained missed emergencies.
+- **Real model in the Console (DeepSeek `deepseek-chat`, 913 messages, 12 Nov 2026):** rules alone alerted on 491 of 537 urgent messages (91%; Arabic 73%). Rules plus the AI check alerted on 537 of 537, with 22 false alerts in 376 ordinary messages (rules alone: 14).
+- **AI check by itself:** 519 of 537. All 18 misses were calls where the AI gave no usable answer (about 2% of calls). Neither layer is enough alone.
+
+One run of one model, on sets the rules were tuned on. Raw output: `docs/evidence/`.
+
+Not yet done: clinician labelling, surgeon sign-off, native review of the Malay, Chinese and Arabic texts.
 
 ## Where to read more
 

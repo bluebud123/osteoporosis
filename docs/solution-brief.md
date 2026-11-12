@@ -8,7 +8,7 @@ This brief describes the Console in `app/`. The single web page at the repositor
 
 ## 1. The claim
 
-PeriLoop is a working prototype that gives every perioperative task and patient message a named owner and a written closure, and screens patient messages with fixed red-flag rules that, on synthetic AI-written tests, catch roughly 70 to 90% of urgent messages in English, Malay and Chinese and about half in Arabic, which is why it is built to run with a raise-only AI second check and a clinician in charge.
+PeriLoop is a working prototype that gives every perioperative task and patient message a named owner and a written closure, and screens patient messages with fixed red-flag rules plus a raise-only AI second check. On 537 synthetic, AI-labelled urgent messages in four languages, the rules alone alerted on 91% (Arabic 73%) and rules plus the AI check alerted on all of them, in one run with one model, at a cost of 22 false alerts in 376 ordinary messages. No clinician has labelled or signed off anything yet.
 
 ## 2. The problem
 
@@ -52,10 +52,18 @@ All messages are synthetic and written by AI. All labels are AI labels. "Fresh" 
 | Set 5 | the AI that wrote the v3 rules | v3, fresh | 59 of 69 (86%); emergencies 39 of 46 | 0 of 30 | Same author as the rules; two missed messages were about wanting to die |
 | 360-message library | an earlier AI | v3, not fresh | 134 of 180 (74%): en 32/40, ms 35/40, zh 34/40, ar 33/60 | 12 of 180 | Arabic is the weakest language |
 | Old prototype, AI second check (Haiku) | AI | old page, not the Console | 75 of 75 and 60 of 60 | 6 of 75 and 6 of 60 | Different product; the same model family wrote and judged the messages |
-| Console, AI second check with a real model | | | **not yet run** | | `app/eval/run_model_eval.js` produces it |
+| **All six sets, real model in the Console (DeepSeek `deepseek-chat`, 12 Nov 2026)** | all of the above | v3 rules alone | 491 of 537 (91%): en 96%, ms 96%, zh 95%, ar 73% | 14 of 376 (4%) | Every set here has been used to tune the rules, so this row is optimistic |
+| Same run | | v3 rules + AI check | 537 of 537; all 211 labelled emergencies | 22 of 376 (6%); Arabic 10 of 73 | One run, one model. The AI was needed for 46 messages and flagged all 46 |
+| Same run, AI check by itself on every message | | no rules | 519 of 537 (97%); emergencies 198 of 211 (94%); Arabic emergencies 21 of 26 | 11 of 376 (3%) | All 18 misses were calls where the AI gave no usable answer (19 of 913 calls, about 2%). When it answered, it flagged every urgent message |
 | Clinician labels | | | **not yet done** | | `/eval/label` and `app/eval/score_labels.js` produce it |
 
-What the table shows: after three rounds of fixes, a fresh set still has missed emergencies. Fixed word lists do not converge. Rules alone are not a safe sole triage, and the product is designed on that assumption.
+What the table shows:
+1. After three rounds of fixes, a fresh set still has missed emergencies. Fixed word lists do not converge. Rules alone are not a safe sole triage.
+2. Neither layer is enough alone. The rules missed 46 urgent messages; the AI gave no usable answer on about 2% of calls, 13 of them labelled emergencies. In this run the two never failed on the same message.
+3. The AI check can raise only to "same day". An emergency the rules miss and the AI catches gets "call the clinic today", not the emergency text.
+4. The AI check is not deterministic: a second run of the same messages raised 8 ordinary messages where the first raised 6.
+
+Raw output of both real-model runs: `docs/evidence/`.
 
 Automated tests: `node app/test.js` 117 of 117; `node app/eval/holdout.test.js` all sets (these are regression tests, not evidence); 23 older suites in `src/mod` unchanged.
 
@@ -66,7 +74,7 @@ Automated tests: `node app/test.js` 117 of 117; `node app/eval/holdout.test.js` 
 | Health impact and clinical relevance | A real, common failure in perioperative care; built by a clinician who works in it | No measured effect; no clinician labels yet |
 | Technical depth and architecture | Rules-first pipeline with a raise-only AI check and an output guard; procedure pathways as data; server-side key; audit log | Rules are word lists; one JSON file as the database |
 | Working solution and demo quality | Runs with one command, no dependencies; Live view shows each decision | Not hosted yet |
-| Responsible AI, safety and data governance | AI cannot lower urgency or write clinical text; drafts labelled; every limit written down; measured misses published | No real-model run in the Console; no hazard log; no data-residency position |
+| Responsible AI, safety and data governance | AI cannot lower urgency or write clinical text; drafts labelled; every limit written down; measured misses published; real-model run with the output guard blocking the model's attempts at advice | One model, two runs, AI labels only; AI unavailable on about 2% of calls with no retry; no hazard log; no data-residency position |
 | Scalability and deployment readiness | Any OpenAI-compatible provider; new procedures are data | No notifications, encryption at rest, backups or integration |
 | Commercial viability and path to pilot | Unit of value is one operation episode; first user is a public orthopaedic unit with no portal | No permission from employer or clinic yet; no pricing |
 
@@ -80,7 +88,7 @@ Automated tests: `node app/test.js` 117 of 117; `node app/eval/holdout.test.js` 
 ## 8. Do not read this prototype as
 
 - Validated, safe or clinician-approved.
-- Catching "91%": that is one of four numbers, and the least independent.
+- Catching "100%": that is one run of one model on invented messages with AI labels, on sets the rules were tuned on.
 - Equally good in Arabic.
 - Having rules written by clinicians.
 - Reducing readmissions or workload: nothing has been measured.
@@ -88,5 +96,5 @@ Automated tests: `node app/test.js` 117 of 117; `node app/eval/holdout.test.js` 
 
 ## 9. Next steps
 
-Before submission (see `docs/clinician-todo.md`): a real-model run, blind clinician labels from two labellers, sign-off of thresholds and texts, a native Arabic read of the fixed texts.
+Before submission (see `docs/clinician-todo.md`): blind clinician labels from two labellers, sign-off of thresholds and texts, a native Arabic read of the fixed texts.
 After: real patient messages under ethics approval at a pilot site, notifications and an on-call rota, a hazard log, security and data residency, patient-reported outcome scores.
