@@ -108,3 +108,27 @@ PORT=8080 PROVIDER_BASE_URL=http://localhost:9777 PROVIDER_KEY=x PROVIDER_MODEL=
 python3 app/eval/browser_e2e.py  # 33 checks: doctor, patient on a phone, Live view, calendar, nurse
 ```
 The held-out sets and their SHA-256 hashes, recorded when each was written, are in `app/eval/`. Screenshots from the browser run are in `app/eval/shots/`.
+
+---
+
+# v3 (12 Nov 2026): independent review, reviewer set, and what changed
+
+Author of this section: Claude (AI), acting on an independent AI review of v2. Still true: no clinician has reviewed anything, every label is an AI's, and no real model has been run in the Console.
+
+## v3.1 Reviewer set (triage_h4), measured BEFORE any v3 change
+
+An independent AI reviewer wrote 149 messages (72 emergency, 37 same-day, 40 ordinary; English, Malay, Chinese incl. traditional characters, Arabic incl. Gulf and Egyptian forms) and ran them once through the real HTTP entry point, AI off, on the v2 code (commit 8eb78ff). The reviewer had read `app/triage.js` first and aimed at awkward wording, so this is a stress test, not an estimate. Labels are the reviewer's, not a clinician's. File: `app/eval/triage_h4.js` (SHA-256 in `app/eval/SHA256.txt`).
+
+| | v2 rules, fresh |
+|---|---|
+| Emergencies that raised any alert | 56 of 72 (78%) |
+| Emergencies classed EMERGENCY | 54 of 72 |
+| Same-day messages alerted | 31 of 37 |
+| Ordinary messages that alerted | 4 of 40, three of them as EMERGENCY |
+| Emergencies alerted, by language | en 17/25, ms 13/16, zh 14/17, ar 12/14 |
+
+Missed emergencies (no alert): "feels like im drowning when i lie down", "i coughed up something red", "i dont want to be here anymore", "took 10 tramadol at once", "sharp pain when i breathe in", "sob since this morning", "cp radiating to left arm", "cnt breathe", "tak leh nafas", "xleh bernafas", "mak tiba2 cakap merepek", "心脏跳得很快，快晕了", "呼吸困難", "透不過氣", "نزيف لا يتوقف من الجرح", "مش قادر اخد نفسي". Emergencies classed only same-day: "blood is coming through the bandage and dripping on the floor", "رجلي منتفخة وتعورني وأحس بكتمة".
+Missed same-day: "knee is locked, wont bend at all", "i missed my blood thinner injection for 3 days" (went to the clinician route, no alert), "the pain meds arent doing anything, i was up all night crying", "luka keluar air", "傷口有臭味", "الركبة حمراء وساخنة".
+False alerts: "my chest of drawers is too low to reach, any tips?" (EMERGENCY), "im confused about my appointment date" (EMERGENCY), "walked to the kitchen and back, bit out of breath but proud" (EMERGENCY), "my son fell off his bike yesterday but hes ok, can he still drive me?" (SAME-DAY).
+
+Together with v2: on three sets written by two different AI authors the v2 rules alone caught 91% (own fresh sets), 80% (this set) and 71% (the 360 library; Arabic 28 of 60). The spread is the honest picture.
