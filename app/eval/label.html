@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PeriLoop · blind labelling</title>
+<style>
+*{box-sizing:border-box}body{font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f5f6f7;color:#16202a}
+main{max-width:720px;margin:0 auto;padding:20px 16px 60px}h1{font-size:20px;margin:0 0 4px}p{margin:6px 0}.mut{color:#5b6875;font-size:14px}
+.card{background:#fff;border:1px solid #dfe3e8;border-radius:12px;padding:18px;margin:14px 0}
+#msg{font-size:22px;line-height:1.45;min-height:96px;word-break:break-word}#msg[dir=rtl]{text-align:right}
+.btns{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+button{font:inherit;font-weight:600;padding:14px 10px;border-radius:10px;border:1px solid #c9d0d8;background:#fff;cursor:pointer}
+button:focus-visible{outline:3px solid #0d7366;outline-offset:2px}
+.e{background:#b42318;color:#fff;border-color:#b42318}.s{background:#b54708;color:#fff;border-color:#b54708}.r{background:#0d7366;color:#fff;border-color:#0d7366}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}input[type=text]{font:inherit;padding:10px;border:1px solid #c9d0d8;border-radius:8px;width:120px}
+progress{width:100%;height:10px}kbd{background:#eef1f4;border:1px solid #d5dae0;border-radius:4px;padding:0 5px;font-size:13px}
+.hide{display:none}ul{margin:6px 0 0 18px;padding:0}
+</style></head><body><main>
+<h1>Blind labelling of test messages</h1>
+<p class="mut">Fictional messages written by an AI. You see one at a time, with no label and no rule result. Your labels stay in this browser until you press Export.</p>
+
+<div class="card" id="start">
+  <p><b>How to label.</b> Imagine this message arrives from a patient in the weeks around an elective knee or other orthopaedic operation. Choose what you would want to happen:</p>
+  <ul><li><b>Emergency</b>: call the ambulance or go to the Emergency Department now.</li><li><b>Same-day</b>: a clinician should speak to or see the patient today.</li><li><b>Routine</b>: can wait for normal clinic hours, or needs no clinical action.</li><li><b>Unsure</b>: you cannot tell from the text, or you cannot read the language.</li></ul>
+  <p class="mut">Label from the words alone. Do not open the Console or the rules while labelling. If two people label, do it separately and do not discuss until both have exported.</p>
+  <div class="row" style="margin-top:12px"><label>Your initials <input type="text" id="who" maxlength="8" autocomplete="off"></label>
+  <label>Languages you read: <label><input type="checkbox" class="lg" value="en" checked> English</label> <label><input type="checkbox" class="lg" value="ms" checked> Malay</label> <label><input type="checkbox" class="lg" value="zh"> Chinese</label> <label><input type="checkbox" class="lg" value="ar"> Arabic</label></label></div>
+  <div class="row" style="margin-top:12px"><label>How many messages (0 = all) <input type="text" id="cap" value="150" inputmode="numeric"></label><button class="r" id="go">Start</button><span id="resume" class="mut"></span></div>
+  <p class="mut hide" id="static">Opened as a file, not from the server: choose the pool file (make it with <code>node app/eval/pool.js &gt; pool.json</code>). <input type="file" id="pf" accept=".json"></p>
+  <p class="mut" id="err"></p>
+</div>
+
+<div class="card hide" id="work">
+  <progress id="pg" value="0" max="1"></progress><p class="mut" id="cnt"></p>
+  <div id="msg" lang="" dir="auto"></div>
+  <div class="btns"><button class="e" data-l="emergency">Emergency <kbd>1</kbd></button><button class="s" data-l="sameday">Same-day <kbd>2</kbd></button><button class="r" data-l="routine">Routine <kbd>3</kbd></button><button data-l="unsure">Unsure <kbd>4</kbd></button></div>
+  <div class="row" style="margin-top:14px"><button id="back">Back one</button><button id="exp">Export my labels (JSON)</button></div>
+</div>
+
+<div class="card hide" id="done"><p><b>Finished.</b> Press Export and send the file to whoever runs <code>node app/eval/score_labels.js yourfile.json</code>.</p><div class="row"><button class="r" id="exp2">Export my labels (JSON)</button><button id="clr">Clear my labels from this browser</button></div></div>
+</main>
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)},POOL=null,ORDER=[],I=0,LAB={},WHO='',KEY='periloop-labels-v1';
+function save(){try{localStorage.setItem(KEY,JSON.stringify({who:WHO,order:ORDER,i:I,lab:LAB,started:STARTED}))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}}
+var STARTED=0,saved=load();
+if(saved&&saved.order&&saved.order.length){$('#resume').textContent='A session by "'+saved.who+'" with '+Object.keys(saved.lab).length+' labels is saved in this browser; Start will continue it.';$('#who').value=saved.who||''}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function getPool(){return fetch('/api/eval/pool',{credentials:'same-origin'}).then(function(r){if(r.status===401)throw new Error('Log in to the Console as a doctor first (open / in another tab), then reload this page.');if(r.status===403)throw new Error('Only a doctor account can open the labelling pool.');if(!r.ok)throw new Error('pool');return r.json()})}
+if(location.protocol==='file:'){$('#static').classList.remove('hide')}
+$('#pf').addEventListener('change',function(ev){var f=ev.target.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){try{POOL=JSON.parse(rd.result);$('#err').textContent=POOL.length+' messages loaded.'}catch(e){$('#err').textContent='That file is not a pool file.'}};rd.readAsText(f)});
+$('#go').addEventListener('click',function(){
+  WHO=$('#who').value.trim();if(!WHO){$('#err').textContent='Enter your initials first.';return}
+  var p=POOL?Promise.resolve(POOL):getPool();
+  p.then(function(pool){POOL=pool;var byId={};pool.forEach(function(x){byId[x.id]=x});
+    if(saved&&saved.order&&saved.order.length&&saved.who===WHO&&saved.order.every(function(id){return byId[id]})){ORDER=saved.order;I=saved.i;LAB=saved.lab;STARTED=saved.started}
+    else{var langs=[].slice.call(document.querySelectorAll('.lg:checked')).map(function(c){return c.value});var cap=parseInt($('#cap').value,10)||0;
+      var ids=shuffle(pool.filter(function(x){return langs.indexOf(x.lang)>=0}).map(function(x){return x.id}));ORDER=cap?ids.slice(0,cap):ids;I=0;LAB={};STARTED=Date.now()}
+    POOL=byId;$('#start').classList.add('hide');show()}).catch(function(e){$('#err').textContent=e.message==='pool'||/Failed to fetch/.test(e.message)?'Could not load the pool from the server. If you opened this as a file, choose pool.json above.':e.message;if(location.protocol==='file:')$('#static').classList.remove('hide')})});
+function show(){if(I>=ORDER.length){$('#work').classList.add('hide');$('#done').classList.remove('hide');save();return}
+  $('#done').classList.add('hide');$('#work').classList.remove('hide');var x=POOL[ORDER[I]];var m=$('#msg');m.textContent=x.text;m.lang=x.lang;m.dir=x.lang==='ar'?'rtl':'ltr';
+  $('#pg').max=ORDER.length;$('#pg').value=I;$('#cnt').textContent='Message '+(I+1)+' of '+ORDER.length+(LAB[x.id]?' · you chose: '+LAB[x.id].label:'');save()}
+function choose(l){if(I>=ORDER.length)return;LAB[ORDER[I]]={label:l,at:Date.now()};I++;show()}
+[].forEach.call(document.querySelectorAll('[data-l]'),function(b){b.addEventListener('click',function(){choose(b.getAttribute('data-l'))})});
+document.addEventListener('keydown',function(e){if($('#work').classList.contains('hide')||e.target.tagName==='INPUT')return;var k={'1':'emergency','2':'sameday','3':'routine','4':'unsure'}[e.key];if(k)choose(k);if(e.key==='Backspace'&&I>0){I--;show()}});
+$('#back').addEventListener('click',function(){if(I>0){I--;show()}});
+function exportFile(){var out={tool:'periloop-label',version:1,labeller:WHO,startedAt:STARTED,exportedAt:Date.now(),shown:ORDER.length,labels:ORDER.filter(function(id){return LAB[id]}).map(function(id){return{id:id,lang:POOL[id].lang,text:POOL[id].text,label:LAB[id].label,at:LAB[id].at}})};
+  var a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(out,null,1)],{type:'application/json'}));a.download='labels_'+WHO.replace(/[^A-Za-z0-9]/g,'')+'_'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove()}
+$('#exp').addEventListener('click',exportFile);$('#exp2').addEventListener('click',exportFile);
+$('#clr').addEventListener('click',function(){try{localStorage.removeItem(KEY)}catch(e){}location.reload()});
+})();
+</script></body></html>

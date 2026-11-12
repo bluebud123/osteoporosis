@@ -440,6 +440,7 @@ async function route(req, res) {
   if (m === 'GET' && (p === '/' || p === '/staff')) return serveFile(res, 'staff.html');
   if (m === 'GET' && p.indexOf('/p/') === 0) return serveFile(res, 'patient.html');
   if (m === 'GET' && p === '/live') return serveFile(res, 'live.html');
+  if (m === 'GET' && p === '/eval/label') return serveFile(res, path.join('..', 'eval', 'label.html'));   // v3: blind labelling page (the pool itself is doctor-only, below)
   if (m === 'GET' && p === '/healthz') return send(res, 200, { ok: true });
   if (!p.startsWith('/api/')) { res.writeHead(404); return res.end('Not found'); }
 
@@ -556,6 +557,7 @@ async function route(req, res) {
 
   // ---- demo cases, test-message library, live trace ----
   if (m === 'POST' && p === '/api/demo/load') { if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' }); return send(res, 200, { added: seedDemo(user.username) }); }
+  if (m === 'GET' && p === '/api/eval/pool') { if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' }); return send(res, 200, require('./eval/pool.js').blind()); }   // v3: messages only, no AI label, no set name
   if (m === 'GET' && p === '/api/library') {
     var lib = []; try { lib = JSON.parse(fs.readFileSync(path.join(__dirname, 'seed', 'messages.json'), 'utf8')); } catch (e) { lib = []; }
     return send(res, 200, lib);
