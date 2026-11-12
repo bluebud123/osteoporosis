@@ -1,0 +1,7 @@
+Everything was built during the challenge by one orthopaedic medical officer working with AI coding assistants. It runs with one command and has no software dependencies.
+
+Built and working: staff login for doctor and nurse; per-patient perioperative checklists for six procedure types with evidence-required closure; readings with automatic threshold flags; a private patient chat in four languages; a triage pipeline (identifier masking, fixed red-flag rules, raise-only AI second check, output guard, fixed urgent texts); 19 clinic answers that stay drafts until a doctor approves them; alerts, inbox, calendar with a cases-per-day limit and reschedule suggestions; a staff-confirmed patient profile; a dose check for doctors; a Learning page where the chief doctor approves lessons the AI proposes; a live view that shows every decision step; and an audit log.
+
+Tested: more than 200 automated checks; held-out message sets; two real-model evaluation runs of 913 messages; and blind labelling of 368 messages by a clinician, with a tool for a second labeller.
+
+Not built: notifications or an on-call rota, integration with hospital systems, encryption at rest, and any use with real patients. The rules, thresholds, dose table and translated texts were drafted by AI and await clinician sign-off.

@@ -1,0 +1,9 @@
+PeriLoop Console closes the loop around elective orthopaedic surgery, starting with total knee replacement. Findings before and after an operation are often made and then not followed through: an abnormal blood result, a missing consent, a worried message from a patient at home at night. PeriLoop gives every task and every patient message a named owner and a written closure.
+
+For staff: a checklist per patient built from pathway rules, where a task closes only with written evidence; threshold flags on readings; alerts that record who acknowledged them; a calendar that flags over-booked days and suggests which case to move; and a dose check that warns the doctor when a patient reports, or a reply contains, a dose above the usual maximum.
+
+For patients: a private chat link in English, Malay, Chinese and Arabic, with no app to install. Fixed red-flag rules screen each message first. An AI second check can only raise urgency, never lower it. Urgent replies are fixed texts; the AI never writes clinical advice to a patient.
+
+The AI learns under clinical control: it proposes patient facts and clinic lessons from what staff correct, and nothing takes effect until a clinician approves it.
+
+Evidence so far, on invented messages only: one orthopaedic medical officer labelled 368 English messages blind. With the AI check on, all 155 he called emergencies raised an alert (rules alone: 150) and none of his 114 routine messages did. One clinician, one model, no real patients. It is a working prototype, not clinically validated.
