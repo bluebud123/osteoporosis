@@ -17,3 +17,14 @@ Everything an AI could do is done on the branch `periloop-v3-review-fixes`. The 
 If time runs out, do 1, 2 and 3. Those three change the evidence from "an AI tested its own rules" to "a clinician labelled the messages and a real model was measured", which is the largest gap a judge will see.
 
 Do not do: add more red-flag wording by hand. Three rounds have shown it does not converge (see `docs/decision-log.md` v3.3).
+
+
+## Added 12 Nov 2026 (v4 to v6): more for your sign-off
+
+| What | Where | Time |
+|---|---|---|
+| **Dose table: check every row** (13 medicines: assumed tablet strength, maximum single dose, maximum daily total). AI-drafted. Do this before anything else here. | `app/doses.js`, the `TABLE` list | 20 min |
+| Your emergency line: the five groups, and the 16 emergencies still classed same-day | decision log v4, part 1 | 15 min |
+| The three raise-only profile links (blood thinner + bleeding, blood thinner + fall, diabetes + wound) | `app/memory.js`, the `LINKS` list | 10 min |
+| Whether a self-harm message gets the emergency text (rules say yes; you labelled same-day) | decision log v3.12, point 5 | 5 min |
+| Whether "AI unavailable" should also change the patient's reply (now it only alerts staff) | decision log v4, part 3 | 5 min |

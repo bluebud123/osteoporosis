@@ -393,3 +393,24 @@ Lessons that raise or lower triage. Conditions proposed by the reviewer and to b
 
 ### Limits
 No real model has proposed a lesson yet; whether its proposals are useful is unknown. The topic keywords are English only. Lessons are free text given to a model: a lesson can be followed badly or ignored. A doctor could approve a poor lesson; the wording filter stops doses and reassurance, not bad judgement. Signals hold patient message text (masked for phone, IC and email) and are sent to the AI provider when a doctor asks for proposals.
+
+## v6 (12 Nov 2026): dose check for doctors, chief-doctor approval, lesson tracking
+
+Asked for by Dr Tan: "medical alert for doctors, not for patients; must highlight if wrong dose" (he chose both directions), and "only chief doctor or team can approve the changes"; the demo doctor is the chief, more roles to be set up for real use. Tests: `node app/eval/v6.test.js` (16 checks).
+
+### Dose check (`app/doses.js`)
+A table of 13 medicines common around orthopaedic surgery, each with an assumed tablet strength, a usual maximum single dose and a usual maximum daily total (adults). The reader finds a medicine name, reads the amount and frequency near it, and reports when the single dose or the daily total is above the table.
+- **Patient message.** A finding raises at least a SAME-DAY alert for the doctor with the numbers ("Tramadol: single dose about 150 mg (usual maximum 100 mg)..."). It can only raise. The patient gets the usual fixed text; no dose or medicine is mentioned to the patient (tested).
+- **Staff reply.** A reply that mentions a dose above the table is held with a red warning. The sender must press "I have checked, send it"; the audit log records that a warning was shown. AI drafts and built-in draft options are checked too and show the warning before they are used.
+- Measured: 11 of 11 written examples above the table flagged; 20 of 20 ordinary sentences not flagged; over the 913 test messages in the repo the only finding is "took 10 tramadol at once". These examples were written by the same AI that wrote the reader, so this is a check that it runs, not a measure of accuracy.
+
+**The table is AI-drafted and has not been checked by a clinician.** It is the highest-risk content added today: a wrong number either hides a real overdose or blocks a correct prescription. It knows nothing about weight, age, kidney or liver function, a deliberate treatment dose (enoxaparin by weight, apixaban 10 mg twice a day in the first week), slow-release forms, or combination tablets. It reads English and a few Malay words. When it cannot read an amount it says nothing, which means "could not tell", not "safe". It only flags doses that are too high, not too low, and not interactions or allergies. Sign-off item: Dr Tan checks every row of `TABLE` against the hospital formulary before any real use.
+
+### Chief doctor
+One doctor account carries `chief: true` (the demo `doctor`; an older data file gets its first doctor promoted). Only the chief can ask the AI for lesson proposals, approve, edit, write or retire a lesson. Other doctors and nurses can read the Learning page. "Not urgent" and "should have alerted?" stay open to any doctor: they are observations, not changes. There is no screen yet to add doctors or change who is chief; that is for real deployment.
+
+### Lesson tracking
+Each lesson now counts the AI drafts it was used in that were sent unchanged and that were rewritten. A lesson whose drafts are mostly rewritten is marked "may not be working" on the Learning page. Counts only; nothing is retired automatically.
+
+### Not built, proposed for later
+The AI tidying the playbook (merging duplicates, flagging contradictions); an expiry or "reconfirm" date on confirmed patient facts; search by meaning instead of topic tags; pages and links between lessons (a wiki). Stage 2 (lessons that change triage) is still not built.

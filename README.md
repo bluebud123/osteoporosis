@@ -25,6 +25,7 @@ node app/test.js                 # 117 end-to-end checks
 node app/eval/holdout.test.js    # held-out message, reading and guard sets (regression tests, not evidence)
 node app/eval/v4.test.js         # emergency line, AI severity, patient profile memory (stand-in model)
 node app/eval/v5.test.js         # learning: signals, doctor-approved lessons, topic index (stand-in model)
+node app/eval/v6.test.js         # dose check for doctors, chief-doctor approval
 node app/eval/run_model_eval.js  # real-model run of the second check; needs the three PROVIDER variables
 ```
 

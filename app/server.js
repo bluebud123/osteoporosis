@@ -11,7 +11,8 @@ var Store = require('./store.js');
 var E = require('./lib/engine.js');
 var SC = require('./lib/second_check.js');
 var MEM = require('./memory.js');
-var LEARN = require('./learning.js');   // v5: signals from staff corrections, doctor-approved lessons, topic index   // v4: patient-reported facts, proposed by the AI, confirmed by staff
+var LEARN = require('./learning.js');
+var DOSE = require('./doses.js');   // v6: dose check for doctors (AI-drafted table, awaiting sign-off)   // v5: signals from staff corrections, doctor-approved lessons, topic index   // v4: patient-reported facts, proposed by the AI, confirmed by staff
 var proxy = require('./lib/server/chat.js');
 var P = require('./periop.js');
 var AI = require('./ai.js');
@@ -46,7 +47,7 @@ function uid() { return crypto.randomBytes(6).toString('hex'); }
 function init() {
   if (store.db) { store.db.rules.faqs = store.db.rules.faqs || []; migrate(); return; }
   store.db = {
-    users: [mkUser('doctor', 'Dr Demo', 'doctor', 'doctor-demo-1'), mkUser('nurse', 'Nurse Demo', 'nurse', 'nurse-demo-1')],
+    users: [Object.assign(mkUser('doctor', 'Dr Demo', 'doctor', 'doctor-demo-1'), { chief: true }), mkUser('nurse', 'Nurse Demo', 'nurse', 'nurse-demo-1')],
     patients: [], tasks: [], messages: [], alerts: [], audit: [],
     rules: { pathway: defaultPathway(), redflags: [], faqs: [] },
     settings: { clinicPhone: '', sessionsText: '', demoBanner: true, maxCasesPerDay: 5, emergencyNumber: '999', useDraftAnswers: true }
@@ -187,6 +188,8 @@ function migrate() {
   var d = store.db; d.readings = d.readings || []; d.detections = d.detections || [];
   if (!d.rules.periop) d.rules.periop = P.defaultRules();
   if (!d.settings.maxCasesPerDay) d.settings.maxCasesPerDay = 5;
+  // v6: one doctor is the chief (approves lessons). An older data file has none: the first doctor becomes chief.
+  if (d.users && !d.users.some(function (u) { return u.chief; })) { var fd = d.users.find(function (u) { return u.role === 'doctor'; }); if (fd) fd.chief = true; }
   if (!d.settings.emergencyNumber) d.settings.emergencyNumber = '999';
   if (PH.unset(d.settings.clinicPhone)) d.settings.clinicPhone = ''; if (PH.unset(d.settings.sessionsText)) d.settings.sessionsText = '';   // v3: old placeholder strings are treated as not set
   if (typeof d.settings.useDraftAnswers !== 'boolean') d.settings.useDraftAnswers = true;
@@ -348,7 +351,10 @@ async function patientMessage(pt, rawText, via) {
   // v4: a fact the patient told us earlier and staff confirmed can raise a routine message to SAME-DAY (never lower)
   var memHit = urgentRank[cls] < urgentRank['SAME-DAY'] ? MEM.raise(pt.memory, safe) : null;
   if (memHit) { cls = 'SAME-DAY'; flags.push('patient profile: ' + memHit.reason); reason = 'Patient profile (confirmed by staff): ' + memHit.reason + ' ("' + memHit.fact + '")'; }
-  step(3, 'Clinic extra phrases and confirmed patient profile (can only raise)', (hitRf || memHit) ? 'raise' : 'pass', (hitRf ? 'Matched "' + hitRf.phrase + '" -> ' + hitRf.cls : store.db.rules.redflags.length + ' phrase(s) checked, none matched') + (memHit ? ' · Profile: ' + memHit.reason + ' -> SAME-DAY' : ' · ' + MEM.confirmed(pt.memory).length + ' confirmed profile fact(s) checked'));
+  // v6: a dose above the usual maximum in the patient's own words is flagged FOR THE DOCTOR (raise-only; the patient text stays the fixed one)
+  var doseHit = DOSE.check(safe);
+  if (doseHit.length) { inMsg.dose = doseHit; doseHit.forEach(function (x) { flags.push('possible wrong dose, for the doctor: ' + x.text); }); if (urgentRank[cls] < urgentRank['SAME-DAY']) { cls = 'SAME-DAY'; reason = 'Possible wrong dose reported by the patient: ' + doseHit[0].text; } else reason = (reason ? reason + ' · ' : '') + 'Possible wrong dose: ' + doseHit[0].text; }
+  step(3, 'Clinic extra phrases, confirmed patient profile and dose check (can only raise)', (hitRf || memHit || doseHit.length) ? 'raise' : 'pass', (doseHit.length ? 'Dose check: ' + doseHit.map(function (x) { return x.text; }).join(' | ') + ' · ' : '') + (hitRf ? 'Matched "' + hitRf.phrase + '" -> ' + hitRf.cls : store.db.rules.redflags.length + ' phrase(s) checked, none matched') + (memHit ? ' · Profile: ' + memHit.reason + ' -> SAME-DAY' : ' · ' + MEM.confirmed(pt.memory).length + ' confirmed profile fact(s) checked'));
   var urgent = cls === 'EMERGENCY' || cls === 'SAME-DAY';
   var secondUsed = false, sec = null, unscreenedAlert = false;
   // 4. model second check
@@ -472,6 +478,7 @@ function serveFile(res, name) { var f = path.join(PUBLIC, name); fs.readFile(f, 
 
 function patientByToken(tok) { return store.db.patients.find(function (p) { return p.active && p.token === tok; }); }
 function needDoctor(u) { return u && u.role === 'doctor'; }
+function needChief(u) { if (!u || u.role !== 'doctor') return false; var du = store.db.users.find(function (x) { return x.username === u.username; }); return !!(du && du.chief); }
 
 /* ---------- routes ---------- */
 async function route(req, res) {
@@ -519,7 +526,7 @@ async function route(req, res) {
   if (!user) return send(res, 401, { error: 'login_required' });
 
   if (m === 'POST' && p === '/api/logout') { var sid2 = parseCookies(req).sid; sessions.delete(sid2); return send(res, 200, { ok: true }, { 'set-cookie': 'sid=; Max-Age=0; Path=/' }); }
-  if (m === 'GET' && p === '/api/me') return send(res, 200, { username: user.username, name: user.name, role: user.role, owners: OWNERS, langs: LANGS, procedures: Object.keys(store.db.rules.pathway.procedures).map(function (k) { return { key: k, label: store.db.rules.pathway.procedures[k].label }; }), ai: aiConfigured(), settings: store.db.settings });
+  if (m === 'GET' && p === '/api/me') return send(res, 200, { username: user.username, name: user.name, role: user.role, chief: needChief(user), owners: OWNERS, langs: LANGS, procedures: Object.keys(store.db.rules.pathway.procedures).map(function (k) { return { key: k, label: store.db.rules.pathway.procedures[k].label }; }), ai: aiConfigured(), settings: store.db.settings });
 
   if (m === 'GET' && p === '/api/summary') {
     var open = store.db.tasks.filter(function (t) { return t.state === 'open' && store.db.patients.find(function (x) { return x.id === t.pid && x.active; }); });
@@ -562,10 +569,18 @@ async function route(req, res) {
     }
     if (m === 'POST' && sub === 'reply') {
       var txt = String(body.text || '').trim().slice(0, 1000); if (!txt) return send(res, 400, { error: 'empty' });
+      // v6: a reply that mentions a dose above the usual maximum is held until the sender confirms they have checked it
+      var rd = DOSE.check(txt);
+      if (rd.length && !body.doseAck) return send(res, 409, { error: 'dose', findings: rd, message: 'This reply mentions a dose above the usual maximum. Check it, then send again to confirm.' });
+      if (rd.length) audit(user.username, 'sent a reply to ' + pat.rn + ' after a dose warning: ' + rd.map(function (x) { return x.text; }).join(' | '));
       addMsg(pat.id, 'staff', txt, { staffName: user.name, staffRole: user.role === 'doctor' ? 'Doctor' : 'Nurse', by: user.username });
       // v5: if this reply started from an AI draft, remember whether staff sent it as it was or rewrote it
       var dtx = String(body.draftText || '').trim().slice(0, 1000);
-      if (dtx && body.draftLabel === 'AI draft') { store.db.learnStats = store.db.learnStats || {}; var lastP = store.db.messages.filter(function (x) { return x.pid === pat.id && x.who === 'patient'; }).slice(-1)[0];
+      if (dtx && body.draftLabel === 'AI draft') { store.db.learnStats = store.db.learnStats || {};
+        // v6: did the lessons used for this draft help? Count, per lesson, drafts sent unchanged against drafts rewritten.
+        var same = LEARN.norm(dtx) === LEARN.norm(txt), ld = pat.lastDraft && LEARN.norm(pat.lastDraft.text) === LEARN.norm(dtx) ? pat.lastDraft : null;
+        if (ld) { (store.db.lessons || []).forEach(function (l) { if (ld.lessonIds.indexOf(l.id) >= 0) { if (same) l.sentUnchanged = (l.sentUnchanged || 0) + 1; else l.rewritten = (l.rewritten || 0) + 1; } }); pat.lastDraft = null; }
+        var lastP = store.db.messages.filter(function (x) { return x.pid === pat.id && x.who === 'patient'; }).slice(-1)[0];
         if (LEARN.norm(dtx) === LEARN.norm(txt)) store.db.learnStats.draftsUnchanged = (store.db.learnStats.draftsUnchanged || 0) + 1;
         else LEARN.addSignal(store.db, { type: 'draft_edit', pid: pat.id, text: lastP ? lastP.text : '', draft: dtx, sent: txt, by: user.username }); }
       store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; });
@@ -599,7 +614,9 @@ async function route(req, res) {
     if (m === 'POST' && sub === 'draft') {
       var br = buildBrief(pat), ls = LEARN.retrieve(store.db, br.lastMessage || '', 5), r2 = await AI.draft(br.facts, br.lastMessage || '(no message yet)', 'draft for ' + pat.rn, LEARN.block(ls));
       store.db.learnStats = store.db.learnStats || {}; if (r2.text) { store.db.learnStats.draftsRequested = (store.db.learnStats.draftsRequested || 0) + 1; ls.forEach(function (l) { l.uses = (l.uses || 0) + 1; }); store.save(); }
-      return send(res, 200, { lessonsUsed: r2.text ? ls.map(function (l) { return l.text; }) : [], ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft, options: br.options });
+      if (r2.text) pat.lastDraft = { text: r2.text, lessonIds: ls.map(function (l) { return l.id; }), at: Date.now() };
+      var dw = {}; if (r2.text && DOSE.check(r2.text).length) dw['AI draft'] = DOSE.check(r2.text); (br.options || []).forEach(function (o) { var f = DOSE.check(o.text); if (f.length) dw[o.label] = f; });
+      return send(res, 200, { doseWarnings: dw, lessonsUsed: r2.text ? ls.map(function (l) { return l.text; }) : [], ai: r2.text || '', aiError: r2.error || '', aiSkipped: !!r2.skipped, rules: br.draft, options: br.options });
     }
     if (m === 'POST' && sub === 'handback') { pat.threadOpen = false; addMsg(pat.id, 'bot', 'Handing you back to the assistant for general questions.', { cls: 'ACK' }); audit(user.username, 'handed back ' + pat.rn); store.save(); return send(res, 200, { ok: true }); }
     if (m === 'POST' && sub === 'dismiss') { store.db.messages.forEach(function (x) { if (x.pid === pat.id && x.needsStaff) x.handled = true; }); store.save(); return send(res, 200, { ok: true }); }
@@ -677,12 +694,12 @@ async function route(req, res) {
     return send(res, 200, { ok: true });
   }
   if (m === 'GET' && p === '/api/learning') {
-    return send(res, 200, { tags: Object.keys(LEARN.TAGS).map(function (k) { return { id: k, label: LEARN.TAGS[k].label }; }), signalLabels: LEARN.SIGNAL_LABEL, aiOn: aiConfigured(), canDecide: needDoctor(user),
+    return send(res, 200, { tags: Object.keys(LEARN.TAGS).map(function (k) { return { id: k, label: LEARN.TAGS[k].label }; }), signalLabels: LEARN.SIGNAL_LABEL, aiOn: aiConfigured(), canDecide: needChief(user),
       lessons: (store.db.lessons || []).slice().sort(function (a, b) { return b.at - a.at; }),
       signals: (store.db.signals || []).slice(-60).reverse(), report: LEARN.report(store.db) });
   }
   if (m === 'POST' && p === '/api/lessons/suggest') {
-    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    if (!needChief(user)) return send(res, 403, { error: 'chief_only', message: 'Only the chief doctor can change lessons.' });
     if (!aiConfigured()) return send(res, 400, { error: 'ai_off', message: 'The AI is not connected, so it cannot propose lessons. You can still write one yourself.' });
     var sg = LEARN.signalsForAI(store.db, 25); if (!sg.used.length) return send(res, 200, { proposed: 0, message: 'No new corrections to learn from yet.' });
     var lr = await AI.lessons(sg.text, Object.keys(LEARN.TAGS).join(', '), 'lessons by ' + user.username);
@@ -694,7 +711,7 @@ async function route(req, res) {
     return send(res, 200, { proposed: props.length, read: sg.used.length, message: props.length ? '' : 'The AI read ' + sg.used.length + ' correction(s) and proposed nothing that passed the checks.' });
   }
   if (m === 'POST' && p === '/api/lessons') {
-    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    if (!needChief(user)) return send(res, 403, { error: 'chief_only', message: 'Only the chief doctor can change lessons.' });
     var nt2 = LEARN.clean(body.text, 240), ng = LEARN.okTags(body.tags);
     if (!LEARN.lessonOk(nt2)) return send(res, 400, { error: 'lesson', message: 'A lesson is one sentence (12 to 240 characters) about wording or what to mention. It cannot contain a dose, a medicine instruction, or say that something is normal or safe.' });
     if (!ng.length) return send(res, 400, { error: 'tags', message: 'Choose at least one topic.' });
@@ -703,7 +720,7 @@ async function route(req, res) {
   }
   var lm = p.match(/^\/api\/lessons\/([a-f0-9]+)$/);
   if (m === 'POST' && lm) {
-    if (!needDoctor(user)) return send(res, 403, { error: 'doctor_only' });
+    if (!needChief(user)) return send(res, 403, { error: 'chief_only', message: 'Only the chief doctor can change lessons.' });
     var le = (store.db.lessons || []).find(function (x) { return x.id === lm[1]; }); if (!le) return send(res, 404, { error: 'not_found' });
     var la = String(body.action || '');
     if (la === 'approve') {
