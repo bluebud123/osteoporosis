@@ -80,7 +80,7 @@ tb(s,0.52,4.42,9.0,0.9,[[('PeriLoop Console. ',{'size':12,'bold':True,'color':TE
 
 # ---- 2 ----
 s=S[1]; tbl=[sh for sh in s.shapes if sh.has_table][0].table
-row=['1','Tan Shun Herng','Malaysia','Orthopaedic medical officer; clinical lead and builder','Independent entry (employed by the Ministry of Health Malaysia; entered in a personal capacity)','18 or over']
+row=['1','Tan Shun Herng','Malaysia','Orthopaedic medical officer; clinical lead and builder','Independent entry (employed by the Ministry of Health Malaysia; entered in a personal capacity)','34']
 for ci,v in enumerate(row):
     c=tbl.cell(1,ci); par=c.text_frame.paragraphs[0]
     for r in list(par.runs): r._r.getparent().remove(r._r)

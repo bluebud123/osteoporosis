@@ -89,3 +89,36 @@ v7 (same day): patient age and sex; rule-based reschedule suggestion for an over
 v7.1 (same day): real-model run 3 FAILED (AI check unavailable for 303 of 913). Most likely the extra model calls added in v4 to v6 overloaded the provider; not confirmed. Fixed with a gate on all model calls (decision log v7.1). The next run prints the provider's HTTP status if it happens again. Do not quote run 3.
 
 v8 (same day): hosted-demo mode for Railway (decision log v8, steps in docs/DEPLOY.md). The branch `demo` is the frozen copy to deploy; move it forward only on purpose (`git push origin periloop-v3-review-fixes:demo`) and never while judging is under way without telling Dr Tan.
+
+
+## SUBMITTED, 14 Nov 2026
+
+Dr Tan submitted the entry himself on 14 Nov 2026 (module closes 21 Nov 2026, 02:29 IST). Nothing more is required unless the organiser writes back.
+
+What was submitted:
+- Challenge: [Population Health] Closing the Screening-to-Care Loop. Stage: Prototype. Entered as an individual, solo.
+- Form texts: `docs/submission/form_solution_summary.txt` and `form_what_has_been_built.txt`, pasted unchanged.
+- Deck: 16 slides on the challenge template. The copy in this repository has blank passwords on purpose; the submitted copy has the judges' logins on slide 11. Never commit the logins. Age on slide 2 reads 34.
+- Prototype link: https://periloop-console-production.up.railway.app (Railway, Hobby plan, branch `demo`, volume at /data).
+- Video: https://youtu.be/Ts08PYag2F8 (2 min 40 s, his own voice, real screens of the hosted Console with the AI on, captured 12 Nov 2026). The assistant could not open the link to confirm it is viewable without login; Dr Tan should check it in a private window.
+
+Rules while judging is under way (finals at GITEX Dubai, 7 to 11 Dec 2026):
+- Keep the hosted demo exactly as submitted. Do not push to `demo` or `main` unless Dr Tan asks, and never without telling him first.
+- If a fix is asked for: make it on `periloop-v3-review-fixes`, run every test suite, run `node app/eval/v8.test.js`, open each page in a browser, and only then move `demo` forward.
+- Do not change the numbers quoted in the deck, form or video. If a new measurement differs, tell him; do not quietly update one place.
+- If the organiser asks a question, answer from `docs/decision-log.md` and `docs/evidence/`. Say what was measured and what was not. Do not submit, register or accept terms for him.
+
+Known faults found on the hosted demo on 12 and 14 Nov, NOT fixed (left alone so the demo matches the submission):
+1. Live view: a staff reply with a wrong dose is blocked by the server (correct) but the page shows no warning and just clears the box. The warning shows correctly on the patient page in the Console.
+2. Live view: changing the patient in the top bar sometimes leaves the left chat pane on the previous patient until the page is reloaded. Not investigated.
+3. Today page: a merged alert (x2) shows the newest message with the older message's reason line.
+4. The AI profile summary can contradict the record (it wrote "14 days from total knee replacement" for a patient whose operation is still ahead).
+
+Still open for Dr Tan (none of it blocks the submission):
+- Rotate the DeepSeek key pasted in an earlier chat. NOT done as of 14 Nov.
+- Sign off the dose table (`app/doses.js`), the red-flag rules, thresholds and translated texts; see `docs/clinician-todo.md`.
+- Send the run-4 result file from his PC (`app\eval\model_run_2026-11-12_deepseek-chat.json`) so the severity step can be reported.
+- Never measured with a real model: patient-fact extraction, lesson proposals.
+- In his video recording a speech-to-text check heard "40 to 20" and "276" where the script says "14 to 20" and "376". It may be the transcriber's error. Unverified.
+
+Not in this repository: the video files and the scripts that built them (they were made in a temporary workspace). A three.js "floating screens" version of the video was storyboarded and then dropped by Dr Tan's decision.
